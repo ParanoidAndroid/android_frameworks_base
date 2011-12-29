@@ -2025,6 +2025,19 @@ public final class Settings {
         public static final String ACCELEROMETER_ROTATION = "accelerometer_rotation";
 
         /**
+         * Control the type of rotation which can be performed using the accelerometer
+         * if ACCELEROMETER_ROTATION is enabled.
+         * Value is a bitwise combination of
+         * 1 = 0 degrees (portrait)
+         * 2 = 90 degrees (left)
+         * 4 = 180 degrees (inverted portrait)
+         * 8 = 270 degrees (right)
+         * Setting to 0 is effectively orientation lock
+         * @hide
+         */
+        public static final String ACCELEROMETER_ROTATION_ANGLES = "accelerometer_rotation_angles";
+
+        /**
          * Default screen rotation when no other policy applies.
          * When {@link #ACCELEROMETER_ROTATION} is zero and no on-screen Activity expresses a
          * preference, this rotation value will be used. Must be one of the
@@ -2338,8 +2351,8 @@ public final class Settings {
         public static final String POINTER_SPEED = "pointer_speed";
 
         /**
-         * Boolean value whether to link ringtone and notification volumes
-         * 
+         * Whether to link ringtone and notification volumes
+         * The value is boolean (1 or 0).
          * @hide
          */
         public static final String VOLUME_LINK_NOTIFICATION = "volume_link_notification";
@@ -2391,30 +2404,37 @@ public final class Settings {
 
         /**
          * Statusbar State
+         * The value is boolean (1 or 0).
          * @hide
          */
         public static final String EXPANDED_DESKTOP_STATE = "expanded_desktop_state";
 
         /**	
          * Allows to show the background activity back the lockscreen
+         * The value is boolean (1 or 0).
          * @hide
          */
         public static final String LOCKSCREEN_SEE_THROUGH = "lockscreen_see_through";
 
         /**	
          * Allows lockscreen to be rotated
+         * The value is boolean (1 or 0).
          * @hide
          */
         public static final String LOCKSCREEN_ALLOW_ROTATION = "lockscreen_allow_rotation";
 
         /**	
          * Whether to show or not clock on statusbar
+         * The value is boolean (1 or 0).
          * @hide
          */
         public static final String STATUS_BAR_SHOW_CLOCK = "status_bar_show_clock";
 
         /**	
          * AM/PM style on statusbar, either normal, small or gone.
+         *  0 = Normal
+         *  1 = Small
+         *  2 = Gone (default)
          * @hide
          */
         public static final String STATUS_BAR_AM_PM_STYLE = "status_bar_am_pm_style";
