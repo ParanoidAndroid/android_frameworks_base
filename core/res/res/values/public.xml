@@ -2054,4 +2054,7 @@
   <!-- Notification light mapping -->
   <public type="array" name="notification_light_package_mapping" />
 
+  <java-symbol type="string" name="config_deviceKeyHandlerLib" />
+  <java-symbol type="string" name="config_deviceKeyHandlerClass" />
+
 </resources>
