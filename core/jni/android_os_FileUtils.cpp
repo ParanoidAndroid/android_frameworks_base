@@ -40,7 +40,7 @@ jint android_os_FileUtils_setPermissions(JNIEnv* env, jobject clazz,
     const jchar* str = env->GetStringCritical(file, 0);
     String8 file8;
     if (str) {
-        file8 = String8(str, env->GetStringLength(file));
+        file8 = String8((const char16_t*)str, env->GetStringLength(file));
         env->ReleaseStringCritical(file, str);
     }
     if (file8.size() <= 0) {

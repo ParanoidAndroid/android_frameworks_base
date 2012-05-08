@@ -83,7 +83,7 @@ public:
 
     static int compare(const TextLayoutCacheKey& lhs, const TextLayoutCacheKey& rhs);
 
-    inline const UChar* getText() const { return textCopy.string(); }
+    inline const UChar* getText() const { return (UChar*)textCopy.string(); }
 
 private:
     String16 textCopy;
@@ -99,7 +99,6 @@ private:
     SkPaint::Hinting hinting;
     SkPaint::FontVariant variant;
     SkLanguage language;
-
 }; // TextLayoutCacheKey
 
 inline int strictly_order_type(const TextLayoutCacheKey& lhs, const TextLayoutCacheKey& rhs) {
