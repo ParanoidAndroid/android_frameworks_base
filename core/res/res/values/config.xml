@@ -1096,4 +1096,7 @@
     <!-- Name of that dock battery handler class -->
     <string name="config_deviceDockBatteryHandlerClass" translatable="false"></string>
 
+    <!-- Boolean to enable Stylus gestures -->
+    <bool name="config_stylusGestures">false</bool>
+
 </resources>
