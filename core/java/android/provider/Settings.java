@@ -2423,6 +2423,13 @@ public final class Settings {
          */
         public static final String LOCKSCREEN_ALLOW_ROTATION = "lockscreen_allow_rotation";
 
+        /**
+         * Show the pending notification counts as overlays on the status bar
+         * @hide
+         */
+        public static final String STATUS_BAR_NOTIF_COUNT = "status_bar_notif_count";
+
+
         /**	
          * Whether to show or not clock on statusbar
          * The value is boolean (1 or 0).
