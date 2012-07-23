@@ -206,4 +206,15 @@
     <!-- How far to slide the panel out when you touch it -->
     <!-- For phones, this is close_handle_height + header_height -->
     <dimen name="peek_height">84dp</dimen>
+
+    <!-- Quick Nav Panel -->
+    <dimen name="qc_radius_start">65dip</dimen>
+    <dimen name="qc_radius_increment">80dip</dimen>
+    <dimen name="qc_slop">10dip</dimen>
+    <dimen name="qc_touch_offset">15dip</dimen>
+    <dimen name="qc_tab_title_height">24dip</dimen>
+    <dimen name="qc_thumb_width">150dip</dimen>
+    <dimen name="qc_thumb_height">100dip</dimen>
+    <dimen name="qc_item_size">40dip</dimen>
+
 </resources>
