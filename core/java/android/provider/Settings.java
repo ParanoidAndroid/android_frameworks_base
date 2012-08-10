@@ -2364,6 +2364,13 @@ public final class Settings {
         public static final String VOLUME_LINK_NOTIFICATION = "volume_link_notification";
 
         /**
+         * Navigation controls to Use
+         *
+         * @hide
+         */
+        public static final String NAV_BUTTONS = "nav_buttons";
+
+        /**
          * Whether to merge recents & menu or not
          * 0 = do not merge
          * 1 = merge
