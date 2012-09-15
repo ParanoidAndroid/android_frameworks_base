@@ -98,6 +98,7 @@ public class RecentsVerticalScrollView extends ScrollView
         setLayoutTransition(null);
 
         mLinearLayout.removeAllViews();
+        mCallback.clear();
 
         // Once we can clear the data associated with individual item views,
         // we can get rid of the removeAllViews() and the code below will
@@ -111,6 +112,7 @@ public class RecentsVerticalScrollView extends ScrollView
                 old.setVisibility(VISIBLE);
             }
             final View view = mAdapter.getView(i, old, mLinearLayout);
+            mCallback.addContainer(view);
 
             if (mPerformanceHelper != null) {
                 mPerformanceHelper.addViewCallback(view);
@@ -398,5 +400,6 @@ public class RecentsVerticalScrollView extends ScrollView
 
     public void setCallback(RecentsCallback callback) {
         mCallback = callback;
+        mCallback.setScrollView(this);
     }
 }

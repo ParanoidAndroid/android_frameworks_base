@@ -62,6 +62,7 @@ public class StatusBarManager {
     public static final int NAVIGATION_HINT_HOME_NOP      = 1 << 1;
     public static final int NAVIGATION_HINT_RECENT_NOP    = 1 << 2;
     public static final int NAVIGATION_HINT_BACK_ALT      = 1 << 3;
+    public static final int NAVIGATION_HINT_RECENT_ALT    = 1 << 4;
 
     private Context mContext;
     private IStatusBarService mService;

@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2011 The Android Open Source Project
+ * Copyright (C) 2012 ParanoidAndroid Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +36,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.provider.Settings;
@@ -52,9 +54,11 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.PopupMenu;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.android.systemui.R;
@@ -64,6 +68,7 @@ import com.android.systemui.statusbar.tablet.StatusBarPanel;
 import com.android.systemui.statusbar.tablet.TabletStatusBar;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 
 public class RecentsPanelView extends FrameLayout implements OnItemClickListener, RecentsCallback,
         StatusBarPanel, Animator.AnimatorListener {
@@ -73,6 +78,7 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
     private View mRecentsScrim;
     private View mRecentsNoApps;
     private ViewGroup mRecentsContainer;
+    private Object mScrollView;
     private StatusBarTouchProxy mStatusBarTouchProxy;
 
     private boolean mShowing;
@@ -81,6 +87,8 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
     private ViewHolder mItemToAnimateInWhenWindowAnimationIsFinished;
     private boolean mWaitingForWindowAnimation;
 
+    private Handler mTaskHandler;
+
     private RecentTasksLoader mRecentTasksLoader;
     private ArrayList<TaskDescription> mRecentTaskDescriptions;
     private TaskDescriptionAdapter mListAdapter;
@@ -88,6 +96,8 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
     private boolean mFitThumbnailToXY;
     private int mRecentItemLayoutId;
     private boolean mHighEndGfx;
+
+    protected static ArrayList<View> mViewContainer = new ArrayList();
 
     public static interface RecentsScrollView {
         public int numItemsInOneScreenful();
@@ -247,6 +257,7 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
 
     public RecentsPanelView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        mTaskHandler = new Handler();
         updateValuesFromResources();
 
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.RecentsPanelView,
@@ -321,16 +332,12 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
 
     private void showImpl(boolean show) {
         sendCloseSystemWindows(mContext, BaseStatusBar.SYSTEM_DIALOG_REASON_RECENT_APPS);
-
         mShowing = show;
 
         if (show) {
             // if there are no apps, bring up a "No recent apps" message
-            boolean noApps = mRecentTaskDescriptions != null
-                    && (mRecentTaskDescriptions.size() == 0);
             mRecentsNoApps.setAlpha(1f);
-            mRecentsNoApps.setVisibility(noApps ? View.VISIBLE : View.INVISIBLE);
-
+            mRecentsNoApps.setVisibility(getTasks() == 0 ? View.VISIBLE : View.INVISIBLE);
             onAnimationEnd(null);
             setFocusable(true);
             setFocusableInTouchMode(true);
@@ -342,6 +349,13 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
                 mPopup.dismiss();
             }
         }
+    }
+
+    public int getTasks() {
+        if(mRecentTaskDescriptions != null) {
+            return mRecentTaskDescriptions.size();
+        }
+        return 0;
     }
 
     public void onUiHidden() {
@@ -562,6 +576,39 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
         }
     }
 
+    public void clearRecentViewList(){
+        new Thread(new Runnable(){
+            public void run(){
+                if(mScrollView instanceof ScrollView){
+                    ((ScrollView) mScrollView).smoothScrollTo(0,0);
+                } else if(mScrollView instanceof HorizontalScrollView) {
+                    ((HorizontalScrollView) mScrollView).smoothScrollTo(0,0);
+                }
+                try{
+                    for (int i = 0; i < mViewContainer.size() - 1; i++){
+                        final View child = mViewContainer.get(i);
+                        mTaskHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                mRecentsContainer.removeViewInLayout(child);
+                            }
+                        });
+
+                        // Add a small delay before of removing next app
+                        Thread.sleep(150);
+                    }
+                } catch (ConcurrentModificationException e){
+                    // User pressed back key before animation finished. This is not
+                    // such a good idea, and we can't deal with it on any other way,
+                    // so we just interrupt the process instead of crashing.
+                } catch (InterruptedException ie){
+                    // User will see the app fading instantly after the previous
+                    // one. This will probably never happen
+                }
+            }
+        }).start();
+    }
+
     public void onTaskLoadingCancelled() {
         // Gets called by RecentTasksLoader when it's cancelled
         if (mRecentTaskDescriptions != null) {
@@ -697,6 +744,7 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
             dismissAndGoBack();
         }
 
+
         // Currently, either direction means the same thing, so ignore direction and remove
         // the task.
         final ActivityManager am = (ActivityManager)
@@ -726,6 +774,10 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
         } else {
             return super.onInterceptTouchEvent(ev);
         }
+    }
+
+    public void setScrollView(Object scrollView){
+        mScrollView = scrollView;
     }
 
     public void handleLongPress(
@@ -761,5 +813,13 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
             }
         });
         popup.show();
+    }
+
+    public void addContainer(View container){
+        mViewContainer.add(container);
+    }
+
+    public void clear(){
+        mViewContainer.clear();
     }
 }

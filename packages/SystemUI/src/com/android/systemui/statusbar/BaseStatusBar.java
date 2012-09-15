@@ -1,6 +1,6 @@
-
 /*
  * Copyright (C) 2010 The Android Open Source Project
+ * Copyright (C) 2012 ParanoidAndroid Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,6 +89,7 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     protected static final int MSG_TOGGLE_RECENTS_PANEL = 1020;
     protected static final int MSG_CLOSE_RECENTS_PANEL = 1021;
+    protected static final int MSG_CLEAR_RECENTS_PANEL = 1028;
     protected static final int MSG_PRELOAD_RECENT_APPS = 1022;
     protected static final int MSG_CANCEL_PRELOAD_RECENT_APPS = 1023;
     protected static final int MSG_OPEN_SEARCH_PANEL = 1024;
@@ -393,6 +394,13 @@ public abstract class BaseStatusBar extends SystemUI implements
     }
 
     @Override
+    public void clearRecentApps() {
+        int msg = MSG_CLEAR_RECENTS_PANEL;
+        mHandler.removeMessages(msg);
+        mHandler.sendEmptyMessage(msg);
+    }
+
+    @Override
     public void preloadRecentApps() {
         int msg = MSG_PRELOAD_RECENT_APPS;
         mHandler.removeMessages(msg);
@@ -466,6 +474,14 @@ public abstract class BaseStatusBar extends SystemUI implements
     }
 
     protected abstract View getStatusBarView();
+
+    protected boolean isRecentAppsVisible() {
+        return RecentsActivity.isActivityShowing();
+    }
+
+    protected int getRecentApps() {
+        return RecentsActivity.getTasks();
+    }
 
     protected void toggleRecentsActivity() {
         try {
@@ -651,24 +667,32 @@ public abstract class BaseStatusBar extends SystemUI implements
                  intent.setPackage("com.android.systemui");
                  mContext.sendBroadcastAsUser(intent, new UserHandle(UserHandle.USER_CURRENT));
                  break;
+            case MSG_CLEAR_RECENTS_PANEL:
+                 if (DEBUG) Slog.d(TAG, "clearing recents panel");
+                 intent = new Intent(RecentsActivity.CLEAR_RECENTS_INTENT);
+                 intent.setClassName("com.android.systemui",
+                        "com.android.systemui.recent.RecentsActivity");
+                 mContext.startActivityAsUser(intent, new UserHandle(
+                        UserHandle.USER_CURRENT));
+                 break;
              case MSG_PRELOAD_RECENT_APPS:
-                  preloadRecentTasksList();
-                  break;
+                 preloadRecentTasksList();
+                 break;
              case MSG_CANCEL_PRELOAD_RECENT_APPS:
-                  cancelPreloadingRecentTasksList();
-                  break;
+                 cancelPreloadingRecentTasksList();
+                 break;
              case MSG_OPEN_SEARCH_PANEL:
-                 if (DEBUG) Slog.d(TAG, "opening search panel");
-                 if (mSearchPanelView != null && mSearchPanelView.isAssistantAvailable()) {
-                     mSearchPanelView.show(true, true);
-                 }
-                 break;
+                if (DEBUG) Slog.d(TAG, "opening search panel");
+                if (mSearchPanelView != null && mSearchPanelView.isAssistantAvailable()) {
+                    mSearchPanelView.show(true, true);
+                }
+                break;
              case MSG_CLOSE_SEARCH_PANEL:
-                 if (DEBUG) Slog.d(TAG, "closing search panel");
-                 if (mSearchPanelView != null && mSearchPanelView.isShowing()) {
-                     mSearchPanelView.show(false, true);
-                 }
-                 break;
+                if (DEBUG) Slog.d(TAG, "closing search panel");
+                if (mSearchPanelView != null && mSearchPanelView.isShowing()) {
+                    mSearchPanelView.show(false, true);
+                }
+                break;
             }
         }
     }
