@@ -2260,6 +2260,13 @@ public final class Settings {
          */
         public static final String POINTER_SPEED = "pointer_speed";
 
+
+        /**
+         * Statusbar State
+         * @hide
+         */
+        public static final String EXPANDED_DESKTOP_STATE = "expanded_desktop_state";
+
         /**	
          * Allows to show the background activity back the lockscreen
          * @hide

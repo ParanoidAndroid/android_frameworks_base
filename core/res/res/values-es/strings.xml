@@ -153,6 +153,9 @@
     <string name="reboot_reboot">Reiniciar</string>
     <string name="reboot_progress">Reiniciando\u2026</string>
     <string name="reboot_confirm">Su dispositivo se reiniciará.</string>
+    <string name="global_action_expanded_desktop">Escritorio expandido</string>
+    <string name="global_action_expanded_desktop_on">Activado</string>
+    <string name="global_action_expanded_desktop_off">Desactivado</string>
     <string name="recent_tasks_title" msgid="3691764623638127888">"Reciente"</string>
     <string name="no_recent_tasks" msgid="8794906658732193473">"No hay aplicaciones recientes."</string>
     <string name="global_actions" product="tablet" msgid="408477140088053665">"Opciones del tablet"</string>
