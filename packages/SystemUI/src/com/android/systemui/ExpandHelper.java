@@ -399,7 +399,6 @@ public class ExpandHelper implements Gefingerpoken, OnClickListener {
                         if (underFocus != null) {
                             startExpanding(underFocus, BLINDS);
                             mInitialTouchY = mLastMotionY;
-                            mHasPopped = false;
                         }
                     }
                 }
@@ -414,6 +413,7 @@ public class ExpandHelper implements Gefingerpoken, OnClickListener {
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
                 if (DEBUG) Slog.d(TAG, "up/cancel");
+                mHasPopped = false;
                 finishExpanding(false);
                 clearView();
                 break;
@@ -469,7 +469,6 @@ public class ExpandHelper implements Gefingerpoken, OnClickListener {
                         finishExpanding(false); // @@@ needed?
                         startExpanding(underFocus, BLINDS);
                         mInitialTouchY = y;
-                        mHasPopped = false;
                     }
                     return true;
                 }
@@ -492,6 +491,7 @@ public class ExpandHelper implements Gefingerpoken, OnClickListener {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 if (DEBUG) Slog.d(TAG, "up/cancel");
+                mHasPopped = false;
                 finishExpanding(false);
                 clearView();
                 break;
@@ -507,6 +507,7 @@ public class ExpandHelper implements Gefingerpoken, OnClickListener {
         mExpanding = true;
         if (DEBUG) Slog.d(TAG, "scale type " + expandType + " beginning on view: " + v);
         mCallback.setUserLockedChild(v, true);
+        setGlow(0f);
         setView(v);
         setGlow(GLOW_BASE);
         mScaler.setView(v);
