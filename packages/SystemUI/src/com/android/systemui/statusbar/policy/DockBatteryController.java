@@ -43,8 +43,8 @@ public class DockBatteryController extends BroadcastReceiver {
     private ArrayList<ImageView> mIconViews = new ArrayList<ImageView>();
     private ArrayList<TextView> mLabelViews = new ArrayList<TextView>();
 
-    private static final int BATTERY_ICON_STYLE_NORMAL      = R.drawable.stat_sys_battery;
-    private static final int BATTERY_ICON_STYLE_CHARGE      = R.drawable.stat_sys_battery_charge;
+    private static final int BATTERY_ICON_STYLE_NORMAL      = R.drawable.stat_sys_kb_battery;
+    private static final int BATTERY_ICON_STYLE_CHARGE      = R.drawable.stat_sys_kb_battery_charge;
 
     private int mLevel;
     private boolean mDockStatus = false;
