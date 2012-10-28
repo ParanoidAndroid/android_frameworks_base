@@ -250,4 +250,10 @@
 
     <!-- The padding of the items of the battery cluster -->
     <dimen name="status_bar_battery_cluster_padding">4dip</dimen>
+
+<!-- Notification Shortcuts -->
+    <dimen name="notification_shortcuts_close_handle_height">26dp</dimen>
+    <dimen name="notification_shortcuts_spacing_height">88dp</dimen>
+    <dimen name="notification_shortcuts_drawer_margin">88dp</dimen>
 </resources>
+
