@@ -162,6 +162,7 @@
     <string name="global_action_bug_report" msgid="7934010578922304799">"Informe de error"</string>
     <string name="bugreport_title" msgid="2667494803742548533">"Crear informe de errores"</string>
     <string name="bugreport_message" msgid="398447048750350456">"Se recopilará información sobre el estado actual de tu dispositivo, que se enviará por correo electrónico. Pasarán unos minutos desde que se inicie el informe de errores hasta que se envíe, por lo que te recomendamos que tengas paciencia."</string>
+    <string name="global_action_reboot">Reiniciar</string>
     <string name="global_action_toggle_silent_mode" msgid="8219525344246810925">"Modo silencio"</string>
     <string name="global_action_silent_mode_on_status" msgid="3289841937003758806">"El sonido está desactivado. Activar"</string>
     <string name="global_action_silent_mode_off_status" msgid="1506046579177066419">"El sonido está activado. Desactivar"</string>
