@@ -314,6 +314,33 @@
          shutdown_confirm when the system is configured to use long press to go directly to the
          power off dialog instead of the global actions menu. -->
     <string name="shutdown_confirm_question">Do you want to shut down?</string>
+    
+    <!-- Title of dialog to confirm rebooting into safe mode. [CHAR LIMIT=50] -->
+    <string name="reboot_safemode_title">Reboot to safe mode</string>
+
+    <!-- Shutdown Confirmation Dialog.  Message in the confirmation dialog
+         when the user asks to reboot into safe mode. [CHAR LIMIT=NONE] -->
+    <string name="reboot_safemode_confirm">Do you want to reboot into safe mode?
+         This will disable all third party applications you have installed.
+         They will be restored when you reboot again.</string>
+         
+    <!-- Button to reboot the phone, within the Reboot Options dialog -->
+    <string name="reboot_reboot">Reboot</string>
+    <!-- Button to reboot the phone into recovery, within the Reboot Options dialog -->
+    <string name="reboot_recovery">Recovery</string>
+    <!-- Button to reboot the phone into bootloader, within the Reboot Options dialog -->
+    <string name="reboot_bootloader">Bootloader</string>
+    <!-- Button to reboot the phone into bootmenu, within the Reboot Options dialog -->
+    <string name="reboot_bootmenu">Bootmenu</string>
+    <!-- Button to reboot the phone into fastboot, within the Reboot Options dialog -->
+    <string name="reboot_fastboot">Fastboot</string>
+    <!-- Button to reboot the phone into download, within the Reboot Options dialog -->
+    <string name="reboot_download">Download</string>
+
+    <!-- Reboot Progress Dialog. This is shown if the user chooses to reboot the phone. -->
+    <string name="reboot_progress">Rebooting\u2026</string>
+    <!-- Reboot Confirmation Dialog.  When the user chooses to reboot the phone, there will be a confirmation dialog.  This is the message. -->
+    <string name="reboot_confirm">Your device will reboot.</string>
 
     <!-- Recent Tasks dialog: title
      TODO: this should move to SystemUI.apk, but the code for the old
@@ -3982,39 +4009,5 @@
     <string name="user_switched">Current user <xliff:g id="name" example="Bob">%1$s</xliff:g>.</string>
     <!-- Default name of the owner user [CHAR LIMIT=20] -->
     <string name="owner_name" msgid="3879126011135546571">Owner</string>
-
-<!-- Title of dialog to confirm rebooting into safe mode. [CHAR LIMIT=50] -->
-    <string name="reboot_safemode_title">Reboot to safe mode</string>
-
-    <!-- Shutdown Confirmation Dialog.  Message in the confirmation dialog
-         when the user asks to reboot into safe mode. [CHAR LIMIT=NONE] -->
-    <string name="reboot_safemode_confirm">Do you want to reboot into safe mode?
-         This will disable all third party applications you have installed.
-         They will be restored when you reboot again.</string>
-
-    <!-- ===============================================================
-     Resources added in Paranoid Android (PA 3.0)
-     =============================================================== -->
-    <!-- Button to reboot the phone, within the Phone Options dialog -->
-    <string name="reboot_system" product="tablet">Reboot tablet</string>
-    <string name="reboot_system" product="default">Reboot phone</string>
-    <!-- Reboot Progress Dialog. This is shown if the user chooses to reboot the phone. -->
-    <!-- Button to reboot the phone, within the Reboot Options dialog -->
-    <string name="reboot_reboot">Reboot</string>
-    <!-- Button to reboot the phone into recovery, within the Reboot Options dialog -->
-    <string name="reboot_recovery">Recovery</string>
-    <!-- Button to reboot the phone into bootloader, within the Reboot Options dialog -->
-    <string name="reboot_bootloader">Bootloader</string>
-    <!-- Button to reboot the phone into bootmenu, within the Reboot Options dialog -->
-    <string name="reboot_bootmenu">Bootmenu</string>
-    <!-- Button to reboot the phone into fastboot, within the Reboot Options dialog -->
-    <string name="reboot_fastboot">Fastboot</string>
-    <!-- Button to reboot the phone into download, within the Reboot Options dialog -->
-    <string name="reboot_download">Download</string>
-
-    <!-- Reboot Progress Dialog. This is shown if the user chooses to reboot the phone. -->
-    <string name="reboot_progress">Rebooting\u2026</string>
-    <!-- Reboot Confirmation Dialog.  When the user chooses to reboot the phone, there will be a confirmation dialog.  This is the message. -->
-    <string name="reboot_confirm">Your device will reboot.</string>
 
 </resources>
