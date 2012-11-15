@@ -146,7 +146,7 @@ public final class ShutdownThread extends Thread {
                         .setPositiveButton(com.android.internal.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 mReboot = true;
-                                beginShutdownSequence(context);
+                                beginShutdownSequence(context,true);
                             }
                         })
                         .setNegativeButton(com.android.internal.R.string.no, new DialogInterface.OnClickListener() {
@@ -173,7 +173,7 @@ public final class ShutdownThread extends Thread {
                         .setMessage(resourceId)
                         .setPositiveButton(com.android.internal.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
-                                beginShutdownSequence(context);
+                                beginShutdownSequence(context,false);
                             }
                         })
                         .setNegativeButton(com.android.internal.R.string.no, null)
@@ -186,7 +186,7 @@ public final class ShutdownThread extends Thread {
             dialog.show();
 
         } else {
-            beginShutdownSequence(context);
+            beginShutdownSequence(context,false);
         }
     }
 
@@ -241,7 +241,7 @@ public final class ShutdownThread extends Thread {
         shutdownInner(context, confirm);
     }
 
-    private static void beginShutdownSequence(Context context) {
+    private static void beginShutdownSequence(Context context,boolean isReboot) {
         synchronized (sIsStartedGuard) {
             if (sIsStarted) {
                 Log.d(TAG, "Shutdown sequence already running, returning.");
@@ -254,7 +254,10 @@ public final class ShutdownThread extends Thread {
         // shutting down.
         ProgressDialog pd = new ProgressDialog(context);
         pd.setTitle(context.getText(com.android.internal.R.string.power_off));
-        pd.setMessage(context.getText(com.android.internal.R.string.shutdown_progress));
+        if(isReboot)
+              pd.setMessage(context.getText(com.android.internal.R.string.reboot_progress));
+        else
+             pd.setMessage(context.getText(com.android.internal.R.string.shutdown_progress));
         pd.setIndeterminate(true);
         pd.setCancelable(false);
         pd.getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG);
