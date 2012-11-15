@@ -2028,4 +2028,17 @@
   <public type="style" name="Widget.DeviceDefault.CheckedTextView" id="0x010301db" />
   <public type="style" name="Widget.DeviceDefault.Light.CheckedTextView" id="0x010301dc" />
 
+<!-- ===============================================================
+     Resources added in Paranoid Android (PA 3.0)
+     =============================================================== -->
+
+  <!-- Power menu -->
+  <public type="array" name="shutdown_reboot_options" />
+  <public type="array" name="shutdown_reboot_actions" />
+  <public type="drawable" name="ic_lock_reboot" />
+  <public type="string" name="global_action_reboot" />
+  <public type="string" name="global_actions" />
+  <public type="string" name="reboot_system" />
+  <public type="string" name="reboot_progress" />
+
 </resources>
