@@ -32,8 +32,8 @@ import android.view.View;
 import android.view.WindowManager;
 
 import com.android.systemui.R;
-import com.android.systemui.statusbar.tablet.StatusBarPanel;
 import com.android.systemui.statusbar.phone.NavigationCallback;
+import com.android.systemui.statusbar.tablet.StatusBarPanel;
 
 import java.util.List;
 
@@ -104,11 +104,11 @@ public class RecentsActivity extends Activity {
 
     @Override
     public void onStop() {
-        setRecentHints();
         mShowing = false;
         if (mRecentsPanel != null) {
             mRecentsPanel.onUiHidden();
         }
+        setRecentHints();
         super.onStop();
     }
 
@@ -126,16 +126,17 @@ public class RecentsActivity extends Activity {
     }
 
     public void setRecentHints() {
+        // Check if we need to enable alternate drawable
+        // for recent apps key
         int mNavigationIconHints = mCallback.getNavigationIconHints();
-        mCallback.setNavigationIconHints(
-                !isActivityShowing() && getTasks() > 1 ? (mNavigationIconHints
+        mCallback.setNavigationIconHints(NavigationCallback.NAVBAR_RECENTS_HINT,
+                isActivityShowing() && !isEmpty() ? (mNavigationIconHints
                 | StatusBarManager.NAVIGATION_HINT_RECENT_ALT)
-                : (mNavigationIconHints & ~StatusBarManager.NAVIGATION_HINT_RECENT_ALT));
+                : (mNavigationIconHints & ~StatusBarManager.NAVIGATION_HINT_RECENT_ALT), false);
     }
 
     @Override
     public void onStart() {
-        setRecentHints();
         // Hide wallpaper if it's not a static image
         if (forceOpaqueBackground(this)) {
             updateWallpaperVisibility(false);
@@ -146,6 +147,7 @@ public class RecentsActivity extends Activity {
         if (mRecentsPanel != null) {
             mRecentsPanel.refreshViews();
         }
+        setRecentHints();
         super.onStart();
     }
 
@@ -245,10 +247,10 @@ public class RecentsActivity extends Activity {
                 }
             }
         } else if (CLEAR_RECENTS_INTENT.equals(action)) {
-                if (mRecentsPanel != null) {
-                    mRecentsPanel.clearRecentViewList();
-                }
+            if (mRecentsPanel != null) {
+                mRecentsPanel.clearRecentViewList();
             }
+        }
     }
 
     boolean isForeground() {
@@ -259,8 +261,8 @@ public class RecentsActivity extends Activity {
         mCallback = callback;
     }
 
-    public static int getTasks() {
-        return mRecentsPanel.getTasks();
+    public static boolean isEmpty() {
+        return mRecentsPanel.isRecentTasksEmpty();
     }
 
     public static boolean isActivityShowing() {

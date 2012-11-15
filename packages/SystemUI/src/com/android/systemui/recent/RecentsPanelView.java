@@ -337,7 +337,7 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
         if (show) {
             // if there are no apps, bring up a "No recent apps" message
             mRecentsNoApps.setAlpha(1f);
-            mRecentsNoApps.setVisibility(getTasks() == 0 ? View.VISIBLE : View.INVISIBLE);
+            mRecentsNoApps.setVisibility(isRecentTasksEmpty() ? View.VISIBLE : View.INVISIBLE);
             onAnimationEnd(null);
             setFocusable(true);
             setFocusableInTouchMode(true);
@@ -351,11 +351,9 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
         }
     }
 
-    public int getTasks() {
-        if(mRecentTaskDescriptions != null) {
-            return mRecentTaskDescriptions.size();
-        }
-        return 0;
+    public boolean isRecentTasksEmpty() {
+        return (mRecentTaskDescriptions != null &&
+                mRecentTaskDescriptions.size() == 0);
     }
 
     public void onUiHidden() {
@@ -585,8 +583,13 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
                     ((HorizontalScrollView) mScrollView).smoothScrollTo(0,0);
                 }
                 try{
-                    for (int i = 0; i < mViewContainer.size() - 1; i++){
-                        final View child = mViewContainer.get(i);
+                    int tasks = mViewContainer.size();
+                    View[] views = mViewContainer.toArray(new View[tasks]);
+                    // if we have more than one app, don't kill the current one
+                    if(tasks > 1) tasks--;
+                    for (int i = 0; i < tasks; i++){
+                        final View child = views[i];
+                        mViewContainer.remove(child);
                         mTaskHandler.post(new Runnable() {
                             @Override
                             public void run() {
@@ -600,7 +603,7 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
                 } catch (ConcurrentModificationException e){
                     // User pressed back key before animation finished. This is not
                     // such a good idea, and we can't deal with it on any other way,
-                    // so we just interrupt the process instead of crashing.
+                    // so we just interrupt the process instead of crashing
                 } catch (InterruptedException ie){
                     // User will see the app fading instantly after the previous
                     // one. This will probably never happen
@@ -743,7 +746,6 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
         if (mRecentTaskDescriptions.size() == 0) {
             dismissAndGoBack();
         }
-
 
         // Currently, either direction means the same thing, so ignore direction and remove
         // the task.

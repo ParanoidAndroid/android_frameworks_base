@@ -716,7 +716,7 @@ public class PhoneStatusBar extends BaseStatusBar {
 
     private View.OnClickListener mRecentsClickListener = new View.OnClickListener() {
         public void onClick(View v) {
-            if(isRecentAppsVisible() && getRecentApps() > 1) {
+            if(isRecentAppsVisible() && !isRecentAppsEmpty()) {
                 clearRecentApps();
             } else {
                 toggleRecentApps();
