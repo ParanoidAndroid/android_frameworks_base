@@ -134,13 +134,16 @@ public final class ShutdownThread extends Thread {
                         .setTitle(com.android.internal.R.string.reboot_system)
                         .setSingleChoiceItems(com.android.internal.R.array.shutdown_reboot_options, 0, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
-                                if (which < 0)
+                                if (which < 0) {
                                     return;
+                                }
+                                
 
                                 String actions[] = context.getResources().getStringArray(com.android.internal.R.array.shutdown_reboot_actions);
 
-                                if (actions != null && which < actions.length)
+                                if (actions != null && which < actions.length) {
                                     mRebootReason = actions[which];
+                                }
                             }
                         })
                         .setPositiveButton(com.android.internal.R.string.yes, new DialogInterface.OnClickListener() {
@@ -253,7 +256,7 @@ public final class ShutdownThread extends Thread {
         // throw up an indeterminate system dialog to indicate radio is
         // shutting down.
         ProgressDialog pd = new ProgressDialog(context);
-        pd.setTitle(context.getText(isReboot ? om.android.internal.R.string.reboot_reboot :
+        pd.setTitle(context.getText(isReboot ? com.android.internal.R.string.reboot_system :
                 com.android.internal.R.string.power_off));
         pd.setMessage(context.getText(isReboot ? com.android.internal.R.string.reboot_progress :
                 com.android.internal.R.string.shutdown_progress));
