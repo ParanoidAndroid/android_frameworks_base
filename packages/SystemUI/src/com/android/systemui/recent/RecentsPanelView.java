@@ -74,7 +74,6 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
     private View mRecentsScrim;
     private View mRecentsNoApps;
     private ViewGroup mRecentsContainer;
-    private Object mScrollView;
     private StatusBarTouchProxy mStatusBarTouchProxy;
 
     private boolean mShowing;
@@ -733,10 +732,6 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
         } else {
             return super.onInterceptTouchEvent(ev);
         }
-    }
-
-    public void setScrollView(Object scrollView){
-        mScrollView = scrollView;
     }
 
     public void handleLongPress(

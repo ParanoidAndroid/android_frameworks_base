@@ -94,7 +94,7 @@ public class RecentsActivity extends Activity {
 
     @Override
     public void onPause() {
-        setRecentHints();
+        if(!mRecentsPanel.isShowing()) setRecentHints(false);
         overridePendingTransition(
                 R.anim.recents_return_to_launcher_enter,
                 R.anim.recents_return_to_launcher_exit);
@@ -108,7 +108,6 @@ public class RecentsActivity extends Activity {
         if (mRecentsPanel != null) {
             mRecentsPanel.onUiHidden();
         }
-        setRecentHints();
         super.onStop();
     }
 
@@ -125,14 +124,14 @@ public class RecentsActivity extends Activity {
         return WallpaperManager.getInstance(context).getWallpaperInfo() != null;
     }
 
-    public void setRecentHints() {
+    public void setRecentHints(boolean alt) {
         // Check if we need to enable alternate drawable
         // for recent apps key
         int mNavigationIconHints = mCallback.getNavigationIconHints();
         mCallback.setNavigationIconHints(NavigationCallback.NAVBAR_RECENTS_HINT,
-                isActivityShowing() && !isEmpty() ? (mNavigationIconHints
+                alt && !isEmpty() ? (mNavigationIconHints
                 | StatusBarManager.NAVIGATION_HINT_RECENT_ALT)
-                : (mNavigationIconHints & ~StatusBarManager.NAVIGATION_HINT_RECENT_ALT), false);
+                : (mNavigationIconHints & ~StatusBarManager.NAVIGATION_HINT_RECENT_ALT), true);
     }
 
     @Override
@@ -144,10 +143,10 @@ public class RecentsActivity extends Activity {
             updateWallpaperVisibility(true);
         }
         mShowing = true;
+        setRecentHints(true);
         if (mRecentsPanel != null) {
             mRecentsPanel.refreshViews();
         }
-        setRecentHints();
         super.onStart();
     }
 
