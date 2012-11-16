@@ -94,7 +94,7 @@ public class RecentsActivity extends Activity {
 
     @Override
     public void onPause() {
-        if(!mRecentsPanel.isShowing()) setRecentHints(false);
+        setRecentHints(false);
         overridePendingTransition(
                 R.anim.recents_return_to_launcher_enter,
                 R.anim.recents_return_to_launcher_exit);
@@ -143,7 +143,6 @@ public class RecentsActivity extends Activity {
             updateWallpaperVisibility(true);
         }
         mShowing = true;
-        setRecentHints(true);
         if (mRecentsPanel != null) {
             mRecentsPanel.refreshViews();
         }
@@ -152,6 +151,7 @@ public class RecentsActivity extends Activity {
 
     @Override
     public void onResume() {
+        setRecentHints(true);
         mForeground = true;
         super.onResume();
     }
