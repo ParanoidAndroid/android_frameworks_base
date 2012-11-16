@@ -51,7 +51,7 @@ import com.android.systemui.statusbar.BaseStatusBar;
 import com.android.systemui.statusbar.DelegateViewHelper;
 import com.android.systemui.statusbar.policy.DeadZone;
 
-public class NavigationBarView extends LinearLayout implements NavigationCallback {
+public class NavigationBarView extends LinearLayout {
     final static boolean DEBUG = false;
     final static String TAG = "PhoneStatusBar/NavigationBarView";
 
@@ -61,6 +61,9 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
     final static boolean SLIPPERY_WHEN_DISABLED= true;
 
     final static boolean ANIMATE_HIDE_TRANSITION = false; // turned off because it introduces unsightly delay when videos goes to full screen
+
+    public final static int NAVBAR_BACK_HINT = 0;
+    public final static int NAVBAR_RECENTS_HINT = 1;
 
     protected IStatusBarService mBarService;
     final Display mDisplay;
@@ -172,8 +175,6 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         mShowMenu = false;
         mDelegateHelper = new DelegateViewHelper(this);
 
-        RecentsActivity.setCallback(this);
-
         mBackIcon = res.getDrawable(R.drawable.ic_sysbar_back);
         mBackLandIcon = res.getDrawable(R.drawable.ic_sysbar_back_land);
         mBackAltIcon = res.getDrawable(R.drawable.ic_sysbar_back_ime);
@@ -208,11 +209,11 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
     };
 
     public void setNavigationIconHints(int hints) {
-        setNavigationIconHints(NavigationCallback.NAVBAR_BACK_HINT, hints, false);
+        setNavigationIconHints(NAVBAR_BACK_HINT, hints, false);
     }
 
     public void setNavigationIconHints(int hints, boolean force) {
-        setNavigationIconHints(NavigationCallback.NAVBAR_BACK_HINT, hints, force);
+        setNavigationIconHints(NAVBAR_BACK_HINT, hints, force);
     }
 
     public void setNavigationIconHints(int button, int hints, boolean force) {
@@ -233,12 +234,12 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         getRecentsButton().setAlpha(
             (0 != (hints & StatusBarManager.NAVIGATION_HINT_RECENT_NOP)) ? 0.5f : 1.0f);
 
-        if(button == NavigationCallback.NAVBAR_BACK_HINT) {
+        if(button == NAVBAR_BACK_HINT) {
             ((ImageView)getBackButton()).setImageDrawable(
                 (0 != (hints & StatusBarManager.NAVIGATION_HINT_BACK_ALT))
                     ? (mVertical ? mBackAltLandIcon : mBackAltIcon)
                     : (mVertical ? mBackLandIcon : mBackIcon));
-        } else if (button == NavigationCallback.NAVBAR_RECENTS_HINT) {
+        } else if (button == NAVBAR_RECENTS_HINT) {
             ((ImageView)getRecentsButton()).setImageDrawable(
                 (0 != (hints & StatusBarManager.NAVIGATION_HINT_RECENT_ALT))
                     ? (mVertical ? mRecentsAltLandIcon : mRecentsAltIcon)

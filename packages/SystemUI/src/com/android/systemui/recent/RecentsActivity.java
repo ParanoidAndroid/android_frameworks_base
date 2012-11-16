@@ -32,7 +32,7 @@ import android.view.View;
 import android.view.WindowManager;
 
 import com.android.systemui.R;
-import com.android.systemui.statusbar.phone.NavigationCallback;
+import com.android.systemui.statusbar.phone.NavigationBarView;
 import com.android.systemui.statusbar.tablet.StatusBarPanel;
 
 import java.util.List;
@@ -48,7 +48,7 @@ public class RecentsActivity extends Activity {
     public static final String WAITING_FOR_WINDOW_ANIMATION_PARAM = "com.android.systemui.recent.WAITING_FOR_WINDOW_ANIMATION";
     private static final String WAS_SHOWING = "was_showing";
 
-    private static NavigationCallback mCallback;
+    private static NavigationBarView mNavigationBarView;
     private static RecentsPanelView mRecentsPanel;
     private static boolean mShowing;
     private IntentFilter mIntentFilter;
@@ -127,8 +127,9 @@ public class RecentsActivity extends Activity {
     public void setRecentHints(boolean alt) {
         // Check if we need to enable alternate drawable
         // for recent apps key
-        int mNavigationIconHints = mCallback.getNavigationIconHints();
-        mCallback.setNavigationIconHints(NavigationCallback.NAVBAR_RECENTS_HINT,
+        if(mNavigationBarView == null) return; // FIXME: Add multiuser support
+        int mNavigationIconHints = mNavigationBarView.getNavigationIconHints();
+        mNavigationBarView.setNavigationIconHints(NavigationBarView.NAVBAR_RECENTS_HINT,
                 alt && !isEmpty() ? (mNavigationIconHints
                 | StatusBarManager.NAVIGATION_HINT_RECENT_ALT)
                 : (mNavigationIconHints & ~StatusBarManager.NAVIGATION_HINT_RECENT_ALT), true);
@@ -256,8 +257,8 @@ public class RecentsActivity extends Activity {
         return mForeground;
     }
 
-    public static void setCallback(NavigationCallback callback) {
-        mCallback = callback;
+    public static void setNavigationBarView(NavigationBarView nav) {
+        mNavigationBarView = nav;
     }
 
     public static boolean isEmpty() {
