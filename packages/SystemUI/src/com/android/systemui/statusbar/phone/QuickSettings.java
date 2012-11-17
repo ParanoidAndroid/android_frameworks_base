@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2012 The Android Open Source Project
+ * This code has been modified. Portions copyright (C) 2012, ParanoidAndroid Project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +56,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LevelListDrawable;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.WifiDisplayStatus;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.RemoteException;
@@ -68,6 +70,7 @@ import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
@@ -90,6 +93,7 @@ class QuickSettings {
     private QuickSettingsModel mModel;
     private ViewGroup mContainerView;
 
+    private BluetoothAdapter mBluetoothAdapter;
     private DisplayManager mDisplayManager;
     private WifiDisplayStatus mWifiDisplayStatus;
     private PhoneStatusBar mStatusBarService;
@@ -97,6 +101,9 @@ class QuickSettings {
 
     private BrightnessController mBrightnessController;
     private BluetoothController mBluetoothController;
+
+    private int mWifiState = WifiManager.WIFI_STATE_UNKNOWN;
+    private int mAdapterState = BluetoothAdapter.STATE_OFF;
 
     private Dialog mBrightnessDialog;
     private int mBrightnessDialogShortTimeout;
@@ -397,7 +404,14 @@ class QuickSettings {
         wifiTile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+               changeWifiState(!isWifiOn(mContext));
+            }
+        });
+        wifiTile.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
                 startSettingsActivity(android.provider.Settings.ACTION_WIFI_SETTINGS);
+                return true;
             }
         });
         mModel.addWifiTile(wifiTile, new QuickSettingsModel.RefreshCallback() {
@@ -541,10 +555,21 @@ class QuickSettings {
             QuickSettingsTileView bluetoothTile = (QuickSettingsTileView)
                     inflater.inflate(R.layout.quick_settings_tile, parent, false);
             bluetoothTile.setContent(R.layout.quick_settings_tile_bluetooth, inflater);
+            mBluetoothAdapter =  BluetoothAdapter.getDefaultAdapter();
             bluetoothTile.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                  if(mBluetoothAdapter.isEnabled())
+                        mBluetoothAdapter.disable();
+                    else
+                        mBluetoothAdapter.enable(); 
+                }
+            });
+            bluetoothTile.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
                     startSettingsActivity(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS);
+                    return true;
                 }
             });
             mModel.addBluetoothTile(bluetoothTile, new QuickSettingsModel.RefreshCallback() {
@@ -875,6 +900,45 @@ class QuickSettings {
             }
         }
     };
+
+    public boolean isWifiOn(Context context) {
+        WifiManager wifiManager = (WifiManager) context
+                .getSystemService(Context.WIFI_SERVICE);
+        if (wifiManager != null) {
+            switch (wifiManager.getWifiState()) {
+                case WifiManager.WIFI_STATE_ENABLED:
+                case WifiManager.WIFI_STATE_ENABLING:
+                    Log.d("isWifion", "true");
+                    return true;
+                default:
+                Log.d("isWifion", "false");
+                    return false;
+            }
+        }
+        return false;
+    }
+
+    private void changeWifiState(final boolean desiredState) {
+        final WifiManager wifiManager = (WifiManager) mContext
+                .getSystemService(Context.WIFI_SERVICE);
+        if (wifiManager == null) {
+            Log.d("WifiButton", "No wifiManager.");
+            return;
+        }
+
+        AsyncTask.execute(new Runnable() {
+            public void run() {
+                int wifiApState = wifiManager.getWifiApState();
+                if (desiredState
+                        && ((wifiApState == WifiManager.WIFI_AP_STATE_ENABLING) || (wifiApState == WifiManager.WIFI_AP_STATE_ENABLED))) {
+                    wifiManager.setWifiApEnabled(null, false);
+                }
+
+                wifiManager.setWifiEnabled(desiredState);
+                return;
+            }
+        });
+    }
 
     private final BroadcastReceiver mProfileReceiver = new BroadcastReceiver() {
         @Override
