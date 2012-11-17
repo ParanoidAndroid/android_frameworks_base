@@ -1497,9 +1497,6 @@
        a ListView). -->
   <public type="layout" name="simple_list_item_activated_2" id="0x01090017" />
 
-  <!-- Simple color dialog layout. -->
-  <public type="layout" name="dialog_color_picker" id="0x01090018" />
-
   <public type="drawable" name="dialog_holo_dark_frame" id="0x010800b2" />
   <public type="drawable" name="dialog_holo_light_frame" id="0x010800b3" />
 
@@ -2038,10 +2035,6 @@
   <!-- Power menu -->
   <public type="array" name="shutdown_reboot_options" />
   <public type="array" name="shutdown_reboot_actions" />
-  <public type="id" name="color_picker_view" />
-  <public type="id" name="old_color_panel" />
-  <public type="id" name="new_color_panel" />
-  <public type="id" name="hex" />
   <public type="drawable" name="ic_lock_reboot" />
   <public type="drawable" name="ic_lock_expanded_desktop" />
   <public type="string" name="global_actions" />
@@ -2051,5 +2044,12 @@
   <public type="string" name="global_action_expanded_desktop_on" />
   <public type="string" name="reboot_system" />
   <public type="string" name="reboot_progress" />
+
+  <!-- Simple color dialog layout. -->
+  <public type="layout" name="dialog_color_picker" id="0x01090018" />
+  <public type="id" name="color_picker_view" />
+  <public type="id" name="old_color_panel" />
+  <public type="id" name="new_color_panel" />
+  <public type="id" name="hex" />
 
 </resources>
