@@ -559,10 +559,11 @@ class QuickSettings {
             bluetoothTile.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                  if(mBluetoothAdapter.isEnabled())
+                    if(mBluetoothAdapter.isEnabled()) {
                         mBluetoothAdapter.disable();
-                    else
+                    } else {
                         mBluetoothAdapter.enable(); 
+                    }
                 }
             });
             bluetoothTile.setOnLongClickListener(new View.OnLongClickListener() {
@@ -908,10 +909,8 @@ class QuickSettings {
             switch (wifiManager.getWifiState()) {
                 case WifiManager.WIFI_STATE_ENABLED:
                 case WifiManager.WIFI_STATE_ENABLING:
-                    Log.d("isWifion", "true");
                     return true;
                 default:
-                Log.d("isWifion", "false");
                     return false;
             }
         }
@@ -922,20 +921,19 @@ class QuickSettings {
         final WifiManager wifiManager = (WifiManager) mContext
                 .getSystemService(Context.WIFI_SERVICE);
         if (wifiManager == null) {
-            Log.d("WifiButton", "No wifiManager.");
             return;
         }
 
         AsyncTask.execute(new Runnable() {
             public void run() {
                 int wifiApState = wifiManager.getWifiApState();
-                if (desiredState
-                        && ((wifiApState == WifiManager.WIFI_AP_STATE_ENABLING) || (wifiApState == WifiManager.WIFI_AP_STATE_ENABLED))) {
+                if (desiredState && ((wifiApState == WifiManager.
+                        WIFI_AP_STATE_ENABLING) || (wifiApState == WifiManager.
+                        WIFI_AP_STATE_ENABLED))) {
                     wifiManager.setWifiApEnabled(null, false);
                 }
 
                 wifiManager.setWifiEnabled(desiredState);
-                return;
             }
         });
     }
