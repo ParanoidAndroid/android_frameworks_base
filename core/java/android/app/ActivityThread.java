@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2006 The Android Open Source Project
+ * This code has been modified.  Portions copyright (C) 2012, ParanoidAndroid Project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,9 +70,12 @@ import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
+import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.AndroidRuntimeException;
 import android.util.DisplayMetrics;
 import android.util.EventLog;
+import android.util.ExtendedPropertiesUtils;
 import android.util.Log;
 import android.util.LogPrinter;
 import android.util.PrintWriterPrinter;
@@ -1683,12 +1687,14 @@ public final class ActivityThread {
         //}
 
         AssetManager assets = new AssetManager();
+        assets.overrideHook(resDir, ExtendedPropertiesUtils.OverrideMode.FullNameExclude);
         if (assets.addAssetPath(resDir) == 0) {
             return null;
         }
 
         //Slog.i(TAG, "Resource: key=" + key + ", display metrics=" + metrics);
         DisplayMetrics dm = getDisplayMetricsLocked(displayId, null);
+        dm.overrideHook(assets, ExtendedPropertiesUtils.OverrideMode.ExtendedProperties);
         Configuration config;
         boolean isDefaultDisplay = (displayId == Display.DEFAULT_DISPLAY);
         if (!isDefaultDisplay || key.mOverrideConfiguration != null) {
@@ -2729,6 +2735,44 @@ public final class ActivityThread {
                     deliverResults(r, r.pendingResults);
                     r.pendingResults = null;
                 }
+
+                // Per-App-Extras
+                if (ExtendedPropertiesUtils.isInitialized()) {
+                    try {
+                        for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
+                            // Fetch defaults
+                            String setting = Settings.System.getString(r.activity.getContentResolver(),
+                                    ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i]);
+
+                            String[] colors = (setting == null || setting.equals("") ?
+                                   ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[i] : setting).split(
+                                   ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
+
+                            // Sanity check
+                            if (colors.length != 3) {
+                                colors = ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[i].split(
+                                       ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
+                                Settings.System.putString(r.activity.getContentResolver(),
+                                       ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
+                                       ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[i]);
+                            }
+
+                            // Change color
+                            String currentColor = colors[Integer.parseInt(colors[2])];
+                            String appColor = ExtendedPropertiesUtils.mGlobalHook.colors[i];
+                            String nextColor = appColor == null ? colors[0] : appColor;
+
+                            if (nextColor != currentColor) {
+                                Settings.System.putString(r.activity.getContentResolver(),
+                                       ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
+                                       colors[0] + "|" + nextColor + "|1");
+                            }
+                        }
+                    } catch (Exception e) {
+                        // Current application is null, or hook is not set
+                    }
+                }
+
                 r.activity.performResume();
 
                 EventLog.writeEvent(LOG_ON_RESUME_CALLED,
@@ -4147,6 +4191,8 @@ public final class ActivityThread {
     private void handleBindApplication(AppBindData data) {
         mBoundApplication = data;
         mConfiguration = new Configuration(data.config);
+        mConfiguration.active = true;
+        mConfiguration.overrideHook(data.processName, ExtendedPropertiesUtils.OverrideMode.PackageName);
         mCompatConfiguration = new Configuration(data.config);
 
         mProfiler = new Profiler();
@@ -4960,6 +5006,7 @@ public final class ActivityThread {
         HardwareRenderer.disable(true);
         ActivityThread thread = new ActivityThread();
         thread.attach(true);
+        ContextImpl.init(thread);
         return thread;
     }
 
@@ -5024,6 +5071,7 @@ public final class ActivityThread {
 
         ActivityThread thread = new ActivityThread();
         thread.attach(false);
+        ContextImpl.init(thread);
 
         if (sMainThreadHandler == null) {
             sMainThreadHandler = thread.getHandler();

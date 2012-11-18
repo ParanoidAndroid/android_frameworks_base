@@ -2260,6 +2260,46 @@ public final class Settings {
          */
         public static final String POINTER_SPEED = "pointer_speed";
 
+         /**
+         * Ability to change navigation bar color
+         * Format: AARRGGBB|AARRGGBB|index
+         * First color is the primary, systemwide color
+         * Second is the color of the current foreground-app
+         * Last (third) entry determines which has changed last, 0 or 1
+         * @hide
+         */
+        public static final String NAV_BAR_COLOR = "nav_bar_color";
+
+         /**
+         * Ability to change navigation button color
+         * Format: AARRGGBB|AARRGGBB|index
+         * First color is the primary, systemwide color
+         * Second is the color of the current foreground-app
+         * Last (third) entry determines which has changed last, 0 or 1
+         * @hide
+         */
+        public static final String NAV_BUTTON_COLOR = "nav_button_color";
+
+         /**
+         * Widget Buttons to Use
+         * Ability to change navigation glow color
+         * Format: AARRGGBB|AARRGGBB|index
+         * First color is the primary, systemwide color
+         * Second is the color of the current foreground-app
+         * Last (third) entry determines which has changed last, 0 or 1
+         * @hide
+         */
+        public static final String NAV_GLOW_COLOR = "nav_glow_color";
+
+        /**
+         * Statusbar color. May include alpha
+         * Format: AARRGGBB|AARRGGBB|index
+         * First color is the primary, systemwide color
+         * Second is the color of the current foreground-app
+         * Last (third) entry determines which has changed last, 0 or 1
+         * @hide
+         */
+        public static final String STATUS_BAR_COLOR = "status_bar_color";
 
         /**
          * Statusbar State
@@ -2339,6 +2379,19 @@ public final class Settings {
             SIP_RECEIVE_CALLS,
             POINTER_SPEED,
             VIBRATE_WHEN_RINGING
+        };
+
+        /**
+         * Insecure settings can be set on any context, without any
+         * importance of permission level
+         *
+         * @hide
+         */
+        public static final String[] INSECURE_SETTINGS = {
+            NAV_BAR_COLOR,
+            NAV_BUTTON_COLOR,
+            NAV_GLOW_COLOR,
+            STATUS_BAR_COLOR
         };
 
         // Settings moved to Settings.Secure
