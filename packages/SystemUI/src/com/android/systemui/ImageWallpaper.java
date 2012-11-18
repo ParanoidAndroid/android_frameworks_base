@@ -111,8 +111,8 @@ public class ImageWallpaper extends WallpaperService {
         Bitmap mBackground;
         int mLastSurfaceWidth = -1, mLastSurfaceHeight = -1;
         int mLastRotation = -1;
-        float mXOffset;
-        float mYOffset;
+        final float mXOffset = 0;
+        final float mYOffset = 0;
 
         boolean mVisible = true;
         boolean mRedrawNeeded;
@@ -265,8 +265,6 @@ public class ImageWallpaper extends WallpaperService {
                     if (DEBUG) {
                         Log.d(TAG, "Offsets changed to (" + xOffset + "," + yOffset + ").");
                     }
-                    mXOffset = xOffset;
-                    mYOffset = yOffset;
                     mOffsetsChanged = true;
                 }
                 drawFrameLocked();
