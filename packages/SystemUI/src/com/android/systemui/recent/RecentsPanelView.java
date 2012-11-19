@@ -335,6 +335,8 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
         sendCloseSystemWindows(mContext, BaseStatusBar.SYSTEM_DIALOG_REASON_RECENT_APPS);
         mShowing = show;
 
+        ((RecentsActivity) mContext).setRecentHints();
+
         if (show) {
             // if there are no apps, bring up a "No recent apps" message
             mRecentsNoApps.setAlpha(1f);
@@ -581,7 +583,9 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
     }
 
     public void clearRecentViewList(){
-        mRecentsContainer.removeAllViewsInLayout();
+        if (mShowing) {
+            mRecentsContainer.removeAllViewsInLayout();
+        }
     }
 
     public void onTaskLoadingCancelled() {

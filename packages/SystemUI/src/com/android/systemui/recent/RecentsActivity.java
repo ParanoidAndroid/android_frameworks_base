@@ -94,7 +94,6 @@ public class RecentsActivity extends Activity {
 
     @Override
     public void onPause() {
-        setRecentHints();
         overridePendingTransition(
                 R.anim.recents_return_to_launcher_enter,
                 R.anim.recents_return_to_launcher_exit);
@@ -104,7 +103,6 @@ public class RecentsActivity extends Activity {
 
     @Override
     public void onStop() {
-        setRecentHints();
         mShowing = false;
         if (mRecentsPanel != null) {
             mRecentsPanel.onUiHidden();
@@ -125,7 +123,7 @@ public class RecentsActivity extends Activity {
         return WallpaperManager.getInstance(context).getWallpaperInfo() != null;
     }
 
-    private void setRecentHints() {
+    public void setRecentHints() {
         // Check if we need to enable alternate drawable
         // for recent apps key
         if(mNavigationBarView == null) return; // FIXME: Add multiuser support
@@ -152,7 +150,6 @@ public class RecentsActivity extends Activity {
 
     @Override
     public void onResume() {
-        setRecentHints();
         mForeground = true;
         super.onResume();
     }
@@ -232,7 +229,6 @@ public class RecentsActivity extends Activity {
 
     private void handleIntent(Intent intent, boolean checkWaitingForAnimationParam) {
         super.onNewIntent(intent);
-
         String action = intent.getAction();
         if (TOGGLE_RECENTS_INTENT.equals(action)) {
             if (mRecentsPanel != null) {
@@ -248,7 +244,9 @@ public class RecentsActivity extends Activity {
             }
         } else if (CLEAR_RECENTS_INTENT.equals(action)) {
             if (mRecentsPanel != null) {
-                mRecentsPanel.clearRecentViewList();
+                if (mRecentsPanel.isShowing()) {
+                    mRecentsPanel.clearRecentViewList();
+                }
             }
         }
     }
