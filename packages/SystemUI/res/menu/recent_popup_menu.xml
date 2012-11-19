@@ -3,6 +3,7 @@
 /* apps/common/assets/default/default/skins/StatusBar.xml
 **
 ** Copyright 2011, The Android Open Source Project
+** This code has been modified. Portions copyright (C) 2012, ParanoidAndroid Project.
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,4 +21,5 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/recent_remove_item" android:title="@string/status_bar_recent_remove_item_title" />
     <item android:id="@+id/recent_inspect_item" android:title="@string/status_bar_recent_inspect_item_title" />
+    <item android:id="@+id/recent_hybrid_item" android:title="@string/status_bar_recent_hybrid_item_title" />
 </menu>
