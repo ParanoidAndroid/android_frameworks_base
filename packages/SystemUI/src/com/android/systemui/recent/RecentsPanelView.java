@@ -340,7 +340,7 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
         if (show) {
             // if there are no apps, bring up a "No recent apps" message
             mRecentsNoApps.setAlpha(1f);
-            mRecentsNoApps.setVisibility(isRecentTasksEmpty() ? View.VISIBLE : View.INVISIBLE);
+            mRecentsNoApps.setVisibility(getTasks() == 0 ? View.VISIBLE : View.INVISIBLE);
             onAnimationEnd(null);
             setFocusable(true);
             setFocusableInTouchMode(true);
@@ -354,9 +354,9 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
         }
     }
 
-    public boolean isRecentTasksEmpty() {
-        return (mRecentTaskDescriptions != null &&
-                mRecentTaskDescriptions.size() == 0);
+    public int getTasks() {
+        return mRecentTaskDescriptions != null ? mRecentTaskDescriptions.size()
+                : 0;
     }
 
     public void onUiHidden() {
