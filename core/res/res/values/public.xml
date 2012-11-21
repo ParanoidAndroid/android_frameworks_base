@@ -2045,4 +2045,7 @@
   <public type="string" name="reboot_system" />
   <public type="string" name="reboot_progress" />
 
+  <!-- Notification light mapping -->
+  <public type="array" name="notification_light_package_mapping" />
+
 </resources>

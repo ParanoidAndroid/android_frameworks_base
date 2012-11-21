@@ -29,7 +29,6 @@ import android.app.IActivityManager;
 import android.app.INotificationManager;
 import android.app.ITransientNotification;
 import android.app.Notification;
-import android.app.NotificationGroup;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.StatusBarManager;
