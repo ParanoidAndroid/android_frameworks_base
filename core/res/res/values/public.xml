@@ -2045,10 +2045,4 @@
   <public type="string" name="reboot_system" />
   <public type="string" name="reboot_progress" />
 
-  <!-- Color picker API -->
-  <public type="string" name="color_picker" />
-  <public type="string" name="color_picker_hint" />
-  <public type="string" name="color_picker_hex" />
-  <public type="string" name="color_picker_arrow_right" />
-
 </resources>
