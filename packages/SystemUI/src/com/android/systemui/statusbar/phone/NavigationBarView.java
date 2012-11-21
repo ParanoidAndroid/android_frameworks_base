@@ -221,6 +221,7 @@ public class NavigationBarView extends LinearLayout {
                 ExtendedPropertiesUtils.PARANOID_COLORS_NAVBAR] : setting).split(
                 ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
         String currentColor = colors[Integer.parseInt(colors[2])];
+        int speed = colors.length < 4 ? 1000 : Integer.parseInt(colors[3]);
         
         cnv.drawColor(new BigInteger(currentColor, 16).intValue());
 
@@ -228,7 +229,7 @@ public class NavigationBarView extends LinearLayout {
                 getBackground(), new BitmapDrawable(bm)});
         transition.setCrossFadeEnabled(true);
         setBackground(transition);
-        transition.startTransition(1000);
+        transition.startTransition(speed);
     }
 
     public void notifyScreenOn(boolean screenOn) {
