@@ -17,16 +17,16 @@
 -->
 <resources>
     <!-- size at which Notification icons will be drawn in the status bar -->
-    <dimen name="system_bar_icon_drawing_size">24dip</dimen>
+    <dimen name="status_bar_icon_drawing_size">24dip</dimen>
 
     <!-- opacity at which Notification icons will be drawn in the status bar -->
-    <item type="dimen" name="system_bar_icon_drawing_alpha">100%</item>
+    <item type="dimen" name="status_bar_icon_drawing_alpha">100%</item>
 
     <!-- The width of the view containing non-menu status bar icons -->
-    <dimen name="system_bar_navigation_key_width">80dip</dimen>
+    <dimen name="navigation_key_width">80dip</dimen>
 
     <!-- The width of the view containing the menu status bar icon -->
-    <dimen name="system_bar_navigation_menu_key_width">80dip</dimen>
+    <dimen name="navigation_menu_key_width">80dip</dimen>
 
     <!-- ======================================== -->
     <!-- The following resources were recently moved from sw600dp; there may
@@ -39,11 +39,9 @@
     <!-- Status bar panel bottom offset (height of status bar - overlap) -->
     <dimen name="status_bar_panel_bottom_offset">36dp</dimen>
     <!-- gap on either side of status bar notification icons -->
-    <dimen name="status_bar_icon_padding">1dp</dimen>
+    <dimen name="status_bar_icon_padding">8dp</dimen>
     <!-- The width of the notification panel window -->
     <dimen name="notification_panel_width">512dp</dimen>
-    <!-- The minimum height of the notification panel window -->
-    <dimen name="notification_panel_min_height">770dp</dimen>
     <!-- Bottom margin (from display edge) for status bar panels -->
     <dimen name="panel_float">56dp</dimen>
 
@@ -71,6 +69,8 @@
     <dimen name="status_bar_recents_text_fading_edge_length">20dip</dimen>
     <!-- Size of fading edge for scrolling -->
     <dimen name="status_bar_recents_scroll_fading_edge_length">10dip</dimen>
+    <!-- Margin between recents container and glow on the right -->
+    <dimen name="status_bar_recents_right_glow_margin">100dip</dimen>
 
     <!-- Where to place the app icon over the thumbnail -->
     <dimen name="status_bar_recents_app_icon_left_margin">0dp</dimen>

@@ -56,6 +56,6 @@ public class CompatModeButton extends ImageView {
         final boolean vis = (mode != ActivityManager.COMPAT_MODE_NEVER
                           && mode != ActivityManager.COMPAT_MODE_ALWAYS);
         if (DEBUG) Slog.d(TAG, "compat mode is " + mode + "; icon will " + (vis ? "show" : "hide"));
-        setVisibility(vis ? View.VISIBLE : View.GONE);
+        setVisibility(View.GONE);
     }
 }
