@@ -56,6 +56,8 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LevelListDrawable;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.WifiDisplayStatus;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -93,6 +95,7 @@ class QuickSettings {
     private QuickSettingsModel mModel;
     private ViewGroup mContainerView;
 
+    private ConnectivityManager mConnectivityManager;
     private BluetoothAdapter mBluetoothAdapter;
     private DisplayManager mDisplayManager;
     private WifiDisplayStatus mWifiDisplayStatus;
@@ -138,6 +141,8 @@ class QuickSettings {
         mModel = new QuickSettingsModel(context);
         mWifiDisplayStatus = new WifiDisplayStatus();
         mBluetoothState = new QuickSettingsModel.BluetoothState();
+        mConnectivityManager = (ConnectivityManager) context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
         mHandler = new Handler();
 
         Resources r = mContext.getResources();
@@ -437,11 +442,20 @@ class QuickSettings {
             rssiTile.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    mConnectivityManager.setMobileDataEnabled(!mConnectivityManager
+                            .getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isConnected());
+
+                }
+            });
+            rssiTile.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
                     Intent intent = new Intent();
                     intent.setComponent(new ComponentName(
                             "com.android.settings",
                             "com.android.settings.Settings$DataUsageSummaryActivity"));
                     startSettingsActivity(intent);
+                    return true;
                 }
             });
             mModel.addRSSITile(rssiTile, new QuickSettingsModel.RefreshCallback() {
