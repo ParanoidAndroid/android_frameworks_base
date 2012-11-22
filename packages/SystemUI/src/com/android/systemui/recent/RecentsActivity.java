@@ -25,6 +25,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.view.MotionEvent;
@@ -129,9 +130,17 @@ public class RecentsActivity extends Activity {
         if(mNavigationBarView == null) return; // FIXME: Add multiuser support
         int mNavigationIconHints = mNavigationBarView.getNavigationIconHints();
         mNavigationBarView.setNavigationIconHints(NavigationBarView.NAVBAR_RECENTS_HINT,
-                mRecentsPanel.isShowing() ? (mNavigationIconHints | StatusBarManager.NAVIGATION_HINT_RECENT_ALT)
-                : (mNavigationIconHints & ~StatusBarManager.NAVIGATION_HINT_RECENT_ALT), true);
+                mRecentsPanel.isShowing() && getTasks() > 0 ? (mNavigationIconHints |
+                StatusBarManager.NAVIGATION_HINT_RECENT_ALT) : (mNavigationIconHints &
+                ~StatusBarManager.NAVIGATION_HINT_RECENT_ALT), true);
     }
+
+    // TODO: Deal with configuration changes
+    //@Override
+    //public void onConfigurationChanged(Configuration newConfig) {
+    //    super.onConfigurationChanged(newConfig);
+    //    setRecentHints();
+    //}
 
     @Override
     public void onStart() {
@@ -259,8 +268,8 @@ public class RecentsActivity extends Activity {
         mNavigationBarView = nav;
     }
 
-    public static boolean isEmpty() {
-        return mRecentsPanel.isRecentTasksEmpty();
+    public static int getTasks() {
+        return mRecentsPanel.getTasks();
     }
 
     public static boolean isActivityShowing() {

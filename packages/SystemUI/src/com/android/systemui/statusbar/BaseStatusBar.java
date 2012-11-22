@@ -479,8 +479,8 @@ public abstract class BaseStatusBar extends SystemUI implements
         return RecentsActivity.isActivityShowing();
     }
 
-    protected boolean isRecentAppsEmpty() {
-        return RecentsActivity.isEmpty();
+    protected boolean hasRecentApps() {
+        return RecentsActivity.getTasks() > 0;
     }
 
     protected void toggleRecentsActivity() {
