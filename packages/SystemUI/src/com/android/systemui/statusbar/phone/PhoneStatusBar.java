@@ -61,7 +61,6 @@ import android.service.dreams.DreamService;
 import android.service.dreams.IDreamManager;
 import android.util.DisplayMetrics;
 import android.util.ExtendedPropertiesUtils;
-import android.util.Log;
 import android.util.Slog;
 import android.view.Display;
 import android.view.Gravity;
@@ -360,8 +359,6 @@ public class PhoneStatusBar extends BaseStatusBar {
 
         String setting = Settings.System.getString(mContext.getContentResolver(),
                 Settings.System.STATUS_BAR_COLOR);
-
-        Log.d("PARANOID","status="+setting);
 
         String[] colors = (setting == null || setting.equals("")  ?
                 ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[
