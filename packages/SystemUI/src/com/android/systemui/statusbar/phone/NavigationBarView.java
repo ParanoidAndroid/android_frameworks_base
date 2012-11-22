@@ -40,6 +40,7 @@ import android.os.ServiceManager;
 import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.ExtendedPropertiesUtils;
+import android.util.Log;
 import android.util.Slog;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
@@ -216,18 +217,18 @@ public class NavigationBarView extends LinearLayout {
 
         String setting = Settings.System.getString(mContext.getContentResolver(),
                 Settings.System.NAV_BAR_COLOR);
+
         String[] colors = (setting == null || setting.equals("")  ?
                 ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[
                 ExtendedPropertiesUtils.PARANOID_COLORS_NAVBAR] : setting).split(
                 ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
         String currentColor = colors[Integer.parseInt(colors[2])];
-        int speed = colors.length < 4 ? 1000 : Integer.parseInt(colors[3]);
-        
+        int speed = colors.length < 4 ? 500 : Integer.parseInt(colors[3]);        
         cnv.drawColor(new BigInteger(currentColor, 16).intValue());
 
         TransitionDrawable transition = new TransitionDrawable(new Drawable[]{
                 getBackground(), new BitmapDrawable(bm)});
-        transition.setCrossFadeEnabled(true);
+        transition.setCrossFadeEnabled(!currentColor.startsWith("FF"));
         setBackground(transition);
         transition.startTransition(speed);
     }

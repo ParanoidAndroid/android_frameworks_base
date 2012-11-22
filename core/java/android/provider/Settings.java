@@ -2327,7 +2327,7 @@ public final class Settings {
          * First color is the primary, systemwide color
          * Second is the color of the current foreground-app
          * third entry determines which has changed last, 0 or 1
-         * fourth, optional entry determines the transition speed, defaults to 1000ms
+         * fourth, optional entry determines the transition speed, defaults to 500ms
          * @hide
          */
         public static final String NAV_BAR_COLOR = "nav_bar_color";
@@ -2338,7 +2338,7 @@ public final class Settings {
          * First color is the primary, systemwide color
          * Second is the color of the current foreground-app
          * third entry determines which has changed last, 0 or 1
-         * fourth, optional entry determines the transition speed, defaults to 1000ms
+         * fourth, optional entry determines the transition speed, defaults to 500ms
          * @hide
          */
         public static final String NAV_BUTTON_COLOR = "nav_button_color";
@@ -2350,7 +2350,7 @@ public final class Settings {
          * First color is the primary, systemwide color
          * Second is the color of the current foreground-app
          * third entry determines which has changed last, 0 or 1
-         * fourth, optional entry determines the transition speed, defaults to 1000ms
+         * fourth, optional entry determines the transition speed, defaults to 500ms
          * @hide
          */
         public static final String NAV_GLOW_COLOR = "nav_glow_color";
@@ -2361,7 +2361,7 @@ public final class Settings {
          * First color is the primary, systemwide color
          * Second is the color of the current foreground-app
          * third entry determines which has changed last, 0 or 1
-         * fourth, optional entry determines the transition speed, defaults to 1000ms
+         * fourth, optional entry determines the transition speed, defaults to 500ms
          * @hide
          */
         public static final String STATUS_BAR_COLOR = "status_bar_color";

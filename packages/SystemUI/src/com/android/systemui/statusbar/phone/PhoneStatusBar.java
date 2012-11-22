@@ -360,12 +360,15 @@ public class PhoneStatusBar extends BaseStatusBar {
 
         String setting = Settings.System.getString(mContext.getContentResolver(),
                 Settings.System.STATUS_BAR_COLOR);
+
+        Log.d("PARANOID","status="+setting);
+
         String[] colors = (setting == null || setting.equals("")  ?
                 ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[
                 ExtendedPropertiesUtils.PARANOID_COLORS_NAVBAR] : setting).split(
                 ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
         String currentColor = colors[Integer.parseInt(colors[2])];
-        int speed = colors.length < 4 ? 1000 : Integer.parseInt(colors[3]);
+        int speed = colors.length < 4 ? 500 : Integer.parseInt(colors[3]);
 
         Bitmap bm = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
         Canvas cnv = new Canvas(bm);
