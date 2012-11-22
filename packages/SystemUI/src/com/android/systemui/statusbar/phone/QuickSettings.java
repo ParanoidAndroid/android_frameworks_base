@@ -443,8 +443,7 @@ class QuickSettings {
                 @Override
                 public void onClick(View v) {
                     mConnectivityManager.setMobileDataEnabled(!mConnectivityManager
-                            .getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isConnected());
-
+                            .getMobileDataEnabled());
                 }
             });
             rssiTile.setOnLongClickListener(new View.OnLongClickListener() {
