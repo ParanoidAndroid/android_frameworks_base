@@ -16,7 +16,9 @@
 
 package com.android.systemui.statusbar.policy;
 
+import android.database.ContentObserver;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -25,6 +27,8 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.provider.Settings;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.format.DateFormat;
@@ -60,6 +64,24 @@ public class Clock extends TextView {
 
     private static final int AM_PM_STYLE = AM_PM_STYLE_GONE;
 
+    private Context mContext;
+
+    class SettingsObserver extends ContentObserver {
+        SettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        void observe() {
+            ContentResolver resolver = mContext.getContentResolver();
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_SHOW_CLOCK), false, this);
+        }
+
+        @Override public void onChange(boolean selfChange) {
+            updateClock();
+        }
+    }
+
     public Clock(Context context) {
         this(context, null);
     }
@@ -70,6 +92,9 @@ public class Clock extends TextView {
 
     public Clock(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        mContext = context;
+        SettingsObserver observer = new SettingsObserver(new Handler());
+        observer.observe();
     }
 
     @Override
@@ -123,6 +148,9 @@ public class Clock extends TextView {
     };
 
     final void updateClock() {
+        setVisibility((Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.STATUS_BAR_SHOW_CLOCK, 1) == 1)
+                ? View.VISIBLE : View.GONE);
         mCalendar.setTimeInMillis(System.currentTimeMillis());
         setText(getSmallTime());
     }

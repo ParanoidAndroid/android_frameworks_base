@@ -2407,6 +2407,12 @@ public final class Settings {
          */
         public static final String LOCKSCREEN_ALLOW_ROTATION = "lockscreen_allow_rotation";
 
+        /**	
+         * Whether to show or not clock on statusbar
+         * @hide
+         */
+        public static final String STATUS_BAR_SHOW_CLOCK = "status_bar_show_clock";
+
         /**
          * Settings to backup. This is here so that it's in the same place as the settings
          * keys and easy to update.
