@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2006 The Android Open Source Project
+ * This code has been modified. Portions copyright (C) 2012, ParanoidAndroid Project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,9 +63,10 @@ public class Clock extends TextView {
     private static final int AM_PM_STYLE_SMALL   = 1;
     private static final int AM_PM_STYLE_GONE    = 2;
 
-    private static final int AM_PM_STYLE = AM_PM_STYLE_GONE;
+    private int AM_PM_STYLE = AM_PM_STYLE_GONE;
 
     private Context mContext;
+    private boolean mShowAlways;
 
     class SettingsObserver extends ContentObserver {
         SettingsObserver(Handler handler) {
@@ -75,6 +77,8 @@ public class Clock extends TextView {
             ContentResolver resolver = mContext.getContentResolver();
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.STATUS_BAR_SHOW_CLOCK), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_AM_PM_STYLE), false, this);
         }
 
         @Override public void onChange(boolean selfChange) {
@@ -93,6 +97,9 @@ public class Clock extends TextView {
     public Clock(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         mContext = context;
+        TypedArray a = context.obtainStyledAttributes(attrs, com.android.systemui.R.styleable.Clock, defStyle, 0);
+        mShowAlways = a.getBoolean(com.android.systemui.R.styleable.Clock_showAlways, false);
+
         SettingsObserver observer = new SettingsObserver(new Handler());
         observer.observe();
     }
@@ -148,9 +155,16 @@ public class Clock extends TextView {
     };
 
     final void updateClock() {
-        setVisibility((Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.STATUS_BAR_SHOW_CLOCK, 1) == 1)
-                ? View.VISIBLE : View.GONE);
+        // showAlways is only set on expanded statusbar, we must avoid
+        // to hide clock or add AM/PM there
+        if(!mShowAlways) {
+            setVisibility((Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.STATUS_BAR_SHOW_CLOCK, 1) == 1)
+                    ? View.VISIBLE : View.GONE);
+            AM_PM_STYLE = Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.STATUS_BAR_AM_PM_STYLE, 2);
+            mClockFormatString = null;
+        }
         mCalendar.setTimeInMillis(System.currentTimeMillis());
         setText(getSmallTime());
     }

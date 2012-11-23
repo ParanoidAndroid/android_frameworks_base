@@ -42,7 +42,9 @@
         <attr name="decayTime" format="integer" />
         <attr name="orientation" />
     </declare-styleable>
-
+    <declare-styleable name="Clock">
+        <attr name="showAlways" format="boolean" />
+    </declare-styleable>
     <attr name="orientation">
         <enum name="horizontal" value="0" />
         <enum name="vertical" value="1" />
