@@ -29,6 +29,7 @@ import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.graphics.drawable.Drawable;
 import android.hardware.display.WifiDisplayStatus;
+import android.location.LocationManager;
 import android.os.Handler;
 import android.os.UserHandle;
 import android.provider.Settings;
@@ -103,6 +104,16 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
             if (action.equals(Intent.ACTION_ALARM_CHANGED)) {
                 onAlarmChanged(intent);
                 onNextAlarmChanged();
+            }
+        }
+    };
+
+    /** Broadcast receive to determine if location status has changed. */
+    private BroadcastReceiver mLocationReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(LocationManager.PROVIDERS_CHANGED_ACTION)) {
+                mLocationCallback.refreshView(mLocationTile, mLocationState);
             }
         }
     };
@@ -252,6 +263,10 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
         IntentFilter alarmIntentFilter = new IntentFilter();
         alarmIntentFilter.addAction(Intent.ACTION_ALARM_CHANGED);
         context.registerReceiver(mAlarmIntentReceiver, alarmIntentFilter);
+
+        IntentFilter locationIntentFilter = new IntentFilter();
+        locationIntentFilter.addAction(LocationManager.PROVIDERS_CHANGED_ACTION);
+        context.registerReceiver(mLocationReceiver, locationIntentFilter);
     }
 
     void updateResources() {
@@ -508,14 +523,12 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
     void addLocationTile(QuickSettingsTileView view, RefreshCallback cb) {
         mLocationTile = view;
         mLocationCallback = cb;
-        mLocationCallback.refreshView(mLocationTile, mLocationState);
     }
     // LocationController callback
     @Override
     public void onLocationGpsStateChanged(boolean inUse, String description) {
         mLocationState.enabled = inUse;
         mLocationState.label = description;
-        mLocationCallback.refreshView(mLocationTile, mLocationState);
     }
 
     // Bug report

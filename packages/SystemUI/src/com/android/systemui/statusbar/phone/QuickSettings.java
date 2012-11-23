@@ -619,6 +619,41 @@ class QuickSettings {
             parent.addView(bluetoothTile);
         }
 
+        final ContentResolver resolver = mContext.getContentResolver();
+        QuickSettingsTileView locationTile = (QuickSettingsTileView)
+            inflater.inflate(R.layout.quick_settings_tile, parent, false);
+        locationTile.setContent(R.layout.quick_settings_tile_location, inflater);
+        locationTile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Settings.Secure.setLocationProviderEnabled(resolver, LocationManager.GPS_PROVIDER,
+                        !Settings.Secure.isLocationProviderEnabled(resolver,
+                        LocationManager.GPS_PROVIDER));
+            }
+        });
+        locationTile.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                startSettingsActivity(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                return true;
+            }
+        });
+        mModel.addLocationTile(locationTile, new QuickSettingsModel.RefreshCallback() {
+            @Override
+            public void refreshView(QuickSettingsTileView view, State state) {
+                TextView tv = (TextView) view.findViewById(R.id.location_textview);
+                ImageView iv = (ImageView) view.findViewById(R.id.location_image);
+                if (Settings.Secure.isLocationProviderEnabled(resolver,
+                        LocationManager.GPS_PROVIDER)) {
+                    tv.setText(mContext.getString(R.string.quick_settings_location_label));
+                    iv.setImageResource(R.drawable.ic_qs_location_on);
+                } else {
+                    tv.setText(mContext.getString(R.string.quick_settings_location_off_label));
+                    iv.setImageResource(R.drawable.ic_qs_location_off);
+                }
+            }
+        });
+        parent.addView(locationTile);
     }
 
     private void addTemporaryTiles(final ViewGroup parent, final LayoutInflater inflater) {
@@ -648,38 +683,6 @@ class QuickSettings {
             }
         });
         parent.addView(alarmTile);
-
-        // Location
-        QuickSettingsTileView locationTile = (QuickSettingsTileView)
-                inflater.inflate(R.layout.quick_settings_tile, parent, false);
-        locationTile.setContent(R.layout.quick_settings_tile_location, inflater);
-        locationTile.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ContentResolver resolver = mContext.getContentResolver();
-                Settings.Secure.setLocationProviderEnabled(resolver, LocationManager.GPS_PROVIDER,
-                        !Settings.Secure.isLocationProviderEnabled(resolver,
-                        LocationManager.GPS_PROVIDER));
-            }
-        });
-
-        locationTile.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                startSettingsActivity(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                return true;
-            }
-        });
-
-        mModel.addLocationTile(locationTile, new QuickSettingsModel.RefreshCallback() {
-            @Override
-            public void refreshView(QuickSettingsTileView view, State state) {
-                TextView tv = (TextView) view.findViewById(R.id.location_textview);
-                tv.setText(state.label);
-                view.setVisibility(state.enabled ? View.VISIBLE : View.GONE);
-            }
-        });
-        parent.addView(locationTile);
 
         // Wifi Display
         QuickSettingsTileView wifiDisplayTile = (QuickSettingsTileView)
