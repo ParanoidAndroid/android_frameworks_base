@@ -2440,6 +2440,18 @@ public final class Settings {
         public static final String STATUS_BAR_AM_PM_STYLE = "status_bar_am_pm_style";
 
         /**
+         * Whether to wake the screen with the volume keys, the value is boolean.
+         * @hide
+         */
+        public static final String VOLUME_WAKE_SCREEN = "volume_wake_screen";
+
+        /**
+         * Whether or not volume button music controls should be enabled to seek media tracks
+         * @hide
+         */
+        public static final String VOLBTN_MUSIC_CONTROLS = "volbtn_music_controls";
+
+        /**
          * Settings to backup. This is here so that it's in the same place as the settings
          * keys and easy to update.
          *
