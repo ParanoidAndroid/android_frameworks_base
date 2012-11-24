@@ -130,9 +130,8 @@ public class RecentsActivity extends Activity {
         if(mNavigationBarView == null) return; // FIXME: Add multiuser support
         int mNavigationIconHints = mNavigationBarView.getNavigationIconHints();
         mNavigationBarView.setNavigationIconHints(NavigationBarView.NAVBAR_RECENTS_HINT,
-                show ? (mNavigationIconHints |
-                StatusBarManager.NAVIGATION_HINT_RECENT_ALT) : (mNavigationIconHints &
-                ~StatusBarManager.NAVIGATION_HINT_RECENT_ALT), true);
+                show ? (mNavigationIconHints | StatusBarManager.NAVIGATION_HINT_RECENT_ALT)
+                : (mNavigationIconHints & ~StatusBarManager.NAVIGATION_HINT_RECENT_ALT), true);
     }
 
     @Override
