@@ -128,10 +128,10 @@ public class RecentsActivity extends Activity {
         // Check if we need to enable alternate drawable
         // for recent apps key
         if(mNavigationBarView == null) return; // FIXME: Add multiuser support
-        int mNavigationIconHints = mNavigationBarView.getNavigationIconHints();
+        int navigationHints = mNavigationBarView.getNavigationIconHints();
         mNavigationBarView.setNavigationIconHints(NavigationBarView.NAVBAR_RECENTS_HINT,
-                show ? (mNavigationIconHints | StatusBarManager.NAVIGATION_HINT_RECENT_ALT)
-                : (mNavigationIconHints & ~StatusBarManager.NAVIGATION_HINT_RECENT_ALT), true);
+                show ? (navigationHints | StatusBarManager.NAVIGATION_HINT_RECENT_ALT)
+                : (navigationHints & ~StatusBarManager.NAVIGATION_HINT_RECENT_ALT), true);
     }
 
     @Override
