@@ -124,23 +124,16 @@ public class RecentsActivity extends Activity {
         return WallpaperManager.getInstance(context).getWallpaperInfo() != null;
     }
 
-    public void setRecentHints() {
+    public void setRecentHints(boolean show) {
         // Check if we need to enable alternate drawable
         // for recent apps key
         if(mNavigationBarView == null) return; // FIXME: Add multiuser support
         int mNavigationIconHints = mNavigationBarView.getNavigationIconHints();
         mNavigationBarView.setNavigationIconHints(NavigationBarView.NAVBAR_RECENTS_HINT,
-                mRecentsPanel.isShowing() && getTasks() > 0 ? (mNavigationIconHints |
+                show ? (mNavigationIconHints |
                 StatusBarManager.NAVIGATION_HINT_RECENT_ALT) : (mNavigationIconHints &
                 ~StatusBarManager.NAVIGATION_HINT_RECENT_ALT), true);
     }
-
-    // TODO: Deal with configuration changes
-    //@Override
-    //public void onConfigurationChanged(Configuration newConfig) {
-    //    super.onConfigurationChanged(newConfig);
-    //    setRecentHints();
-    //}
 
     @Override
     public void onStart() {
@@ -212,6 +205,7 @@ public class RecentsActivity extends Activity {
                 savedInstanceState.getBoolean(WAS_SHOWING)) {
             handleIntent(getIntent(), (savedInstanceState == null));
         }
+
         mIntentFilter = new IntentFilter();
         mIntentFilter.addAction(CLOSE_RECENTS_INTENT);
         mIntentFilter.addAction(WINDOW_ANIMATION_START_INTENT);
