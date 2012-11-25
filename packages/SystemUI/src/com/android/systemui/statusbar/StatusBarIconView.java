@@ -25,13 +25,10 @@ import android.graphics.drawable.Drawable;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
-<<<<<<< HEAD
-import android.os.UserHandle;
-=======
 import android.graphics.Typeface;
 import android.os.Handler;
+import android.os.UserHandle;
 import android.provider.Settings;
->>>>>>> 03394cc... SystemUI: Notifictation counter
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Slog;
