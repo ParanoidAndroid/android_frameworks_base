@@ -523,6 +523,7 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
     void addLocationTile(QuickSettingsTileView view, RefreshCallback cb) {
         mLocationTile = view;
         mLocationCallback = cb;
+        mLocationCallback.refreshView(mLocationTile, mLocationState);
     }
     // LocationController callback
     @Override
