@@ -1202,11 +1202,14 @@ public class NotificationManagerService extends INotificationManager.Stub
     }
 
     private boolean notificationIsAnnoying(String pkg) {
-        if (mAnnoyingNotificationThreshold <= 0)
+        if (mAnnoyingNotificationThreshold <= 0) {
             return false;
+        }
 
-        if ("android".equals(pkg))
+        // Skip framework
+        if ("android".equals(pkg)) {
             return false;
+        }
 
         long currentTime = System.currentTimeMillis();
         if (mAnnoyingNotifications.containsKey(pkg)
