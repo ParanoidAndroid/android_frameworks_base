@@ -454,7 +454,7 @@ public class PackageManagerService extends IPackageManager.Stub {
     private HashSet<Integer> mDirtyUsers = new HashSet<Integer>();
 
     WindowManager mWindowManager;
-    private final WindowManagerPolicy mPolicy; // to set packageName
+    private final WindowManagerPolicy mPolicy;
 
     final private DefaultContainerConnection mDefContainerConn =
             new DefaultContainerConnection();
@@ -3503,7 +3503,7 @@ public class PackageManagerService extends IPackageManager.Stub {
                         ApplicationInfo ai;
                         try {
                             ai = mContext.getPackageManager().getApplicationInfo(p.packageName, 0);
-                        } catch (Exception e) {
+                        } catch (PackageManager.NameNotFoundException e) {
                             ai = null;
                         }
                         mPolicy.setPackageName((String) (ai != null ? mContext.getPackageManager().getApplicationLabel(ai) : p.packageName));
