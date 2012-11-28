@@ -2424,8 +2424,8 @@ public final class Settings {
         public static final String LOCKSCREEN_ALLOW_ROTATION = "lockscreen_allow_rotation";
 
         /**
-         * Allows the to limit notifcations to once per X seconds
-         * Credit to (Roman)AOKP
+         * Allows to define the limit notifcations once per X seconds
+         * The value is a an integer.
          * @hide
          */
         public static final String MUTE_ANNOYING_NOTIFICATIONS_THRESHOLD = "mute_annoying_notifications_threshold";
@@ -2452,6 +2452,13 @@ public final class Settings {
          * @hide
          */
         public static final String STATUS_BAR_AM_PM_STYLE = "status_bar_am_pm_style";
+
+        /**	
+         * Defines the settings to be shown in quicksettings menu
+         * Usage is like this: WIFI|GPS|BLUETOOTH
+         * @hide
+         */
+        public static final String QUICK_SETTINGS_ENTRIES = "quick_settings_entries";
 
         /**
          * Whether to wake the screen with the volume keys, the value is boolean.
