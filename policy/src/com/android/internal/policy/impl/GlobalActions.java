@@ -31,6 +31,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.UserInfo;
+import android.content.res.TypedArray;
 import android.database.ContentObserver;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
@@ -107,6 +108,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
     private boolean mIsWaitingForEcmExit = false;
     private boolean mHasTelephony;
     private boolean mHasVibrator;
+    private boolean mRebootMenu;
 
     /**
      * @param context everything needs a context :(
@@ -146,9 +148,15 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
      * @param keyguardShowing True if keyguard is showing
      */
     public void showDialog(boolean keyguardShowing, boolean isDeviceProvisioned) {
+        showDialog(keyguardShowing, isDeviceProvisioned, false);
+    }
+
+    public void showDialog(boolean keyguardShowing, boolean isDeviceProvisioned,
+            boolean isRebootSubMenu) {
+        mRebootMenu = isRebootSubMenu;
         mKeyguardShowing = keyguardShowing;
         mDeviceProvisioned = isDeviceProvisioned;
-        if (mDialog != null && mUiContext == null) {
+        if (mDialog != null) {
             mDialog.dismiss();
             mDialog = null;
             // Show delayed, so that the dismiss of the previous dialog completes
@@ -194,93 +202,68 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
      * @return A new dialog.
      */
     private GlobalActionsDialog createDialog() {
-        // Simple toggle style if there's no vibrator, otherwise use a tri-state
-        if (!mHasVibrator) {
-            mSilentModeAction = new SilentModeToggleAction();
+        if (mRebootMenu) {
+            createRebootMenuItems();
         } else {
-            mSilentModeAction = new SilentModeTriStateAction(mContext, mAudioManager, mHandler);
-        }
-
-        mExpandDesktopModeOn = new ToggleAction(
-                R.drawable.ic_lock_expanded_desktop,
-                R.drawable.ic_lock_expanded_desktop_off,
-                R.string.global_action_expanded_desktop,
-                R.string.global_action_expanded_desktop_on,
-                R.string.global_action_expanded_desktop_off) {
-
-            void onToggle(boolean on) {
-                changeExpandDesktopModeSystemSetting(on);
+            // Simple toggle style if there's no vibrator, otherwise use a tri-state
+            if (!mHasVibrator) {
+                mSilentModeAction = new SilentModeToggleAction();
+            } else {
+                mSilentModeAction = new SilentModeTriStateAction(mContext, mAudioManager, mHandler);
             }
 
-            public boolean showDuringKeyguard() {
-                return false;
-            }
+            mExpandDesktopModeOn = new ToggleAction(
+                    R.drawable.ic_lock_expanded_desktop,
+                    R.drawable.ic_lock_expanded_desktop_off,
+                    R.string.global_action_expanded_desktop,
+                    R.string.global_action_expanded_desktop_on,
+                    R.string.global_action_expanded_desktop_off) {
 
-            public boolean showBeforeProvisioning() {
-                return false;
-            }
-        };
-        onExpandDesktopModeChanged();
-
-        mAirplaneModeOn = new ToggleAction(
-                R.drawable.ic_lock_airplane_mode,
-                R.drawable.ic_lock_airplane_mode_off,
-                R.string.global_actions_toggle_airplane_mode,
-                R.string.global_actions_airplane_mode_on_status,
-                R.string.global_actions_airplane_mode_off_status) {
-
-            void onToggle(boolean on) {
-                if (mHasTelephony && Boolean.parseBoolean(
-                        SystemProperties.get(TelephonyProperties.PROPERTY_INECM_MODE))) {
-                    mIsWaitingForEcmExit = true;
-                    // Launch ECM exit dialog
-                    Intent ecmDialogIntent =
-                            new Intent(TelephonyIntents.ACTION_SHOW_NOTICE_ECM_BLOCK_OTHERS, null);
-                    ecmDialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    mContext.startActivity(ecmDialogIntent);
-                } else {
-                    changeAirplaneModeSystemSetting(on);
-                }
-            }
-
-            @Override
-            protected void changeStateFromPress(boolean buttonOn) {
-                if (!mHasTelephony) return;
-
-                // In ECM mode airplane state cannot be changed
-                if (!(Boolean.parseBoolean(
-                        SystemProperties.get(TelephonyProperties.PROPERTY_INECM_MODE)))) {
-                    mState = buttonOn ? State.TurningOn : State.TurningOff;
-                    mAirplaneState = mState;
-                }
-            }
-
-            public boolean showDuringKeyguard() {
-                return true;
-            }
-
-            public boolean showBeforeProvisioning() {
-                return false;
-            }
-        };
-        onAirplaneModeChanged();
-
-        mItems = new ArrayList<Action>();
-
-        // first: power off
-        mItems.add(
-            new SinglePressAction(
-                    com.android.internal.R.drawable.ic_lock_power_off,
-                    R.string.global_action_power_off) {
-
-                public void onPress() {
-                    // shutdown by making sure radio and power are handled accordingly.
-                    mWindowManagerFuncs.shutdown(true);
+                void onToggle(boolean on) {
+                    changeExpandDesktopModeSystemSetting(on);
                 }
 
-                public boolean onLongPress() {
-                    mWindowManagerFuncs.rebootSafeMode(true);
-                    return true;
+                public boolean showDuringKeyguard() {
+                    return false;
+                }
+
+                public boolean showBeforeProvisioning() {
+                    return false;
+                }
+            };
+            onExpandDesktopModeChanged();
+
+            mAirplaneModeOn = new ToggleAction(
+                    R.drawable.ic_lock_airplane_mode,
+                    R.drawable.ic_lock_airplane_mode_off,
+                    R.string.global_actions_toggle_airplane_mode,
+                    R.string.global_actions_airplane_mode_on_status,
+                    R.string.global_actions_airplane_mode_off_status) {
+
+                void onToggle(boolean on) {
+                    if (mHasTelephony && Boolean.parseBoolean(
+                            SystemProperties.get(TelephonyProperties.PROPERTY_INECM_MODE))) {
+                        mIsWaitingForEcmExit = true;
+                        // Launch ECM exit dialog
+                        Intent ecmDialogIntent =
+                                new Intent(TelephonyIntents.ACTION_SHOW_NOTICE_ECM_BLOCK_OTHERS, null);
+                        ecmDialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        mContext.startActivity(ecmDialogIntent);
+                    } else {
+                        changeAirplaneModeSystemSetting(on);
+                    }
+                }
+
+                @Override
+                protected void changeStateFromPress(boolean buttonOn) {
+                    if (!mHasTelephony) return;
+
+                    // In ECM mode airplane state cannot be changed
+                    if (!(Boolean.parseBoolean(
+                            SystemProperties.get(TelephonyProperties.PROPERTY_INECM_MODE)))) {
+                        mState = buttonOn ? State.TurningOn : State.TurningOff;
+                        mAirplaneState = mState;
+                    }
                 }
 
                 public boolean showDuringKeyguard() {
@@ -288,15 +271,22 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                 }
 
                 public boolean showBeforeProvisioning() {
-                    return true;
+                    return false;
                 }
-            });
+            };
+            onAirplaneModeChanged();
 
-        // next: reboot
-        mItems.add(
-                new SinglePressAction(R.drawable.ic_lock_reboot, R.string.global_action_reboot) {
+            mItems = new ArrayList<Action>();
+
+            // first: power off
+            mItems.add(
+                new SinglePressAction(
+                        com.android.internal.R.drawable.ic_lock_power_off,
+                        R.string.global_action_power_off) {
+
                     public void onPress() {
-                        mWindowManagerFuncs.reboot(true);
+                        // shutdown by making sure radio and power are handled accordingly.
+                        mWindowManagerFuncs.shutdown(true);
                     }
 
                     public boolean onLongPress() {
@@ -311,51 +301,18 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                     public boolean showBeforeProvisioning() {
                         return true;
                     }
-                });
+                }
+            );
 
-        // next: expanded desktop
-        mItems.add(mExpandDesktopModeOn);
-
-        // next: airplane mode
-        mItems.add(mAirplaneModeOn);
-
-        // next: bug report, if enabled
-        if (Settings.Secure.getInt(mContext.getContentResolver(),
-                Settings.Secure.BUGREPORT_IN_POWER_MENU, 0) != 0) {
+            // next: reboot
             mItems.add(
-                new SinglePressAction(com.android.internal.R.drawable.stat_sys_adb,
-                        R.string.global_action_bug_report) {
-
+                new SinglePressAction(R.drawable.ic_lock_reboot, R.string.global_action_reboot) {
                     public void onPress() {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-                        builder.setTitle(com.android.internal.R.string.bugreport_title);
-                        builder.setMessage(com.android.internal.R.string.bugreport_message);
-                        builder.setNegativeButton(com.android.internal.R.string.cancel, null);
-                        builder.setPositiveButton(com.android.internal.R.string.report,
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        // Add a little delay before executing, to give the
-                                        // dialog a chance to go away before it takes a
-                                        // screenshot.
-                                        mHandler.postDelayed(new Runnable() {
-                                            @Override public void run() {
-                                                try {
-                                                    ActivityManagerNative.getDefault()
-                                                            .requestBugReport();
-                                                } catch (RemoteException e) {
-                                                }
-                                            }
-                                        }, 500);
-                                    }
-                                });
-                        AlertDialog dialog = builder.create();
-                        dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG);
-                        dialog.show();
+                        showDialog(mKeyguardShowing, mDeviceProvisioned, true);
                     }
 
                     public boolean onLongPress() {
-                        return false;
+                        return true;
                     }
 
                     public boolean showDuringKeyguard() {
@@ -363,19 +320,75 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                     }
 
                     public boolean showBeforeProvisioning() {
-                        return false;
+                        return true;
                     }
-                });
-        }
+                }
+            );
 
-        // last: silent mode
-        if (SHOW_SILENT_TOGGLE) {
-            mItems.add(mSilentModeAction);
-        }
+            // next: expanded desktop
+            mItems.add(mExpandDesktopModeOn);
 
-        // one more thing: optionally add a list of users to switch to
-        if (SystemProperties.getBoolean("fw.power_user_switcher", false)) {
-            addUsersToMenu(mItems);
+            // next: airplane mode
+            mItems.add(mAirplaneModeOn);
+
+            // next: bug report, if enabled
+            if (Settings.Secure.getInt(mContext.getContentResolver(),
+                    Settings.Secure.BUGREPORT_IN_POWER_MENU, 0) != 0) {
+                mItems.add(
+                    new SinglePressAction(com.android.internal.R.drawable.stat_sys_adb,
+                            R.string.global_action_bug_report) {
+
+                        public void onPress() {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                            builder.setTitle(com.android.internal.R.string.bugreport_title);
+                            builder.setMessage(com.android.internal.R.string.bugreport_message);
+                            builder.setNegativeButton(com.android.internal.R.string.cancel, null);
+                            builder.setPositiveButton(com.android.internal.R.string.report,
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            // Add a little delay before executing, to give the
+                                            // dialog a chance to go away before it takes a
+                                            // screenshot.
+                                            mHandler.postDelayed(new Runnable() {
+                                                @Override public void run() {
+                                                    try {
+                                                        ActivityManagerNative.getDefault()
+                                                                .requestBugReport();
+                                                    } catch (RemoteException e) {
+                                                    }
+                                                }
+                                            }, 500);
+                                        }
+                                    });
+                            AlertDialog dialog = builder.create();
+                            dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG);
+                            dialog.show();
+                        }
+
+                        public boolean onLongPress() {
+                            return false;
+                        }
+
+                        public boolean showDuringKeyguard() {
+                            return true;
+                        }
+
+                        public boolean showBeforeProvisioning() {
+                            return false;
+                        }
+                    });
+            }
+
+            // last: silent mode
+            if (SHOW_SILENT_TOGGLE) {
+                mItems.add(mSilentModeAction);
+            }
+
+            // one more thing: optionally add a list of users to switch to
+            if (SystemProperties.getBoolean("fw.power_user_switcher", false)) {
+                addUsersToMenu(mItems);
+            }
         }
 
         mAdapter = new MyAdapter();
@@ -442,6 +455,67 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                 items.add(switchToUser);
             }
         }
+    }
+
+    private void createRebootMenuItems() {
+        mItems = new ArrayList<Action>();
+
+        TypedArray ar = mContext.getResources().obtainTypedArray(R.array
+                .shutdown_reboot_icons);
+        int[] iconIds = new int[ar.length()];
+        for (int i = 0; i < iconIds.length; i++) {
+            iconIds[i] = ar.getResourceId(i, 0);
+        }
+        ar.recycle();
+
+        String[] names = mContext.getResources().getStringArray(R.array
+                .shutdown_reboot_options);
+        String[] actions = mContext.getResources().getStringArray(R.array
+                .shutdown_reboot_actions);
+
+        for(int i = 0; i < names.length; i++) {
+            addRebootItem(iconIds[i], names[i], actions[i]);
+        }
+
+        mItems.add(
+            new SinglePressAction(
+                    R.drawable.ic_lock_reboot_safemode,
+                    R.string.reboot_safe_mode) {
+
+                public void onPress() {
+                   mWindowManagerFuncs.rebootSafeMode(true);
+                }
+
+                public boolean showDuringKeyguard() {
+                   return true;
+                }
+
+                public boolean showBeforeProvisioning() {
+                    return true;
+                }
+            }
+        );
+    }
+
+    private void addRebootItem(int drawable, String name, final String action) {
+        mItems.add(
+            new SinglePressAction(
+                    drawable,
+                    name) {
+
+                public void onPress() {
+                    mWindowManagerFuncs.reboot(action, false);
+                }
+
+                public boolean showDuringKeyguard() {
+                    return true;
+                }
+
+                public boolean showBeforeProvisioning() {
+                    return true;
+                }
+            }
+        );
     }
 
     private void prepareDialog() {

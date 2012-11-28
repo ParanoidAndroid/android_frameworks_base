@@ -421,11 +421,11 @@
     </string-array>
 
     <!-- Defines the shutdown options shown in the reboot dialog. -->
-    <array name="shutdown_reboot_options" translatable="false">
+    <string-array name="shutdown_reboot_options" translatable="false">
         <item>@string/reboot_reboot</item>
         <item>@string/reboot_recovery</item>
         <item>@string/reboot_bootloader</item>
-    </array>
+    </string-array>
 
     <!-- Do not translate. Defines the shutdown actions passed to the kernel.
          The first item should be empty for regular reboot. -->
@@ -434,6 +434,12 @@
         <item>recovery</item>
         <item>bootloader</item>
     </string-array>
+
+    <array name="shutdown_reboot_icons">
+        <item>@drawable/ic_lock_reboot</item>
+        <item>@drawable/ic_lock_reboot_recovery</item>
+        <item>@drawable/ic_lock_reboot_bootloader</item>
+    </array>
 
     <!-- Defines the mapping of notification package names
          from the actual triggering package to the user selectable package.
