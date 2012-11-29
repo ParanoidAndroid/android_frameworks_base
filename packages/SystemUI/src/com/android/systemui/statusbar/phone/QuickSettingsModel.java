@@ -584,7 +584,7 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
         mNfcState.enabled = isNfcEnabled;
         mNfcState.iconId = isNfcEnabled
                 ? R.drawable.ic_qs_nfc_on
-                : R.drawable.ic_qs_nfc_off
+                : R.drawable.ic_qs_nfc_off;
         mNfcState.label = isNfcEnabled
                 ? mContext.getString(R.string.quick_settings_nfc_label)
                 : mContext.getString(R.string.quick_settings_nfc_off_label);
