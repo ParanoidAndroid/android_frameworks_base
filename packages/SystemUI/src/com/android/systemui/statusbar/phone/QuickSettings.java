@@ -87,30 +87,11 @@ import com.android.systemui.statusbar.policy.ToggleSlider;
 
 import java.util.ArrayList;
 
+import static com.android.systemui.statusbar.phone.QuickSettingsModel.TILE_SEPARATOR;
 
-/**
- *
- */
 public class QuickSettings {
     private static final String TAG = "QuickSettings";
     public static final boolean SHOW_IME_TILE = false;
-
-    private static final String TILE_SEPARATOR = "|";
-    private static final String WIFI = "WIFI";
-    private static final String BLUETOOTH = "BLUETOOTH";
-    private static final String LOCATION = "LOCATION";
-    private static final String DATA = "DATA";
-    private static final String NFC = "NFC";
-    private static final String SCREEN_ROTATION = "SCREEN_ROTATION";
-    private static final String AIRPLANE = "AIRPLANE";
-    private static final String BATTERY = "BATTERY";
-    // TODO: Moar toggles
-    //private static final String BRIGHTNESS = "BRIGHTNESS";
-    //private static final String CLOCK = "CLOCK";
-
-    private static final String DEFAULT_TILES = WIFI + TILE_SEPARATOR
-            + DATA + TILE_SEPARATOR + BATTERY + TILE_SEPARATOR
-            + AIRPLANE + TILE_SEPARATOR + BLUETOOTH;
 
     private Context mContext;
     private PanelBar mBar;
@@ -181,6 +162,7 @@ public class QuickSettings {
                             Settings.System.QUICK_SETTINGS_ENTRIES);
                     mContainerView.removeAllViews();
                     setupQuickSettings(false);
+                    updateResources();
                 }
             }
         );
@@ -318,7 +300,8 @@ public class QuickSettings {
         String tiles = Settings.System.getString(mContext.getContentResolver(),
                 Settings.System.QUICK_SETTINGS_ENTRIES);
         mTiles = (tiles == null) ? 
-                DEFAULT_TILES.split("\\" + TILE_SEPARATOR) : tiles.split("\\" + TILE_SEPARATOR);
+                QuickSettingsModel.DEFAULT_TILES.split("\\" + TILE_SEPARATOR)
+                : tiles.split("\\" + TILE_SEPARATOR);
 
         for(String tile : mTiles) {
             addTile(mContainerView, tile);
@@ -451,7 +434,7 @@ public class QuickSettings {
     }
 
     private void addTile(ViewGroup parent, String tile) {
-        if(tile.equals(WIFI)) {
+        if(tile.equals(QuickSettingsModel.WIFI)) {
             // Wi-fi
             inflateTile(parent,
                     new View.OnClickListener() {
@@ -467,7 +450,7 @@ public class QuickSettings {
                             return true;
                         }
                     }, tile, 0);
-        } else if(tile.equals(DATA)) {
+        } else if(tile.equals(QuickSettingsModel.DATA)) {
             if (mModel.deviceSupportsTelephony()) {
                 // RSSI
                 inflateTile(parent,
@@ -490,7 +473,7 @@ public class QuickSettings {
                             }
                         }, tile, R.layout.quick_settings_tile_rssi);
             }
-        } else if(tile.equals(SCREEN_ROTATION)) {
+        } else if(tile.equals(QuickSettingsModel.SCREEN_ROTATION)) {
             // Rotation Lock
             if (mContext.getResources().getBoolean(R.bool.quick_settings_show_rotation_lock)) {
                 inflateTile(parent,
@@ -502,7 +485,7 @@ public class QuickSettings {
                             }
                         }, null, tile, 0);
             }
-        } else if(tile.equals(BATTERY)) {
+        } else if(tile.equals(QuickSettingsModel.BATTERY)) {
             // Battery
             inflateTile(parent,
                     new View.OnClickListener() {
@@ -511,10 +494,10 @@ public class QuickSettings {
                             startSettingsActivity(Intent.ACTION_POWER_USAGE_SUMMARY);
                         }
                     }, null, tile, R.layout.quick_settings_tile_battery);
-        } else if(tile.equals(AIRPLANE)) {
+        } else if(tile.equals(QuickSettingsModel.AIRPLANE)) {
             // Airplane Mode
             inflateTile(parent, null, null, tile, 0);
-        } else if(tile.equals(BLUETOOTH)) {
+        } else if(tile.equals(QuickSettingsModel.BLUETOOTH)) {
             // Bluetooth
             if (mModel.deviceSupportsBluetooth()) {
                 inflateTile(parent,
@@ -536,7 +519,7 @@ public class QuickSettings {
                             }
                         }, tile, 0);
             }
-        } else if(tile.equals(LOCATION)) {
+        } else if(tile.equals(QuickSettingsModel.LOCATION)) {
             // Location
             inflateTile(parent,
                             new View.OnClickListener() {
@@ -554,7 +537,7 @@ public class QuickSettings {
                             return true;
                         }
                     }, tile, R.layout.quick_settings_tile_location);
-        } else if(tile.equals(NFC)) {
+        } else if(tile.equals(QuickSettingsModel.NFC)) {
             // Near field communication
             inflateTile(parent,
                     new View.OnClickListener() {
@@ -570,6 +553,24 @@ public class QuickSettings {
                             return true;
                         }
                     }, tile, 0);
+        } else if(tile.equals(QuickSettingsModel.SYNC)) {
+            // Synchronization
+            inflateTile(parent,
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            ContentResolver.setMasterSyncAutomatically(ContentResolver
+                                    .getMasterSyncAutomatically() ? false : true);
+                            mModel.refreshSyncTile();
+                        }
+                    },
+                    new View.OnLongClickListener() {
+                            @Override
+                            public boolean onLongClick(View v) {
+                                startSettingsActivity(android.provider.Settings.ACTION_SYNC_SETTINGS);
+                                return true;
+                            }
+                        }, tile, 0);
         }
     }
 
@@ -691,7 +692,7 @@ public class QuickSettings {
         Resources r = mContext.getResources();
 
         // Update the model
-        mModel.updateResources();
+        mModel.updateResources(mTiles);
 
         // Update the User, Time, and Settings tiles spans, and reset everything else
         int span = r.getInteger(R.integer.quick_settings_user_time_settings_tile_span);
@@ -728,7 +729,7 @@ public class QuickSettings {
     }
 
     private void addTileToModel(QuickSettingsTileView tile, String name) {
-        if(name.equals(WIFI)) {
+        if(name.equals(QuickSettingsModel.WIFI)) {
             mModel.addWifiTile(tile, new QuickSettingsModel.RefreshCallback() {
                 @Override
                 public void refreshView(QuickSettingsTileView view, State state) {
@@ -742,7 +743,7 @@ public class QuickSettings {
                             (wifiState.connected) ? wifiState.label : ""));
                 }
             });
-        } else if (name.equals(DATA)) {
+        } else if (name.equals(QuickSettingsModel.DATA)) {
             mModel.addRSSITile(tile, new QuickSettingsModel.RefreshCallback() {
                 @Override
                 public void refreshView(QuickSettingsTileView view, State state) {
@@ -764,16 +765,7 @@ public class QuickSettings {
                             state.label));
                 }
             });
-        } else if (name.equals(SCREEN_ROTATION)) {
-            mModel.addRotationLockTile(tile, new QuickSettingsModel.RefreshCallback() {
-                @Override
-                public void refreshView(QuickSettingsTileView view, State state) {
-                    TextView tv = (TextView) view.findViewById(R.id.tile_textview);
-                    tv.setCompoundDrawablesWithIntrinsicBounds(0, state.iconId, 0, 0);
-                    tv.setText(state.label);
-                }
-            });
-        } else if (name.equals(BATTERY)) {
+        } else if (name.equals(QuickSettingsModel.BATTERY)) {
             mModel.addBatteryTile(tile, new QuickSettingsModel.RefreshCallback() {
                 @Override
                 public void refreshView(QuickSettingsTileView view, State state) {
@@ -801,7 +793,7 @@ public class QuickSettings {
                             mContext.getString(R.string.accessibility_quick_settings_battery, t));
                 }
             });
-        } else if (name.equals(AIRPLANE)) {
+        } else if (name.equals(QuickSettingsModel.AIRPLANE)) {
             mModel.addAirplaneModeTile(tile, new QuickSettingsModel.RefreshCallback() {
                 @Override
                 public void refreshView(QuickSettingsTileView view, State state) {
@@ -816,7 +808,7 @@ public class QuickSettings {
                     tv.setText(state.label);
                 }
             });
-        } else if (name.equals(BLUETOOTH)) {
+        } else if (name.equals(QuickSettingsModel.BLUETOOTH)) {
             mBluetoothAdapter =  BluetoothAdapter.getDefaultAdapter();
             mModel.addBluetoothTile(tile, new QuickSettingsModel.RefreshCallback() {
                 @Override
@@ -846,7 +838,7 @@ public class QuickSettings {
                     tv.setText(label);
                 }
             });
-        } else if (name.equals(LOCATION)) {
+        } else if (name.equals(QuickSettingsModel.LOCATION)) {
             mModel.addLocationTile(tile, new QuickSettingsModel.RefreshCallback() {
                 @Override
                 public void refreshView(QuickSettingsTileView view, State state) {
@@ -862,16 +854,24 @@ public class QuickSettings {
                     }
                 }
             });
-        } else if (name.equals(NFC)) {
-            mModel.addNfcTile(tile, new QuickSettingsModel.RefreshCallback() {
+        } else if (name.equals(QuickSettingsModel.NFC)) {
+            mModel.addNfcTile(tile, getGenericRefreshCallback());
+        } else if (name.equals(QuickSettingsModel.SYNC)) {
+            mModel.addSyncTile(tile, getGenericRefreshCallback());
+        } else if (name.equals(QuickSettingsModel.SCREEN_ROTATION)) {
+            mModel.addRotationLockTile(tile, getGenericRefreshCallback());
+        }
+    }
+
+    private QuickSettingsModel.RefreshCallback getGenericRefreshCallback() {
+        return new QuickSettingsModel.RefreshCallback() {
                 @Override
                 public void refreshView(QuickSettingsTileView view, State state) {
                     TextView tv = (TextView) view.findViewById(R.id.tile_textview);
                     tv.setCompoundDrawablesWithIntrinsicBounds(0, state.iconId, 0, 0);
                     tv.setText(state.label);
                 }
-            });
-        }
+            };
     }
 
     private void removeAllBrightnessDialogCallbacks() {

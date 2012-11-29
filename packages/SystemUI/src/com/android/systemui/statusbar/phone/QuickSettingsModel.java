@@ -49,8 +49,8 @@ import com.android.systemui.statusbar.policy.CurrentUserTracker;
 import com.android.systemui.statusbar.policy.LocationController.LocationGpsStateChangeCallback;
 import com.android.systemui.statusbar.policy.NetworkController.NetworkSignalChangedCallback;
 
+import java.util.Arrays;
 import java.util.List;
-
 
 class QuickSettingsModel implements BluetoothStateChangeCallback,
         NetworkSignalChangedCallback,
@@ -60,6 +60,24 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
 
     // Sett InputMethoManagerService
     private static final String TAG_TRY_SUPPRESSING_IME_SWITCHER = "TrySuppressingImeSwitcher";
+
+    protected static final String TILE_SEPARATOR = "|";
+    protected static final String WIFI = "WIFI";
+    protected static final String BLUETOOTH = "BLUETOOTH";
+    protected static final String LOCATION = "LOCATION";
+    protected static final String DATA = "DATA";
+    protected static final String NFC = "NFC";
+    protected static final String SCREEN_ROTATION = "SCREEN_ROTATION";
+    protected static final String AIRPLANE = "AIRPLANE";
+    protected static final String BATTERY = "BATTERY";
+    protected static final String SYNC = "SYNC";
+    // TODO: Moar toggles
+    //protected static final String BRIGHTNESS = "BRIGHTNESS";
+    //protected static final String CLOCK = "CLOCK";
+
+    protected static final String DEFAULT_TILES = WIFI + TILE_SEPARATOR
+            + DATA + TILE_SEPARATOR + BATTERY + TILE_SEPARATOR
+            + AIRPLANE + TILE_SEPARATOR + BLUETOOTH;
 
     /** Represents the state of a given attribute. */
     static class State {
@@ -123,7 +141,7 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
     private BroadcastReceiver mNfcReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (NfcAdapter.ACTION_ADAPTER_STATE_CHANGED.equals(intent.getAction())) {
+            if (intent.getAction().equals(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED)) {
                 refreshNfcTile();
             }
         }
@@ -257,6 +275,10 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
     private RefreshCallback mSettingsCallback;
     private State mSettingsState = new State();
 
+    private QuickSettingsTileView mSyncTile;
+    private RefreshCallback mSyncCallback;
+    private State mSyncState = new State();
+
     public QuickSettingsModel(Context context) {
         mContext = context;
         mHandler = new Handler();
@@ -288,13 +310,30 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
         context.registerReceiver(mNfcReceiver, nfcIntentFilter);
     }
 
-    void updateResources() {
+    void updateResources(String[] tiles) {
         refreshSettingsTile();
-        refreshBatteryTile();
-        refreshBluetoothTile();
         refreshBrightnessTile();
-        refreshRotationLockTile();
+        if(showTile(tiles, BATTERY)) {
+            refreshBatteryTile();
+        }
+        if(showTile(tiles, BLUETOOTH)) {
+            refreshBluetoothTile();    
+        }
+        if(showTile(tiles, SCREEN_ROTATION)) {
+            refreshRotationLockTile();
+        }
+        if(showTile(tiles, NFC)) {
+            refreshNfcTile();
+        }
+        if(showTile(tiles, SYNC)) {
+            refreshSyncTile();
+        }
     }
+
+    boolean showTile(String[] tiles, String tile) {
+        return Arrays.asList(tiles).contains(tile);
+    }
+
 
     // Settings
     void addSettingsTile(QuickSettingsTileView view, RefreshCallback cb) {
@@ -570,16 +609,16 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
     void addNfcTile(QuickSettingsTileView view, RefreshCallback cb) {
         mNfcTile = view;
         mNfcCallback = cb;
-        mNfcCallback.refreshView(mNfcTile, mNfcState);
+        onNfcStateChanged();
     }
 
     public void onNfcStateChanged() {
-        NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(mContext);
-        if (nfcAdapter == null) {
+        NfcAdapter adapter = NfcAdapter.getDefaultAdapter(mContext);
+        if (adapter == null) {
             return;
         }
 
-        final boolean isNfcEnabled = nfcAdapter.isEnabled();
+        final boolean isNfcEnabled = adapter.isEnabled();
 
         mNfcState.enabled = isNfcEnabled;
         mNfcState.iconId = isNfcEnabled
@@ -597,6 +636,34 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
     void refreshNfcTile() {
         if (mNfcTile != null) {
             onNfcStateChanged();
+        }
+    }
+
+    // Synchronization
+    void addSyncTile(QuickSettingsTileView view, RefreshCallback cb) {
+        mSyncTile = view;
+        mSyncCallback = cb;
+        onSyncStateChanged();
+    }
+
+    void onSyncStateChanged() {
+        boolean isSyncEnabled = ContentResolver.getMasterSyncAutomatically();
+        mSyncState.enabled = isSyncEnabled;
+        mSyncState.iconId = isSyncEnabled
+                ? R.drawable.ic_qs_sync_on
+                : R.drawable.ic_qs_sync_off;
+        mSyncState.label = isSyncEnabled
+                ? mContext.getString(R.string.quick_settings_sync_label)
+                : mContext.getString(R.string.quick_settings_sync_off_label);
+
+        if (mSyncTile != null && mSyncCallback != null) {
+            mSyncCallback.refreshView(mSyncTile, mSyncState);
+        }
+    }
+
+    void refreshSyncTile() {
+        if (mSyncTile != null) {
+            onSyncStateChanged();
         }
     }
 
@@ -783,5 +850,6 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
         onBrightnessLevelChanged();
         onNextAlarmChanged();
         onBugreportChanged();
+        onSyncStateChanged();
     }
 }
