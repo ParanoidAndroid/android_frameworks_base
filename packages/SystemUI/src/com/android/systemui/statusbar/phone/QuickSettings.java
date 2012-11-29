@@ -210,8 +210,8 @@ public class QuickSettings {
         mBar = bar;
     }
 
-    public void setService(BaseStatusBar phoneStatusBar) {
-        mStatusBarService = phoneStatusBar;
+    public void setService(BaseStatusBar statusBar) {
+        mStatusBarService = statusBar;
     }
 
     public BaseStatusBar getService() {
