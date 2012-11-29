@@ -46,6 +46,7 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
+import android.nfc.NfcAdapter;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.RemoteException;
@@ -99,6 +100,7 @@ public class QuickSettings {
     private static final String BLUETOOTH = "BLUETOOTH";
     private static final String LOCATION = "LOCATION";
     private static final String DATA = "DATA";
+    private static final String NFC = "NFC";
     private static final String SCREEN_ROTATION = "SCREEN_ROTATION";
     private static final String AIRPLANE = "AIRPLANE";
     private static final String BATTERY = "BATTERY";
@@ -455,7 +457,7 @@ public class QuickSettings {
                     new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            changeWifiState(!isWifiOn(mContext));
+                            changeWifiState(!isWifiOn());
                         }
                     },
                     new View.OnLongClickListener() {
@@ -464,8 +466,7 @@ public class QuickSettings {
                             startSettingsActivity(android.provider.Settings.ACTION_WIFI_SETTINGS);
                             return true;
                         }
-                    },
-                    tile, 0);
+                    }, tile, 0);
         } else if(tile.equals(DATA)) {
             if (mModel.deviceSupportsTelephony()) {
                 // RSSI
@@ -509,8 +510,7 @@ public class QuickSettings {
                         public void onClick(View v) {
                             startSettingsActivity(Intent.ACTION_POWER_USAGE_SUMMARY);
                         }
-                    }, null, tile,
-                    R.layout.quick_settings_tile_battery);
+                    }, null, tile, R.layout.quick_settings_tile_battery);
         } else if(tile.equals(AIRPLANE)) {
             // Airplane Mode
             inflateTile(parent, null, null, tile, 0);
@@ -553,8 +553,23 @@ public class QuickSettings {
                             startSettingsActivity(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                             return true;
                         }
+                    }, tile, R.layout.quick_settings_tile_location);
+        } else if(tile.equals(NFC)) {
+            // Near field communication
+            inflateTile(parent,
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            changeNfcState();
+                        }
                     },
-                    tile, R.layout.quick_settings_tile_location);
+                    new View.OnLongClickListener() {
+                        @Override
+                        public boolean onLongClick(View v) {
+                            startSettingsActivity(android.provider.Settings.ACTION_WIRELESS_SETTINGS);
+                            return true;
+                        }
+                    }, tile, 0);
         }
     }
 
@@ -712,11 +727,6 @@ public class QuickSettings {
         parent.addView(tile);
     }
 
-   /* private boolean showTile(String tile) {
-        String tiles = Settings.System.getString(mContext.getContentResolver(),
-                Settings.System.QUICK_SETTINGS_ENTRIES);
-    }*/
-
     private void addTileToModel(QuickSettingsTileView tile, String name) {
         if(name.equals(WIFI)) {
             mModel.addWifiTile(tile, new QuickSettingsModel.RefreshCallback() {
@@ -850,6 +860,15 @@ public class QuickSettings {
                         tv.setText(mContext.getString(R.string.quick_settings_location_off_label));
                         iv.setImageResource(R.drawable.ic_qs_location_off);
                     }
+                }
+            });
+        } else if (name.equals(NFC)) {
+            mModel.addNfcTile(tile, new QuickSettingsModel.RefreshCallback() {
+                @Override
+                public void refreshView(QuickSettingsTileView view, State state) {
+                    TextView tv = (TextView) view.findViewById(R.id.tile_textview);
+                    tv.setCompoundDrawablesWithIntrinsicBounds(0, state.iconId, 0, 0);
+                    tv.setText(state.label);
                 }
             });
         }
@@ -989,8 +1008,8 @@ public class QuickSettings {
         }
     };
 
-    public boolean isWifiOn(Context context) {
-        WifiManager wifiManager = (WifiManager) context
+    public boolean isWifiOn() {
+        WifiManager wifiManager = (WifiManager) mContext
                 .getSystemService(Context.WIFI_SERVICE);
         if (wifiManager != null) {
             switch (wifiManager.getWifiState()) {
@@ -1021,6 +1040,23 @@ public class QuickSettings {
                 }
 
                 wifiManager.setWifiEnabled(desiredState);
+            }
+        });
+    }
+
+    private void changeNfcState() {
+        final NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(mContext);
+        if (nfcAdapter == null) {
+            return;
+        }
+
+        AsyncTask.execute(new Runnable() {
+            public void run() {
+                if (nfcAdapter.isEnabled()) {
+                    nfcAdapter.disable();
+                } else {
+                    nfcAdapter.enable();
+                }
             }
         });
     }

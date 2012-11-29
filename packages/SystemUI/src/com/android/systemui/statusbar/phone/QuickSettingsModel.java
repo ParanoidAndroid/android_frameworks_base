@@ -30,6 +30,7 @@ import android.database.ContentObserver;
 import android.graphics.drawable.Drawable;
 import android.hardware.display.WifiDisplayStatus;
 import android.location.LocationManager;
+import android.nfc.NfcAdapter;
 import android.os.Handler;
 import android.os.UserHandle;
 import android.provider.Settings;
@@ -115,6 +116,15 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
             if (intent.getAction().equals(LocationManager.PROVIDERS_CHANGED_ACTION)
                     && mLocationCallback != null && mLocationTile != null) {
                 mLocationCallback.refreshView(mLocationTile, mLocationState);
+            }
+        }
+    };
+
+    private BroadcastReceiver mNfcReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (NfcAdapter.ACTION_ADAPTER_STATE_CHANGED.equals(intent.getAction())) {
+                refreshNfcTile();
             }
         }
     };
@@ -223,6 +233,10 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
     private RefreshCallback mLocationCallback;
     private State mLocationState = new State();
 
+    private QuickSettingsTileView mNfcTile;
+    private RefreshCallback mNfcCallback;
+    private State mNfcState = new State();
+
     private QuickSettingsTileView mImeTile;
     private RefreshCallback mImeCallback = null;
     private State mImeState = new State();
@@ -268,6 +282,10 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
         IntentFilter locationIntentFilter = new IntentFilter();
         locationIntentFilter.addAction(LocationManager.PROVIDERS_CHANGED_ACTION);
         context.registerReceiver(mLocationReceiver, locationIntentFilter);
+
+        IntentFilter nfcIntentFilter = new IntentFilter();
+        nfcIntentFilter.addAction(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED);
+        context.registerReceiver(mNfcReceiver, nfcIntentFilter);
     }
 
     void updateResources() {
@@ -546,6 +564,40 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
     public void onLocationGpsStateChanged(boolean inUse, String description) {
         mLocationState.enabled = inUse;
         mLocationState.label = description;
+    }
+
+    // Near field communication
+    void addNfcTile(QuickSettingsTileView view, RefreshCallback cb) {
+        mNfcTile = view;
+        mNfcCallback = cb;
+        mNfcCallback.refreshView(mNfcTile, mNfcState);
+    }
+
+    public void onNfcStateChanged() {
+        NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(mContext);
+        if (nfcAdapter == null) {
+            return;
+        }
+
+        final boolean isNfcEnabled = nfcAdapter.isEnabled();
+
+        mNfcState.enabled = isNfcEnabled;
+        mNfcState.iconId = isNfcEnabled
+                ? R.drawable.ic_notify_settings_normal
+                : R.drawable.ic_notify_settings_pressed;
+        mNfcState.label = isNfcEnabled
+                ? mContext.getString(R.string.quick_settings_nfc_label)
+                : mContext.getString(R.string.quick_settings_nfc_off_label);
+
+        if (mNfcTile != null && mNfcCallback != null) {
+            mNfcCallback.refreshView(mNfcTile, mNfcState);
+        }
+    }
+
+    void refreshNfcTile() {
+        if (mNfcTile != null) {
+            onNfcStateChanged();
+        }
     }
 
     // Bug report
