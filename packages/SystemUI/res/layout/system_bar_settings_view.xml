@@ -15,9 +15,8 @@
  * limitations under the License.
 -->
 
-<com.android.systemui.statusbar.tablet.SettingsView
+<LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:systemui="http://schemas.android.com/apk/res/com.android.systemui"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -37,5 +36,5 @@
             />
     </com.android.systemui.statusbar.phone.QuickSettingsScrollView>
 
-</com.android.systemui.statusbar.tablet.SettingsView>
+</LinearLayout>
 

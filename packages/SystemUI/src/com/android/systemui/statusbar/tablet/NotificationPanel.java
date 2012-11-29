@@ -78,12 +78,6 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
 
     Choreographer mChoreo = new Choreographer();
 
-    BaseStatusBar mStatusBar;
-    BluetoothController mBluetoothController;
-    BatteryController mBatteryController;
-    LocationController mLocationController;
-    NetworkController mNetworkController;
-
     QuickSettingsContainerView mSettingsContainer;
     QuickSettings mQS;
 
@@ -120,6 +114,8 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
         // the "X" that appears in place of the clock when the panel is showing notifications
         mClearButton = findViewById(R.id.clear_all_button);
         mClearButton.setOnClickListener(mClearButtonListener);
+
+        addSettingsView();
 
         mShowing = false;
     }
@@ -192,7 +188,9 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
         super.onVisibilityChanged(v, vis);
         // when we hide, put back the notifications
         if (vis != View.VISIBLE) {
-            if (mSettingsView != null) removeSettingsView();
+            if(mSettingsView.getVisibility() != View.GONE) {
+                showSettingsView(false);
+            }
             mNotificationScroller.setVisibility(View.VISIBLE);
             mNotificationScroller.setAlpha(1f);
             mNotificationScroller.scrollTo(0, 0);
@@ -268,8 +266,7 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
 
     public void swapPanels() {
         final View toShow, toHide;
-        if (mSettingsView == null) {
-            addSettingsView();
+        if (mSettingsView.getVisibility() == View.GONE) {
             toShow = mSettingsView;
             toHide = mNotificationScroller;
         } else {
@@ -282,18 +279,13 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
             @Override
             public void onAnimationEnd(Animator _a) {
                 toHide.setVisibility(View.GONE);
-                if (toShow != null) {
-                    toShow.setVisibility(View.VISIBLE);
-                    if (toShow == mSettingsView || mNotificationCount > 0) {
-                        ObjectAnimator.ofFloat(toShow, "alpha", 0f, 1f)
-                                .setDuration(PANEL_FADE_DURATION)
-                                .start();
-                    }
-
-                    if (toHide == mSettingsView) {
-                        removeSettingsView();
-                    }
+                toShow.setVisibility(View.VISIBLE);
+                if (toShow == mSettingsView || mNotificationCount > 0) {
+                    ObjectAnimator.ofFloat(toShow, "alpha", 0f, 1f)
+                            .setDuration(PANEL_FADE_DURATION)
+                            .start();
                 }
+
                 updateClearButton();
                 updatePanelModeButtons();
             }
@@ -316,7 +308,7 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
     }
 
     public void updatePanelModeButtons() {
-        final boolean settingsVisible = (mSettingsView != null);
+        final boolean settingsVisible = mSettingsView.getVisibility() == View.VISIBLE;
         mSettingsButton.setVisibility(!settingsVisible && mSettingsButton.isEnabled() ? View.VISIBLE : View.GONE);
         mNotificationButton.setVisibility(settingsVisible ? View.VISIBLE : View.GONE);
     }
@@ -324,7 +316,7 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
     public boolean isInContentArea(int x, int y) {
         mContentArea.left = mContentFrame.getLeft() + mContentFrame.getPaddingLeft();
         mContentArea.top = mContentFrame.getTop() + mContentFrame.getPaddingTop()
-            + (int)mContentParent.getTranslationY(); // account for any adjustment
+                + (int)mContentParent.getTranslationY(); // account for any adjustment
         mContentArea.right = mContentFrame.getRight() - mContentFrame.getPaddingRight();
         mContentArea.bottom = mContentFrame.getBottom() - mContentFrame.getPaddingBottom();
 
@@ -332,20 +324,19 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
         return mContentArea.contains(x, y);
     }
 
-    void removeSettingsView() {
-        if (mSettingsView != null) {
-            mContentFrame.removeView(mSettingsView);
-            mSettingsView = null;
-        }
+    void showSettingsView(boolean show) {
+        mSettingsView.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
-    public void setupQuickSettings(BaseStatusBar statusBar, NetworkController networkController, BluetoothController bluetoothController,
-            BatteryController batteryController, LocationController locationController) {
-        mStatusBar = statusBar;
-        mBluetoothController = bluetoothController;
-        mBatteryController = batteryController;
-        mLocationController = locationController;
-        mNetworkController = networkController;
+    public void setupQuickSettings(BaseStatusBar statusBar, NetworkController networkController,
+            BluetoothController bluetoothController, BatteryController batteryController,
+            LocationController locationController) {
+
+        // Add Quick Settings
+        mSettingsContainer = (QuickSettingsContainerView)mSettingsView.findViewById(R.id.quick_settings_container);
+        mQS = new QuickSettings(mContext, mSettingsContainer);
+        mQS.setService(statusBar);
+        mQS.setup(networkController, bluetoothController, batteryController, locationController);
     }
 
     // NB: it will be invisible until you show it
@@ -354,12 +345,6 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
         mSettingsView = infl.inflate(R.layout.system_bar_settings_view, mContentFrame, false);
         mSettingsView.setVisibility(View.GONE);
         mContentFrame.addView(mSettingsView);
-
-        // Add Quick Settings
-        mSettingsContainer = (QuickSettingsContainerView)mSettingsView.findViewById(R.id.quick_settings_container);
-        mQS = new QuickSettings(mContext, mSettingsContainer);
-        mQS.setService(mStatusBar);
-        mQS.setup(mNetworkController, mBluetoothController, mBatteryController, mLocationController);
     }
 
     private class Choreographer implements Animator.AnimatorListener {
@@ -477,7 +462,7 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
     public void setSettingsEnabled(boolean settingsEnabled) {
         if (mSettingsButton != null) {
             mSettingsButton.setEnabled(settingsEnabled);
-            mSettingsButton.setVisibility(settingsEnabled ? View.VISIBLE : View.GONE);
+            updatePanelModeButtons();
         }
     }
 }
