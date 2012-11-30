@@ -614,11 +614,10 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
 
     public void onNfcStateChanged() {
         NfcAdapter adapter = NfcAdapter.getDefaultAdapter(mContext);
-        if (adapter == null) {
-            return;
+        boolean isNfcEnabled = false;
+        if (adapter != null) {
+            isNfcEnabled = adapter.isEnabled();
         }
-
-        final boolean isNfcEnabled = adapter.isEnabled();
 
         mNfcState.enabled = isNfcEnabled;
         mNfcState.iconId = isNfcEnabled
