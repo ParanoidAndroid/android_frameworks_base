@@ -239,7 +239,8 @@ public class TabletStatusBar extends BaseStatusBar implements
         lp.gravity = getStatusBarGravity();
         lp.setTitle("SystemBar");
         lp.packageName = mContext.getPackageName();
-        mWindowManager.addView(sb, lp);
+        mStatusBarContainer.addView(sb);
+        mWindowManager.addView(mStatusBarContainer, lp);
     }
 
     // last theme that was applied in order to detect theme change (as opposed
@@ -416,6 +417,7 @@ public class TabletStatusBar extends BaseStatusBar implements
         mNotificationData.clear();
 
         mStatusBarContainer.addView(makeStatusBarView());
+        addPanelWindows();
 
         // recreate notifications.
         for (int i = 0; i < nNotifs; i++) {
@@ -720,18 +722,18 @@ public class TabletStatusBar extends BaseStatusBar implements
     public void showSearchPanel() {
         super.showSearchPanel();
         WindowManager.LayoutParams lp =
-            (android.view.WindowManager.LayoutParams) mStatusBarView.getLayoutParams();
+            (android.view.WindowManager.LayoutParams) mStatusBarContainer.getLayoutParams();
         lp.flags &= ~WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
-        mWindowManager.updateViewLayout(mStatusBarView, lp);
+        mWindowManager.updateViewLayout(mStatusBarContainer, lp);
     }
 
     @Override
     public void hideSearchPanel() {
         super.hideSearchPanel();
         WindowManager.LayoutParams lp =
-            (android.view.WindowManager.LayoutParams) mStatusBarView.getLayoutParams();
+            (android.view.WindowManager.LayoutParams) mStatusBarContainer.getLayoutParams();
         lp.flags |= WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
-        mWindowManager.updateViewLayout(mStatusBarView, lp);
+        mWindowManager.updateViewLayout(mStatusBarContainer, lp);
     }
 
     public int getStatusBarHeight() {
