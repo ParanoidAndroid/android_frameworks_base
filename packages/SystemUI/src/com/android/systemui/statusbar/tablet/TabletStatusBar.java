@@ -181,7 +181,7 @@ public class TabletStatusBar extends BaseStatusBar implements
 
     private int mNavigationIconHints = 0;
 
-    private int mShowSearchHoldoff = 0;
+    private int mShowSearchHoldoff;
 
     public Context getContext() { return mContext; }
 
@@ -218,6 +218,9 @@ public class TabletStatusBar extends BaseStatusBar implements
 
     private void addStatusBarWindow() {
         final View sb = makeStatusBarView();
+
+        mShowSearchHoldoff = mContext.getResources().getInteger(
+                R.integer.config_show_search_delay);
 
         final WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
