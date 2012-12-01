@@ -2862,43 +2862,33 @@ public final class ActivityThread {
                 // Per-App-Extras
                 if (ExtendedPropertiesUtils.isInitialized()) {
                     try {
-                        // Paer-App-Expand
-                        if (ExtendedPropertiesUtils.mGlobalHook.expand == 1) {
-                            // 0 = Normal Desktop
-                            // 1 = Expanded Desktop
-                            Settings.System.putInt(r.activity.getContentResolver(),
-                                Settings.System.EXPANDED_DESKTOP_STATE, 1);
-                        }
-                        // Per-App-Color
-                        else {
-                            for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
-                                // Fetch defaults
-                                String setting = Settings.System.getString(r.activity.getContentResolver(),
-                                        ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i]);
+                        for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
+                            // Fetch defaults
+                            String setting = Settings.System.getString(r.activity.getContentResolver(),
+                                    ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i]);
 
-                                String[] colors = (setting == null || setting.equals("") ?
-                                       ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[i] : setting).split(
+                            String[] colors = (setting == null || setting.equals("") ?
+                                   ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[i] : setting).split(
+                                   ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
+
+                            // Sanity check
+                            if (colors.length < 3) {
+                                colors = ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[i].split(
                                        ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
+                                Settings.System.putString(r.activity.getContentResolver(),
+                                       ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
+                                       ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[i]);
+                            }
 
-                                // Sanity check
-                                if (colors.length < 3) {
-                                    colors = ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[i].split(
-                                           ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
-                                    Settings.System.putString(r.activity.getContentResolver(),
-                                           ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
-                                           ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[i]);
-                                }
+                            // Change color
+                            String currentColor = colors[Integer.parseInt(colors[2])];
+                            String appColor = ExtendedPropertiesUtils.mGlobalHook.colors[i];
+                            String nextColor = appColor == null ? colors[0] : appColor;
 
-                                // Change color
-                                String currentColor = colors[Integer.parseInt(colors[2])];
-                                String appColor = ExtendedPropertiesUtils.mGlobalHook.colors[i];
-                                String nextColor = appColor == null ? colors[0] : appColor;
-
-                                if (nextColor != currentColor) {
-                                    Settings.System.putString(r.activity.getContentResolver(),
-                                           ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
-                                           colors[0] + "|" + nextColor + "|1");
-                                }
+                            if (nextColor != currentColor) {
+                                Settings.System.putString(r.activity.getContentResolver(),
+                                       ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
+                                       colors[0] + "|" + nextColor + "|1");
                             }
                         }
                     } catch (Exception e) {
@@ -3213,22 +3203,6 @@ public final class ActivityThread {
 
     final void performStopActivity(IBinder token, boolean saveState) {
         ActivityClientRecord r = mActivities.get(token);
-
-        // Per-App-Extras
-        if (ExtendedPropertiesUtils.isInitialized()) {
-            try {
-                // Paer-App-Expand
-                if (ExtendedPropertiesUtils.mGlobalHook.expand == 1) {
-                    // 0 = Normal Desktop
-                    // 1 = Expanded Desktop
-                    Settings.System.putInt(r.activity.getContentResolver(),
-                        Settings.System.EXPANDED_DESKTOP_STATE, 0);
-                }
-            } catch (Exception e) {
-                    // Current application is null, or hook is not set
-            }
-        }
-
         performStopActivityInner(r, null, false, saveState);
     }
 
@@ -3347,9 +3321,7 @@ public final class ActivityThread {
 
     private void updateVisibility(ActivityClientRecord r, boolean show) {
         View v = r.activity.mDecor;
-
         if (v != null) {
-            Log.d("PARANOID:updateVisibility", "Name="+ExtendedPropertiesUtils.mGlobalHook.name+" show="+show);
             if (show) {
                 if (!r.activity.mVisibleFromServer) {
                     r.activity.mVisibleFromServer = true;
@@ -3418,8 +3390,6 @@ public final class ActivityThread {
             Log.w(TAG, "handleWindowVisibility: no activity for token " + token);
             return;
         }
-
-        Log.d("PARANOID:handleWindowVisibility", "Name="+ExtendedPropertiesUtils.mGlobalHook.name+" show="+show);
         
         if (!show && !r.stopped) {
             performStopActivityInner(r, null, show, false);
