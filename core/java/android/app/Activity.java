@@ -5208,6 +5208,7 @@ public class Activity extends ContextThemeWrapper
                         String appColor = ExtendedPropertiesUtils.mGlobalHook.colors[i];
                         String nextColor = appColor == null ? colors[0] : appColor;
 
+                        // Change color if colors are actually different or at start-up
                         if (!nextColor.toUpperCase().equals(currentColor.toUpperCase()) ||
                             ExtendedPropertiesUtils.mGlobalHook.firstRun == 0) {
                             Settings.System.putString(this.getContentResolver(),
