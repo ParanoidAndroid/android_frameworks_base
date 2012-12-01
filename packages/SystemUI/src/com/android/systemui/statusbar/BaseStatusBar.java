@@ -48,6 +48,12 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -61,6 +67,7 @@ import android.os.UserHandle;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.ExtendedPropertiesUtils;
 import android.util.Log;
 import android.util.Slog;
 import android.view.Display;
@@ -81,6 +88,7 @@ import android.widget.RemoteViews;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.math.BigInteger;
 
 public abstract class BaseStatusBar extends SystemUI implements
         CommandQueue.Callbacks {
@@ -388,6 +396,36 @@ public abstract class BaseStatusBar extends SystemUI implements
             mNotificationBlamePopup.dismiss();
             mNotificationBlamePopup = null;
         }
+    }
+
+    public void updateColor(ViewGroup view, boolean defaults) {
+        if (defaults) {
+            Bitmap bm = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+            Canvas cnv = new Canvas(bm);
+            cnv.drawColor(0xFF000000);
+            view.setBackground(new BitmapDrawable(bm));
+            return;
+        }
+
+        String setting = Settings.System.getString(mContext.getContentResolver(),
+                Settings.System.STATUS_BAR_COLOR);
+
+        String[] colors = (setting == null || setting.equals("")  ?
+                ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[
+                ExtendedPropertiesUtils.PARANOID_COLORS_NAVBAR] : setting).split(
+                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
+        String currentColor = colors[Integer.parseInt(colors[2])];
+        int speed = colors.length < 4 ? 500 : Integer.parseInt(colors[3]);
+
+        Bitmap bm = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+        Canvas cnv = new Canvas(bm);
+        cnv.drawColor(new BigInteger(currentColor, 16).intValue());
+
+        TransitionDrawable transition = new TransitionDrawable(new Drawable[]{
+                view.getBackground(), new BitmapDrawable(bm)});
+        transition.setCrossFadeEnabled(true);
+        view.setBackground(transition);
+        transition.startTransition(speed);
     }
 
     public void dismissIntruder() {

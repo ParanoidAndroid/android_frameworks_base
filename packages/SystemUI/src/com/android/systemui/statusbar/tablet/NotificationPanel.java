@@ -44,6 +44,7 @@ import com.android.systemui.statusbar.policy.BluetoothController;
 import com.android.systemui.statusbar.policy.NetworkController;
 import com.android.systemui.statusbar.policy.NotificationRowLayout;
 import com.android.systemui.statusbar.policy.LocationController;
+import com.android.systemui.statusbar.phone.PanelBar;
 import com.android.systemui.statusbar.phone.QuickSettings;
 import com.android.systemui.statusbar.phone.QuickSettingsContainerView;
 
@@ -66,6 +67,7 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
     View mNotificationScroller;
     ViewGroup mContentFrame;
     Rect mContentArea = new Rect();
+    View mNotificationArea;
     View mSettingsView;
     ViewGroup mContentParent;
     TabletStatusBar mBar;
@@ -81,6 +83,18 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
     QuickSettingsContainerView mSettingsContainer;
     QuickSettings mQS;
 
+    // Simple callback used to provide a bar to QuickSettings
+    class QuickSettingsCallback extends PanelBar {
+        public QuickSettingsCallback(Context context, AttributeSet attrs) {
+            super(context, attrs);
+        }
+
+        @Override
+        public void collapseAllPanels(boolean animate) {
+            show(false, animate);
+        }
+    }
+
     public NotificationPanel(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
@@ -91,6 +105,10 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
 
     public void setBar(TabletStatusBar b) {
         mBar = b;
+    }
+
+    public void setNotificationArea(View n) {
+        mNotificationArea = n;
     }
 
     @Override
@@ -159,6 +177,7 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
             mShowing = show;
             setVisibility(show ? View.VISIBLE : View.GONE);
         }
+        mNotificationArea.setVisibility(show ? View.INVISIBLE : View.VISIBLE);
     }
 
     /**
@@ -336,6 +355,7 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
         mSettingsContainer = (QuickSettingsContainerView)mSettingsView.findViewById(R.id.quick_settings_container);
         mQS = new QuickSettings(mContext, mSettingsContainer);
         mQS.setService(statusBar);
+        mQS.setBar(new QuickSettingsCallback(mContext, null));
         mQS.setup(networkController, bluetoothController, batteryController, locationController);
     }
 

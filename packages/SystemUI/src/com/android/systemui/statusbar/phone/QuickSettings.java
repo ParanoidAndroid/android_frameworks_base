@@ -190,7 +190,7 @@ public class QuickSettings {
                 null, null);
     }
 
-    void setBar(PanelBar bar) {
+    public void setBar(PanelBar bar) {
         mBar = bar;
     }
 
@@ -888,35 +888,39 @@ public class QuickSettings {
     };
 
     private void showBrightnessDialog() {
-        if (mBrightnessDialog == null) {
-            mBrightnessDialog = new Dialog(mContext);
-            mBrightnessDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-            mBrightnessDialog.setContentView(R.layout.quick_settings_brightness_dialog);
-            mBrightnessDialog.setCanceledOnTouchOutside(true);
+        try {
+            if (mBrightnessDialog == null) {
+                mBrightnessDialog = new Dialog(mContext);
+                mBrightnessDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                mBrightnessDialog.setContentView(R.layout.quick_settings_brightness_dialog);
+                mBrightnessDialog.setCanceledOnTouchOutside(true);
 
-            mBrightnessController = new BrightnessController(mContext,
-                    (ImageView) mBrightnessDialog.findViewById(R.id.brightness_icon),
-                    (ToggleSlider) mBrightnessDialog.findViewById(R.id.brightness_slider));
-            mBrightnessController.addStateChangedCallback(mModel);
-            mBrightnessDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                @Override
-                public void onDismiss(DialogInterface dialog) {
-                    mBrightnessController = null;
-                }
-            });
+                mBrightnessController = new BrightnessController(mContext,
+                        (ImageView) mBrightnessDialog.findViewById(R.id.brightness_icon),
+                        (ToggleSlider) mBrightnessDialog.findViewById(R.id.brightness_slider));
+                mBrightnessController.addStateChangedCallback(mModel);
+                mBrightnessDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        mBrightnessController = null;
+                    }
+                });
 
-            mBrightnessDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
-            mBrightnessDialog.getWindow().getAttributes().privateFlags |=
-                    WindowManager.LayoutParams.PRIVATE_FLAG_SHOW_FOR_ALL_USERS;
-            mBrightnessDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-        }
-        if (!mBrightnessDialog.isShowing()) {
-            try {
-                WindowManagerGlobal.getWindowManagerService().dismissKeyguard();
-            } catch (RemoteException e) {
+                mBrightnessDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+                mBrightnessDialog.getWindow().getAttributes().privateFlags |=
+                        WindowManager.LayoutParams.PRIVATE_FLAG_SHOW_FOR_ALL_USERS;
+                mBrightnessDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
             }
-            mBrightnessDialog.show();
-            dismissBrightnessDialog(mBrightnessDialogLongTimeout);
+            if (!mBrightnessDialog.isShowing()) {
+                try {
+                    WindowManagerGlobal.getWindowManagerService().dismissKeyguard();
+                } catch (RemoteException e) {
+                }
+                mBrightnessDialog.show();
+                dismissBrightnessDialog(mBrightnessDialogLongTimeout);
+            }
+        } catch(NullPointerException e) {
+            e.printStackTrace();
         }
     }
 
