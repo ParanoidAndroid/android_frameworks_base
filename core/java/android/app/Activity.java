@@ -4067,7 +4067,7 @@ public class Activity extends ContextThemeWrapper
         }
     }
     
-    void makeVisible() {
+    void makeVisible() {       
         if (!mWindowAdded) {
             ViewManager wm = getWindowManager();
             wm.addView(mDecor, getWindow().getAttributes());
@@ -5178,8 +5178,6 @@ public class Activity extends ContextThemeWrapper
             try {
                 // Per-App-Expand
                 if (ExtendedPropertiesUtils.mGlobalHook.expand == 1) {
-                    // 0 = Normal Desktop
-                    // 1 = Expanded Desktop
                     Settings.System.putInt(this.getContentResolver(),
                         Settings.System.EXPANDED_DESKTOP_STATE, 1);
                 }
@@ -5209,14 +5207,12 @@ public class Activity extends ContextThemeWrapper
                         String nextColor = appColor == null ? colors[0] : appColor;
 
                         // Change color if colors are actually different or at start-up
-                        if (!nextColor.toUpperCase().equals(currentColor.toUpperCase()) ||
-                            ExtendedPropertiesUtils.mGlobalHook.firstRun == 0) {
+                        if (!nextColor.toUpperCase().equals(currentColor.toUpperCase())) {
                             Settings.System.putString(this.getContentResolver(),
                                 ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
                                 colors[0] + "|" + nextColor + "|1");
                         }
                     }
-                    ExtendedPropertiesUtils.mGlobalHook.firstRun = 1;
                 }
             } catch (Exception e) {
                 // Current application is null, or hook is not set
@@ -5253,6 +5249,18 @@ public class Activity extends ContextThemeWrapper
     }
 
     final void performPause() {
+        // Per-App-Extras
+        if (ExtendedPropertiesUtils.isInitialized() &&
+            mParent == null && mDecor != null && mDecor.getParent() != null &&
+            ExtendedPropertiesUtils.mGlobalHook.expand == 1) {
+            try {
+                Settings.System.putInt(this.getContentResolver(),
+                    Settings.System.EXPANDED_DESKTOP_STATE, 0);
+            } catch (Exception e) {
+                    // Current application is null, or hook is not set
+            }
+        }
+
         mFragments.dispatchPause();
         mCalled = false;
         onPause();
@@ -5319,21 +5327,6 @@ public class Activity extends ContextThemeWrapper
     }
 
     final void performDestroy() {
-        // Per-App-Extras
-        if (mWindow != null && ExtendedPropertiesUtils.isInitialized()) {
-            try {
-                // Paer-App-Expand
-                if (ExtendedPropertiesUtils.mGlobalHook.expand == 1) {
-                    // 0 = Normal Desktop
-                    // 1 = Expanded Desktop
-                    Settings.System.putInt(this.getContentResolver(),
-                        Settings.System.EXPANDED_DESKTOP_STATE, 0);
-                }
-            } catch (Exception e) {
-                    // Current application is null, or hook is not set
-            }
-        }
-
         mDestroyed = true;
         mWindow.destroy();
         mFragments.dispatchDestroy();
