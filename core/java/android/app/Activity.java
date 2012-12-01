@@ -4067,7 +4067,7 @@ public class Activity extends ContextThemeWrapper
         }
     }
     
-    void makeVisible() {       
+    void makeVisible() {
         if (!mWindowAdded) {
             ViewManager wm = getWindowManager();
             wm.addView(mDecor, getWindow().getAttributes());

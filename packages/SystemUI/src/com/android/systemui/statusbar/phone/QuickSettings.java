@@ -855,12 +855,7 @@ public class QuickSettings {
                 }
             });
         } else if (name.equals(QuickSettingsModel.NFC)) {
-            // Workaround to attach NFC tile avoiding null pointers on NfcAdapter
-            mHandler.postDelayed(new Runnable() {
-                public void run() {
-                    mModel.addNfcTile(tile, getGenericRefreshCallback());
-                }
-            }, 50);
+            mModel.addNfcTile(tile, getGenericRefreshCallback());
         } else if (name.equals(QuickSettingsModel.SYNC)) {
             mModel.addSyncTile(tile, getGenericRefreshCallback());
         } else if (name.equals(QuickSettingsModel.SCREEN_ROTATION)) {

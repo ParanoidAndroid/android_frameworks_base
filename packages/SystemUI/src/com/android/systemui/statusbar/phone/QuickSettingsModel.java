@@ -31,6 +31,7 @@ import android.graphics.drawable.Drawable;
 import android.hardware.display.WifiDisplayStatus;
 import android.location.LocationManager;
 import android.nfc.NfcAdapter;
+import android.nfc.NfcManager;
 import android.os.Handler;
 import android.os.UserHandle;
 import android.provider.Settings;
@@ -142,6 +143,8 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED)) {
+                NfcManager manager = (NfcManager) context.getSystemService(Context.NFC_SERVICE);
+                mNfcAdapter = manager.getDefaultAdapter();
                 refreshNfcTile();
             }
         }
@@ -210,6 +213,7 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
     private final NextAlarmObserver mNextAlarmObserver;
     private final BugreportObserver mBugreportObserver;
     private final BrightnessObserver mBrightnessObserver;
+    private NfcAdapter mNfcAdapter;
 
     private QuickSettingsTileView mUserTile;
     private RefreshCallback mUserCallback;
@@ -613,11 +617,8 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
     }
 
     public void onNfcStateChanged() {
-        NfcAdapter adapter = NfcAdapter.getDefaultAdapter(mContext);
-        boolean isNfcEnabled = false;
-        if (adapter != null) {
-            isNfcEnabled = adapter.isEnabled();
-        }
+        boolean isNfcEnabled = (mNfcAdapter != null) ?
+                mNfcAdapter.isEnabled() : false;
 
         mNfcState.enabled = isNfcEnabled;
         mNfcState.iconId = isNfcEnabled
