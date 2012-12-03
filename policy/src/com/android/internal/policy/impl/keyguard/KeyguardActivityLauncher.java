@@ -32,6 +32,7 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.UserHandle;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.WindowManager;
 
@@ -117,14 +118,18 @@ public abstract class KeyguardActivityLauncher {
 
     public void launchWidgetPicker(int appWidgetId) {
         Intent pickIntent = new Intent(AppWidgetManager.ACTION_KEYGUARD_APPWIDGET_PICK);
+        boolean homeScreenWidgets = Settings.System.getInt(getContext().getContentResolver(),
+                Settings.System.HOME_SCREEN_WIDGETS, 0) == 1;
 
         pickIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         pickIntent.putExtra(AppWidgetManager.EXTRA_CUSTOM_SORT, false);
         pickIntent.putExtra(AppWidgetManager.EXTRA_CATEGORY_FILTER,
+                homeScreenWidgets ? AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN :
                 AppWidgetProviderInfo.WIDGET_CATEGORY_KEYGUARD);
 
         Bundle options = new Bundle();
         options.putInt(AppWidgetManager.OPTION_APPWIDGET_HOST_CATEGORY,
+                homeScreenWidgets ? AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN :
                 AppWidgetProviderInfo.WIDGET_CATEGORY_KEYGUARD);
         pickIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_OPTIONS, options);
         pickIntent.addFlags(
