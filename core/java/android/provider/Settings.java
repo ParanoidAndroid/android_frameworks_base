@@ -2444,10 +2444,10 @@ public final class Settings {
 
         /**
          * Allows to define the limit notifcations once per X seconds
-         * The value is a an integer.
+         * The value is a an integer in milliseconds.
          * @hide
          */
-        public static final String MUTE_ANNOYING_NOTIFICATIONS_THRESHOLD = "mute_annoying_notifications_threshold";
+        public static final String NOTIFICATION_SOUND_LIMITER_THRESHOLD = "notification_sound_limiter_threshold";
 
         /**
          * Show the pending notification counts as overlays on the status bar

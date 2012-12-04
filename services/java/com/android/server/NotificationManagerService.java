@@ -119,6 +119,9 @@ public class NotificationManagerService extends INotificationManager.Stub
     private static final int NOTIFICATION_PRIORITY_MULTIPLIER = 10;
     private static final int SCORE_DISPLAY_THRESHOLD = Notification.PRIORITY_MIN * NOTIFICATION_PRIORITY_MULTIPLIER;
 
+    private HashMap<String, Long> mNotifSoundLimiter = new HashMap<String, Long>();
+    private long mNotifSoundLimiterThreshold = -1;
+
     private static final boolean ENABLE_BLOCKED_NOTIFICATIONS = true;
     private static final boolean ENABLE_BLOCKED_TOASTS = true;
 
@@ -300,10 +303,6 @@ public class NotificationManagerService extends INotificationManager.Stub
         }
         writeBlockDb();
     }
-
-
-    private HashMap<String, Long> mAnnoyingNotifications = new HashMap<String, Long>();
-    private long mAnnoyingNotificationThreshold = -1;
 
     private static String idDebugString(Context baseContext, String packageName, int id) {
         Context c = null;
@@ -1141,7 +1140,7 @@ public class NotificationManagerService extends INotificationManager.Stub
             if (((mDisabledNotifications & StatusBarManager.DISABLE_NOTIFICATION_ALERTS) == 0)
                     && (!(old != null
                         && (notification.flags & Notification.FLAG_ONLY_ALERT_ONCE) != 0 ))
-                    && !notificationIsAnnoying(pkg)
+                    && !isOverNotifSoundThreshold(pkg)
                     && (r.userId == UserHandle.USER_ALL ||
                         (r.userId == userId && r.userId == currentUser))
                     && mSystemReady) {
@@ -1245,22 +1244,18 @@ public class NotificationManagerService extends INotificationManager.Stub
         idOut[0] = id;
     }
 
-    private boolean notificationIsAnnoying(String pkg) {
-        if (mAnnoyingNotificationThreshold <= 0) {
-            return false;
-        }
+    private boolean isOverNotifSoundThreshold(String pkg) {
+        if (mNotifSoundLimiterThreshold <= 0) return false;
 
         // Skip framework
-        if ("android".equals(pkg)) {
-            return false;
-        }
+        if ("android".equals(pkg)) return false;
 
         long currentTime = System.currentTimeMillis();
-        if (mAnnoyingNotifications.containsKey(pkg)
-                && (currentTime - mAnnoyingNotifications.get(pkg) < mAnnoyingNotificationThreshold)) {
+        if (mNotifSoundLimiter.containsKey(pkg)
+                && (currentTime - mNotifSoundLimiter.get(pkg) < mNotifSoundLimiterThreshold)) {
             return true;
         } else {
-            mAnnoyingNotifications.put(pkg, currentTime);
+            mNotifSoundLimiter.put(pkg, currentTime);
             return false;
         }
     }
@@ -1699,7 +1694,7 @@ public class NotificationManagerService extends INotificationManager.Stub
         void observe() {
             ContentResolver resolver = mContext.getContentResolver();
             resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.MUTE_ANNOYING_NOTIFICATIONS_THRESHOLD), false, this);
+                    Settings.System.NOTIFICATION_SOUND_LIMITER_THRESHOLD), false, this);
             update();
         }
 
@@ -1710,8 +1705,8 @@ public class NotificationManagerService extends INotificationManager.Stub
 
         public void update() {
             ContentResolver resolver = mContext.getContentResolver();
-            mAnnoyingNotificationThreshold = Settings.System.getLong(resolver,
-                    Settings.System.MUTE_ANNOYING_NOTIFICATIONS_THRESHOLD, 0);
+            mNotifSoundLimiterThreshold = Settings.System.getLong(resolver,
+                    Settings.System.NOTIFICATION_SOUND_LIMITER_THRESHOLD, 0);
         }
     }
 }
