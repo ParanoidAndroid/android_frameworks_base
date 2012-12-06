@@ -39,9 +39,23 @@
         android:clipToPadding="false"
         android:gravity="center">
 
-        <include layout="@layout/keyguard_message_area"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal">
+
+            <include layout="@layout/keyguard_targets"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"/>
+
+            <include layout="@layout/keyguard_message_area"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center_horizontal" />
+
+        </LinearLayout>
 
         <View
             android:id="@+id/keyguard_selector_view_frame"

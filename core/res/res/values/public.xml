@@ -2027,34 +2027,4 @@
   <public type="style" name="Widget.Holo.Light.CheckedTextView" id="0x010301da" />
   <public type="style" name="Widget.DeviceDefault.CheckedTextView" id="0x010301db" />
   <public type="style" name="Widget.DeviceDefault.Light.CheckedTextView" id="0x010301dc" />
-
-<!-- ===============================================================
-     Resources added in Paranoid Android (PA 3.0)
-     =============================================================== -->
-
-  <!-- Power menu -->
-  <public type="array" name="shutdown_reboot_options" />
-  <public type="array" name="shutdown_reboot_actions" />
-  <public type="array" name="shutdown_reboot_icons" />
-  <public type="drawable" name="ic_lock_reboot" />
-  <public type="drawable" name="ic_lock_reboot_recovery" />
-  <public type="drawable" name="ic_lock_reboot_bootloader" />
-  <public type="drawable" name="ic_lock_reboot_safemode" />
-  <public type="drawable" name="ic_lock_expanded_desktop" />
-  <public type="drawable" name="ic_lock_expanded_desktop_off" />
-  <public type="string" name="global_actions" />
-  <public type="string" name="global_action_reboot" />
-  <public type="string" name="global_action_expanded_desktop" />
-  <public type="string" name="global_action_expanded_desktop_off" />
-  <public type="string" name="global_action_expanded_desktop_on" />
-  <public type="string" name="reboot_system" />
-  <public type="string" name="reboot_safe_mode" />
-  <public type="string" name="reboot_progress" />
-
-  <!-- Notification light mapping -->
-  <public type="array" name="notification_light_package_mapping" />
-
-  <java-symbol type="string" name="config_deviceKeyHandlerLib" />
-  <java-symbol type="string" name="config_deviceKeyHandlerClass" />
-
 </resources>

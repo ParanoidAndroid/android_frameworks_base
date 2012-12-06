@@ -1354,6 +1354,7 @@
   <java-symbol type="id" name="keyguard_user_selector" />
   <java-symbol type="id" name="key_enter" />
   <java-symbol type="id" name="keyguard_selector_view_frame" />
+  <java-symbol type="id" name="targets" />
   <java-symbol type="integer" name="config_carDockRotation" />
   <java-symbol type="integer" name="config_defaultUiModeType" />
   <java-symbol type="integer" name="config_deskDockRotation" />
@@ -1377,6 +1378,7 @@
   <java-symbol type="layout" name="keyguard_screen_unlock_landscape" />
   <java-symbol type="layout" name="keyguard_screen_unlock_portrait" />
   <java-symbol type="layout" name="keyguard_selector_view" />
+  <java-symbol type="layout" name="keyguard_targets" />
   <java-symbol type="layout" name="keyguard_pattern_view" />
   <java-symbol type="layout" name="keyguard_password_view" />
   <java-symbol type="layout" name="keyguard_pin_view" />
@@ -1817,4 +1819,49 @@
   <!-- From PinyinIME(!!!) -->
   <java-symbol type="string" name="inputMethod" />
 
+  <!-- From power menu -->
+  <java-symbol type="array" name="shutdown_reboot_options" />
+  <java-symbol type="array" name="shutdown_reboot_actions" />
+  <java-symbol type="array" name="shutdown_reboot_icons" />
+  <java-symbol type="drawable" name="ic_lock_reboot" />
+  <java-symbol type="drawable" name="ic_lock_reboot_recovery" />
+  <java-symbol type="drawable" name="ic_lock_reboot_bootloader" />
+  <java-symbol type="drawable" name="ic_lock_reboot_safemode" />
+  <java-symbol type="drawable" name="ic_lock_expanded_desktop" />
+  <java-symbol type="drawable" name="ic_lock_expanded_desktop_off" />
+  <java-symbol type="string" name="global_actions" />
+  <java-symbol type="string" name="global_action_reboot" />
+  <java-symbol type="string" name="global_action_expanded_desktop" />
+  <java-symbol type="string" name="global_action_expanded_desktop_off" />
+  <java-symbol type="string" name="global_action_expanded_desktop_on" />
+  <java-symbol type="string" name="reboot_system" />
+  <java-symbol type="string" name="reboot_safe_mode" />
+  <java-symbol type="string" name="reboot_progress" />
+
+  <!-- From notification light mapping -->
+  <java-symbol type="array" name="notification_light_package_mapping" />
+  <java-symbol type="string" name="config_deviceKeyHandlerLib" />
+  <java-symbol type="string" name="config_deviceKeyHandlerClass" />
+
+  <!-- From lockscreen targets -->
+  <java-symbol type="drawable" name="list_selector_holo_dark" />
+  <java-symbol type="drawable" name="ic_lockscreen_browser" />
+  <java-symbol type="drawable" name="ic_lockscreen_calendar" />
+  <java-symbol type="drawable" name="ic_lockscreen_camera" />
+  <java-symbol type="drawable" name="ic_lockscreen_clock" />
+  <java-symbol type="drawable" name="ic_lockscreen_cloud" />
+  <java-symbol type="drawable" name="ic_lockscreen_dial" />
+  <java-symbol type="drawable" name="ic_lockscreen_download" />
+  <java-symbol type="drawable" name="ic_lockscreen_folder" />
+  <java-symbol type="drawable" name="ic_lockscreen_gallery" />
+  <java-symbol type="drawable" name="ic_lockscreen_game" />
+  <java-symbol type="drawable" name="ic_lockscreen_map" />
+  <java-symbol type="drawable" name="ic_lockscreen_message" />
+  <java-symbol type="drawable" name="ic_lockscreen_music" />
+  <java-symbol type="drawable" name="ic_lockscreen_people" />
+  <java-symbol type="drawable" name="ic_lockscreen_phone" />
+  <java-symbol type="drawable" name="ic_lockscreen_places" />
+  <java-symbol type="drawable" name="ic_lockscreen_search" />
+  <java-symbol type="drawable" name="ic_lockscreen_settings" />
+  <java-symbol type="drawable" name="ic_lockscreen_voice" />
 </resources>

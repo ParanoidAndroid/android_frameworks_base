@@ -2442,6 +2442,14 @@ public final class Settings {
          */
         public static final String VOLBTN_MUSIC_CONTROLS = "volbtn_music_controls";
 
+        /**	
+         * Defines the shortcuts to be shown on lockscreen
+         * Usage is like this: target:icon|target:icon|target:icon
+         * if :icon is not set, default application icon will be used
+         * @hide
+         */
+        public static final String LOCKSCREEN_TARGETS = "lockscreen_targets";
+
         /**
          * Allows to define the limit notifcations once per X seconds
          * The value is a an integer in milliseconds.
