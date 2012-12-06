@@ -72,37 +72,48 @@ public class KeyguardTargets extends LinearLayout {
                 Settings.System.LOCKSCREEN_TARGETS);
         if(apps == null || apps.isEmpty()) return;
         final String[] targets = apps.split("\\|");
+        Resources res = mContext.getResources();
         for(int j = 0; j < targets.length; j++) {
-            final String packageName = targets[j];
+            String target = targets[j];
+            String packageName = null;
+            String resourceString = null;
+            String[] data = target.split(":");
+            packageName = data[0];
+            if(data.length > 1) {
+                resourceString = data[1];
+            }
             ImageView i = new ImageView(mContext);
-            // Target will be around 60% of a normal icon
-            int dimens = Math.round(mContext.getResources()
-                    .getDimensionPixelSize(R.dimen.app_icon_size) / 1.5f);
+            // Target will be around 65% of a normal icon
+            int dimens = Math.round(res.getDimensionPixelSize(
+                    R.dimen.app_icon_size) / 1.5f);
             LinearLayout.LayoutParams vp = 
                     new LinearLayout.LayoutParams(dimens, dimens);
             i.setLayoutParams(vp);
             Drawable img = null;
             try {
-                img = mPackageManager.getApplicationIcon(packageName);
+                final Intent launchIntent = mPackageManager
+                        .getLaunchIntentForPackage(packageName);
+                if(resourceString == null) {
+                    img = mPackageManager.getApplicationIcon(packageName);
+                } else { // Custom icon
+                    img = getDrawable(res, resourceString);
+                }
                 i.setImageDrawable(img);
-                i.setBackground(mContext.getResources().getDrawable(
+                i.setBackground(res.getDrawable(
                         R.drawable.list_selector_holo_dark));
                 i.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View v) {
-                        try {
-                            mContext.startActivity(mPackageManager
-                                    .getLaunchIntentForPackage(packageName));
-                            if(mCallback != null) mCallback.dismiss(false);
-                        } catch(NullPointerException e) {
-                            // No intent found for our package name?
-                        }
+                        mContext.startActivity(launchIntent);
+                        if(mCallback != null) mCallback.dismiss(false);
                     }
                 });
                 addView(i);
                 if(j+1 < targets.length) addSeparator();
             } catch(NameNotFoundException e) {
-                // If no icon found, we skip target for avoiding blank
-                // ImageViews
+                // No custom icon is set and PackageManager fails to found
+                // default application icon
+            } catch(NullPointerException e) {
+                // Something is null?, we better avoid adding the target
             }
         }
     }
@@ -113,5 +124,14 @@ public class KeyguardTargets extends LinearLayout {
                 new LinearLayout.LayoutParams(INNER_PADDING, 0);
         v.setLayoutParams(vp);
         addView(v);
+    }
+
+    private Drawable getDrawable(Resources res, String drawableName){
+        int resourceId = res.getIdentifier(drawableName, "drawable", "android");
+        if(resourceId == 0) {
+            return null;
+        } else {
+            return res.getDrawable(resourceId);
+        }
     }
 }
