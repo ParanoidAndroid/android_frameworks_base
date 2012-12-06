@@ -1845,23 +1845,24 @@
 
   <!-- From lockscreen targets -->
   <java-symbol type="drawable" name="list_selector_holo_dark" />
+  <java-symbol type="drawable" name="ic_lockscreen_alarm" />
   <java-symbol type="drawable" name="ic_lockscreen_browser" />
   <java-symbol type="drawable" name="ic_lockscreen_calendar" />
   <java-symbol type="drawable" name="ic_lockscreen_camera" />
-  <java-symbol type="drawable" name="ic_lockscreen_clock" />
-  <java-symbol type="drawable" name="ic_lockscreen_cloud" />
-  <java-symbol type="drawable" name="ic_lockscreen_dial" />
-  <java-symbol type="drawable" name="ic_lockscreen_download" />
-  <java-symbol type="drawable" name="ic_lockscreen_folder" />
+  <java-symbol type="drawable" name="ic_lockscreen_email" />
+  <java-symbol type="drawable" name="ic_lockscreen_email2" />
+  <java-symbol type="drawable" name="ic_lockscreen_facebook" />
   <java-symbol type="drawable" name="ic_lockscreen_gallery" />
-  <java-symbol type="drawable" name="ic_lockscreen_game" />
-  <java-symbol type="drawable" name="ic_lockscreen_map" />
-  <java-symbol type="drawable" name="ic_lockscreen_message" />
+  <java-symbol type="drawable" name="ic_lockscreen_google_small" />
+  <java-symbol type="drawable" name="ic_lockscreen_gplus" />
+  <java-symbol type="drawable" name="ic_lockscreen_gtalk" />
+  <java-symbol type="drawable" name="ic_lockscreen_maps" />
+  <java-symbol type="drawable" name="ic_lockscreen_movie" />
   <java-symbol type="drawable" name="ic_lockscreen_music" />
-  <java-symbol type="drawable" name="ic_lockscreen_people" />
+  <java-symbol type="drawable" name="ic_lockscreen_nav" />
   <java-symbol type="drawable" name="ic_lockscreen_phone" />
-  <java-symbol type="drawable" name="ic_lockscreen_places" />
-  <java-symbol type="drawable" name="ic_lockscreen_search" />
-  <java-symbol type="drawable" name="ic_lockscreen_settings" />
-  <java-symbol type="drawable" name="ic_lockscreen_voice" />
+  <java-symbol type="drawable" name="ic_lockscreen_podcast" />
+  <java-symbol type="drawable" name="ic_lockscreen_rss" />
+  <java-symbol type="drawable" name="ic_lockscreen_sms" />
+  <java-symbol type="drawable" name="ic_lockscreen_twitter" />
 </resources>

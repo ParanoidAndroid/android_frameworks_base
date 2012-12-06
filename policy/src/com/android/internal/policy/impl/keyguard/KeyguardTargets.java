@@ -83,9 +83,9 @@ public class KeyguardTargets extends LinearLayout {
                 resourceString = data[1];
             }
             ImageView i = new ImageView(mContext);
-            // Target will be around 65% of a normal icon
+            // Target will be 50% of the icon size
             int dimens = Math.round(res.getDimensionPixelSize(
-                    R.dimen.app_icon_size) / 1.5f);
+                    R.dimen.app_icon_size) * .5f);
             LinearLayout.LayoutParams vp = 
                     new LinearLayout.LayoutParams(dimens, dimens);
             i.setLayoutParams(vp);
