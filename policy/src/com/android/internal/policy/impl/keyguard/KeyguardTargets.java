@@ -25,7 +25,10 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.provider.Settings;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -83,11 +86,14 @@ public class KeyguardTargets extends LinearLayout {
                 resourceString = data[1];
             }
             ImageView i = new ImageView(mContext);
-            // Target will be 50% of the icon size for custom icons
-            // and 60% for application icons
             int dimens = Math.round(res.getDimensionPixelSize(
-                    R.dimen.app_icon_size) * (resourceString == null
-                    ? .6f : .5f));
+                    R.dimen.app_icon_size));
+            // Target will be 50% of the icon size for custom icons
+            // and 60% for application icons, unless we're running on
+            // a tablet
+            if(!isScreenLarge()) {
+                dimens *= resourceString == null ? .6f : .5f;
+            }
             LinearLayout.LayoutParams vp = 
                     new LinearLayout.LayoutParams(dimens, dimens);
             i.setLayoutParams(vp);
@@ -95,6 +101,9 @@ public class KeyguardTargets extends LinearLayout {
             try {
                 final Intent launchIntent = mPackageManager
                         .getLaunchIntentForPackage(packageName);
+                if(launchIntent == null) { // No intent found
+                    throw new NameNotFoundException();
+                }
                 if(resourceString == null) {
                     img = mPackageManager.getApplicationIcon(packageName);
                 } else { // Custom icon
@@ -113,7 +122,7 @@ public class KeyguardTargets extends LinearLayout {
                 if(j+1 < targets.length) addSeparator();
             } catch(NameNotFoundException e) {
                 // No custom icon is set and PackageManager fails to found
-                // default application icon
+                // default application icon. Or maybe it was uninstalled
             } catch(NullPointerException e) {
                 // Something is null?, we better avoid adding the target
             }
@@ -135,5 +144,18 @@ public class KeyguardTargets extends LinearLayout {
         } else {
             return res.getDrawable(resourceId);
         }
+    }    
+
+    public boolean isScreenLarge() {
+        DisplayMetrics dm = new DisplayMetrics();
+        WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        display.getMetrics(dm);
+        int shortSize = Math.min(dm.heightPixels, dm.widthPixels);
+        int shortSizeDp = shortSize * DisplayMetrics.DENSITY_DEFAULT / DisplayMetrics.DENSITY_DEVICE;
+        if (shortSizeDp >= 600) {
+            return true;
+        }
+        return false;
     }
 }
