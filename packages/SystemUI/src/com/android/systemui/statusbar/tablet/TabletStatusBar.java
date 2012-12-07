@@ -226,7 +226,7 @@ public class TabletStatusBar extends BaseStatusBar implements
                 R.integer.config_show_search_delay);
 
         mContext.getContentResolver().registerContentObserver(
-            Settings.System.getUriFor(Settings.System.STATUS_BAR_COLOR), false, new ContentObserver(new Handler()) {
+            Settings.System.getUriFor(Settings.System.NAV_BAR_COLOR), false, new ContentObserver(new Handler()) {
                 @Override
                 public void onChange(boolean selfChange) {
                     updateColor((ViewGroup) sb, false);

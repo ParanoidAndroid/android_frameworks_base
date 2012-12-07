@@ -408,6 +408,7 @@ public abstract class BaseStatusBar extends SystemUI implements
         }
 
         String setting = Settings.System.getString(mContext.getContentResolver(),
+                ExtendedPropertiesUtils.isTablet() ? Settings.System.NAV_BAR_COLOR :
                 Settings.System.STATUS_BAR_COLOR);
 
         String[] colors = (setting == null || setting.equals("")  ?
