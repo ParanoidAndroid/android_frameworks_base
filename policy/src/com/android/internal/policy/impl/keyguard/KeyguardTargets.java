@@ -140,11 +140,12 @@ public class KeyguardTargets extends LinearLayout {
     private Drawable getDrawable(Resources res, String drawableName){
         int resourceId = res.getIdentifier(drawableName, "drawable", "android");
         if(resourceId == 0) {
-            return null;
+            Drawable d = Drawable.createFromPath(drawableName);
+            return d;
         } else {
             return res.getDrawable(resourceId);
         }
-    }    
+    }
 
     public boolean isScreenLarge() {
         DisplayMetrics dm = new DisplayMetrics();
