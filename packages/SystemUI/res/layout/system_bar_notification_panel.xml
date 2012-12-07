@@ -27,7 +27,7 @@
     <!-- lift the panel up off the status bar while leaving a touchable are -->
     <Space
         android:id="@+id/system_bar_notification_panel_bottom_space"
-        android:layout_height="56dp"
+        android:layout_height="32dp"
         android:layout_width="478dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
@@ -59,6 +59,7 @@
             android:layout_width="match_parent"
             android:overScrollMode="ifContentScrolls"
             android:layout_weight="1"
+            android:paddingBottom="6dp"
             >
             <com.android.systemui.statusbar.policy.NotificationRowLayout
                 android:id="@+id/content"
