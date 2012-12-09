@@ -1865,4 +1865,8 @@
   <java-symbol type="drawable" name="ic_lockscreen_rss" />
   <java-symbol type="drawable" name="ic_lockscreen_sms" />
   <java-symbol type="drawable" name="ic_lockscreen_twitter" />
+
+  <!-- Extra -->
+  <java-symbol type="integer" name="config_wallpaperMaxWidth" />
+
 </resources>
