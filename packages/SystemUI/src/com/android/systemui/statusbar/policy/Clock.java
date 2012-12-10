@@ -102,18 +102,7 @@ public class Clock extends TextView {
         TypedArray a = context.obtainStyledAttributes(attrs, com.android.systemui.R.styleable.Clock, defStyle, 0);
         mShowAlways = a.getBoolean(com.android.systemui.R.styleable.Clock_showAlways, false);
 
-        Handler handler = new Handler();
-
-        /*mContext.getContentResolver().registerContentObserver(
-            Settings.System.getUriFor(Settings.System.STATUS_BAR_COLOR), false,
-            new ContentObserver(handler) {
-                @Override
-                public void onChange(boolean selfChange) {
-                    updateColor();
-                }});
-        updateColor();*/
-
-        SettingsObserver observer = new SettingsObserver(handler);
+        SettingsObserver observer = new SettingsObserver(new Handler());
         observer.observe();
     }
 
