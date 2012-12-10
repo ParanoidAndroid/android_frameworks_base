@@ -492,6 +492,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private long mPowerKeyTime;
 
     SettingsObserver mSettingsObserver;
+    UserInterfaceObserver mUserInterfaceObserver;
     ShortcutManager mShortcutManager;
     PowerManager.WakeLock mBroadcastWakeLock;
     boolean mHavePendingMediaKeyRepeatWithWakeLock;
@@ -580,6 +581,36 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         @Override public void onChange(boolean selfChange) {
             updateSettings();
             updateRotation(false);
+        }
+    }
+
+    class UserInterfaceObserver extends ContentObserver {
+        UserInterfaceObserver(Handler handler) {
+            super(handler);
+        }
+
+        void observe() {
+            ContentResolver resolver = mContext.getContentResolver();
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.USER_INTERFACE_STATE), false, this);
+        }
+
+        @Override public void onChange(boolean selfChange) {
+            // Reload hybrid properties            
+            ExtendedPropertiesUtils.refreshProperties();
+
+            // Redfine window manager
+            updateSettings();
+            updateRotation(false);
+
+            // Restart UI if necessary
+            if (Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.USER_INTERFACE_STATE, 0) == 2) {
+                try {Runtime.getRuntime().exec("killall com.android.systemui");} catch (Exception ex) {}
+            }
+
+            // Reset trigger
+            Settings.System.putInt(mContext.getContentResolver(), Settings.System.USER_INTERFACE_STATE, 0);
         }
     }
     
@@ -938,8 +969,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         try {
             mOrientationListener.setCurrentRotation(windowManager.getRotation());
         } catch (RemoteException ex) { }
+
         mSettingsObserver = new SettingsObserver(mHandler);
         mSettingsObserver.observe();
+
+        mUserInterfaceObserver = new UserInterfaceObserver(mHandler);
+        mUserInterfaceObserver.observe();
+
         mShortcutManager = new ShortcutManager(context, mHandler);
         mShortcutManager.observe();
         mHomeIntent =  new Intent(Intent.ACTION_MAIN, null);
@@ -1083,6 +1119,62 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         getDimensions();
 
+        // For demo purposes, allow the rotation of the HDMI display to be controlled.
+        // By default, HDMI locks rotation to landscape.
+        if ("portrait".equals(SystemProperties.get("persist.demo.hdmirotation"))) {
+            mHdmiRotation = mPortraitRotation;
+        } else {
+            mHdmiRotation = mLandscapeRotation;
+        }
+        mHdmiRotationLock = SystemProperties.getBoolean("persist.demo.hdmirotationlock", true);
+    }
+
+    public void getDimensions(){
+        // Get actual system DPI and actual sysUI DPI
+        // Needed to first calculate values independend of android scaling, then calculate scaling according to sysUI        
+        int sysDpi = ExtendedPropertiesUtils.getActualProperty("android.dpi");
+        int sysUIDpi = ExtendedPropertiesUtils.getActualProperty("com.android.systemui.dpi");
+
+        // Calculate statusbar and navbar separately from SystemUI
+        int navBarDpi = Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.navbar.dpi"));
+        navBarDpi = navBarDpi == 0 ? sysUIDpi : navBarDpi;
+        int statusBarDpi = Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.statusbar.dpi"));
+        statusBarDpi = statusBarDpi == 0 ? sysUIDpi : statusBarDpi;
+        
+        float statusBarHeight = ((float)mContext.getResources().getDimensionPixelSize(
+                com.android.internal.R.dimen.status_bar_height) *
+                DisplayMetrics.DENSITY_DEVICE / sysDpi) /
+                DisplayMetrics.DENSITY_DEVICE * statusBarDpi;
+
+        float navigationBarHeight = ((float)mContext.getResources().getDimensionPixelSize(
+                com.android.internal.R.dimen.navigation_bar_height) *
+                DisplayMetrics.DENSITY_DEVICE / sysDpi) /
+                DisplayMetrics.DENSITY_DEVICE * navBarDpi;
+
+        float navigationBarWidth = ((float)mContext.getResources().getDimensionPixelSize(
+                com.android.internal.R.dimen.navigation_bar_width) *
+                DisplayMetrics.DENSITY_DEVICE / sysDpi) /
+                DisplayMetrics.DENSITY_DEVICE * navBarDpi;
+
+        float navigationBarHeightLandscape = ((float)mContext.getResources().getDimensionPixelSize(
+                com.android.internal.R.dimen.navigation_bar_height_landscape) *
+                DisplayMetrics.DENSITY_DEVICE / sysDpi) /
+                DisplayMetrics.DENSITY_DEVICE * navBarDpi;
+
+        mStatusBarHeight = Math.round(statusBarHeight);
+
+        // Height of the navigation bar when presented horizontally at bottom
+        mNavigationBarHeightForRotation[mPortraitRotation] = 
+                mNavigationBarHeightForRotation[mUpsideDownRotation] = Math.round(navigationBarHeight);
+
+        mNavigationBarHeightForRotation[mLandscapeRotation] =
+                mNavigationBarHeightForRotation[mSeascapeRotation] = Math.round(navigationBarHeightLandscape);
+
+        // Width of the navigation bar when presented vertically along one side
+        mNavigationBarWidthForRotation[mPortraitRotation] = mNavigationBarWidthForRotation[mUpsideDownRotation] =
+                mNavigationBarWidthForRotation[mLandscapeRotation] = mNavigationBarWidthForRotation[mSeascapeRotation] =
+                Math.round(navigationBarWidth);
+
         int sysLayout = ExtendedPropertiesUtils.getActualProperty("com.android.systemui.layout");
 
         if (sysLayout < 600) {
@@ -1110,56 +1202,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         } else {
             mCanHideNavigationBar = false;
         }
-
-        // For demo purposes, allow the rotation of the HDMI display to be controlled.
-        // By default, HDMI locks rotation to landscape.
-        if ("portrait".equals(SystemProperties.get("persist.demo.hdmirotation"))) {
-            mHdmiRotation = mPortraitRotation;
-        } else {
-            mHdmiRotation = mLandscapeRotation;
-        }
-        mHdmiRotationLock = SystemProperties.getBoolean("persist.demo.hdmirotationlock", true);
-    }
-
-    public void getDimensions(){
-        // Get actual system DPI and actual sysUI DPI
-        // Needed to first calculate values independend of android scaling, then calculate scaling according to sysUI
-        int sysDpi = ExtendedPropertiesUtils.getActualProperty("android.dpi");
-        int sysUIDpi = ExtendedPropertiesUtils.getActualProperty("com.android.systemui.dpi");
-        
-        float statusBarHeight = ((float)mContext.getResources().getDimensionPixelSize(
-                com.android.internal.R.dimen.status_bar_height) *
-                DisplayMetrics.DENSITY_DEVICE / sysDpi) /
-                DisplayMetrics.DENSITY_DEVICE * sysUIDpi;
-
-        float navigationBarHeight = ((float)mContext.getResources().getDimensionPixelSize(
-                com.android.internal.R.dimen.navigation_bar_height) *
-                DisplayMetrics.DENSITY_DEVICE / sysDpi) /
-                DisplayMetrics.DENSITY_DEVICE * sysUIDpi;
-
-        float navigationBarWidth = ((float)mContext.getResources().getDimensionPixelSize(
-                com.android.internal.R.dimen.navigation_bar_width) *
-                DisplayMetrics.DENSITY_DEVICE / sysDpi) /
-                DisplayMetrics.DENSITY_DEVICE * sysUIDpi;
-
-        float navigationBarHeightLandscape = ((float)mContext.getResources().getDimensionPixelSize(
-                com.android.internal.R.dimen.navigation_bar_height_landscape) *
-                DisplayMetrics.DENSITY_DEVICE / sysDpi) /
-                DisplayMetrics.DENSITY_DEVICE * sysUIDpi;
-
-        mStatusBarHeight = Math.round(statusBarHeight);
-
-        // Height of the navigation bar when presented horizontally at bottom
-        mNavigationBarHeightForRotation[mPortraitRotation] = 
-                mNavigationBarHeightForRotation[mUpsideDownRotation] = Math.round(navigationBarHeight);
-
-        mNavigationBarHeightForRotation[mLandscapeRotation] =
-                mNavigationBarHeightForRotation[mSeascapeRotation] = Math.round(navigationBarHeightLandscape);
-
-        // Width of the navigation bar when presented vertically along one side
-        mNavigationBarWidthForRotation[mPortraitRotation] = mNavigationBarWidthForRotation[mUpsideDownRotation] =
-                mNavigationBarWidthForRotation[mLandscapeRotation] = mNavigationBarWidthForRotation[mSeascapeRotation] =
-                Math.round(navigationBarWidth);
 
         // In case that we removed nav bar, set all sizes to 0 again
         if(!mHasNavigationBar){
