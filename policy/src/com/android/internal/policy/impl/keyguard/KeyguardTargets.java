@@ -41,6 +41,7 @@ public class KeyguardTargets extends LinearLayout {
 
     private KeyguardSecurityCallback mCallback;
     private PackageManager mPackageManager;
+    private ContentObserver mContentObserver;
     private Context mContext;
 
     public KeyguardTargets(Context context) {
@@ -50,12 +51,14 @@ public class KeyguardTargets extends LinearLayout {
     public KeyguardTargets(Context context, AttributeSet attrs) {
         super(context, attrs);
         mContext = context;
-        mContext.getContentResolver().registerContentObserver(
-            Settings.System.getUriFor(Settings.System.LOCKSCREEN_TARGETS), false, new ContentObserver(new Handler()) {
+        mContentObserver = new ContentObserver(new Handler()) {
                 @Override
                 public void onChange(boolean selfChange) {
                     updateTargets();
-                }});
+                }};
+        mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.LOCKSCREEN_TARGETS),
+                false, mContentObserver);
         mPackageManager = mContext.getPackageManager();
         updateTargets();
     }
@@ -65,12 +68,19 @@ public class KeyguardTargets extends LinearLayout {
         super.onFinishInflate();
     }
 
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        // We dont like memory leaks
+        mContext.getContentResolver().unregisterContentObserver(mContentObserver);
+        removeAllViews();
+    }
+
     public void setKeyguardCallback(KeyguardSecurityCallback callback) {
         mCallback = callback;
     }
 
     private void updateTargets() {
-        removeAllViews();
         String apps = Settings.System.getString(mContext.getContentResolver(),
                 Settings.System.LOCKSCREEN_TARGETS);
         if(apps == null || apps.isEmpty()) return;
