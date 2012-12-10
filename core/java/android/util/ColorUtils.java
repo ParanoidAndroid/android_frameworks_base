@@ -41,7 +41,8 @@ public class ColorUtils {
     };
 
     private static final double COMPARATIVE_FACTOR = 3.5;
-    private static final double COMPARATIVE_NUMBER = COMPARATIVE_FACTOR*125;
+    private static final double COMPARATIVE_NUMBER = COMPARATIVE_FACTOR * 125;
+    private static final double BLACK_OFFSET = 15;
     
     private static int getColorLuminance(int color) {
         int red = Color.red(color);
@@ -69,8 +70,9 @@ public class ColorUtils {
         Resources res = context.getResources();
         // We cannot check if it equals to black (because of alpha layer)
         // so we check each color individually
-        if(Color.red(bgcolor) == 0 && Color.green(bgcolor) == 0 &&
-                Color.blue(bgcolor) == 0) {
+        if(Color.red(bgcolor) < BLACK_OFFSET
+                && Color.green(bgcolor) < BLACK_OFFSET
+                && Color.blue(bgcolor) < BLACK_OFFSET) {
             return res.getColor(R.color.holo_blue_dark);
         }
         int minKey = 0;
