@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2010 The Android Open Source Project
+ * This code has been modified. Portions copyright (C) 2012, ParanoidAndroid Project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1001,7 +1002,7 @@ public class NetworkController extends BroadcastReceiver {
     // ===== Update the views =======================================================
 
     void refreshViews() {
-        refreshViews(0xFF000000);
+        refreshViews(mColor == -1 ? 0xFF000000 : mColor);
     }
 
     public void refreshViews(int color) {
@@ -1255,9 +1256,8 @@ public class NetworkController extends BroadcastReceiver {
                 } else {
                     v.setVisibility(View.VISIBLE);
                     Drawable wifiBitmap = mContext.getResources().getDrawable(mWifiIconId);
-                    wifiBitmap.setColorFilter(0, PorterDuff.Mode.CLEAR); // reset color to avoid stacking
                     wifiBitmap.setColorFilter(ColorUtils.getComplementaryColor(mColor,
-                            mContext), PorterDuff.Mode.MULTIPLY);
+                            mContext), PorterDuff.Mode.SRC_IN);
                     v.setImageDrawable(wifiBitmap);
                     v.setContentDescription(mContentDescriptionWifi);
                 }

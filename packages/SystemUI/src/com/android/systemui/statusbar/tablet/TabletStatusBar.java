@@ -155,7 +155,6 @@ public class TabletStatusBar extends BaseStatusBar implements
     int mNotificationPeekTapDuration;
     int mNotificationFlingVelocity;
 
-    BatteryController mBatteryController;
     BluetoothController mBluetoothController;
     LocationController mLocationController;
     DoNotDisturb mDoNotDisturb;
@@ -567,9 +566,10 @@ public class TabletStatusBar extends BaseStatusBar implements
         mBluetoothController.addIconView((ImageView)sb.findViewById(R.id.bluetooth));
 
         mNetworkController = new NetworkController(mContext);
-        final SignalClusterView signalCluster =
+        mSignalCluster =
                 (SignalClusterView)sb.findViewById(R.id.signal_cluster);
-        mNetworkController.addSignalCluster(signalCluster);
+        mNetworkController.addSignalCluster(mSignalCluster);
+        mSignalCluster.setNetworkController(mNetworkController);
 
         // The navigation buttons
         mBackButton = (ImageView)sb.findViewById(R.id.back);

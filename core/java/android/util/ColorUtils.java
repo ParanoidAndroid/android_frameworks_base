@@ -20,22 +20,24 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
 
+import com.android.internal.R;
+
 import java.lang.Math;
 
 public class ColorUtils {
 
     public static final int[] AVAILABLE_COLORS = {
-//            com.android.internal.R.color.black, // to be or not to be?
-            com.android.internal.R.color.holo_blue_bright,
-            com.android.internal.R.color.holo_blue_dark,
-            com.android.internal.R.color.holo_blue_light,
-            com.android.internal.R.color.holo_green_dark,
-            com.android.internal.R.color.holo_green_light,
-            com.android.internal.R.color.holo_orange_dark,
-            com.android.internal.R.color.holo_orange_light,
-            com.android.internal.R.color.holo_purple,
-            com.android.internal.R.color.holo_red_dark,
-            com.android.internal.R.color.holo_red_light
+//            R.color.black, // to be or not to be?
+            R.color.holo_blue_bright,
+            R.color.holo_blue_dark,
+            R.color.holo_blue_light,
+            R.color.holo_green_dark,
+            R.color.holo_green_light,
+            R.color.holo_orange_dark,
+            R.color.holo_orange_light,
+            R.color.holo_purple,
+            R.color.holo_red_dark,
+            R.color.holo_red_light
     };
 
     private static final double COMPARATIVE_FACTOR = 3.5;
@@ -64,7 +66,13 @@ public class ColorUtils {
     }  
 
     public static int getComplementaryColor(int bgcolor, Context context) {
-        Resources res = context.getResources();        
+        Resources res = context.getResources();
+        // We cannot check if it equals to black (because of alpha layer)
+        // so we check each color individually
+        if(Color.red(bgcolor) == 0 && Color.green(bgcolor) == 0 &&
+                Color.blue(bgcolor) == 0) {
+            return res.getColor(R.color.holo_blue_dark);
+        }
         int minKey = 0;
         double lumDiff = 0;
         double colDiff = 0;

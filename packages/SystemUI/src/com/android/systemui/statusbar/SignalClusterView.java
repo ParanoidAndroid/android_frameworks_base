@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2011 The Android Open Source Project
+ * This code has been modified. Portions copyright (C) 2012, ParanoidAndroid Project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,15 +148,14 @@ public class SignalClusterView
     }
 
     // Run after each indicator change.
-    private void apply() {
+    public void apply() {
         if (mWifiGroup == null) return;
 
         if (mWifiVisible) {
             mWifiGroup.setVisibility(View.VISIBLE);
             Drawable wifiBitmap = mContext.getResources().getDrawable(mWifiStrengthId);
-                   wifiBitmap.setColorFilter(0, PorterDuff.Mode.CLEAR); // reset color to avoid stacking
-                   wifiBitmap.setColorFilter(ColorUtils.getComplementaryColor(mNC.getColor(),
-                   mContext), PorterDuff.Mode.MULTIPLY);
+            wifiBitmap.setColorFilter(ColorUtils.getComplementaryColor(mNC.getColor(),
+                   mContext), PorterDuff.Mode.SRC_IN);
             mWifi.setImageDrawable(wifiBitmap);
             mWifiActivity.setImageResource(mWifiActivityId);
             mWifiGroup.setContentDescription(mWifiDescription);
@@ -170,6 +170,12 @@ public class SignalClusterView
 
         if (mMobileVisible && !mIsAirplaneMode) {
             mMobileGroup.setVisibility(View.VISIBLE);
+            if(mMobileStrengthId != 0) {
+                Drawable mobileBitmap = mContext.getResources().getDrawable(mMobileStrengthId);
+                mobileBitmap.setColorFilter(ColorUtils.getComplementaryColor(mNC.getColor(),
+                        mContext), PorterDuff.Mode.SRC_IN);
+                mMobile.setImageDrawable(mobileBitmap);
+            }
             mMobile.setImageResource(mMobileStrengthId);
             mMobileActivity.setImageResource(mMobileActivityId);
             mMobileType.setImageResource(mMobileTypeId);

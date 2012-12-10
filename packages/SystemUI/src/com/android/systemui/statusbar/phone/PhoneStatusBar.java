@@ -158,7 +158,6 @@ public class PhoneStatusBar extends BaseStatusBar {
 
     // These are no longer handled by the policy, because we need custom strategies for them
     BluetoothController mBluetoothController;
-    BatteryController mBatteryController;
     LocationController mLocationController;
 
     int mNaturalBarHeight = -1;
@@ -524,12 +523,12 @@ public class PhoneStatusBar extends BaseStatusBar {
         mBatteryController.addIconView((ImageView)mStatusBarView.findViewById(R.id.battery));
         mNetworkController = new NetworkController(mContext);
         mBluetoothController = new BluetoothController(mContext);
-        final SignalClusterView signalCluster =
+        mSignalCluster =
                 (SignalClusterView)mStatusBarView.findViewById(R.id.signal_cluster);
 
 
-        mNetworkController.addSignalCluster(signalCluster);
-        signalCluster.setNetworkController(mNetworkController);
+        mNetworkController.addSignalCluster(mSignalCluster);
+        mSignalCluster.setNetworkController(mNetworkController);
 
         mEmergencyCallLabel = (TextView)mStatusBarWindow.findViewById(R.id.emergency_calls_only);
         if (mEmergencyCallLabel != null) {
