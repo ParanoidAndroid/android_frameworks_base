@@ -87,6 +87,9 @@ import android.widget.PopupMenu;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 
+import com.android.systemui.statusbar.policy.Clock;
+import com.android.systemui.statusbar.policy.NetworkController;
+
 import java.util.ArrayList;
 import java.math.BigInteger;
 
@@ -135,6 +138,10 @@ public abstract class BaseStatusBar extends SystemUI implements
     protected int mCurrentUserId = 0;
 
     protected FrameLayout mStatusBarContainer;
+
+    // Policy
+    public NetworkController mNetworkController;
+    public Clock mClock;
 
     // UI-specific methods
 
@@ -415,18 +422,23 @@ public abstract class BaseStatusBar extends SystemUI implements
                 ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[
                 ExtendedPropertiesUtils.PARANOID_COLORS_NAVBAR] : setting).split(
                 ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
-        String currentColor = colors[Integer.parseInt(colors[2])];
+        int currentColor = new BigInteger(colors[Integer.parseInt(colors[2])],
+                16).intValue();
         int speed = colors.length < 4 ? 500 : Integer.parseInt(colors[3]);
 
         Bitmap bm = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
         Canvas cnv = new Canvas(bm);
-        cnv.drawColor(new BigInteger(currentColor, 16).intValue());
+        cnv.drawColor(currentColor);
 
         TransitionDrawable transition = new TransitionDrawable(new Drawable[]{
                 view.getBackground(), new BitmapDrawable(bm)});
         transition.setCrossFadeEnabled(true);
         view.setBackground(transition);
         transition.startTransition(speed);
+
+        // Update policy colors
+        if(mClock != null) mClock.setColor(currentColor);
+        if(mNetworkController != null) mNetworkController.refreshViews(currentColor);
     }
 
     public void dismissIntruder() {

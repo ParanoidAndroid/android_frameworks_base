@@ -26,6 +26,7 @@ import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
@@ -40,6 +41,7 @@ import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
 import android.util.Slog;
+import android.util.ColorUtils;
 import android.view.View;
 import android.widget.TextView;
 
@@ -100,7 +102,18 @@ public class Clock extends TextView {
         TypedArray a = context.obtainStyledAttributes(attrs, com.android.systemui.R.styleable.Clock, defStyle, 0);
         mShowAlways = a.getBoolean(com.android.systemui.R.styleable.Clock_showAlways, false);
 
-        SettingsObserver observer = new SettingsObserver(new Handler());
+        Handler handler = new Handler();
+
+        /*mContext.getContentResolver().registerContentObserver(
+            Settings.System.getUriFor(Settings.System.STATUS_BAR_COLOR), false,
+            new ContentObserver(handler) {
+                @Override
+                public void onChange(boolean selfChange) {
+                    updateColor();
+                }});
+        updateColor();*/
+
+        SettingsObserver observer = new SettingsObserver(handler);
         observer.observe();
     }
 
@@ -137,6 +150,10 @@ public class Clock extends TextView {
             getContext().unregisterReceiver(mIntentReceiver);
             mAttached = false;
         }
+    }
+
+    public void setColor(int color) {
+        setTextColor(ColorUtils.getComplementaryColor(color, mContext));
     }
 
     private final BroadcastReceiver mIntentReceiver = new BroadcastReceiver() {

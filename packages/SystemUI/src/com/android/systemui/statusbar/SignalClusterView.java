@@ -17,7 +17,10 @@
 package com.android.systemui.statusbar;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.graphics.PorterDuff;
 import android.util.AttributeSet;
+import android.util.ColorUtils;
 import android.util.Slog;
 import android.view.View;
 import android.view.ViewGroup;
@@ -149,7 +152,11 @@ public class SignalClusterView
 
         if (mWifiVisible) {
             mWifiGroup.setVisibility(View.VISIBLE);
-            mWifi.setImageResource(mWifiStrengthId);
+            Drawable wifiBitmap = mContext.getResources().getDrawable(mWifiStrengthId);
+                   wifiBitmap.setColorFilter(0, PorterDuff.Mode.CLEAR); // reset color to avoid stacking
+                   wifiBitmap.setColorFilter(ColorUtils.getComplementaryColor(mNC.getColor(),
+                   mContext), PorterDuff.Mode.MULTIPLY);
+            mWifi.setImageDrawable(wifiBitmap);
             mWifiActivity.setImageResource(mWifiActivityId);
             mWifiGroup.setContentDescription(mWifiDescription);
         } else {

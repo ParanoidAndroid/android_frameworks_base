@@ -75,6 +75,7 @@ import com.android.systemui.statusbar.SignalClusterView;
 import com.android.systemui.statusbar.StatusBarIconView;
 import com.android.systemui.statusbar.policy.BatteryController;
 import com.android.systemui.statusbar.policy.BluetoothController;
+import com.android.systemui.statusbar.policy.Clock;
 import com.android.systemui.statusbar.policy.CompatModeButton;
 import com.android.systemui.statusbar.policy.LocationController;
 import com.android.systemui.statusbar.policy.NetworkController;
@@ -157,7 +158,6 @@ public class TabletStatusBar extends BaseStatusBar implements
     BatteryController mBatteryController;
     BluetoothController mBluetoothController;
     LocationController mLocationController;
-    NetworkController mNetworkController;
     DoNotDisturb mDoNotDisturb;
 
     ViewGroup mBarContents;
@@ -949,10 +949,10 @@ public class TabletStatusBar extends BaseStatusBar implements
     }
 
     public void showClock(boolean show) {
-        View clock = mBarContents.findViewById(R.id.clock);
+        mClock = (Clock) mBarContents.findViewById(R.id.clock);
         View network_text = mBarContents.findViewById(R.id.network_text);
-        if (clock != null) {
-            clock.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (mClock != null) {
+            mClock.setVisibility(show ? View.VISIBLE : View.GONE);
         }
         if (network_text != null) {
             network_text.setVisibility((!show) ? View.VISIBLE : View.GONE);

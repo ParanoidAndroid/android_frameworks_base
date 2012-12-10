@@ -21,6 +21,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
+import android.graphics.PorterDuff;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiConfiguration;
@@ -37,6 +39,7 @@ import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
 import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
+import android.util.ColorUtils;
 import android.util.Slog;
 import android.view.View;
 import android.widget.ImageView;
@@ -161,6 +164,8 @@ public class NetworkController extends BroadcastReceiver {
     private boolean mHasMobileDataFeature;
 
     boolean mDataAndWifiStacked = false;
+
+    private int mColor;
 
     // yuck -- stop doing this here and put it in the framework
     IBatteryStats mBatteryStats;
@@ -342,6 +347,10 @@ public class NetworkController extends BroadcastReceiver {
                     mContentDescriptionDataType);
         }
         cluster.setIsAirplaneMode(mAirplaneMode, mAirplaneIconId);
+    }
+
+    public int getColor() {
+        return mColor;
     }
 
     void notifySignalsChangedCallbacks(NetworkSignalChangedCallback cb) {
@@ -992,7 +1001,12 @@ public class NetworkController extends BroadcastReceiver {
     // ===== Update the views =======================================================
 
     void refreshViews() {
+        refreshViews(0xFF000000);
+    }
+
+    public void refreshViews(int color) {
         Context context = mContext;
+        mColor = color;
 
         int combinedSignalIconId = 0;
         int combinedActivityIconId = 0;
@@ -1240,7 +1254,11 @@ public class NetworkController extends BroadcastReceiver {
                     v.setVisibility(View.GONE);
                 } else {
                     v.setVisibility(View.VISIBLE);
-                    v.setImageResource(mWifiIconId);
+                    Drawable wifiBitmap = mContext.getResources().getDrawable(mWifiIconId);
+                    wifiBitmap.setColorFilter(0, PorterDuff.Mode.CLEAR); // reset color to avoid stacking
+                    wifiBitmap.setColorFilter(ColorUtils.getComplementaryColor(mColor,
+                            mContext), PorterDuff.Mode.MULTIPLY);
+                    v.setImageDrawable(wifiBitmap);
                     v.setContentDescription(mContentDescriptionWifi);
                 }
             }

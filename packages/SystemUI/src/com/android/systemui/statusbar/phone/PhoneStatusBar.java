@@ -94,6 +94,7 @@ import com.android.systemui.statusbar.SignalClusterView;
 import com.android.systemui.statusbar.StatusBarIconView;
 import com.android.systemui.statusbar.policy.BatteryController;
 import com.android.systemui.statusbar.policy.BluetoothController;
+import com.android.systemui.statusbar.policy.Clock;
 import com.android.systemui.statusbar.policy.DateView;
 import com.android.systemui.statusbar.policy.IntruderAlertView;
 import com.android.systemui.statusbar.policy.LocationController;
@@ -159,7 +160,6 @@ public class PhoneStatusBar extends BaseStatusBar {
     BluetoothController mBluetoothController;
     BatteryController mBatteryController;
     LocationController mLocationController;
-    NetworkController mNetworkController;
 
     int mNaturalBarHeight = -1;
     int mIconSize = -1;
@@ -384,8 +384,6 @@ public class PhoneStatusBar extends BaseStatusBar {
             }});
 
         mStatusBarView = (PhoneStatusBarView) mStatusBarWindow.findViewById(R.id.status_bar);
-        mStatusBarView.setBackgroundColor(Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.STATUS_BAR_COLOR, 0xFF000000));
         mStatusBarView.setBar(this);
         
 
@@ -1198,9 +1196,9 @@ public class PhoneStatusBar extends BaseStatusBar {
 
     public void showClock(boolean show) {
         if (mStatusBarView == null) return;
-        View clock = mStatusBarView.findViewById(R.id.clock);
-        if (clock != null) {
-            clock.setVisibility(show ? View.VISIBLE : View.GONE);
+        mClock = (Clock) mStatusBarView.findViewById(R.id.clock);
+        if (mClock != null) {
+            mClock.setVisibility(show ? View.VISIBLE : View.GONE);
         }
     }
 
@@ -1864,7 +1862,6 @@ public class PhoneStatusBar extends BaseStatusBar {
             final View systemIcons = mStatusBarView.findViewById(R.id.statusIcons);
             final View signal = mStatusBarView.findViewById(R.id.signal_cluster);
             final View battery = mStatusBarView.findViewById(R.id.battery);
-            final View clock = mStatusBarView.findViewById(R.id.clock);
 
             final AnimatorSet lightsOutAnim = new AnimatorSet();
             lightsOutAnim.playTogether(
@@ -1872,7 +1869,7 @@ public class PhoneStatusBar extends BaseStatusBar {
                     ObjectAnimator.ofFloat(systemIcons, View.ALPHA, 0),
                     ObjectAnimator.ofFloat(signal, View.ALPHA, 0),
                     ObjectAnimator.ofFloat(battery, View.ALPHA, 0.5f),
-                    ObjectAnimator.ofFloat(clock, View.ALPHA, 0.5f)
+                    ObjectAnimator.ofFloat(mClock, View.ALPHA, 0.5f)
                 );
             lightsOutAnim.setDuration(750);
 
@@ -1882,7 +1879,7 @@ public class PhoneStatusBar extends BaseStatusBar {
                     ObjectAnimator.ofFloat(systemIcons, View.ALPHA, 1),
                     ObjectAnimator.ofFloat(signal, View.ALPHA, 1),
                     ObjectAnimator.ofFloat(battery, View.ALPHA, 1),
-                    ObjectAnimator.ofFloat(clock, View.ALPHA, 1)
+                    ObjectAnimator.ofFloat(mClock, View.ALPHA, 1)
                 );
             lightsOnAnim.setDuration(250);
 
