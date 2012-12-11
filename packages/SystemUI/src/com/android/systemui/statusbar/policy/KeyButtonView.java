@@ -46,6 +46,8 @@ import android.view.MotionEvent;
 import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.ImageView;
 
 import java.math.BigInteger;
@@ -92,6 +94,11 @@ public class KeyButtonView extends ImageView {
         super(context, attrs);
 
         mContext = context;
+
+        // I MUST BE ABLE TO CHANGE THE WIDTH HERE, OR THE BUTTONS WILL NOT REACT TO...
+        // com.android.systemui.navbar.dpi --- RIGHT NOW NOTHING WORKS
+        LayoutParams lp = new LayoutParams(200, LayoutParams.MATCH_PARENT);
+        this.setLayoutParams(lp);
 
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.KeyButtonView,
                 defStyle, 0);
