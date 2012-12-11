@@ -492,11 +492,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private boolean mPowerKeyTriggered;
     private long mPowerKeyTime;
 
-    private int systemDpi = 0;
-    private int systemUiDpi = 0;
-    private int systemUiLayout = 0;
-    private int navBarDpi = 0;
-    private int statusBarDpi = 0;
+    private int mSystemDpi = 0;
+    private int mSystemUiDpi = 0;
+    private int mSystemUiLayout = 0;
+    private int mNavigationBarDpi = 0;
+    private int mStatusBarDpi = 0;
 
     SettingsObserver mSettingsObserver;
     UserInterfaceObserver mUserInterfaceObserver;
@@ -1144,7 +1144,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         updateSettings();
         updateRotation(false);
 
-        // Bring down SystemUI
         if (updateUi) {
             // Restart UI if necessary
             String packageName = "com.android.systemui";
@@ -1159,17 +1158,17 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     private int updateHybridLayout() {
-        int oldSystemUILayout = systemUiLayout == 0 ?
-            ExtendedPropertiesUtils.getActualProperty("com.android.systemui.layout") : systemUiLayout;
+        int oldSystemUiLayout = mSystemUiLayout == 0 ?
+            ExtendedPropertiesUtils.getActualProperty("com.android.systemui.layout") : mSystemUiLayout;
         ExtendedPropertiesUtils.refreshProperties();
-        systemDpi = ExtendedPropertiesUtils.getActualProperty("android.dpi");
-        systemUiDpi = ExtendedPropertiesUtils.getActualProperty("com.android.systemui.dpi");
-        systemUiLayout = ExtendedPropertiesUtils.getActualProperty("com.android.systemui.layout");
-        navBarDpi = Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.navbar.dpi"));
-        navBarDpi = navBarDpi == 0 ? systemUiDpi : navBarDpi;
-        statusBarDpi = Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.statusbar.dpi"));
-        statusBarDpi = statusBarDpi == 0 ? systemUiDpi : statusBarDpi;
-        return oldSystemUILayout;
+        mSystemDpi = ExtendedPropertiesUtils.getActualProperty("android.dpi");
+        mSystemUiDpi = ExtendedPropertiesUtils.getActualProperty("com.android.systemui.dpi");
+        mSystemUiLayout = ExtendedPropertiesUtils.getActualProperty("com.android.systemui.layout");
+        mNavigationBarDpi = Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.navbar.dpi"));
+        mNavigationBarDpi = mNavigationBarDpi == 0 ? mSystemUiDpi : mNavigationBarDpi;
+        mStatusBarDpi = Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.statusbar.dpi"));
+        mStatusBarDpi = mStatusBarDpi == 0 ? mSystemUiDpi : mStatusBarDpi;
+        return oldSystemUiLayout;
     }
 
     public void updateSettings() {
@@ -1243,23 +1242,23 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     public void getDimensions(){
         float statusBarHeight = ((float)mContext.getResources().getDimensionPixelSize(
                 com.android.internal.R.dimen.status_bar_height) *
-                DisplayMetrics.DENSITY_DEVICE / systemDpi) /
-                DisplayMetrics.DENSITY_DEVICE * statusBarDpi;
+                DisplayMetrics.DENSITY_DEVICE / mSystemDpi) /
+                DisplayMetrics.DENSITY_DEVICE * mStatusBarDpi;
 
         float navigationBarHeight = ((float)mContext.getResources().getDimensionPixelSize(
                 com.android.internal.R.dimen.navigation_bar_height) *
-                DisplayMetrics.DENSITY_DEVICE / systemDpi) /
-                DisplayMetrics.DENSITY_DEVICE * navBarDpi;
+                DisplayMetrics.DENSITY_DEVICE / mSystemDpi) /
+                DisplayMetrics.DENSITY_DEVICE * mNavigationBarDpi;
 
         float navigationBarWidth = ((float)mContext.getResources().getDimensionPixelSize(
                 com.android.internal.R.dimen.navigation_bar_width) *
-                DisplayMetrics.DENSITY_DEVICE / systemDpi) /
-                DisplayMetrics.DENSITY_DEVICE * navBarDpi;
+                DisplayMetrics.DENSITY_DEVICE / mSystemDpi) /
+                DisplayMetrics.DENSITY_DEVICE * mNavigationBarDpi;
 
         float navigationBarHeightLandscape = ((float)mContext.getResources().getDimensionPixelSize(
                 com.android.internal.R.dimen.navigation_bar_height_landscape) *
-                DisplayMetrics.DENSITY_DEVICE / systemDpi) /
-                DisplayMetrics.DENSITY_DEVICE * navBarDpi;
+                DisplayMetrics.DENSITY_DEVICE / mSystemDpi) /
+                DisplayMetrics.DENSITY_DEVICE * mNavigationBarDpi;
 
         mStatusBarHeight = Math.round(statusBarHeight);
 
@@ -1275,15 +1274,15 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 mNavigationBarWidthForRotation[mLandscapeRotation] = mNavigationBarWidthForRotation[mSeascapeRotation] =
                 Math.round(navigationBarWidth);
 
-        if (systemUiLayout < 600) {
+        if (mSystemUiLayout < 600) {
             // 0-599dp: "phone" UI with a separate status & navigation bar
             mHasSystemNavBar = false;
             mNavigationBarCanMove = true;
-        } else if (systemUiLayout < 720) {
+        } else if (mSystemUiLayout < 720) {
             // 600+dp: "phone" UI with modifications for larger screens
             mHasSystemNavBar = false;
             mNavigationBarCanMove = false;
-        } else if (systemUiLayout == 1000) {
+        } else if (mSystemUiLayout == 1000) {
              // 1000dp: "tablet" UI with a single combined status & navigation bar
              mHasSystemNavBar = true;
              mNavigationBarCanMove = false;
