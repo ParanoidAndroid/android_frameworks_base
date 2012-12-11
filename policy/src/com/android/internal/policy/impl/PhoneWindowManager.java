@@ -581,7 +581,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         @Override
         public void onChange(boolean selfChange) {
-            update();
+            update(false);
         }
     }
 
@@ -600,12 +600,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         public void onChange(boolean selfChange) {
             // Refresh properties on load
             int userInterface = Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.USER_INTERFACE_STATE, 1);
-            if(userInterface == 0) return; // We are just resetting
+                    Settings.System.USER_INTERFACE_STATE, 0);
+            if (userInterface == 0) return; // We are just resetting
 
-            ExtendedPropertiesUtils.refreshProperties();
-
-            update();
+            update(true);
 
             // Restart UI if necessary
             String packageName = "com.android.systemui";
@@ -618,6 +616,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     // Good luck next time!
                 }
             }
+
+            // Reset trigger
+            // Settings.System.putInt(mContext.getContentResolver(), Settings.System.USER_INTERFACE_STATE, 0);
         }
     }
     
@@ -1136,7 +1137,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mHdmiRotationLock = SystemProperties.getBoolean("persist.demo.hdmirotationlock", true);
     }
 
-    public void getDimensions(){
+    public void getDimensions(){        
         // Get actual system DPI and actual sysUI DPI
         // Needed to first calculate values independend of android scaling, then calculate scaling according to sysUI        
         int systemDpi = ExtendedPropertiesUtils.getActualProperty("android.dpi");
@@ -1166,7 +1167,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         float navigationBarHeightLandscape = ((float)mContext.getResources().getDimensionPixelSize(
                 com.android.internal.R.dimen.navigation_bar_height_landscape) *
                 DisplayMetrics.DENSITY_DEVICE / systemDpi) /
-                DisplayMetrics.DENSITY_DEVICE * navBarDpi;
+                DisplayMetrics.DENSITY_DEVICE * navBarDpi;        
 
         mStatusBarHeight = Math.round(statusBarHeight);
 
@@ -1226,7 +1227,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
     }
 
-    private void update() {
+    private void update(boolean refreshProperties) {
+        if (refreshProperties) {
+            ExtendedPropertiesUtils.refreshProperties();
+        }
         updateSettings();
         updateRotation(false);
     }
@@ -1247,7 +1251,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     Settings.System.VOLUME_WAKE_SCREEN, 0, UserHandle.USER_CURRENT) == 1);
             mVolBtnMusicControls = (Settings.System.getIntForUser(resolver,
                     Settings.System.VOLBTN_MUSIC_CONTROLS, 1, UserHandle.USER_CURRENT) == 1);
-
             mHasNavigationBar = Settings.System.getInt(mContext.getContentResolver(), 
                     Settings.System.EXPANDED_DESKTOP_STATE, 0) != 1 && !mHasSystemNavBar;
 
@@ -3971,6 +3974,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 // and then updates our own bookkeeping based on the now-
                 // current user.
                 mSettingsObserver.onChange(false);
+                mUserInterfaceObserver.onChange(false);
             }
         }
     };
