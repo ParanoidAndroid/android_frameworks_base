@@ -19,6 +19,7 @@ package com.android.internal.policy.impl;
 
 import android.app.ActivityManager;
 import android.app.ActivityManagerNative;
+import android.app.AppGlobals;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.app.UiModeManager;
@@ -578,9 +579,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             updateSettings();
         }
 
-        @Override public void onChange(boolean selfChange) {
-            updateSettings();
-            updateRotation(false);
+        @Override
+        public void onChange(boolean selfChange) {
+            update();
         }
     }
 
@@ -595,22 +596,28 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     Settings.System.USER_INTERFACE_STATE), false, this);
         }
 
-        @Override public void onChange(boolean selfChange) {
-            // Reload hybrid properties            
+        @Override 
+        public void onChange(boolean selfChange) {
+            // Refresh properties on load
+            int userInterface = Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.USER_INTERFACE_STATE, 1);
+            if(userInterface == 0) return; // We are just resetting
+
             ExtendedPropertiesUtils.refreshProperties();
 
-            // Redfine window manager
-            updateSettings();
-            updateRotation(false);
+            update();
 
             // Restart UI if necessary
-            if (Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.USER_INTERFACE_STATE, 0) == 2) {
-                try {Runtime.getRuntime().exec("killall com.android.systemui");} catch (Exception ex) {}
+            String packageName = "com.android.systemui";
+            if (userInterface == 2) {
+                try {
+                    ActivityManagerNative.getDefault().killApplicationProcess(
+                            packageName, AppGlobals.getPackageManager().getPackageUid(
+                            packageName, UserHandle.myUserId()));
+                } catch (RemoteException e) {
+                    // Good luck next time!
+                }
             }
-
-            // Reset trigger
-            Settings.System.putInt(mContext.getContentResolver(), Settings.System.USER_INTERFACE_STATE, 0);
         }
     }
     
@@ -1132,33 +1139,33 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     public void getDimensions(){
         // Get actual system DPI and actual sysUI DPI
         // Needed to first calculate values independend of android scaling, then calculate scaling according to sysUI        
-        int sysDpi = ExtendedPropertiesUtils.getActualProperty("android.dpi");
-        int sysUIDpi = ExtendedPropertiesUtils.getActualProperty("com.android.systemui.dpi");
+        int systemDpi = ExtendedPropertiesUtils.getActualProperty("android.dpi");
+        int systemUiDpi = ExtendedPropertiesUtils.getActualProperty("com.android.systemui.dpi");
 
         // Calculate statusbar and navbar separately from SystemUI
         int navBarDpi = Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.navbar.dpi"));
-        navBarDpi = navBarDpi == 0 ? sysUIDpi : navBarDpi;
+        navBarDpi = navBarDpi == 0 ? systemUiDpi : navBarDpi;
         int statusBarDpi = Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.statusbar.dpi"));
-        statusBarDpi = statusBarDpi == 0 ? sysUIDpi : statusBarDpi;
+        statusBarDpi = statusBarDpi == 0 ? systemUiDpi : statusBarDpi;
         
         float statusBarHeight = ((float)mContext.getResources().getDimensionPixelSize(
                 com.android.internal.R.dimen.status_bar_height) *
-                DisplayMetrics.DENSITY_DEVICE / sysDpi) /
+                DisplayMetrics.DENSITY_DEVICE / systemDpi) /
                 DisplayMetrics.DENSITY_DEVICE * statusBarDpi;
 
         float navigationBarHeight = ((float)mContext.getResources().getDimensionPixelSize(
                 com.android.internal.R.dimen.navigation_bar_height) *
-                DisplayMetrics.DENSITY_DEVICE / sysDpi) /
+                DisplayMetrics.DENSITY_DEVICE / systemDpi) /
                 DisplayMetrics.DENSITY_DEVICE * navBarDpi;
 
         float navigationBarWidth = ((float)mContext.getResources().getDimensionPixelSize(
                 com.android.internal.R.dimen.navigation_bar_width) *
-                DisplayMetrics.DENSITY_DEVICE / sysDpi) /
+                DisplayMetrics.DENSITY_DEVICE / systemDpi) /
                 DisplayMetrics.DENSITY_DEVICE * navBarDpi;
 
         float navigationBarHeightLandscape = ((float)mContext.getResources().getDimensionPixelSize(
                 com.android.internal.R.dimen.navigation_bar_height_landscape) *
-                DisplayMetrics.DENSITY_DEVICE / sysDpi) /
+                DisplayMetrics.DENSITY_DEVICE / systemDpi) /
                 DisplayMetrics.DENSITY_DEVICE * navBarDpi;
 
         mStatusBarHeight = Math.round(statusBarHeight);
@@ -1217,6 +1224,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         = mNavigationBarHeightForRotation[mSeascapeRotation] = 0;
             }
         }
+    }
+
+    private void update() {
+        updateSettings();
+        updateRotation(false);
     }
 
     public void updateSettings() {
