@@ -492,6 +492,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private boolean mPowerKeyTriggered;
     private long mPowerKeyTime;
 
+    private int systemDpi = 0;
+    private int systemUiDpi = 0;
+    private int systemUiLayout = 0;
+    private int navBarDpi = 0;
+    private int statusBarDpi = 0;
+
     SettingsObserver mSettingsObserver;
     UserInterfaceObserver mUserInterfaceObserver;
     ShortcutManager mShortcutManager;
@@ -598,27 +604,17 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         @Override 
         public void onChange(boolean selfChange) {
-            // Refresh properties on load
-            int userInterface = Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.USER_INTERFACE_STATE, 0);
-            if (userInterface == 0) return; // We are just resetting
-
-            update(true);
-
-            // Restart UI if necessary
-            String packageName = "com.android.systemui";
-            if (userInterface == 2) {
-                try {
-                    ActivityManagerNative.getDefault().killApplicationProcess(
-                            packageName, AppGlobals.getPackageManager().getPackageUid(
-                            packageName, UserHandle.myUserId()));
-                } catch (RemoteException e) {
-                    // Good luck next time!
-                }
+            // Return for reset triggers
+            if (Settings.System.getInt(mContext.getContentResolver(), 
+                Settings.System.USER_INTERFACE_STATE, 0) == 0) {
+                return;
             }
 
+            // Update layout
+            update(true);
+            
             // Reset trigger
-            // Settings.System.putInt(mContext.getContentResolver(), Settings.System.USER_INTERFACE_STATE, 0);
+            Settings.System.putInt(mContext.getContentResolver(), Settings.System.USER_INTERFACE_STATE, 0);
         }
     }
     
@@ -965,6 +961,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     public void init(Context context, IWindowManager windowManager,
             WindowManagerFuncs windowManagerFuncs) {
         mContext = context;
+
         mWindowManager = windowManager;
         mWindowManagerFuncs = windowManagerFuncs;
         mHeadless = "1".equals(SystemProperties.get("ro.config.headless", "0"));
@@ -977,6 +974,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         try {
             mOrientationListener.setCurrentRotation(windowManager.getRotation());
         } catch (RemoteException ex) { }
+
+        updateHybridLayout();
 
         mSettingsObserver = new SettingsObserver(mHandler);
         mSettingsObserver.observe();
@@ -1137,102 +1136,40 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mHdmiRotationLock = SystemProperties.getBoolean("persist.demo.hdmirotationlock", true);
     }
 
-    public void getDimensions(){        
-        // Get actual system DPI and actual sysUI DPI
-        // Needed to first calculate values independend of android scaling, then calculate scaling according to sysUI        
-        int systemDpi = ExtendedPropertiesUtils.getActualProperty("android.dpi");
-        int systemUiDpi = ExtendedPropertiesUtils.getActualProperty("com.android.systemui.dpi");
-
-        // Calculate statusbar and navbar separately from SystemUI
-        int navBarDpi = Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.navbar.dpi"));
-        navBarDpi = navBarDpi == 0 ? systemUiDpi : navBarDpi;
-        int statusBarDpi = Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.statusbar.dpi"));
-        statusBarDpi = statusBarDpi == 0 ? systemUiDpi : statusBarDpi;
-        
-        float statusBarHeight = ((float)mContext.getResources().getDimensionPixelSize(
-                com.android.internal.R.dimen.status_bar_height) *
-                DisplayMetrics.DENSITY_DEVICE / systemDpi) /
-                DisplayMetrics.DENSITY_DEVICE * statusBarDpi;
-
-        float navigationBarHeight = ((float)mContext.getResources().getDimensionPixelSize(
-                com.android.internal.R.dimen.navigation_bar_height) *
-                DisplayMetrics.DENSITY_DEVICE / systemDpi) /
-                DisplayMetrics.DENSITY_DEVICE * navBarDpi;
-
-        float navigationBarWidth = ((float)mContext.getResources().getDimensionPixelSize(
-                com.android.internal.R.dimen.navigation_bar_width) *
-                DisplayMetrics.DENSITY_DEVICE / systemDpi) /
-                DisplayMetrics.DENSITY_DEVICE * navBarDpi;
-
-        float navigationBarHeightLandscape = ((float)mContext.getResources().getDimensionPixelSize(
-                com.android.internal.R.dimen.navigation_bar_height_landscape) *
-                DisplayMetrics.DENSITY_DEVICE / systemDpi) /
-                DisplayMetrics.DENSITY_DEVICE * navBarDpi;        
-
-        mStatusBarHeight = Math.round(statusBarHeight);
-
-        // Height of the navigation bar when presented horizontally at bottom
-        mNavigationBarHeightForRotation[mPortraitRotation] = 
-                mNavigationBarHeightForRotation[mUpsideDownRotation] = Math.round(navigationBarHeight);
-
-        mNavigationBarHeightForRotation[mLandscapeRotation] =
-                mNavigationBarHeightForRotation[mSeascapeRotation] = Math.round(navigationBarHeightLandscape);
-
-        // Width of the navigation bar when presented vertically along one side
-        mNavigationBarWidthForRotation[mPortraitRotation] = mNavigationBarWidthForRotation[mUpsideDownRotation] =
-                mNavigationBarWidthForRotation[mLandscapeRotation] = mNavigationBarWidthForRotation[mSeascapeRotation] =
-                Math.round(navigationBarWidth);
-
-        int sysLayout = ExtendedPropertiesUtils.getActualProperty("com.android.systemui.layout");
-
-        if (sysLayout < 600) {
-            // 0-599dp: "phone" UI with a separate status & navigation bar
-            mHasSystemNavBar = false;
-            mNavigationBarCanMove = true;
-        } else if (sysLayout < 720) {
-            // 600+dp: "phone" UI with modifications for larger screens
-            mHasSystemNavBar = false;
-            mNavigationBarCanMove = false;
-        } else if (sysLayout == 1000) {
-             // 1000dp: "tablet" UI with a single combined status & navigation bar
-             mHasSystemNavBar = true;
-             mNavigationBarCanMove = false;
-         }
-
-        mHasNavigationBar = !mHasSystemNavBar;
-
-        if (mHasSystemNavBar) {
-            mCanHideNavigationBar = true;
-        } else if (mHasNavigationBar) {
-            // The navigation bar is at the right in landscape; it seems always
-            // useful to hide it for showing a video.
-            mCanHideNavigationBar = true;
-        } else {
-            mCanHideNavigationBar = false;
+    private void update(boolean updateUi) {
+        if (updateUi) {
+            updateHybridLayout();
         }
 
-        // In case that we removed nav bar, set all sizes to 0 again
-        if(!mHasNavigationBar){
-            if(!mHasSystemNavBar || Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.EXPANDED_DESKTOP_STATE, 0) == 1){
-                mNavigationBarWidthForRotation[mPortraitRotation]
-                        = mNavigationBarWidthForRotation[mUpsideDownRotation]
-                        = mNavigationBarWidthForRotation[mLandscapeRotation]
-                        = mNavigationBarWidthForRotation[mSeascapeRotation]
-                        = mNavigationBarHeightForRotation[mPortraitRotation]
-                        = mNavigationBarHeightForRotation[mUpsideDownRotation]
-                        = mNavigationBarHeightForRotation[mLandscapeRotation]
-                        = mNavigationBarHeightForRotation[mSeascapeRotation] = 0;
+        updateSettings();
+        updateRotation(false);
+
+        // Bring down SystemUI
+        if (updateUi) {
+            // Restart UI if necessary
+            String packageName = "com.android.systemui";
+            try {
+                ActivityManagerNative.getDefault().killApplicationProcess(
+                    packageName, AppGlobals.getPackageManager().getPackageUid(
+                    packageName, UserHandle.myUserId()));
+            } catch (RemoteException e) {
+                // Good luck next time!
             }
         }
     }
 
-    private void update(boolean refreshProperties) {
-        if (refreshProperties) {
-            ExtendedPropertiesUtils.refreshProperties();
-        }
-        updateSettings();
-        updateRotation(false);
+    private int updateHybridLayout() {
+        int oldSystemUILayout = systemUiLayout == 0 ?
+            ExtendedPropertiesUtils.getActualProperty("com.android.systemui.layout") : systemUiLayout;
+        ExtendedPropertiesUtils.refreshProperties();
+        systemDpi = ExtendedPropertiesUtils.getActualProperty("android.dpi");
+        systemUiDpi = ExtendedPropertiesUtils.getActualProperty("com.android.systemui.dpi");
+        systemUiLayout = ExtendedPropertiesUtils.getActualProperty("com.android.systemui.layout");
+        navBarDpi = Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.navbar.dpi"));
+        navBarDpi = navBarDpi == 0 ? systemUiDpi : navBarDpi;
+        statusBarDpi = Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.statusbar.dpi"));
+        statusBarDpi = statusBarDpi == 0 ? systemUiDpi : statusBarDpi;
+        return oldSystemUILayout;
     }
 
     public void updateSettings() {
@@ -1300,6 +1237,83 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
         if (updateRotation) {
             updateRotation(true);
+        }
+    }
+
+    public void getDimensions(){
+        float statusBarHeight = ((float)mContext.getResources().getDimensionPixelSize(
+                com.android.internal.R.dimen.status_bar_height) *
+                DisplayMetrics.DENSITY_DEVICE / systemDpi) /
+                DisplayMetrics.DENSITY_DEVICE * statusBarDpi;
+
+        float navigationBarHeight = ((float)mContext.getResources().getDimensionPixelSize(
+                com.android.internal.R.dimen.navigation_bar_height) *
+                DisplayMetrics.DENSITY_DEVICE / systemDpi) /
+                DisplayMetrics.DENSITY_DEVICE * navBarDpi;
+
+        float navigationBarWidth = ((float)mContext.getResources().getDimensionPixelSize(
+                com.android.internal.R.dimen.navigation_bar_width) *
+                DisplayMetrics.DENSITY_DEVICE / systemDpi) /
+                DisplayMetrics.DENSITY_DEVICE * navBarDpi;
+
+        float navigationBarHeightLandscape = ((float)mContext.getResources().getDimensionPixelSize(
+                com.android.internal.R.dimen.navigation_bar_height_landscape) *
+                DisplayMetrics.DENSITY_DEVICE / systemDpi) /
+                DisplayMetrics.DENSITY_DEVICE * navBarDpi;
+
+        mStatusBarHeight = Math.round(statusBarHeight);
+
+        // Height of the navigation bar when presented horizontally at bottom
+        mNavigationBarHeightForRotation[mPortraitRotation] = 
+                mNavigationBarHeightForRotation[mUpsideDownRotation] = Math.round(navigationBarHeight);
+
+        mNavigationBarHeightForRotation[mLandscapeRotation] =
+                mNavigationBarHeightForRotation[mSeascapeRotation] = Math.round(navigationBarHeightLandscape);
+
+        // Width of the navigation bar when presented vertically along one side
+        mNavigationBarWidthForRotation[mPortraitRotation] = mNavigationBarWidthForRotation[mUpsideDownRotation] =
+                mNavigationBarWidthForRotation[mLandscapeRotation] = mNavigationBarWidthForRotation[mSeascapeRotation] =
+                Math.round(navigationBarWidth);
+
+        if (systemUiLayout < 600) {
+            // 0-599dp: "phone" UI with a separate status & navigation bar
+            mHasSystemNavBar = false;
+            mNavigationBarCanMove = true;
+        } else if (systemUiLayout < 720) {
+            // 600+dp: "phone" UI with modifications for larger screens
+            mHasSystemNavBar = false;
+            mNavigationBarCanMove = false;
+        } else if (systemUiLayout == 1000) {
+             // 1000dp: "tablet" UI with a single combined status & navigation bar
+             mHasSystemNavBar = true;
+             mNavigationBarCanMove = false;
+         }
+
+        mHasNavigationBar = !mHasSystemNavBar;
+
+        if (mHasSystemNavBar) {
+            mCanHideNavigationBar = true;
+        } else if (mHasNavigationBar) {
+            // The navigation bar is at the right in landscape; it seems always
+            // useful to hide it for showing a video.
+            mCanHideNavigationBar = true;
+        } else {
+            mCanHideNavigationBar = false;
+        }
+
+        // In case that we removed nav bar, set all sizes to 0 again
+        if(!mHasNavigationBar){
+            if(!mHasSystemNavBar || Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.EXPANDED_DESKTOP_STATE, 0) == 1){
+                mNavigationBarWidthForRotation[mPortraitRotation]
+                        = mNavigationBarWidthForRotation[mUpsideDownRotation]
+                        = mNavigationBarWidthForRotation[mLandscapeRotation]
+                        = mNavigationBarWidthForRotation[mSeascapeRotation]
+                        = mNavigationBarHeightForRotation[mPortraitRotation]
+                        = mNavigationBarHeightForRotation[mUpsideDownRotation]
+                        = mNavigationBarHeightForRotation[mLandscapeRotation]
+                        = mNavigationBarHeightForRotation[mSeascapeRotation] = 0;
+            }
         }
     }
 

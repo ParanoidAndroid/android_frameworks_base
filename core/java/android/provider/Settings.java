@@ -2411,8 +2411,7 @@ public final class Settings {
 
         /**
          * User Interface State
-         * 1 = Rebuild UI without killing it
-         * 2 = Rebuild UI by killing it (needed for UI layout switches)
+         * 1 = Rebuild UI, resets to 0 automatically
          * @hide
          */
         public static final String USER_INTERFACE_STATE = "user_interface_state";
