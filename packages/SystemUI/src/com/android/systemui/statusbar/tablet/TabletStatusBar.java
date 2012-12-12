@@ -66,6 +66,8 @@ import android.widget.TextView;
 import com.android.internal.statusbar.StatusBarIcon;
 import com.android.internal.statusbar.StatusBarNotification;
 import com.android.systemui.R;
+import com.android.systemui.recent.RecentsActivity;
+import com.android.systemui.recent.RecentsActivity.NavigationCallback;
 import com.android.systemui.statusbar.BaseStatusBar;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.DoNotDisturb;
@@ -87,7 +89,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 
 public class TabletStatusBar extends BaseStatusBar implements
-        InputMethodsPanel.OnHardKeyboardEnabledChangeListener {
+        InputMethodsPanel.OnHardKeyboardEnabledChangeListener, NavigationCallback {
     public static final boolean DEBUG = false;
     public static final boolean DEBUG_COMPAT_HELP = false;
     public static final String TAG = "TabletStatusBar";
@@ -193,6 +195,9 @@ public class TabletStatusBar extends BaseStatusBar implements
         }
     };
 
+    private Drawable mBackIcon, mBackLandIcon, mBackAltIcon, mBackAltLandIcon,
+            mRecentsIcon, mRecentsLandIcon, mRecentsAltIcon, mRecentsAltLandIcon;
+
     private View.OnTouchListener mHomeSearchActionListener = new View.OnTouchListener() {
         public boolean onTouch(View v, MotionEvent event) {
             switch(event.getAction()) {
@@ -221,8 +226,19 @@ public class TabletStatusBar extends BaseStatusBar implements
     private void addStatusBarWindow() {
         final View sb = makeStatusBarView();
 
-        mShowSearchHoldoff = mContext.getResources().getInteger(
+        final Resources res = mContext.getResources();
+
+        mShowSearchHoldoff = res.getInteger(
                 R.integer.config_show_search_delay);
+
+        mBackIcon = res.getDrawable(R.drawable.ic_sysbar_back);
+        mBackLandIcon = res.getDrawable(R.drawable.ic_sysbar_back_land);
+        mBackAltIcon = res.getDrawable(R.drawable.ic_sysbar_back_ime);
+        mBackAltLandIcon = res.getDrawable(R.drawable.ic_sysbar_back_ime);
+        mRecentsIcon = res.getDrawable(R.drawable.ic_sysbar_recent);
+        mRecentsLandIcon = res.getDrawable(R.drawable.ic_sysbar_recent_land);
+        mRecentsAltIcon = res.getDrawable(R.drawable.ic_sysbar_recent_clear);
+        mRecentsAltLandIcon = res.getDrawable(R.drawable.ic_sysbar_recent_clear_land);
 
         mContext.getContentResolver().registerContentObserver(
             Settings.System.getUriFor(Settings.System.NAV_BAR_COLOR), false, new ContentObserver(new Handler()) {
@@ -533,6 +549,9 @@ public class TabletStatusBar extends BaseStatusBar implements
             }
         } catch (RemoteException ex) {
         }
+
+        // set recents activity navigation bar view
+        RecentsActivity.setNavigationCallback(this);
 
         mBarContents = (ViewGroup) sb.findViewById(R.id.bar_contents);
 
@@ -1103,11 +1122,16 @@ public class TabletStatusBar extends BaseStatusBar implements
 
     @Override // CommandQueue
     public void setNavigationIconHints(int hints) {
-        if (hints == mNavigationIconHints) return;
+        setNavigationIconHints(NavigationCallback.NAVBAR_BACK_HINT, hints, false);
+    }
+
+    @Override
+    public void setNavigationIconHints(int button, int hints, boolean force) {
+        if (!force && hints == mNavigationIconHints) return;
 
         if (DEBUG) {
             android.widget.Toast.makeText(mContext,
-                "Navigation icon hints = " + hints,
+                "Navigation icon hints = " + hints+" button = "+button,
                 500).show();
         }
 
@@ -1120,10 +1144,20 @@ public class TabletStatusBar extends BaseStatusBar implements
         mRecentButton.setAlpha(
             (0 != (hints & StatusBarManager.NAVIGATION_HINT_RECENT_NOP)) ? 0.5f : 1.0f);
 
-        mBackButton.setImageResource(
-            (0 != (hints & StatusBarManager.NAVIGATION_HINT_BACK_ALT))
-                ? R.drawable.ic_sysbar_back_ime
-                : R.drawable.ic_sysbar_back);
+        if(button == NavigationCallback.NAVBAR_BACK_HINT) {
+            ((ImageView)mBackButton).setImageDrawable(
+                (0 != (hints & StatusBarManager.NAVIGATION_HINT_BACK_ALT))
+                    ? mBackAltIcon : mBackIcon);
+        } else if (button == NavigationCallback.NAVBAR_RECENTS_HINT) {
+            ((ImageView)mRecentButton).setImageDrawable(
+                (0 != (hints & StatusBarManager.NAVIGATION_HINT_RECENT_ALT))
+                    ? mRecentsAltIcon : mRecentsIcon);
+        }
+    }
+
+    @Override
+    public int getNavigationIconHints() {
+        return mNavigationIconHints;
     }
 
     private void notifyUiVisibilityChanged() {
@@ -1301,7 +1335,11 @@ public class TabletStatusBar extends BaseStatusBar implements
     public void onClickRecentButton() {
         if (DEBUG) Slog.d(TAG, "clicked recent apps; disabled=" + mDisabled);
         if ((mDisabled & StatusBarManager.DISABLE_EXPAND) == 0) {
-            toggleRecentApps();
+            if(isRecentAppsVisible() && hasRecentApps()) {
+                clearRecentApps();
+            } else {
+                toggleRecentApps();
+            }
         }
     }
 

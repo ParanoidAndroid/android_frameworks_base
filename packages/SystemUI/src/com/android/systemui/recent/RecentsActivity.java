@@ -49,11 +49,19 @@ public class RecentsActivity extends Activity {
     public static final String WAITING_FOR_WINDOW_ANIMATION_PARAM = "com.android.systemui.recent.WAITING_FOR_WINDOW_ANIMATION";
     private static final String WAS_SHOWING = "was_showing";
 
-    private static NavigationBarView mNavigationBarView;
+    private static NavigationCallback mNavigationCallback;
     private static RecentsPanelView mRecentsPanel;
     private static boolean mShowing;
     private IntentFilter mIntentFilter;
     private boolean mForeground;
+
+    public interface NavigationCallback {
+        public final static int NAVBAR_BACK_HINT = 0;
+        public final static int NAVBAR_RECENTS_HINT = 1;
+
+        public abstract void setNavigationIconHints(int button, int hints, boolean force);
+        public abstract int getNavigationIconHints();
+    };
 
     private BroadcastReceiver mIntentReceiver = new BroadcastReceiver() {
         @Override
@@ -127,9 +135,9 @@ public class RecentsActivity extends Activity {
     public void setRecentHints(boolean show) {
         // Check if we need to enable alternate drawable
         // for recent apps key
-        if(mNavigationBarView == null) return; // FIXME: Add multiuser support
-        int navigationHints = mNavigationBarView.getNavigationIconHints();
-        mNavigationBarView.setNavigationIconHints(NavigationBarView.NAVBAR_RECENTS_HINT,
+        if(mNavigationCallback == null) return; // FIXME: Add multiuser support
+        int navigationHints = mNavigationCallback.getNavigationIconHints();
+        mNavigationCallback.setNavigationIconHints(NavigationBarView.NAVBAR_RECENTS_HINT,
                 show ? (navigationHints | StatusBarManager.NAVIGATION_HINT_RECENT_ALT)
                 : (navigationHints & ~StatusBarManager.NAVIGATION_HINT_RECENT_ALT), true);
     }
@@ -257,8 +265,8 @@ public class RecentsActivity extends Activity {
         return mForeground;
     }
 
-    public static void setNavigationBarView(NavigationBarView nav) {
-        mNavigationBarView = nav;
+    public static void setNavigationCallback(NavigationCallback callback) {
+        mNavigationCallback = callback;
     }
 
     public static int getTasks() {
