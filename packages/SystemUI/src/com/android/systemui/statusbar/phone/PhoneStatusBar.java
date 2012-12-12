@@ -385,6 +385,8 @@ public class PhoneStatusBar extends BaseStatusBar {
         mStatusBarView = (PhoneStatusBarView) mStatusBarWindow.findViewById(R.id.status_bar);
         mStatusBarView.setBar(this);
         
+        // status bar clock
+        mClock = (Clock) mStatusBarView.findViewById(R.id.clock);
 
         PanelHolder holder = (PanelHolder) mStatusBarWindow.findViewById(R.id.panel_holder);
         mStatusBarView.setPanelHolder(holder);
@@ -1191,14 +1193,6 @@ public class PhoneStatusBar extends BaseStatusBar {
         }
 
         updateCarrierLabelVisibility(false);
-    }
-
-    public void showClock(boolean show) {
-        if (mStatusBarView == null) return;
-        mClock = (Clock) mStatusBarView.findViewById(R.id.clock);
-        if (mClock != null) {
-            mClock.setVisibility(show ? View.VISIBLE : View.GONE);
-        }
     }
 
     /**

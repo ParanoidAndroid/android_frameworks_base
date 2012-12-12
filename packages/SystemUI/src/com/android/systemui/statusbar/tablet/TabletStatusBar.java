@@ -536,6 +536,9 @@ public class TabletStatusBar extends BaseStatusBar implements
 
         mBarContents = (ViewGroup) sb.findViewById(R.id.bar_contents);
 
+        // system bar clock
+        mClock = (Clock) mBarContents.findViewById(R.id.clock);
+
         // the whole right-hand side of the bar
         mNotificationArea = sb.findViewById(R.id.notificationArea);
         mNotificationArea.setOnTouchListener(new NotificationTriggerTouchListener());
@@ -948,12 +951,8 @@ public class TabletStatusBar extends BaseStatusBar implements
         setAreThereNotifications();
     }
 
-    public void showClock(boolean show) {
-        mClock = (Clock) mBarContents.findViewById(R.id.clock);
+    public void showNetwork(boolean show) {
         View network_text = mBarContents.findViewById(R.id.network_text);
-        if (mClock != null) {
-            mClock.setVisibility(show ? View.VISIBLE : View.GONE);
-        }
         if (network_text != null) {
             network_text.setVisibility((!show) ? View.VISIBLE : View.GONE);
         }
@@ -969,6 +968,7 @@ public class TabletStatusBar extends BaseStatusBar implements
             boolean show = (state & StatusBarManager.DISABLE_CLOCK) == 0;
             Slog.i(TAG, "DISABLE_CLOCK: " + (show ? "no" : "yes"));
             showClock(show);
+            showNetwork(show);
         }
         if ((diff & StatusBarManager.DISABLE_SYSTEM_INFO) != 0) {
             boolean show = (state & StatusBarManager.DISABLE_SYSTEM_INFO) == 0;

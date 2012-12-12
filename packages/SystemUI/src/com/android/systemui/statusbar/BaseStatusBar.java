@@ -439,6 +439,7 @@ public abstract class BaseStatusBar extends SystemUI implements
         transition.startTransition(speed);
 
         // Update policy colors
+        android.util.Log.i("PARANOID", ""+mClock);
         if(mClock != null) mClock.setColor(currentColor);
         if(mNetworkController != null) mNetworkController.refreshViews(currentColor);
         if(mSignalCluster != null) mSignalCluster.apply();
@@ -447,6 +448,12 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     public void dismissIntruder() {
         // pass
+    }
+
+    public void showClock(boolean show) {
+        if (mClock != null) {
+            mClock.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
     }
 
     @Override

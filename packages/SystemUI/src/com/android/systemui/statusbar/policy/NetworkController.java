@@ -131,8 +131,8 @@ public class NetworkController extends BroadcastReceiver {
     private boolean mConnected = false;
     private int mConnectedNetworkType = ConnectivityManager.TYPE_NONE;
     private String mConnectedNetworkTypeName;
-    private int mInetCondition = 0;
     private static final int INET_CONDITION_THRESHOLD = 50;
+    public int mInetCondition = 0;
 
     private boolean mAirplaneMode = false;
     private boolean mLastAirplaneMode = true;
@@ -1256,8 +1256,10 @@ public class NetworkController extends BroadcastReceiver {
                 } else {
                     v.setVisibility(View.VISIBLE);
                     Drawable wifiBitmap = mContext.getResources().getDrawable(mWifiIconId);
-                    wifiBitmap.setColorFilter(ColorUtils.getComplementaryColor(mColor,
-                            mContext), PorterDuff.Mode.SRC_IN);
+                    if(mInetCondition != 0) {
+                        wifiBitmap.setColorFilter(ColorUtils.getComplementaryColor(mColor,
+                                mContext), PorterDuff.Mode.SRC_IN);
+                    }
                     v.setImageDrawable(wifiBitmap);
                     v.setContentDescription(mContentDescriptionWifi);
                 }

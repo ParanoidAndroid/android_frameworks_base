@@ -45,7 +45,7 @@ public class BatteryController extends BroadcastReceiver {
             new ArrayList<BatteryStateChangeCallback>();
 
     private int mLevel;
-    private boolean mPlugged;
+    private int mPlugged;
     private int mColor;
 
     public interface BatteryStateChangeCallback {
@@ -85,8 +85,9 @@ public class BatteryController extends BroadcastReceiver {
         final String action = intent.getAction();
         if (action.equals(Intent.ACTION_BATTERY_CHANGED)) {
             mLevel = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
-            mPlugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0;
-            final int icon = mPlugged ? R.drawable.stat_sys_battery_charge 
+            mPlugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);
+            boolean plugged = mPlugged != 0;
+            final int icon = plugged ? R.drawable.stat_sys_battery_charge 
                                      : R.drawable.stat_sys_battery;
             int N = mIconViews.size();
             for (int i=0; i<N; i++) {
@@ -107,7 +108,7 @@ public class BatteryController extends BroadcastReceiver {
             }
 
             for (BatteryStateChangeCallback cb : mChangeCallbacks) {
-                cb.onBatteryLevelChanged(mLevel, mPlugged);
+                cb.onBatteryLevelChanged(mLevel, plugged);
             }
         }
     }

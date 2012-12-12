@@ -154,8 +154,10 @@ public class SignalClusterView
         if (mWifiVisible) {
             mWifiGroup.setVisibility(View.VISIBLE);
             Drawable wifiBitmap = mContext.getResources().getDrawable(mWifiStrengthId);
-            wifiBitmap.setColorFilter(ColorUtils.getComplementaryColor(mNC.getColor(),
-                   mContext), PorterDuff.Mode.SRC_IN);
+            if(mNC.mInetCondition != 0) {
+                wifiBitmap.setColorFilter(ColorUtils.getComplementaryColor(mNC.getColor(),
+                       mContext), PorterDuff.Mode.SRC_IN);
+            }
             mWifi.setImageDrawable(wifiBitmap);
             mWifiActivity.setImageResource(mWifiActivityId);
             mWifiGroup.setContentDescription(mWifiDescription);
@@ -172,8 +174,10 @@ public class SignalClusterView
             mMobileGroup.setVisibility(View.VISIBLE);
             if(mMobileStrengthId != 0) {
                 Drawable mobileBitmap = mContext.getResources().getDrawable(mMobileStrengthId);
-                mobileBitmap.setColorFilter(ColorUtils.getComplementaryColor(mNC.getColor(),
-                        mContext), PorterDuff.Mode.SRC_IN);
+                if(mNC.mInetCondition != 0) {
+                    mobileBitmap.setColorFilter(ColorUtils.getComplementaryColor(mNC.getColor(),
+                            mContext), PorterDuff.Mode.SRC_IN);
+                }
                 mMobile.setImageDrawable(mobileBitmap);
             }
             mMobile.setImageResource(mMobileStrengthId);
