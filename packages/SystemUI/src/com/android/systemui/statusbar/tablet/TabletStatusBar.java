@@ -195,8 +195,7 @@ public class TabletStatusBar extends BaseStatusBar implements
         }
     };
 
-    private Drawable mBackIcon, mBackLandIcon, mBackAltIcon, mBackAltLandIcon,
-            mRecentsIcon, mRecentsLandIcon, mRecentsAltIcon, mRecentsAltLandIcon;
+    private Drawable mBackIcon, mBackAltIcon, mRecentsIcon, mRecentsAltIcon;
 
     private View.OnTouchListener mHomeSearchActionListener = new View.OnTouchListener() {
         public boolean onTouch(View v, MotionEvent event) {
@@ -232,13 +231,9 @@ public class TabletStatusBar extends BaseStatusBar implements
                 R.integer.config_show_search_delay);
 
         mBackIcon = res.getDrawable(R.drawable.ic_sysbar_back);
-        mBackLandIcon = res.getDrawable(R.drawable.ic_sysbar_back_land);
         mBackAltIcon = res.getDrawable(R.drawable.ic_sysbar_back_ime);
-        mBackAltLandIcon = res.getDrawable(R.drawable.ic_sysbar_back_ime);
         mRecentsIcon = res.getDrawable(R.drawable.ic_sysbar_recent);
-        mRecentsLandIcon = res.getDrawable(R.drawable.ic_sysbar_recent_land);
         mRecentsAltIcon = res.getDrawable(R.drawable.ic_sysbar_recent_clear);
-        mRecentsAltLandIcon = res.getDrawable(R.drawable.ic_sysbar_recent_clear_land);
 
         mContext.getContentResolver().registerContentObserver(
             Settings.System.getUriFor(Settings.System.NAV_BAR_COLOR), false, new ContentObserver(new Handler()) {
