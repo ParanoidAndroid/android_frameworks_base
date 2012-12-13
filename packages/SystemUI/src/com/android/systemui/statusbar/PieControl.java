@@ -121,7 +121,7 @@ public class PieControl implements PieMenu.PieController, OnClickListener {
         mNotifications = makeItem(R.drawable.ic_notification_open, 1);
         mSettings = makeItem(R.drawable.ic_notify_quicksettings_normal, 1);
         mScreenshot = makeItem(R.drawable.stat_notify_image, 1);
-        	
+            
         setClickListener(this, mBack, mHome, mRecent, mMenu,
                 mNotifications, mSettings, mScreenshot);
         // level 1
@@ -186,11 +186,9 @@ public class PieControl implements PieMenu.PieController, OnClickListener {
         mPie.setCenter(x, y);
     }
 
-	@Override
-	public void stopEditingUrl() {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void stopEditingUrl() {
+    }
 
     public void setOnNavButtonPressedListener(OnNavButtonPressedListener listener) {
         mListener = listener;
