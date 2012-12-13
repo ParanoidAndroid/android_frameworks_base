@@ -67,7 +67,6 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
     View mNotificationScroller;
     ViewGroup mContentFrame;
     Rect mContentArea = new Rect();
-    View mNotificationArea;
     View mSettingsView;
     ViewGroup mContentParent;
     TabletStatusBar mBar;
@@ -105,10 +104,6 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
 
     public void setBar(TabletStatusBar b) {
         mBar = b;
-    }
-
-    public void setNotificationArea(View n) {
-        mNotificationArea = n;
     }
 
     @Override
@@ -177,7 +172,6 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
             mShowing = show;
             setVisibility(show ? View.VISIBLE : View.GONE);
         }
-        mNotificationArea.setVisibility(show ? View.INVISIBLE : View.VISIBLE);
     }
 
     /**

@@ -93,10 +93,8 @@ public class BatteryController extends BroadcastReceiver {
             for (int i=0; i<N; i++) {
                 ImageView v = mIconViews.get(i);
                 Drawable batteryBitmap = mContext.getResources().getDrawable(icon);
-                if(allowColorChanges(v)) {
-                    batteryBitmap.setColorFilter(ColorUtils.getComplementaryColor(mColor,
-                            mContext), PorterDuff.Mode.SRC_IN);
-                }
+                batteryBitmap.setColorFilter(ColorUtils.getComplementaryColor(mColor,
+                        mContext), PorterDuff.Mode.SRC_IN);
                 v.setImageDrawable(batteryBitmap);
                 v.setImageLevel(mLevel);
                 v.setContentDescription(mContext.getString(R.string.accessibility_battery_level,
@@ -113,12 +111,5 @@ public class BatteryController extends BroadcastReceiver {
                 cb.onBatteryLevelChanged(mLevel, plugged);
             }
         }
-    }
-
-    public boolean allowColorChanges(ImageView v) {
-        if(v.getTag() != null) {
-            return (Boolean) v.getTag();
-        }
-        return true;
     }
 }

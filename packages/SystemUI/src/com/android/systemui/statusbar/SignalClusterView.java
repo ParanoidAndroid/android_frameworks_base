@@ -88,7 +88,7 @@ public class SignalClusterView
         mSpacer         =             findViewById(R.id.spacer);
         mAirplane       = (ImageView) findViewById(R.id.airplane);
 
-        apply(false);
+        apply();
     }
 
     @Override
@@ -114,7 +114,7 @@ public class SignalClusterView
         mWifiActivityId = activityIcon;
         mWifiDescription = contentDescription;
 
-        apply(false);
+        apply();
     }
 
     @Override
@@ -127,7 +127,7 @@ public class SignalClusterView
         mMobileDescription = contentDescription;
         mMobileTypeDescription = typeContentDescription;
 
-        apply(false);
+        apply();
     }
 
     @Override
@@ -135,7 +135,7 @@ public class SignalClusterView
         mIsAirplaneMode = is;
         mAirplaneIconId = airplaneIconId;
 
-        apply(false);
+        apply();
     }
 
     @Override
@@ -153,17 +153,17 @@ public class SignalClusterView
 
     public void setColor(int color) {
         mColor = color;
-        apply(true);
+        apply();
     }
 
     // Run after each indicator change.
-    public void apply(boolean setColors) {
+    public void apply() {
         if (mWifiGroup == null) return;
 
         if (mWifiVisible) {
             mWifiGroup.setVisibility(View.VISIBLE);
             Drawable wifiBitmap = mContext.getResources().getDrawable(mWifiStrengthId);
-            if(mColor != -1 && mNC.mInetCondition != 0 && setColors) {
+            if(mColor != -1 && mNC.mInetCondition != 0) {
                 wifiBitmap.setColorFilter(ColorUtils.getComplementaryColor(mColor,
                        mContext), PorterDuff.Mode.SRC_IN);
             }
@@ -183,7 +183,7 @@ public class SignalClusterView
             mMobileGroup.setVisibility(View.VISIBLE);
             if(mMobileStrengthId != 0) {
                 Drawable mobileBitmap = mContext.getResources().getDrawable(mMobileStrengthId);
-                if(mColor != -1 && mNC.mInetCondition != 0 && setColors) {
+                if(mColor != -1 && mNC.mInetCondition != 0) {
                     mobileBitmap.setColorFilter(ColorUtils.getComplementaryColor(mColor,
                             mContext), PorterDuff.Mode.SRC_IN);
                 }

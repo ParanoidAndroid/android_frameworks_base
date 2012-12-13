@@ -528,7 +528,6 @@ public class PhoneStatusBar extends BaseStatusBar {
         mSignalCluster =
                 (SignalClusterView)mStatusBarView.findViewById(R.id.signal_cluster);
 
-
         mNetworkController.addSignalCluster(mSignalCluster);
         mSignalCluster.setNetworkController(mNetworkController);
 
