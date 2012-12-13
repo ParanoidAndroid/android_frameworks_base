@@ -1869,4 +1869,9 @@
   <!-- Extra -->
   <java-symbol type="integer" name="config_wallpaperMaxWidth" />
 
+  <!-- Quick Nav -->
+  <java-symbol type="dimen" name="quick_nav_height_slider" />
+  <java-symbol type="dimen" name="quick_nav_height_portrait_slider" />
+  <java-symbol type="dimen" name="quick_nav_slider_height" />
+
 </resources>

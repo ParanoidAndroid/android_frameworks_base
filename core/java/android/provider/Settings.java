@@ -2487,6 +2487,12 @@ public final class Settings {
          */
         public static final String STATUS_BAR_AM_PM_STYLE = "status_bar_am_pm_style";
 
+        public static final String QUICK_NAV = "quick_nav";
+
+        public static final String QUICK_NAV_AUTOHIDE = "quick_nav_autohide";
+
+        public static final String QUICK_NAV_AUTOHIDE_TIME = "quick_nav_autohide_time";
+
         /**	
          * Defines the settings to be shown in quicksettings menu
          * Usage is like this: WIFI|GPS|BLUETOOTH

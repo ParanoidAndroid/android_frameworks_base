@@ -133,14 +133,12 @@ public class TabletStatusBar extends BaseStatusBar implements
     private int mMaxNotificationIcons = 5;
 
     TabletStatusBarView mStatusBarView;
-<<<<<<< HEAD
-=======
+
     boolean mIsSlidingDrawer = false;
-    static SlidingDrawer mSlider = null;
     static boolean mAutoHide = false;
     static long mAutoHideTime = 10000;
     static boolean mIsDrawerOpen = true;
->>>>>>> d3dc27c... Added QuickNavbarPanel
+
     View mNotificationArea;
     View mNotificationTrigger;
     NotificationIconArea mNotificationIconArea;
@@ -170,13 +168,9 @@ public class TabletStatusBar extends BaseStatusBar implements
     int mNotificationPeekTapDuration;
     int mNotificationFlingVelocity;
 
-<<<<<<< HEAD
-=======
     QuickNavbarPanel mQuickNavbarPanel;
     View mQuickNavbarTrigger;
 
-    BatteryController mBatteryController;
->>>>>>> d3dc27c... Added QuickNavbarPanel
     BluetoothController mBluetoothController;
     LocationController mLocationController;
     DoNotDisturb mDoNotDisturb;
@@ -205,11 +199,7 @@ public class TabletStatusBar extends BaseStatusBar implements
 
     private int mNavigationIconHints = 0;
 
-<<<<<<< HEAD
     private int mShowSearchHoldoff;
-=======
-    private int mShowSearchHoldoff = 0;
->>>>>>> d3dc27c... Added QuickNavbarPanel
 
     public Context getContext() { return mContext; }
 
@@ -518,10 +508,8 @@ public class TabletStatusBar extends BaseStatusBar implements
         mShowSearchHoldoff = mContext.getResources().getInteger(
                 R.integer.config_show_search_delay);
         updateSearchPanel();
-<<<<<<< HEAD
-=======
 
-        mHeightReceiver.updateHeight(); // display size may have changed
+        /*mHeightReceiver.updateHeight(); // display size may have changed
         loadDimens();
         mNotificationPanelParams.height = getNotificationPanelHeight();
         WindowManagerImpl.getDefault().updateViewLayout(mNotificationPanel,
@@ -532,7 +520,7 @@ public class TabletStatusBar extends BaseStatusBar implements
             mHeightReceiver.updateHeight(false);
             mSlider.open();
         }
->>>>>>> d3dc27c... Added QuickNavbarPanel
+        */
     }
 
     protected void loadDimens() {
@@ -596,21 +584,19 @@ public class TabletStatusBar extends BaseStatusBar implements
 
         loadDimens();
 
-<<<<<<< HEAD
-=======
+        /*
         mIsSlidingDrawer = Settings.System.getInt(context.getContentResolver(),
                     Settings.System.NAVIGATION_BAR_USE_SLIDER, 0) == 1;
         int layout = mIsSlidingDrawer
                     ? R.layout.system_bar_slider_popup : R.layout.system_bar;
->>>>>>> d3dc27c... Added QuickNavbarPanel
+        */
         final TabletStatusBarView sb = (TabletStatusBarView)View.inflate(
                 context, R.layout.system_bar, null);
         mStatusBarView = sb;
 
         sb.setHandler(mHandler);
 
-<<<<<<< HEAD
-=======
+/*
         mHeightReceiver = new HeightReceiver(mContext);
         mHeightReceiver.registerReceiver();
 
@@ -626,7 +612,7 @@ public class TabletStatusBar extends BaseStatusBar implements
             mQuickNavbarTrigger.setOnTouchListener(new QuickNavbarTouchListener());
         }
 
->>>>>>> d3dc27c... Added QuickNavbarPanel
+        */
         try {
             // Sanity-check that someone hasn't set up the config wrong and asked for a navigation
             // bar on a tablet that has only the system bar
@@ -1565,8 +1551,6 @@ public class TabletStatusBar extends BaseStatusBar implements
                 NOTIFICATION_PEEK_FADE_DELAY);
     }
 
-<<<<<<< HEAD
-=======
     private class NotificationIconTouchListener implements View.OnTouchListener {
         VelocityTracker mVT;
         int mPeekIndex;
@@ -1713,7 +1697,7 @@ public class TabletStatusBar extends BaseStatusBar implements
         }
     }
 
->>>>>>> d3dc27c... Added QuickNavbarPanel
+//>>>>>>> d3dc27c... Added QuickNavbarPanel
     private void reloadAllNotificationIcons() {
         if (mIconLayout == null) return;
         mIconLayout.removeAllViews();
@@ -1913,8 +1897,6 @@ public class TabletStatusBar extends BaseStatusBar implements
         return mNotificationPanel.getVisibility() == View.VISIBLE
                 || (mDisabled & StatusBarManager.DISABLE_HOME) != 0;
     }
-<<<<<<< HEAD
-=======
 
     class SettingsObserver extends ContentObserver {
         SettingsObserver(Handler handler) {
@@ -1928,15 +1910,15 @@ public class TabletStatusBar extends BaseStatusBar implements
             // false,
             // this);
             resolver.registerContentObserver(
-                    Settings.System.getUriFor(Settings.System.NAVIGATION_BAR_USE_SLIDER), false,
+                    Settings.System.getUriFor(Settings.System.QUICK_NAV), false,
                     this);
 
             resolver.registerContentObserver(
-                    Settings.System.getUriFor(Settings.System.NAVIGATION_BAR_AUTOHIDE_SLIDER), false,
+                    Settings.System.getUriFor(Settings.System.QUICK_NAV_AUTOHIDE), false,
                     this);
 
             resolver.registerContentObserver(
-                    Settings.System.getUriFor(Settings.System.NAVIGATION_BAR_AUTOHIDE_TIME), false,
+                    Settings.System.getUriFor(Settings.System.QUICK_NAV_AUTOHIDE_TIME), false,
                     this);
 
             updateSettings();
@@ -1952,7 +1934,7 @@ public class TabletStatusBar extends BaseStatusBar implements
         ContentResolver resolver = mContext.getContentResolver();
 
         boolean hide = Settings.System.getInt(resolver,
-                    Settings.System.NAVIGATION_BAR_AUTOHIDE_SLIDER, 0) == 1;
+                    Settings.System.QUICK_NAV, 0) == 1;
 
         if (hide != mAutoHide) {
             mAutoHide = hide;
@@ -1963,7 +1945,7 @@ public class TabletStatusBar extends BaseStatusBar implements
         }
 
         mAutoHideTime = (long)Settings.System.getInt(resolver,
-                    Settings.System.NAVIGATION_BAR_AUTOHIDE_TIME, 10) * 1000;
+                    Settings.System.QUICK_NAV_AUTOHIDE_TIME, 10) * 1000;
     }
 
     OnDrawerScrollListener mSliderScrollListener = new OnDrawerScrollListener() {
@@ -2035,7 +2017,6 @@ public class TabletStatusBar extends BaseStatusBar implements
             }
         }
     }
->>>>>>> d3dc27c... Added QuickNavbarPanel
 }
 
 

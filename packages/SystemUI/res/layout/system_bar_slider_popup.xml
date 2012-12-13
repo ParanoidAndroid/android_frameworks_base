@@ -25,7 +25,7 @@
     <ImageView
             android:id="@+id/popup_area1"
             android:layout_width="match_parent"
-            android:layout_height="@*android:dimen/navigation_bar_slider_height"
+            android:layout_height="@*android:dimen/quick_nav_slider_height"
             android:scaleType="fitXY"
             android:layout_weight="1"
             android:background="#00000000" />
@@ -44,7 +44,7 @@
     <ImageView
         android:id="@+id/handle"
         android:layout_width="wrap_content"
-        android:layout_height="@*android:dimen/navigation_bar_slider_height"
+        android:layout_height="@*android:dimen/quick_nav_slider_height"
         android:src="@drawable/drag_handle"
         android:scaleType="fitXY" />
 
