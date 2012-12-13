@@ -340,11 +340,4 @@
     used on tablets; on phones, this size is determined by the space left by the
     security mode. -->
     <dimen name="kg_small_widget_height">160dp</dimen>
-
-    <!-- Height of the bottom navigation / system bar when the slider is used. -->
-    <dimen name="quick_nav_height_slider">58dp</dimen>
-    <dimen name="quick_nav_height_portrait_slider">58dp</dimen>
-    <!-- Height of the slider when sliding navigation bar is enabled -->	
-    <dimen name="quick_nav_slider_height">10dp</dimen>
-
 </resources>

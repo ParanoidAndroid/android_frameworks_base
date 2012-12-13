@@ -138,14 +138,11 @@ public class QuickNavbarPanel extends FrameLayout implements StatusBarPanel, OnN
             injectKeyDelayed(KeyEvent.KEYCODE_HOME);
         } else if (buttonName.equals(PieControl.MENU_BUTTON)) {
             injectKeyDelayed(KeyEvent.KEYCODE_MENU);
-        } else if (buttonName.equals(PieControl.RECENT_BUTTON)) {
-            Message peekMsg = mHandler.obtainMessage(TabletStatusBar.MSG_TOGGLE_RECENTS_PANEL);
+        }/* else if (buttonName.equals(PieControl.RECENT_BUTTON)) {
+            Message peekMsg = mHandler.obtainMessage(TabletStatusBar.MSG_TOGGLE_RECENT_APPS);
             mHandler.sendMessage(peekMsg);
-        } else if (buttonName.equals(PieControl.NOTIFICATION_BUTTON)) {
+        }*/ else if (buttonName.equals(PieControl.NOTIFICATION_BUTTON)) {
             Message peekMsg = mHandler.obtainMessage(TabletStatusBar.MSG_OPEN_NOTIFICATION_PANEL);
-            mHandler.sendMessage(peekMsg);
-        } else if (buttonName.equals(PieControl.SETTINGS_BUTTON)) {
-            Message peekMsg = mHandler.obtainMessage(TabletStatusBar.MSG_OPEN_SETTINGS_PANEL);
             mHandler.sendMessage(peekMsg);
         } else if (buttonName.equals(PieControl.SCREENSHOT_BUTTON)) {
             takeScreenshot();

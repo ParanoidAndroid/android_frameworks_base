@@ -64,6 +64,9 @@ import android.widget.ImageView;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.SlidingDrawer.OnDrawerCloseListener;
+import android.widget.SlidingDrawer.OnDrawerOpenListener;
+import android.widget.SlidingDrawer.OnDrawerScrollListener;
 import android.widget.TextView;
 
 import com.android.internal.statusbar.StatusBarIcon;
@@ -105,8 +108,6 @@ public class TabletStatusBar extends BaseStatusBar implements
     public static final int MSG_CLOSE_NOTIFICATION_PEEK = 1003;
     public static final int MSG_OPEN_QUICKNAVBAR_PANEL = 1004;
     public static final int MSG_CLOSE_QUICKNAVBAR_PANEL = 1005;
-    public static final int MSG_TOGGLE_RECENTS_PANEL = 1006;
-    public static final int MSG_OPEN_SETTINGS_PANEL = 1007;
     // 1020-1029 reserved for BaseStatusBar
     public static final int MSG_SHOW_CHROME = 1030;
     public static final int MSG_HIDE_CHROME = 1031;
@@ -137,10 +138,10 @@ public class TabletStatusBar extends BaseStatusBar implements
 
     TabletStatusBarView mStatusBarView;
 
-    boolean mIsSlidingDrawer = false;
+    /*boolean mIsSlidingDrawer = false;
     static boolean mAutoHide = false;
     static long mAutoHideTime = 10000;
-    static boolean mIsDrawerOpen = true;
+    static boolean mIsDrawerOpen = true;*/
 
     View mNotificationArea;
     View mNotificationTrigger;
@@ -405,10 +406,10 @@ public class TabletStatusBar extends BaseStatusBar implements
         lp.windowAnimations = android.R.style.Animation_Dialog;
 
         mWindowManager.addView(mCompatModePanel, lp);
-
         mRecentButton.setOnTouchListener(mRecentsPreloadOnTouchListener);
 
-        mQuickNavbarPanel = (QuickNavbarPanel)View.inflate(context,
+        // Quick navigation bar panel
+        mQuickNavbarPanel = (QuickNavbarPanel) View.inflate(context,
                 R.layout.system_bar_navigation_panel, null);
         lp = new WindowManager.LayoutParams(
                 200,
@@ -425,9 +426,9 @@ public class TabletStatusBar extends BaseStatusBar implements
         lp.setTitle("QuickNavbarPanel");
         lp.windowAnimations = android.R.style.Animation;
 
-        WindowManagerImpl.getDefault().addView(mQuickNavbarPanel, lp);
+        mWindowManager.addView(mQuickNavbarPanel, lp);
         mQuickNavbarPanel.setBar(this);
-        mQuickNavbarPanel.show(false, false);
+        mQuickNavbarPanel.show(true, true);
         mQuickNavbarPanel.setOnTouchListener(
                 new TouchOutsideListener(MSG_CLOSE_QUICKNAVBAR_PANEL, mQuickNavbarPanel));
         if (mQuickNavbarTrigger != null) {
@@ -515,7 +516,7 @@ public class TabletStatusBar extends BaseStatusBar implements
         /*mHeightReceiver.updateHeight(); // display size may have changed
         loadDimens();
         mNotificationPanelParams.height = getNotificationPanelHeight();
-        WindowManagerImpl.getDefault().updateViewLayout(mNotificationPanel,
+        mWindowManager.getDefault().updateViewLayout(mNotificationPanel,
                 mNotificationPanelParams);
         mRecentsPanel.updateValuesFromResources();
         // if the sliding drawer was open before, make sure to open it back up
@@ -964,15 +965,6 @@ public class TabletStatusBar extends BaseStatusBar implements
                         mNotificationPanel.show(false, true);
                     }
                     break;
-                case MSG_OPEN_SETTINGS_PANEL:
-                    if (DEBUG) Slog.d(TAG, "opening notifications panel");
-                    if (!mNotificationPanel.isShowing()) {
-                        mNotificationPanel.show(true, true);
-                        mNotificationArea.setVisibility(View.INVISIBLE);
-                        mTicker.halt();
-                        mNotificationPanel.swapPanels();
-                    }
-                    break;
                 case MSG_OPEN_QUICKNAVBAR_PANEL:
                     if (DEBUG) Slog.d(TAG, "opening quicknavbar panel");
                     if (!mQuickNavbarPanel.isShowing()) {
@@ -984,14 +976,6 @@ public class TabletStatusBar extends BaseStatusBar implements
                    //if (mQuickNavbarPanel.isShowing()) {
                         mQuickNavbarPanel.show(false, true);
                     //}
-                    break;
-                case MSG_TOGGLE_RECENTS_PANEL:
-                    if ((mDisabled & StatusBarManager.DISABLE_EXPAND) == 0) {
-                        int msg = (mRecentsPanel.getVisibility() == View.VISIBLE)
-                            ? MSG_CLOSE_RECENTS_PANEL : MSG_OPEN_RECENTS_PANEL;
-                        mHandler.removeMessages(msg);
-                        mHandler.sendEmptyMessage(msg);
-                    }
                     break;
                 case MSG_OPEN_INPUT_METHODS_PANEL:
                     if (DEBUG) Slog.d(TAG, "opening input methods panel");
@@ -1685,8 +1669,7 @@ public class TabletStatusBar extends BaseStatusBar implements
                     lp.gravity = Gravity.BOTTOM | Gravity.LEFT;
                     lp.setTitle("QuickNavbarPanel");
                     lp.windowAnimations = android.R.style.Animation;
-                    final WindowManager wm = WindowManagerImpl.getDefault();
-                    wm.updateViewLayout(mQuickNavbarPanel, lp);
+                    mWindowManager.updateViewLayout(mQuickNavbarPanel, lp);
 
                     Message peekMsg = mHandler.obtainMessage(MSG_OPEN_QUICKNAVBAR_PANEL);
                     mHandler.sendMessage(peekMsg);
@@ -1700,7 +1683,6 @@ public class TabletStatusBar extends BaseStatusBar implements
         }
     }
 
-//>>>>>>> d3dc27c... Added QuickNavbarPanel
     private void reloadAllNotificationIcons() {
         if (mIconLayout == null) return;
         mIconLayout.removeAllViews();
@@ -1908,21 +1890,8 @@ public class TabletStatusBar extends BaseStatusBar implements
 
         void observe() {
             ContentResolver resolver = mContext.getContentResolver();
-            // resolver.registerContentObserver(
-            // Settings.System.getUriFor(Settings.System.NAVIGATION_BAR_BUTTONS),
-            // false,
-            // this);
             resolver.registerContentObserver(
-                    Settings.System.getUriFor(Settings.System.QUICK_NAV), false,
-                    this);
-
-            resolver.registerContentObserver(
-                    Settings.System.getUriFor(Settings.System.QUICK_NAV_AUTOHIDE), false,
-                    this);
-
-            resolver.registerContentObserver(
-                    Settings.System.getUriFor(Settings.System.QUICK_NAV_AUTOHIDE_TIME), false,
-                    this);
+                    Settings.System.getUriFor(Settings.System.QUICK_NAVIGATION), false, this);
 
             updateSettings();
         }
@@ -1935,23 +1904,11 @@ public class TabletStatusBar extends BaseStatusBar implements
 
     protected void updateSettings() {
         ContentResolver resolver = mContext.getContentResolver();
-
         boolean hide = Settings.System.getInt(resolver,
-                    Settings.System.QUICK_NAV, 0) == 1;
-
-        if (hide != mAutoHide) {
-            mAutoHide = hide;
-            if (hide)
-                updateAutoHideTimer();
-            else
-                cancelAutoHideTimer();
-        }
-
-        mAutoHideTime = (long)Settings.System.getInt(resolver,
-                    Settings.System.QUICK_NAV_AUTOHIDE_TIME, 10) * 1000;
+                    Settings.System.QUICK_NAVIGATION, 0) == 1;
     }
 
-    OnDrawerScrollListener mSliderScrollListener = new OnDrawerScrollListener() {
+    /*OnDrawerScrollListener mSliderScrollListener = new OnDrawerScrollListener() {
         @Override
         public void onScrollStarted() {
             // if the drawer is not opened then the user is most likely attempting
@@ -1985,41 +1942,7 @@ public class TabletStatusBar extends BaseStatusBar implements
                 updateAutoHideTimer();
                 mIsDrawerOpen = true;
         }
-    };
-
-    public void updateAutoHideTimer() {
-        if (mSlider == null || mAutoHide == false)
-            return;
-        AlarmManager am = (AlarmManager)mContext.getSystemService(Context.ALARM_SERVICE);
-        Intent i = new Intent(mContext, AutoHideReceiver.class);
-        PendingIntent pi = PendingIntent.getBroadcast(mContext, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
-        try {
-            am.cancel(pi);
-        } catch (Exception e) {
-        }
-        Calendar time = Calendar.getInstance();
-        time.setTimeInMillis(System.currentTimeMillis() + mAutoHideTime);
-        am.set(AlarmManager.RTC, time.getTimeInMillis(), pi);
-    }
-
-    public void cancelAutoHideTimer() {
-        AlarmManager am = (AlarmManager)mContext.getSystemService(Context.ALARM_SERVICE);
-        Intent i = new Intent(mContext, AutoHideReceiver.class);
-        PendingIntent pi = PendingIntent.getBroadcast(mContext, 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
-        try {
-            am.cancel(pi);
-        } catch (Exception e) {
-        }
-    }
-
-    public static class AutoHideReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (mAutoHide && mSlider != null) {
-                mSlider.close();
-            }
-        }
-    }
+    };*/
 }
 
 

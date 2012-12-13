@@ -2410,6 +2410,13 @@ public final class Settings {
         public static final String EXPANDED_DESKTOP_STATE = "expanded_desktop_state";
 
         /**
+         * Whether to enable or not quick navigation
+         * The value is boolean (1 or 0).
+         * @hide
+         */
+        public static final String QUICK_NAVIGATION = "quick_navigation";
+
+        /**
          * User Interface State
          * 1 = Rebuild UI, resets to 0 automatically
          * @hide
@@ -2486,12 +2493,6 @@ public final class Settings {
          * @hide
          */
         public static final String STATUS_BAR_AM_PM_STYLE = "status_bar_am_pm_style";
-
-        public static final String QUICK_NAV = "quick_nav";
-
-        public static final String QUICK_NAV_AUTOHIDE = "quick_nav_autohide";
-
-        public static final String QUICK_NAV_AUTOHIDE_TIME = "quick_nav_autohide_time";
 
         /**	
          * Defines the settings to be shown in quicksettings menu
