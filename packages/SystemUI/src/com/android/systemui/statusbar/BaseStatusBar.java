@@ -440,8 +440,7 @@ public abstract class BaseStatusBar extends SystemUI implements
 
         // Update policy colors
         if(mClock != null) mClock.setColor(currentColor);
-        if(mNetworkController != null) mNetworkController.refreshViews(currentColor);
-        if(mSignalCluster != null) mSignalCluster.apply();
+        if(mSignalCluster != null) mSignalCluster.setColor(currentColor);
         if(mBatteryController != null) mBatteryController.setColor(currentColor);
     }
 

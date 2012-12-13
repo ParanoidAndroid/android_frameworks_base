@@ -55,6 +55,8 @@ public class SignalClusterView
     ImageView mWifi, mMobile, mWifiActivity, mMobileActivity, mMobileType, mAirplane;
     View mSpacer;
 
+    int mColor;
+
     public SignalClusterView(Context context) {
         this(context, null);
     }
@@ -86,7 +88,7 @@ public class SignalClusterView
         mSpacer         =             findViewById(R.id.spacer);
         mAirplane       = (ImageView) findViewById(R.id.airplane);
 
-        apply();
+        apply(false);
     }
 
     @Override
@@ -112,7 +114,7 @@ public class SignalClusterView
         mWifiActivityId = activityIcon;
         mWifiDescription = contentDescription;
 
-        apply();
+        apply(false);
     }
 
     @Override
@@ -125,7 +127,7 @@ public class SignalClusterView
         mMobileDescription = contentDescription;
         mMobileTypeDescription = typeContentDescription;
 
-        apply();
+        apply(false);
     }
 
     @Override
@@ -133,29 +135,36 @@ public class SignalClusterView
         mIsAirplaneMode = is;
         mAirplaneIconId = airplaneIconId;
 
-        apply();
+        apply(false);
     }
 
     @Override
     public boolean dispatchPopulateAccessibilityEvent(AccessibilityEvent event) {
         // Standard group layout onPopulateAccessibilityEvent() implementations
         // ignore content description, so populate manually
-        if (mWifiVisible && mWifiGroup.getContentDescription() != null)
+        if (mWifiVisible && mWifiGroup.getContentDescription() != null) {
             event.getText().add(mWifiGroup.getContentDescription());
-        if (mMobileVisible && mMobileGroup.getContentDescription() != null)
+        }
+        if (mMobileVisible && mMobileGroup.getContentDescription() != null) {
             event.getText().add(mMobileGroup.getContentDescription());
+        }
         return super.dispatchPopulateAccessibilityEvent(event);
     }
 
+    public void setColor(int color) {
+        mColor = color;
+        apply(true);
+    }
+
     // Run after each indicator change.
-    public void apply() {
+    public void apply(boolean setColors) {
         if (mWifiGroup == null) return;
 
         if (mWifiVisible) {
             mWifiGroup.setVisibility(View.VISIBLE);
             Drawable wifiBitmap = mContext.getResources().getDrawable(mWifiStrengthId);
-            if(mNC.mInetCondition != 0) {
-                wifiBitmap.setColorFilter(ColorUtils.getComplementaryColor(mNC.getColor(),
+            if(mColor != -1 && mNC.mInetCondition != 0 && setColors) {
+                wifiBitmap.setColorFilter(ColorUtils.getComplementaryColor(mColor,
                        mContext), PorterDuff.Mode.SRC_IN);
             }
             mWifi.setImageDrawable(wifiBitmap);
@@ -174,8 +183,8 @@ public class SignalClusterView
             mMobileGroup.setVisibility(View.VISIBLE);
             if(mMobileStrengthId != 0) {
                 Drawable mobileBitmap = mContext.getResources().getDrawable(mMobileStrengthId);
-                if(mNC.mInetCondition != 0) {
-                    mobileBitmap.setColorFilter(ColorUtils.getComplementaryColor(mNC.getColor(),
+                if(mColor != -1 && mNC.mInetCondition != 0 && setColors) {
+                    mobileBitmap.setColorFilter(ColorUtils.getComplementaryColor(mColor,
                             mContext), PorterDuff.Mode.SRC_IN);
                 }
                 mMobile.setImageDrawable(mobileBitmap);

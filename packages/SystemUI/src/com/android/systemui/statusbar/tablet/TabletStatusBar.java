@@ -283,7 +283,9 @@ public class TabletStatusBar extends BaseStatusBar implements
                 new TouchOutsideListener(MSG_CLOSE_NOTIFICATION_PANEL, mNotificationPanel));
 
         // the battery icon
-        mBatteryController.addIconView((ImageView)mNotificationPanel.findViewById(R.id.battery));
+        final ImageView batteryIcon = (ImageView)mNotificationPanel.findViewById(R.id.battery);
+        batteryIcon.setTag(false);
+        mBatteryController.addIconView(batteryIcon);
         mBatteryController.addLabelView(
                 (TextView)mNotificationPanel.findViewById(R.id.battery_text));
 
