@@ -1164,10 +1164,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mSystemDpi = ExtendedPropertiesUtils.getActualProperty("android.dpi");
         mSystemUiDpi = ExtendedPropertiesUtils.getActualProperty("com.android.systemui.dpi");
         mSystemUiLayout = ExtendedPropertiesUtils.getActualProperty("com.android.systemui.layout");
-        mNavigationBarDpi = Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.navbar.dpi"));
-        mNavigationBarDpi = mNavigationBarDpi == 0 ? mSystemUiDpi : mNavigationBarDpi;
-        mStatusBarDpi = Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.statusbar.dpi"));
-        mStatusBarDpi = mStatusBarDpi == 0 ? mSystemUiDpi : mStatusBarDpi;
+        int mNavigationBarPercent = Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.navbar.dpi", "100"));
+        mNavigationBarDpi = mNavigationBarPercent * mSystemUiDpi / 100;
+        int mStatusBarPercent = Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.statusbar.dpi", "100"));
+        mStatusBarDpi = mStatusBarPercent * mSystemUiDpi / 100;
         return oldSystemUiLayout;
     }
 

@@ -95,11 +95,6 @@ public class KeyButtonView extends ImageView {
 
         mContext = context;
 
-        // I MUST BE ABLE TO CHANGE THE WIDTH HERE, OR THE BUTTONS WILL NOT REACT TO...
-        // com.android.systemui.navbar.dpi --- RIGHT NOW NOTHING WORKS
-        LayoutParams lp = new LayoutParams(200, LayoutParams.MATCH_PARENT);
-        this.setLayoutParams(lp);
-
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.KeyButtonView,
                 defStyle, 0);
 
