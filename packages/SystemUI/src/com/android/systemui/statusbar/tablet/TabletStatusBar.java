@@ -236,13 +236,8 @@ public class TabletStatusBar extends BaseStatusBar implements
         mRecentsIcon = res.getDrawable(R.drawable.ic_sysbar_recent);
         mRecentsAltIcon = res.getDrawable(R.drawable.ic_sysbar_recent_clear);
 
-        mContext.getContentResolver().registerContentObserver(
-            Settings.System.getUriFor(Settings.System.NAV_BAR_COLOR), false, new ContentObserver(new Handler()) {
-                @Override
-                public void onChange(boolean selfChange) {
-                    updateColor((ViewGroup) sb, false);
-                }});
-        updateColor((ViewGroup) sb, true);
+
+        mBarView = (ViewGroup) sb;
 
         final WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,

@@ -21,7 +21,6 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.PorterDuff;
 import android.util.AttributeSet;
-import android.util.ColorUtils;
 import android.util.Slog;
 import android.view.View;
 import android.view.ViewGroup;
@@ -164,8 +163,7 @@ public class SignalClusterView
             mWifiGroup.setVisibility(View.VISIBLE);
             Drawable wifiBitmap = mContext.getResources().getDrawable(mWifiStrengthId);
             if(mColor != -1 && mNC.mInetCondition != 0) {
-                wifiBitmap.setColorFilter(ColorUtils.getComplementaryColor(mColor,
-                       mContext), PorterDuff.Mode.SRC_IN);
+                wifiBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
             }
             mWifi.setImageDrawable(wifiBitmap);
             mWifiActivity.setImageResource(mWifiActivityId);
@@ -184,8 +182,7 @@ public class SignalClusterView
             if(mMobileStrengthId != 0) {
                 Drawable mobileBitmap = mContext.getResources().getDrawable(mMobileStrengthId);
                 if(mColor != -1 && mNC.mInetCondition != 0) {
-                    mobileBitmap.setColorFilter(ColorUtils.getComplementaryColor(mColor,
-                            mContext), PorterDuff.Mode.SRC_IN);
+                    mobileBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
                 }
                 mMobile.setImageDrawable(mobileBitmap);
             }

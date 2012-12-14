@@ -27,7 +27,6 @@ import android.content.IntentFilter;
 import android.graphics.drawable.Drawable;
 import android.graphics.PorterDuff;
 import android.os.BatteryManager;
-import android.util.ColorUtils;
 import android.util.Slog;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -93,8 +92,7 @@ public class BatteryController extends BroadcastReceiver {
             for (int i=0; i<N; i++) {
                 ImageView v = mIconViews.get(i);
                 Drawable batteryBitmap = mContext.getResources().getDrawable(icon);
-                batteryBitmap.setColorFilter(ColorUtils.getComplementaryColor(mColor,
-                        mContext), PorterDuff.Mode.SRC_IN);
+                batteryBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
                 v.setImageDrawable(batteryBitmap);
                 v.setImageLevel(mLevel);
                 v.setContentDescription(mContext.getString(R.string.accessibility_battery_level,
