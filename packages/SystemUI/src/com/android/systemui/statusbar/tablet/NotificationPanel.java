@@ -321,11 +321,9 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
     }
 
     public void updatePanelModeButtons() {
-        if (!android.util.ExtendedPropertiesUtils.isTablet()) {
-            final boolean settingsVisible = mSettingsView.getVisibility() == View.VISIBLE;
-            mSettingsButton.setVisibility(!settingsVisible && mSettingsButton.isEnabled() ? View.VISIBLE : View.GONE);
-            mNotificationButton.setVisibility(settingsVisible ? View.VISIBLE : View.GONE);
-        }
+        final boolean settingsVisible = mSettingsView.getVisibility() == View.VISIBLE;
+        mSettingsButton.setVisibility(!settingsVisible && mSettingsButton.isEnabled() ? View.VISIBLE : View.GONE);
+        mNotificationButton.setVisibility(settingsVisible ? View.VISIBLE : View.GONE);
     }
 
     public boolean isInContentArea(int x, int y) {

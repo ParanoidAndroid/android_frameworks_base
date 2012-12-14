@@ -34,25 +34,31 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
+            android:layout_alignParentBottom="true"
+            android:paddingTop="3dp"
             android:singleLine="true"
             android:textAppearance="@style/TextAppearance.SystemBar.Expanded.Clock"
             />
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
+            android:layout_alignParentBottom="true"            
             android:layout_toRightOf="@+id/clock"
-            android:paddingLeft="15dp"
+            android:layout_alignParentRight="true"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
             android:paddingBottom="15dp"
-            android:orientation="vertical" >
+            android:orientation="vertical"
+            android:gravity="right">
 
             <com.android.systemui.statusbar.policy.DateView
                 android:id="@+id/date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.SystemBar.Expanded.Date"/>
+                android:textAppearance="@style/TextAppearance.SystemBar.Expanded.Date"
+                android:singleLine="true"
+                android:ellipsize="end"/>
 
             <TextView
                 android:id="@+id/mobile_text"
@@ -66,13 +72,39 @@
 
         </LinearLayout>
 
+        <RelativeLayout
+            android:id="@+id/quick_buttons"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:paddingRight="20dp"
+            android:paddingTop="15dp">
+
+            <ImageView
+                android:id="@+id/settings_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_notify_open_normal"
+                android:contentDescription="@string/accessibility_desc_quick_settings"/>
+
+            <ImageView
+                android:id="@+id/notification_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_notify_quicksettings_normal"
+                android:visibility="invisible"
+                android:contentDescription="@string/accessibility_notifications_button"/>
+
+        </RelativeLayout>
+
         <ImageView android:id="@+id/clear_all_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentBottom="true"
-            android:paddingRight="20dp"
-            android:paddingBottom="15dp"
+            android:layout_toLeftOf="@+id/quick_buttons"
+            android:paddingTop="14dp"
+            android:layout_alignParentTop="true"
+            android:paddingRight="15dp"
             android:src="@drawable/ic_notify_clear_normal"
             android:contentDescription="@string/accessibility_clear_all"/>
 
