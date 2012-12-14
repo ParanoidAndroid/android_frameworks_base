@@ -282,6 +282,9 @@ public class TabletStatusBar extends BaseStatusBar implements
         mNotificationPanel.setOnTouchListener(
                 new TouchOutsideListener(MSG_CLOSE_NOTIFICATION_PANEL, mNotificationPanel));
 
+        mNetworkController.addMobileLabelView(
+                (TextView)mNotificationPanel.findViewById(R.id.mobile_text));
+
         // Add QuickSettings
         mNotificationPanel.setupQuickSettings(this, mNetworkController, mBluetoothController, 
                 mBatteryController, mLocationController);

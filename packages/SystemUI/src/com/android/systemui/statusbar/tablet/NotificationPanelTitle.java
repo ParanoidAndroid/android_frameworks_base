@@ -47,8 +47,6 @@ public class NotificationPanelTitle extends RelativeLayout implements View.OnCli
     @Override
     public void onFinishInflate() {
         super.onFinishInflate();
-        buttons.add(mSettingsButton = findViewById(R.id.settings_button));
-        buttons.add(findViewById(R.id.notification_button));
     }
 
     @Override
@@ -63,8 +61,6 @@ public class NotificationPanelTitle extends RelativeLayout implements View.OnCli
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
-        if (!mSettingsButton.isEnabled())
-            return false;
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 setPressed(true);
