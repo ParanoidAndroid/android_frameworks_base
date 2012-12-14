@@ -236,9 +236,6 @@ public class TabletStatusBar extends BaseStatusBar implements
         mRecentsIcon = res.getDrawable(R.drawable.ic_sysbar_recent);
         mRecentsAltIcon = res.getDrawable(R.drawable.ic_sysbar_recent_clear);
 
-
-        mBarView = (ViewGroup) sb;
-
         final WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -554,6 +551,9 @@ public class TabletStatusBar extends BaseStatusBar implements
                 (SignalClusterView)sb.findViewById(R.id.signal_cluster);
         mNetworkController.addSignalCluster(mSignalCluster);
         mSignalCluster.setNetworkController(mNetworkController);
+
+        mBarView = (ViewGroup) mStatusBarView;
+        startColorObserver();
 
         // The navigation buttons
         mBackButton = (ImageView)sb.findViewById(R.id.back);

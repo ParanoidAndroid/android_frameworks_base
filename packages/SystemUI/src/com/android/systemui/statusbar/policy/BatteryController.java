@@ -44,8 +44,8 @@ public class BatteryController extends BroadcastReceiver {
             new ArrayList<BatteryStateChangeCallback>();
 
     private int mLevel;
-    private int mPlugged;
-    private int mColor;
+    private boolean mPlugged;
+    private int mColor = -1;
 
     public interface BatteryStateChangeCallback {
         public void onBatteryLevelChanged(int level, boolean pluggedIn);
@@ -73,41 +73,42 @@ public class BatteryController extends BroadcastReceiver {
 
     public void setColor(int color) {
         mColor = color;
-        Intent i = new Intent();
-        i.setAction(Intent.ACTION_BATTERY_CHANGED);
-        i.putExtra(BatteryManager.EXTRA_LEVEL, mLevel);
-        i.putExtra(BatteryManager.EXTRA_PLUGGED, mPlugged);
-        mContext.sendBroadcast(i);
+        updateBatteryLevel();
     }
 
     public void onReceive(Context context, Intent intent) {
         final String action = intent.getAction();
         if (action.equals(Intent.ACTION_BATTERY_CHANGED)) {
             mLevel = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
-            mPlugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);
-            boolean plugged = mPlugged != 0;
-            final int icon = plugged ? R.drawable.stat_sys_battery_charge 
-                                     : R.drawable.stat_sys_battery;
-            int N = mIconViews.size();
-            for (int i=0; i<N; i++) {
-                ImageView v = mIconViews.get(i);
-                Drawable batteryBitmap = mContext.getResources().getDrawable(icon);
-                batteryBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
-                v.setImageDrawable(batteryBitmap);
-                v.setImageLevel(mLevel);
-                v.setContentDescription(mContext.getString(R.string.accessibility_battery_level,
-                        mLevel));
-            }
-            N = mLabelViews.size();
-            for (int i=0; i<N; i++) {
-                TextView v = mLabelViews.get(i);
-                v.setText(mContext.getString(R.string.status_bar_settings_battery_meter_format,
-                        mLevel));
-            }
+            mPlugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0;
+            updateBatteryLevel();
+        }
+    }
 
-            for (BatteryStateChangeCallback cb : mChangeCallbacks) {
-                cb.onBatteryLevelChanged(mLevel, plugged);
+    public void updateBatteryLevel() {
+        final int icon = mPlugged ? R.drawable.stat_sys_battery_charge 
+                : R.drawable.stat_sys_battery;
+        int N = mIconViews.size();
+        for (int i=0; i<N; i++) {
+            ImageView v = mIconViews.get(i);
+            Drawable batteryBitmap = mContext.getResources().getDrawable(icon);
+            if(mColor != -1) {
+                batteryBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
             }
+            v.setImageDrawable(batteryBitmap);
+            v.setImageLevel(mLevel);
+            v.setContentDescription(mContext.getString(R.string.accessibility_battery_level,
+                    mLevel));
+        }
+        N = mLabelViews.size();
+        for (int i=0; i<N; i++) {
+            TextView v = mLabelViews.get(i);
+            v.setText(mContext.getString(R.string.status_bar_settings_battery_meter_format,
+                    mLevel));
+        }
+
+        for (BatteryStateChangeCallback cb : mChangeCallbacks) {
+            cb.onBatteryLevelChanged(mLevel, mPlugged);
         }
     }
 }

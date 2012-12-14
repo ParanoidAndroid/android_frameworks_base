@@ -325,7 +325,9 @@ public abstract class BaseStatusBar extends SystemUI implements
                     userSwitched(mCurrentUserId);
                 }
             }}, filter);
+    }
 
+    public void startColorObserver() {
         ColorObserver observer = new ColorObserver(new Handler());
         observer.observe();
     }

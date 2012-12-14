@@ -343,9 +343,6 @@ public class PhoneStatusBar extends BaseStatusBar {
 
         if (ENABLE_INTRUDERS) addIntruderView();
 
-
-        mBarView = (ViewGroup) mStatusBarView;
-
         // Lastly, call to the icon policy to install/update all the icons.
         mIconPolicy = new PhoneStatusBarPolicy(mContext);
     }
@@ -379,6 +376,9 @@ public class PhoneStatusBar extends BaseStatusBar {
 
         mStatusBarView = (PhoneStatusBarView) mStatusBarWindow.findViewById(R.id.status_bar);
         mStatusBarView.setBar(this);
+
+        mBarView = (ViewGroup) mStatusBarView;
+        startColorObserver();
         
         // status bar clock
         mClock = (Clock) mStatusBarView.findViewById(R.id.clock);

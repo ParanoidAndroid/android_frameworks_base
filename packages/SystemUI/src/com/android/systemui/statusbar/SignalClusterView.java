@@ -54,7 +54,7 @@ public class SignalClusterView
     ImageView mWifi, mMobile, mWifiActivity, mMobileActivity, mMobileType, mAirplane;
     View mSpacer;
 
-    int mColor;
+    int mColor = -1;
 
     public SignalClusterView(Context context) {
         this(context, null);
