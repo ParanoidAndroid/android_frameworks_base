@@ -141,10 +141,6 @@ public class Clock extends TextView {
         }
     }
 
-    public void setColor(int color) {
-        setTextColor(ColorUtils.getComplementaryColor(color, mContext));
-    }
-
     private final BroadcastReceiver mIntentReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {

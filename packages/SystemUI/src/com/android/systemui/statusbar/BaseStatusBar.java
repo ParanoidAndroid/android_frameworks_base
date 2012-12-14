@@ -52,6 +52,7 @@ import android.os.ServiceManager;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.ColorUtils;
 import android.util.DisplayMetrics;
 import android.util.ExtendedPropertiesUtils;
 import android.util.Log;
@@ -416,13 +417,16 @@ public abstract class BaseStatusBar extends SystemUI implements
             return;
         }
 
+        // Update status bar background color
+        boolean isTablet = ExtendedPropertiesUtils.isTablet();
         String setting = Settings.System.getString(mContext.getContentResolver(),
-                ExtendedPropertiesUtils.isTablet() ? Settings.System.NAV_BAR_COLOR :
+                isTablet ? Settings.System.NAV_BAR_COLOR :
                 Settings.System.STATUS_BAR_COLOR);
 
         String[] colors = (setting == null || setting.equals("")  ?
                 ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[
-                ExtendedPropertiesUtils.PARANOID_COLORS_NAVBAR] : setting).split(
+                isTablet ? ExtendedPropertiesUtils.PARANOID_COLORS_NAVBAR :
+                ExtendedPropertiesUtils.PARANOID_COLORS_STATBAR] : setting).split(
                 ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
         int currentColor = new BigInteger(colors[Integer.parseInt(colors[2])],
                 16).intValue();
@@ -439,7 +443,17 @@ public abstract class BaseStatusBar extends SystemUI implements
         transition.startTransition(speed);
 
         // Update policy colors
-        if(mClock != null) mClock.setColor(currentColor);
+        setting = Settings.System.getString(mContext.getContentResolver(),
+                Settings.System.STATUS_ICON_COLOR);
+
+        colors = (setting == null || setting.equals("")  ?
+                ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[
+                ExtendedPropertiesUtils.PARANOID_COLORS_STATICONS] : setting).split(
+                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
+        currentColor = new BigInteger(colors[Integer.parseInt(colors[2])],
+                16).intValue();
+
+        if(mClock != null) mClock.setTextColor(currentColor);
         if(mSignalCluster != null) mSignalCluster.setColor(currentColor);
         if(mBatteryController != null) mBatteryController.setColor(currentColor);
     }
