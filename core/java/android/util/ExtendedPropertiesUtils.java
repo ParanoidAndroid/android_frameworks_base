@@ -67,17 +67,20 @@ public class ExtendedPropertiesUtils {
 
     // Color definitions
     public static final String PARANOID_COLORS_SUFFIX = ".colors";
-    public static final int PARANOID_COLORS_COUNT = 4;
+    public static final int PARANOID_COLORS_COUNT = 5;
     public static final String[] PARANOID_COLORS_SETTINGS = {Settings.System.NAV_BAR_COLOR,
-            Settings.System.NAV_BUTTON_COLOR, Settings.System.NAV_GLOW_COLOR,
-            Settings.System.STATUS_BAR_COLOR};
-    public static final String[] PARANOID_COLORS_DEFAULTS = {"FF000000|FF000000|0", "B2FFFFFF|B2FFFFFF|0",
-            "FFFFFFFF|FFFFFFFF|0", "FF000000|FF000000|0"};
-    public static final int[] PARANOID_COLORCODES_DEFAULTS = {0xFF000000, 0xB2FFFFFF, 0xFFFFFFFF, 0xFF000000};
+        Settings.System.NAV_BUTTON_COLOR, Settings.System.NAV_GLOW_COLOR,
+        Settings.System.STATUS_BAR_COLOR, Settings.System.STATUS_ICON_COLOR};
+    public static final String[] PARANOID_COLORS_DEFAULTS = 
+        {"FF000000|FF000000|0", "B2FFFFFF|B2FFFFFF|0", "FFFFFFFF|FFFFFFFF|0", 
+         "FF000000|FF000000|0", "FF33B5E5|FF33B5E5|0"};
+    public static final int[] PARANOID_COLORCODES_DEFAULTS = 
+        {0xFF000000, 0xB2FFFFFF, 0xFFFFFFFF, 0xFF000000, 0xFF33B5E5};
     public static final int PARANOID_COLORS_NAVBAR = 0;
     public static final int PARANOID_COLORS_NAVBUTTON = 1;
     public static final int PARANOID_COLORS_NAVGLOW = 2;
     public static final int PARANOID_COLORS_STATBAR = 3;
+    public static final int PARANOID_COLORS_STATICONS = 4;
 
     public static HashMap<String, String> mPropertyMap = new HashMap<String, String>();
     public static ActivityThread mMainThread;
@@ -115,7 +118,7 @@ public class ExtendedPropertiesUtils {
         public int firstRun;
         public float scaledDensity;
         public float density;
-        public String[] colors = new String[4];
+        public String[] colors = new String[PARANOID_COLORS_COUNT];
     }
 
     /**
