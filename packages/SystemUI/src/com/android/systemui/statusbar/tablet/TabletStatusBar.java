@@ -553,7 +553,6 @@ public class TabletStatusBar extends BaseStatusBar implements
         mSignalCluster.setNetworkController(mNetworkController);
 
         mBarView = (ViewGroup) mStatusBarView;
-        startColorObserver();
 
         // The navigation buttons
         mBackButton = (ImageView)sb.findViewById(R.id.back);

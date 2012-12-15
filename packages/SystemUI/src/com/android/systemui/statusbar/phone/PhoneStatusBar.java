@@ -378,7 +378,6 @@ public class PhoneStatusBar extends BaseStatusBar {
         mStatusBarView.setBar(this);
 
         mBarView = (ViewGroup) mStatusBarView;
-        startColorObserver();
         
         // status bar clock
         mClock = (Clock) mStatusBarView.findViewById(R.id.clock);

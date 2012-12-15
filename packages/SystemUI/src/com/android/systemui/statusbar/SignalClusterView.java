@@ -54,7 +54,7 @@ public class SignalClusterView
     ImageView mWifi, mMobile, mWifiActivity, mMobileActivity, mMobileType, mAirplane;
     View mSpacer;
 
-    int mColor = -1;
+    int mColor = 0xF33B5E5;
 
     public SignalClusterView(Context context) {
         this(context, null);
@@ -162,9 +162,7 @@ public class SignalClusterView
         if (mWifiVisible) {
             mWifiGroup.setVisibility(View.VISIBLE);
             Drawable wifiBitmap = mContext.getResources().getDrawable(mWifiStrengthId);
-            if(mColor != -1 && mNC.mInetCondition != 0) {
-                wifiBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
-            }
+            wifiBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
             mWifi.setImageDrawable(wifiBitmap);
             mWifiActivity.setImageResource(mWifiActivityId);
             mWifiGroup.setContentDescription(mWifiDescription);
@@ -181,9 +179,7 @@ public class SignalClusterView
             mMobileGroup.setVisibility(View.VISIBLE);
             if(mMobileStrengthId != 0) {
                 Drawable mobileBitmap = mContext.getResources().getDrawable(mMobileStrengthId);
-                if(mColor != -1 && mNC.mInetCondition != 0) {
-                    mobileBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
-                }
+                mobileBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
                 mMobile.setImageDrawable(mobileBitmap);
             }
             mMobile.setImageResource(mMobileStrengthId);

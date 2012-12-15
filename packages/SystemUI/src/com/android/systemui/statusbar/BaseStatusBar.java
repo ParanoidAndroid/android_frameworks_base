@@ -219,26 +219,6 @@ public abstract class BaseStatusBar extends SystemUI implements
         }
     };
 
-    // Color receiver
-    class ColorObserver extends ContentObserver {
-        ColorObserver(Handler handler) {
-            super(handler);
-        }
-
-        void observe() {
-            ContentResolver resolver = mContext.getContentResolver();
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.STATUS_BAR_COLOR), false, this);
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.STATUS_ICON_COLOR), false, this);
-        }
-
-        @Override 
-        public void onChange(boolean selfChange) {
-            updateColor(false);
-        }
-    }
-
     public void start() {
         mWindowManager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
         mWindowManagerService = WindowManagerGlobal.getWindowManagerService();
@@ -325,11 +305,69 @@ public abstract class BaseStatusBar extends SystemUI implements
                     userSwitched(mCurrentUserId);
                 }
             }}, filter);
+
+        // Reset all colors
+        Bitmap bm = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+        Canvas cnv = new Canvas(bm);
+        cnv.drawColor(0xFF000000);
+        mBarView.setBackground(new BitmapDrawable(bm));
+        updateIconColor();
+        updateBackgroundColor();
+
+        // Listen for status bar icon color changes
+        mContext.getContentResolver().registerContentObserver(
+            Settings.System.getUriFor(Settings.System.STATUS_ICON_COLOR), false, new ContentObserver(new Handler()) {
+                @Override
+                public void onChange(boolean selfChange) {
+                    updateIconColor();
+                }});
+
+        // Listen for status bar background color changes
+        mContext.getContentResolver().registerContentObserver(
+            Settings.System.getUriFor(Settings.System.STATUS_BAR_COLOR), false, new ContentObserver(new Handler()) {
+                @Override
+                public void onChange(boolean selfChange) {
+                    updateBackgroundColor();
+                }});
     }
 
-    public void startColorObserver() {
-        ColorObserver observer = new ColorObserver(new Handler());
-        observer.observe();
+    private void updateIconColor() {
+        String setting = Settings.System.getString(mContext.getContentResolver(),
+            Settings.System.STATUS_ICON_COLOR);
+        String[] colors = (setting == null || setting.equals("")  ?
+            ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[
+            ExtendedPropertiesUtils.PARANOID_COLORS_STATICONS] : setting).split(
+            ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
+        int currentColor = new BigInteger(colors[Integer.parseInt(colors[2])],
+            16).intValue();
+        if(mClock != null) mClock.setTextColor(currentColor);
+        if(mSignalCluster != null) mSignalCluster.setColor(currentColor);
+        if(mBatteryController != null) mBatteryController.setColor(currentColor);
+    }
+
+    private void updateBackgroundColor() {
+        boolean isTablet = ExtendedPropertiesUtils.isTablet();
+        String setting = Settings.System.getString(mContext.getContentResolver(),
+            isTablet ? Settings.System.NAV_BAR_COLOR :
+            Settings.System.STATUS_BAR_COLOR);
+        String[] colors = (setting == null || setting.equals("")  ?
+            ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[
+            isTablet ? ExtendedPropertiesUtils.PARANOID_COLORS_NAVBAR :
+            ExtendedPropertiesUtils.PARANOID_COLORS_STATBAR] : setting).split(
+            ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
+        int currentColor = new BigInteger(colors[Integer.parseInt(colors[2])],
+            16).intValue();
+        int speed = colors.length < 4 ? 500 : Integer.parseInt(colors[3]);
+
+        Bitmap bm = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+        Canvas cnv = new Canvas(bm);
+        cnv.drawColor(currentColor);
+
+        TransitionDrawable transition = new TransitionDrawable(new Drawable[]{
+            mBarView.getBackground(), new BitmapDrawable(bm)});
+        transition.setCrossFadeEnabled(true);
+        mBarView.setBackground(transition);
+        transition.startTransition(speed);
     }
 
     public void userSwitched(int newUserId) {
@@ -435,56 +473,6 @@ public abstract class BaseStatusBar extends SystemUI implements
             mNotificationBlamePopup.dismiss();
             mNotificationBlamePopup = null;
         }
-    }
-
-    public void updateColor(boolean defaults) {
-        if (defaults) {
-            Bitmap bm = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-            Canvas cnv = new Canvas(bm);
-            cnv.drawColor(0xFF000000);
-            mBarView.setBackground(new BitmapDrawable(bm));
-            return;
-        }
-
-        // Update status bar background color
-        boolean isTablet = ExtendedPropertiesUtils.isTablet();
-        String setting = Settings.System.getString(mContext.getContentResolver(),
-                isTablet ? Settings.System.NAV_BAR_COLOR :
-                Settings.System.STATUS_BAR_COLOR);
-
-        String[] colors = (setting == null || setting.equals("")  ?
-                ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[
-                isTablet ? ExtendedPropertiesUtils.PARANOID_COLORS_NAVBAR :
-                ExtendedPropertiesUtils.PARANOID_COLORS_STATBAR] : setting).split(
-                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
-        int currentColor = new BigInteger(colors[Integer.parseInt(colors[2])],
-                16).intValue();
-        int speed = colors.length < 4 ? 500 : Integer.parseInt(colors[3]);
-
-        Bitmap bm = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-        Canvas cnv = new Canvas(bm);
-        cnv.drawColor(currentColor);
-
-        TransitionDrawable transition = new TransitionDrawable(new Drawable[]{
-                mBarView.getBackground(), new BitmapDrawable(bm)});
-        transition.setCrossFadeEnabled(true);
-        mBarView.setBackground(transition);
-        transition.startTransition(speed);
-
-        // Update policy colors
-        setting = Settings.System.getString(mContext.getContentResolver(),
-                Settings.System.STATUS_ICON_COLOR);
-
-        colors = (setting == null || setting.equals("")  ?
-                ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[
-                ExtendedPropertiesUtils.PARANOID_COLORS_STATICONS] : setting).split(
-                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
-        currentColor = new BigInteger(colors[Integer.parseInt(colors[2])],
-                16).intValue();
-
-        if(mClock != null) mClock.setTextColor(currentColor);
-        if(mSignalCluster != null) mSignalCluster.setColor(currentColor);
-        if(mBatteryController != null) mBatteryController.setColor(currentColor);
     }
 
     public void dismissIntruder() {
