@@ -16,7 +16,8 @@
 
 package com.android.systemui.statusbar.phone;
 
-import android.app.ActivityManager;
+import java.util.List;
+
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.BluetoothStateChangeCallback;
 import android.content.BroadcastReceiver;
@@ -29,11 +30,7 @@ import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.graphics.drawable.Drawable;
 import android.hardware.display.WifiDisplayStatus;
-import android.location.LocationManager;
-import android.nfc.NfcAdapter;
-import android.nfc.NfcManager;
 import android.os.Handler;
-import android.os.UserHandle;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.text.TextUtils;
@@ -50,8 +47,6 @@ import com.android.systemui.statusbar.policy.CurrentUserTracker;
 import com.android.systemui.statusbar.policy.LocationController.LocationGpsStateChangeCallback;
 import com.android.systemui.statusbar.policy.NetworkController.NetworkSignalChangedCallback;
 
-import java.util.Arrays;
-import java.util.List;
 
 class QuickSettingsModel implements BluetoothStateChangeCallback,
         NetworkSignalChangedCallback,
@@ -61,24 +56,6 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
 
     // Sett InputMethoManagerService
     private static final String TAG_TRY_SUPPRESSING_IME_SWITCHER = "TrySuppressingImeSwitcher";
-
-    protected static final String TILE_SEPARATOR = "|";
-    protected static final String WIFI = "WIFI";
-    protected static final String BLUETOOTH = "BLUETOOTH";
-    protected static final String LOCATION = "LOCATION";
-    protected static final String DATA = "DATA";
-    protected static final String NFC = "NFC";
-    protected static final String SCREEN_ROTATION = "SCREEN_ROTATION";
-    protected static final String AIRPLANE = "AIRPLANE";
-    protected static final String BATTERY = "BATTERY";
-    protected static final String SYNC = "SYNC";
-    // TODO: Moar toggles
-    //protected static final String BRIGHTNESS = "BRIGHTNESS";
-    //protected static final String CLOCK = "CLOCK";
-
-    protected static final String DEFAULT_TILES = WIFI + TILE_SEPARATOR
-            + DATA + TILE_SEPARATOR + BATTERY + TILE_SEPARATOR
-            + AIRPLANE + TILE_SEPARATOR + BLUETOOTH;
 
     /** Represents the state of a given attribute. */
     static class State {
@@ -124,28 +101,6 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
             if (action.equals(Intent.ACTION_ALARM_CHANGED)) {
                 onAlarmChanged(intent);
                 onNextAlarmChanged();
-            }
-        }
-    };
-
-    /** Broadcast receive to determine if location status has changed. */
-    private BroadcastReceiver mLocationReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(LocationManager.PROVIDERS_CHANGED_ACTION)
-                    && mLocationCallback != null && mLocationTile != null) {
-                mLocationCallback.refreshView(mLocationTile, mLocationState);
-            }
-        }
-    };
-
-    private BroadcastReceiver mNfcReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED)) {
-                NfcManager manager = (NfcManager) context.getSystemService(Context.NFC_SERVICE);
-                mNfcAdapter = manager.getDefaultAdapter();
-                refreshNfcTile();
             }
         }
     };
@@ -213,7 +168,6 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
     private final NextAlarmObserver mNextAlarmObserver;
     private final BugreportObserver mBugreportObserver;
     private final BrightnessObserver mBrightnessObserver;
-    private NfcAdapter mNfcAdapter;
 
     private QuickSettingsTileView mUserTile;
     private RefreshCallback mUserCallback;
@@ -255,10 +209,6 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
     private RefreshCallback mLocationCallback;
     private State mLocationState = new State();
 
-    private QuickSettingsTileView mNfcTile;
-    private RefreshCallback mNfcCallback;
-    private State mNfcState = new State();
-
     private QuickSettingsTileView mImeTile;
     private RefreshCallback mImeCallback = null;
     private State mImeState = new State();
@@ -278,10 +228,6 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
     private QuickSettingsTileView mSettingsTile;
     private RefreshCallback mSettingsCallback;
     private State mSettingsState = new State();
-
-    private QuickSettingsTileView mSyncTile;
-    private RefreshCallback mSyncCallback;
-    private State mSyncState = new State();
 
     public QuickSettingsModel(Context context) {
         mContext = context;
@@ -304,40 +250,15 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
         IntentFilter alarmIntentFilter = new IntentFilter();
         alarmIntentFilter.addAction(Intent.ACTION_ALARM_CHANGED);
         context.registerReceiver(mAlarmIntentReceiver, alarmIntentFilter);
-
-        IntentFilter locationIntentFilter = new IntentFilter();
-        locationIntentFilter.addAction(LocationManager.PROVIDERS_CHANGED_ACTION);
-        context.registerReceiver(mLocationReceiver, locationIntentFilter);
-
-        IntentFilter nfcIntentFilter = new IntentFilter();
-        nfcIntentFilter.addAction(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED);
-        context.registerReceiver(mNfcReceiver, nfcIntentFilter);
     }
 
-    void updateResources(String[] tiles) {
+    void updateResources() {
         refreshSettingsTile();
+        refreshBatteryTile();
+        refreshBluetoothTile();
         refreshBrightnessTile();
-        if(showTile(tiles, BATTERY)) {
-            refreshBatteryTile();
-        }
-        if(showTile(tiles, BLUETOOTH)) {
-            refreshBluetoothTile();    
-        }
-        if(showTile(tiles, SCREEN_ROTATION)) {
-            refreshRotationLockTile();
-        }
-        if(showTile(tiles, NFC)) {
-            refreshNfcTile();
-        }
-        if(showTile(tiles, SYNC)) {
-            refreshSyncTile();
-        }
+        refreshRotationLockTile();
     }
-
-    boolean showTile(String[] tiles, String tile) {
-        return Arrays.asList(tiles).contains(tile);
-    }
-
 
     // Settings
     void addSettingsTile(QuickSettingsTileView view, RefreshCallback cb) {
@@ -426,9 +347,7 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
                 R.drawable.ic_qs_airplane_on :
                 R.drawable.ic_qs_airplane_off);
         mAirplaneModeState.label = r.getString(R.string.quick_settings_airplane_mode_label);
-        if(mAirplaneModeTile != null && mAirplaneModeCallback != null) {
-            mAirplaneModeCallback.refreshView(mAirplaneModeTile, mAirplaneModeState);
-        }
+        mAirplaneModeCallback.refreshView(mAirplaneModeTile, mAirplaneModeState);
     }
 
     // Wifi
@@ -479,9 +398,7 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
             mWifiState.label = r.getString(R.string.quick_settings_wifi_off_label);
             mWifiState.signalContentDescription = r.getString(R.string.accessibility_wifi_off);
         }
-        if(mWifiTile != null && mWifiCallback != null) {
-            mWifiCallback.refreshView(mWifiTile, mWifiState);
-        }
+        mWifiCallback.refreshView(mWifiTile, mWifiState);
     }
 
     // RSSI
@@ -517,9 +434,7 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
             mRSSIState.label = enabled
                     ? removeTrailingPeriod(enabledDesc)
                     : r.getString(R.string.quick_settings_rssi_emergency_only);
-            if(mRSSITile != null && mRSSICallback != null) {
-                mRSSICallback.refreshView(mRSSITile, mRSSIState);
-            }
+            mRSSICallback.refreshView(mRSSITile, mRSSIState);
         }
     }
 
@@ -562,9 +477,7 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
             mBluetoothState.label = r.getString(R.string.quick_settings_bluetooth_off_label);
             mBluetoothState.stateContentDescription = r.getString(R.string.accessibility_desc_off);
         }
-        if(mBluetoothTile != null && mBluetoothCallback != null) {
-            mBluetoothCallback.refreshView(mBluetoothTile, mBluetoothState);
-        }
+        mBluetoothCallback.refreshView(mBluetoothTile, mBluetoothState);
     }
     void refreshBluetoothTile() {
         if (mBluetoothTile != null) {
@@ -583,88 +496,24 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
     public void onBatteryLevelChanged(int level, boolean pluggedIn) {
         mBatteryState.batteryLevel = level;
         mBatteryState.pluggedIn = pluggedIn;
-        if(mBatteryTile != null && mBatteryCallback != null) {
-            mBatteryCallback.refreshView(mBatteryTile, mBatteryState);
-        }
+        mBatteryCallback.refreshView(mBatteryTile, mBatteryState);
     }
     void refreshBatteryTile() {
-        if(mBatteryTile != null) {
-            mBatteryCallback.refreshView(mBatteryTile, mBatteryState);
-        }
+        mBatteryCallback.refreshView(mBatteryTile, mBatteryState);
     }
 
     // Location
     void addLocationTile(QuickSettingsTileView view, RefreshCallback cb) {
         mLocationTile = view;
         mLocationCallback = cb;
-        if(mLocationTile != null && mLocationCallback != null) {
-            mLocationCallback.refreshView(mLocationTile, mLocationState);
-        }
+        mLocationCallback.refreshView(mLocationTile, mLocationState);
     }
-
     // LocationController callback
     @Override
     public void onLocationGpsStateChanged(boolean inUse, String description) {
         mLocationState.enabled = inUse;
         mLocationState.label = description;
-    }
-
-    // Near field communication
-    void addNfcTile(QuickSettingsTileView view, RefreshCallback cb) {
-        mNfcTile = view;
-        mNfcCallback = cb;
-        onNfcStateChanged();
-    }
-
-    public void onNfcStateChanged() {
-        boolean isNfcEnabled = (mNfcAdapter != null) ?
-                mNfcAdapter.isEnabled() : false;
-
-        mNfcState.enabled = isNfcEnabled;
-        mNfcState.iconId = isNfcEnabled
-                ? R.drawable.ic_qs_nfc_on
-                : R.drawable.ic_qs_nfc_off;
-        mNfcState.label = isNfcEnabled
-                ? mContext.getString(R.string.quick_settings_nfc_label)
-                : mContext.getString(R.string.quick_settings_nfc_off_label);
-
-        if (mNfcTile != null && mNfcCallback != null) {
-            mNfcCallback.refreshView(mNfcTile, mNfcState);
-        }
-    }
-
-    void refreshNfcTile() {
-        if (mNfcTile != null) {
-            onNfcStateChanged();
-        }
-    }
-
-    // Synchronization
-    void addSyncTile(QuickSettingsTileView view, RefreshCallback cb) {
-        mSyncTile = view;
-        mSyncCallback = cb;
-        onSyncStateChanged();
-    }
-
-    void onSyncStateChanged() {
-        boolean isSyncEnabled = ContentResolver.getMasterSyncAutomatically();
-        mSyncState.enabled = isSyncEnabled;
-        mSyncState.iconId = isSyncEnabled
-                ? R.drawable.ic_qs_sync_on
-                : R.drawable.ic_qs_sync_off;
-        mSyncState.label = isSyncEnabled
-                ? mContext.getString(R.string.quick_settings_sync_label)
-                : mContext.getString(R.string.quick_settings_sync_off_label);
-
-        if (mSyncTile != null && mSyncCallback != null) {
-            mSyncCallback.refreshView(mSyncTile, mSyncState);
-        }
-    }
-
-    void refreshSyncTile() {
-        if (mSyncTile != null) {
-            onSyncStateChanged();
-        }
+        mLocationCallback.refreshView(mLocationTile, mLocationState);
     }
 
     // Bug report
@@ -703,6 +552,7 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
             mWifiDisplayState.iconId = R.drawable.ic_qs_remote_display;
         }
         mWifiDisplayCallback.refreshView(mWifiDisplayTile, mWifiDisplayState);
+
     }
 
     // IME
@@ -803,7 +653,7 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
                 ? mContext.getString(R.string.quick_settings_rotation_locked_label)
                 : mContext.getString(R.string.quick_settings_rotation_unlocked_label);
 
-        // may be called before adding RotationLockTile due to RotationPolicyListener in QuickSettings
+        // may be called before addRotationLockTile due to RotationPolicyListener in QuickSettings
         if (mRotationLockTile != null && mRotationLockCallback != null) {
             mRotationLockCallback.refreshView(mRotationLockTile, mRotationLockState);
         }
@@ -833,14 +683,10 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
                 ? R.drawable.ic_qs_brightness_auto_on
                 : R.drawable.ic_qs_brightness_auto_off;
         mBrightnessState.label = r.getString(R.string.quick_settings_brightness_label);
-        if(mBrightnessTile != null && mBrightnessCallback != null) {
-            mBrightnessCallback.refreshView(mBrightnessTile, mBrightnessState);
-        }
+        mBrightnessCallback.refreshView(mBrightnessTile, mBrightnessState);
     }
     void refreshBrightnessTile() {
-        if(mBrightnessTile != null) {
-            onBrightnessLevelChanged();
-        }
+        onBrightnessLevelChanged();
     }
 
     // User switch: need to update visuals of all tiles known to have per-user state
@@ -850,6 +696,5 @@ class QuickSettingsModel implements BluetoothStateChangeCallback,
         onBrightnessLevelChanged();
         onNextAlarmChanged();
         onBugreportChanged();
-        onSyncStateChanged();
     }
 }

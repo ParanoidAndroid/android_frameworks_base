@@ -489,10 +489,6 @@
     <string name="quick_settings_location_label">Location in use</string>
     <!-- QuickSettings: Location [CHAR LIMIT=NONE] -->
     <string name="quick_settings_location_off_label">Location disabled</string>
-    <!-- QuickSettings: NFC [CHAR LIMIT=NONE] -->
-    <string name="quick_settings_nfc_label">NFC enabled</string>
-    <!-- QuickSettings: NFC [CHAR LIMIT=NONE] -->
-    <string name="quick_settings_nfc_off_label">NFC disabled</string>
     <!-- QuickSettings: Media device [CHAR LIMIT=NONE] -->
     <string name="quick_settings_media_device_label">Media device</string>
     <!-- QuickSettings: RSSI [CHAR LIMIT=NONE] -->
@@ -521,10 +517,23 @@
     <string name="quick_settings_brightness_dialog_title">Brightness</string>
     <!-- QuickSettings: Brightness dialog auto brightness button [CHAR LIMIT=NONE] -->
     <string name="quick_settings_brightness_dialog_auto_brightness_label">AUTO</string>
-    <!-- QuickSettings: Synchronization [CHAR LIMIT=NONE] -->
+
+    <!-- QuickSettings: Additional tiles [CHAR LIMIT=NONE] -->
+    <string name="quick_settings_nfc_label">NFC enabled</string>
+    <string name="quick_settings_nfc_off_label">NFC disabled</string>
     <string name="quick_settings_sync_label">Sync enabled</string>
-    <!-- QuickSettings: Synchronization [CHAR LIMIT=NONE] -->
     <string name="quick_settings_sync_off_label">Sync disabled</string>
+    <string name="quick_settings_gps">GPS</string>
+    <string name="quick_settings_screen_sleep">Go to sleep</string>
+    <string name="quick_settings_ringer_on">Sound on</string>
+    <string name="quick_settings_ringer_off">Sound off</string>
+    <string name="quick_settings_vibration_on">Vibration on</string>
+    <string name="quick_settings_vibration_off">Vibration off</string>
+    <string name="quick_settings_label_enabled">On</string>
+    <string name="quick_settings_label_disabled">Off</string>
+    <string name="quick_settings_ringer_normal">Sound</string>
+    <string name="quick_settings_network_type">Network Type</string>
+    <string name="quick_settings_report_bug">Report Bug</string>
 
     <!-- Title of help text shown when the notification panel is pulled down for the very first time. [CHAR LIMIT=NONE] -->
     <string name="status_bar_help_title">Notifications appear here</string>

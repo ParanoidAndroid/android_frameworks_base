@@ -2341,6 +2341,12 @@ public final class Settings {
         public static final String SIP_ASK_ME_EACH_TIME = "SIP_ASK_ME_EACH_TIME";
 
         /**
+         * Torch state (flashlight)
+         * @hide
+         */
+        public static final String TORCH_STATE = "torch_state";
+
+        /**
          * Pointer speed setting.
          * This is an integer value in a range between -7 and +7, so there are 15 possible values.
          *   -7 = slowest
@@ -2498,12 +2504,47 @@ public final class Settings {
          */
         public static final String STATUS_BAR_AM_PM_STYLE = "status_bar_am_pm_style";
 
-        /**	
-         * Defines the settings to be shown in quicksettings menu
-         * Usage is like this: WIFI|GPS|BLUETOOTH
+        /**
+         * Quick Settings Panel Tiles to Use
          * @hide
          */
-        public static final String QUICK_SETTINGS_ENTRIES = "quick_settings_entries";
+        public static final String QUICK_SETTINGS_TILES = "quick_settings_tiles";
+
+        /**
+         * QuickSettings panel dynamic alarm tile
+         * @hide
+         */
+        public static final String QS_DYNAMIC_ALARM = "qs_dyanmic_alarm";
+
+        /**
+         * QuickSettings panel dynamic bug-report tile
+         * @hide
+         */
+        public static final String QS_DYNAMIC_BUGREPORT = "qs_dyanmic_bugreport";
+
+        /**
+         * QuickSettings panel dynamic IME tile
+         * @hide
+         */
+        public static final String QS_DYNAMIC_IME = "qs_dyanmic_ime";
+
+        /**
+         * QuickSettings panel dynamic wifi tile
+         * @hide
+         */
+        public static final String QS_DYNAMIC_WIFI = "qs_dyanmic_wifi";
+
+        /**
+        * Custom Network Mode
+        * @hide
+        */
+        public static final String EXPANDED_NETWORK_MODE = "expanded_network_mode";
+        
+        /**
+        * Custom Ring Mode
+        * @hide
+        */
+        public static final String EXPANDED_RING_MODE = "expanded_ring_mode";
 
         /**
          * Volume keys control cursor in text fields (default is 0)

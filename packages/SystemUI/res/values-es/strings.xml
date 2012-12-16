@@ -194,6 +194,17 @@
     <string name="quick_settings_nfc_off_label">NFC desactivado</string>
     <string name="quick_settings_sync_label">Sincronización activada</string>
     <string name="quick_settings_sync_off_label">Sincronización desactivada</string>
+    <string name="quick_settings_gps">GPS</string>
+    <string name="quick_settings_screen_sleep">Apagar pantalla</string>
+    <string name="quick_settings_ringer_on">Sonido activado</string>
+    <string name="quick_settings_ringer_off">Sonido desactivado</string>
+    <string name="quick_settings_vibration_on">Vibración activada</string>
+    <string name="quick_settings_vibration_off">Vibración desactivada</string>
+    <string name="quick_settings_label_enabled">Activado</string>
+    <string name="quick_settings_label_disabled">Desactivado</string>
+    <string name="quick_settings_ringer_normal">Sonido</string>
+    <string name="quick_settings_network_type">Tipo de red</string>
+    <string name="quick_settings_report_bug">Reportar error</string>
     <string name="quick_settings_media_device_label" msgid="1302906836372603762">"Dispositivo multimedia"</string>
     <string name="quick_settings_rssi_label" msgid="7725671335550695589">"RSSI"</string>
     <string name="quick_settings_rssi_emergency_only" msgid="2713774041672886750">"Solo llamadas de emergencia"</string>
