@@ -79,7 +79,9 @@ public class NfcTile extends QuickSettingsTile {
     }
 
     private void changeNfcState() {
-        if(mAdapter == null) return;
+        if(mAdapter == null) {
+            mAdapter = NfcAdapter.getDefaultAdapter(mContext);
+        }
 
         AsyncTask.execute(new Runnable() {
             public void run() {
