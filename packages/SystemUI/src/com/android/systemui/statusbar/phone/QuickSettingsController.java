@@ -82,8 +82,10 @@ public class QuickSettingsController {
             + TILE_DELIMITER + TILE_BRIGHTNESS
             + TILE_DELIMITER + TILE_SETTINGS
             + TILE_DELIMITER + TILE_WIFI
-            + TILE_DELIMITER + TILE_BLUETOOTH
-            + TILE_DELIMITER + TILE_SOUND;
+            + TILE_DELIMITER + TILE_MOBILEDATA
+            + TILE_DELIMITER + TILE_BATTERY
+            + TILE_DELIMITER + TILE_AIRPLANE
+            + TILE_DELIMITER + TILE_BLUETOOTH;
 
     private final Context mContext;
     public PanelBar mBar;
