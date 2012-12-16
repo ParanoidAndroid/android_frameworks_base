@@ -27,6 +27,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
+import com.android.systemui.statusbar.BaseStatusBar;
 import com.android.systemui.statusbar.quicksettings.AirplaneModeTile;
 import com.android.systemui.statusbar.quicksettings.AlarmTile;
 import com.android.systemui.statusbar.quicksettings.AutoRotateTile;
@@ -89,7 +90,7 @@ public class QuickSettingsController {
     private final ViewGroup mContainerView;
     private final Handler mHandler;
     private final ArrayList<Integer> mQuickSettings;
-    public PhoneStatusBar mStatusBarService;
+    public BaseStatusBar mStatusBarService;
 
     // Constants for use in switch statement
     public static final int WIFI_TILE = 0;
@@ -115,7 +116,7 @@ public class QuickSettingsController {
     public static final int USER_TILE = 99;
     private InputMethodTile IMETile;
 
-    public QuickSettingsController(Context context, QuickSettingsContainerView container, PhoneStatusBar statusBarService) {
+    public QuickSettingsController(Context context, QuickSettingsContainerView container, BaseStatusBar statusBarService) {
         mContext = context;
         mContainerView = container;
         mHandler = new Handler();
@@ -216,7 +217,7 @@ public class QuickSettingsController {
         return pm.hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
     }
 
-    void setBar(PanelBar bar) {
+    public void setBar(PanelBar bar) {
         mBar = bar;
     }
 
@@ -318,10 +319,6 @@ public class QuickSettingsController {
                 qs.setupQuickSettingsTile();
             }
         }
-    }
-
-    public void setService(PhoneStatusBar phoneStatusBar) {
-        mStatusBarService = phoneStatusBar;
     }
 
     public void setImeWindowStatus(boolean visible) {

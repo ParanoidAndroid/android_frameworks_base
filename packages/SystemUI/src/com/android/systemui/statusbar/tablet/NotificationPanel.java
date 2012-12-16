@@ -347,10 +347,9 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
 
         // Add Quick Settings
         mSettingsContainer = (QuickSettingsContainerView)mSettingsView.findViewById(R.id.quick_settings_container);
-        mQS = new QuickSettings(mContext, mSettingsContainer);
-        mQS.setService(statusBar);
+        mQS = new QuickSettings(mContext, mSettingsContainer, statusBar);
         mQS.setBar(new QuickSettingsCallback(mContext, null));
-        mQS.setup(networkController, bluetoothController, batteryController, locationController);
+        mQS.setupQuickSettings();
     }
 
     // NB: it will be invisible until you show it

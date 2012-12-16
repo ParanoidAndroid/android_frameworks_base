@@ -81,14 +81,6 @@ public class SettingsPanelView extends PanelView {
         }
     }
 
-    public void setup(NetworkController networkController, BluetoothController bluetoothController,
-            BatteryController batteryController, LocationController locationController) {
-        if (mQS != null) {
-            mQS.setup(networkController, bluetoothController, batteryController,
-                    locationController);
-        }
-    }
-
     void updateResources() {
         if (mQS != null) {
             mQS.updateResources();
@@ -108,12 +100,6 @@ public class SettingsPanelView extends PanelView {
                 "settings,v=" + vel);
         }
         super.fling(vel, always);
-    }
-
-    public void setService(PhoneStatusBar phoneStatusBar) {
-        if (mQS != null) {
-            mQS.setService(phoneStatusBar);
-        }
     }
 
     // We draw the handle ourselves so that it's always glued to the bottom of the window.

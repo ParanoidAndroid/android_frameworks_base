@@ -594,7 +594,7 @@ public class PhoneStatusBar extends BaseStatusBar {
             mSettingsContainer = (QuickSettingsContainerView)
                     mStatusBarWindow.findViewById(R.id.quick_settings_container);
             if (mSettingsContainer != null) {
-                mQS = new QuickSettings(mContext, mSettingsContainer);
+                mQS = new QuickSettings(mContext, mSettingsContainer, this);
                 if (!mNotificationPanelIsFullScreenWidth) {
                     mSettingsContainer.setSystemUiVisibility(
                             View.STATUS_BAR_DISABLE_NOTIFICATION_TICKER
@@ -603,10 +603,9 @@ public class PhoneStatusBar extends BaseStatusBar {
                 if (mSettingsPanel != null) {
                     mSettingsPanel.setQuickSettings(mQS);
                 }
-                mQS.setService(this);
                 mQS.setBar(mStatusBarView);
-                mQS.setup(mNetworkController, mBluetoothController, mBatteryController,
-                        mLocationController);
+                mQS.setupQuickSettings();
+
             } else {
                 mQS = null; // fly away, be free
             }
@@ -2435,7 +2434,6 @@ public class PhoneStatusBar extends BaseStatusBar {
 
         // Update the QuickSettings container
         if (mQS != null) mQS.updateResources();
-
     }
 
     protected void loadDimens() {
