@@ -42,6 +42,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuff.Mode;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
@@ -147,6 +149,9 @@ public abstract class BaseStatusBar extends SystemUI implements
     public SignalClusterView mSignalCluster;
     public Clock mClock;
 
+    // left-hand icons 
+    public LinearLayout mStatusIcons;
+
     // Statusbar view container
     public ViewGroup mBarView;
 
@@ -163,6 +168,8 @@ public abstract class BaseStatusBar extends SystemUI implements
     protected Display mDisplay;
 
     private boolean mDeviceProvisioned = false;
+
+    public int mIconColor = 0xF33B5E5;
 
     public void collapse() {
     }
@@ -340,9 +347,18 @@ public abstract class BaseStatusBar extends SystemUI implements
             ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
         int currentColor = new BigInteger(colors[Integer.parseInt(colors[2])],
             16).intValue();
+        mIconColor = currentColor;
         if(mClock != null) mClock.setTextColor(currentColor);
         if(mSignalCluster != null) mSignalCluster.setColor(currentColor);
         if(mBatteryController != null) mBatteryController.setColor(currentColor);
+
+        if (mStatusIcons != null) {
+            for(int i = 0; i < mStatusIcons.getChildCount(); i++) {
+                Drawable iconDrawable = ((ImageView)mStatusIcons.getChildAt(i)).getDrawable();
+                iconDrawable.setColorFilter(mIconColor, PorterDuff.Mode.SRC_IN);
+            }
+        }
+
     }
 
     private void updateBackgroundColor() {

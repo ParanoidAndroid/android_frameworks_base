@@ -192,6 +192,11 @@ public class SignalClusterView
 
         if (mIsAirplaneMode) {
             mAirplane.setVisibility(View.VISIBLE);
+            if(mAirplaneIconId != 0) {
+                Drawable AirplaneBitmap = mContext.getResources().getDrawable(mAirplaneIconId);
+                AirplaneBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
+                mAirplane.setImageDrawable(AirplaneBitmap);
+            }
             mAirplane.setImageResource(mAirplaneIconId);
         } else {
             mAirplane.setVisibility(View.GONE);

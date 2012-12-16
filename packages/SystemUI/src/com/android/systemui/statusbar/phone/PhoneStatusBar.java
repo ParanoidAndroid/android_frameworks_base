@@ -179,9 +179,7 @@ public class PhoneStatusBar extends BaseStatusBar {
     
     // right-hand icons
     LinearLayout mSystemIconArea;
-    
-    // left-hand icons 
-    LinearLayout mStatusIcons;
+
     // the icons themselves
     IconMerger mNotificationIcons;
     // [+>
@@ -870,6 +868,10 @@ public class PhoneStatusBar extends BaseStatusBar {
     public void addIcon(String slot, int index, int viewIndex, StatusBarIcon icon) {
         if (SPEW) Slog.d(TAG, "addIcon slot=" + slot + " index=" + index + " viewIndex=" + viewIndex
                 + " icon=" + icon);
+
+        Drawable iconDrawable = StatusBarIconView.getIcon(mContext, icon);
+        iconDrawable.setColorFilter(mIconColor, PorterDuff.Mode.SRC_IN);
+
         StatusBarIconView view = new StatusBarIconView(mContext, slot, null);
         view.set(icon);
         mStatusIcons.addView(view, viewIndex, new LinearLayout.LayoutParams(mIconSize, mIconSize));
@@ -879,6 +881,10 @@ public class PhoneStatusBar extends BaseStatusBar {
             StatusBarIcon old, StatusBarIcon icon) {
         if (SPEW) Slog.d(TAG, "updateIcon slot=" + slot + " index=" + index + " viewIndex=" + viewIndex
                 + " old=" + old + " icon=" + icon);
+
+        Drawable iconDrawable = StatusBarIconView.getIcon(mContext, icon);
+        iconDrawable.setColorFilter(mIconColor, PorterDuff.Mode.SRC_IN);
+
         StatusBarIconView view = (StatusBarIconView)mStatusIcons.getChildAt(viewIndex);
         view.set(icon);
     }
