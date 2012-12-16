@@ -35,14 +35,14 @@ import com.android.systemui.statusbar.policy.LocationController;
 import com.android.systemui.statusbar.policy.LocationController.LocationGpsStateChangeCallback;
 
 
-public class GPSTile extends QuickSettingsTile implements LocationGpsStateChangeCallback {
+public class GpsTile extends QuickSettingsTile implements LocationGpsStateChangeCallback {
 
     private boolean enabled;
     private boolean working;
 
     ContentResolver mContentResolver;
 
-    public GPSTile(Context context, LayoutInflater inflater,
+    public GpsTile(Context context, LayoutInflater inflater,
             QuickSettingsContainerView container, QuickSettingsController qsc) {
         super(context, inflater, container, qsc);
 

@@ -36,14 +36,16 @@ import com.android.systemui.statusbar.quicksettings.BluetoothTile;
 import com.android.systemui.statusbar.quicksettings.BrightnessTile;
 import com.android.systemui.statusbar.quicksettings.BugReportTile;
 import com.android.systemui.statusbar.quicksettings.FlashLightTile;
-import com.android.systemui.statusbar.quicksettings.GPSTile;
+import com.android.systemui.statusbar.quicksettings.GpsTile;
 import com.android.systemui.statusbar.quicksettings.InputMethodTile;
 import com.android.systemui.statusbar.quicksettings.MobileNetworkTile;
 import com.android.systemui.statusbar.quicksettings.MobileNetworkTypeTile;
+import com.android.systemui.statusbar.quicksettings.NfcTile;
 import com.android.systemui.statusbar.quicksettings.PreferencesTile;
 import com.android.systemui.statusbar.quicksettings.QuickSettingsTile;
 import com.android.systemui.statusbar.quicksettings.RingerModeTile;
 import com.android.systemui.statusbar.quicksettings.RingerVibrationModeTile;
+import com.android.systemui.statusbar.quicksettings.SyncTile;
 import com.android.systemui.statusbar.quicksettings.SleepScreenTile;
 import com.android.systemui.statusbar.quicksettings.UserTile;
 import com.android.systemui.statusbar.quicksettings.VibrationModeTile;
@@ -53,6 +55,7 @@ import com.android.systemui.statusbar.quicksettings.WifiAPTile;
 
 public class QuickSettingsController {
     private static String TAG = "QuickSettingsController";
+    private static boolean DEBUG = BaseStatusBar.DEBUG;
 
     public static final String TILE_USER = "toggleUser";
     public static final String TILE_BATTERY = "toggleBattery";
@@ -71,11 +74,9 @@ public class QuickSettingsController {
     public static final String TILE_AIRPLANE = "toggleAirplane";
     public static final String TILE_FLASHLIGHT = "toggleFlashlight";
     public static final String TILE_SLEEP = "toggleSleepMode";
-    public static final String TILE_MEDIA_PLAY_PAUSE = "toggleMediaPlayPause";
-    public static final String TILE_MEDIA_PREVIOUS = "toggleMediaPrevious";
-    public static final String TILE_MEDIA_NEXT = "toggleMediaNext";
     public static final String TILE_LTE = "toggleLte";
     public static final String TILE_WIMAX = "toggleWimax";
+    public static final String TILE_NFC = "toggleNfc";
 
     private static final String TILE_DELIMITER = "|";
     private static final String TILES_DEFAULT = TILE_USER
@@ -100,20 +101,22 @@ public class QuickSettingsController {
     public static final int AIRPLANE_MODE_TILE = 2;
     public static final int BLUETOOTH_TILE = 3;
     public static final int SOUND_TILE = 4;
-    public static final int VIBRATION_TILE = 5;
-    public static final int SOUND_VIBRATION_TILE = 6;
-    public static final int SLEEP_TILE = 7;
-    public static final int GPS_TILE = 8;
-    public static final int AUTO_ROTATION_TILE = 9;
-    public static final int BRIGHTNESS_TILE = 10;
-    public static final int MOBILE_NETWORK_TYPE_TILE = 11;
-    public static final int SETTINGS_TILE = 12;
-    public static final int BATTERY_TILE = 13;
-    public static final int IME_TILE = 14;
-    public static final int ALARM_TILE = 15;
-    public static final int BUG_REPORT_TILE = 16;
-    public static final int WIFI_DISPLAY_TILE = 17;
-    public static final int FLASHLIGHT_TILE = 18;
+    public static final int SYNC_TILE = 5;
+    public static final int VIBRATION_TILE = 6;
+    public static final int SOUND_VIBRATION_TILE = 7;
+    public static final int SLEEP_TILE = 8;
+    public static final int GPS_TILE = 9;
+    public static final int AUTO_ROTATION_TILE = 10;
+    public static final int BRIGHTNESS_TILE = 11;
+    public static final int MOBILE_NETWORK_TYPE_TILE = 12;
+    public static final int SETTINGS_TILE = 13;
+    public static final int BATTERY_TILE = 14;
+    public static final int IME_TILE = 15;
+    public static final int ALARM_TILE = 16;
+    public static final int BUG_REPORT_TILE = 17;
+    public static final int WIFI_DISPLAY_TILE = 18;
+    public static final int FLASHLIGHT_TILE = 19;
+    public static final int NFC_TILE = 20;
     public static final int WIFIAP_TILE = 29;
     public static final int USER_TILE = 99;
     private InputMethodTile IMETile;
@@ -131,11 +134,11 @@ public class QuickSettingsController {
         ContentResolver resolver = mContext.getContentResolver();
         String tiles = Settings.System.getString(resolver, Settings.System.QUICK_SETTINGS_TILES);
         if (tiles == null) {
-            Log.i(TAG, "Default tiles being loaded");
+            if (DEBUG) Log.i(TAG, "Default tiles being loaded");
             tiles = TILES_DEFAULT;
         }
 
-        Log.i(TAG, "Tiles list: " + tiles);
+        if (DEBUG) Log.i(TAG, "Tiles list: " + tiles);
 
         // Clear the list
         mQuickSettings.clear();
@@ -159,7 +162,7 @@ public class QuickSettingsController {
             } else if (tile.equals(TILE_SOUND)) {
                 mQuickSettings.add(SOUND_VIBRATION_TILE);
             } else if (tile.equals(TILE_SYNC)) {
-                // Not available yet
+                mQuickSettings.add(SYNC_TILE);
             } else if (tile.equals(TILE_WIFIAP)) {
                 mQuickSettings.add(WIFIAP_TILE);
             } else if (tile.equals(TILE_SCREENTIMEOUT)) {
@@ -179,16 +182,12 @@ public class QuickSettingsController {
                 mQuickSettings.add(FLASHLIGHT_TILE);
             } else if (tile.equals(TILE_SLEEP)) {
                 mQuickSettings.add(SLEEP_TILE);
-            } else if (tile.equals(TILE_MEDIA_PLAY_PAUSE)) {
-                // Not available yet
-            } else if (tile.equals(TILE_MEDIA_PREVIOUS)) {
-                // Not available yet
-            } else if (tile.equals(TILE_MEDIA_NEXT)) {
-                // Not available yet
             } else if (tile.equals(TILE_WIMAX)) {
                 // Not available yet
             } else if (tile.equals(TILE_LTE)) {
                 // Not available yet
+            } else if(tile.equals(TILE_NFC)) {
+                mQuickSettings.add(NFC_TILE);
             }
         }
 
@@ -251,6 +250,10 @@ public class QuickSettingsController {
                 qs = new RingerModeTile(mContext, inflater,
                         (QuickSettingsContainerView) mContainerView, this);
                 break;
+            case SYNC_TILE:
+                qs = new SyncTile(mContext, inflater,
+                        (QuickSettingsContainerView) mContainerView, this);
+                break;
             case VIBRATION_TILE:
                 qs = new VibrationModeTile(mContext, inflater,
                         (QuickSettingsContainerView) mContainerView, this);
@@ -264,7 +267,7 @@ public class QuickSettingsController {
                         (QuickSettingsContainerView) mContainerView, this);
                 break;
             case GPS_TILE:
-                qs = new GPSTile(mContext, inflater,
+                qs = new GpsTile(mContext, inflater,
                         (QuickSettingsContainerView) mContainerView, this);
                 break;
             case AUTO_ROTATION_TILE:
@@ -314,6 +317,10 @@ public class QuickSettingsController {
                 break;
             case WIFIAP_TILE:
                 qs = new WifiAPTile(mContext, inflater,
+                        (QuickSettingsContainerView) mContainerView, this);
+                break;
+            case NFC_TILE:
+                qs = new NfcTile(mContext, inflater,
                         (QuickSettingsContainerView) mContainerView, this);
                 break;
             }

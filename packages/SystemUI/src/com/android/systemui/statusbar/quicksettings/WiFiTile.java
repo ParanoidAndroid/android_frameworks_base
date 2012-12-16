@@ -81,14 +81,10 @@ public class WiFiTile extends QuickSettingsTile implements NetworkSignalChangedC
             int mobileSignalIconId, String mobileSignalContentDescriptionId,
             int dataTypeIconId, String dataTypeContentDescriptionId,
             String description) {
-        // TODO Auto-generated method stub
-
     }
 
     @Override
     public void onAirplaneModeChanged(boolean enabled) {
-        // TODO Auto-generated method stub
-
     }
 
 }
