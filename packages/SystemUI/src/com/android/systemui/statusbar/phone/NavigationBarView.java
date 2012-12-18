@@ -213,18 +213,17 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
 
         String setting = Settings.System.getString(mContext.getContentResolver(),
                 Settings.System.NAV_BAR_COLOR);
-
         String[] colors = (setting == null || setting.equals("")  ?
-                ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[
-                ExtendedPropertiesUtils.PARANOID_COLORS_NAVBAR] : setting).split(
-                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
-        String currentColor = colors[Integer.parseInt(colors[2])];
-        int speed = colors.length < 4 ? 500 : Integer.parseInt(colors[3]);        
-        cnv.drawColor(new BigInteger(currentColor, 16).intValue());
+            "00000000|00000000|0" : setting).split(
+            ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
+        String currentColorString = colors[Integer.parseInt(colors[2])];
+        int currentColor = new BigInteger(currentColorString, 16).intValue();
+        int speed = colors.length < 4 ? 500 : Integer.parseInt(colors[3]);
 
+        cnv.drawColor(currentColor != 0 ? currentColor : 0xFF000000);
         TransitionDrawable transition = new TransitionDrawable(new Drawable[]{
                 getBackground(), new BitmapDrawable(bm)});
-        transition.setCrossFadeEnabled(!currentColor.startsWith("FF"));
+        transition.setCrossFadeEnabled(!currentColorString.startsWith("FF"));
         setBackground(transition);
         transition.startTransition(speed);
     }

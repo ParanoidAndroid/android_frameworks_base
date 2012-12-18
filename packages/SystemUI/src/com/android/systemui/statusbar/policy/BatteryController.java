@@ -45,7 +45,7 @@ public class BatteryController extends BroadcastReceiver {
 
     private int mLevel;
     private boolean mPlugged;
-    private int mColor = 0xF33B5E5;
+    private int mColor = 0;
 
     public interface BatteryStateChangeCallback {
         public void onBatteryLevelChanged(int level, boolean pluggedIn);
@@ -92,7 +92,10 @@ public class BatteryController extends BroadcastReceiver {
         for (int i=0; i<N; i++) {
             ImageView v = mIconViews.get(i);
             Drawable batteryBitmap = mContext.getResources().getDrawable(icon);
-            batteryBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
+            if (mColor != 0)
+                batteryBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
+            else
+                batteryBitmap.clearColorFilter();
             v.setImageDrawable(batteryBitmap);
             v.setImageLevel(mLevel);
             v.setContentDescription(mContext.getString(R.string.accessibility_battery_level,

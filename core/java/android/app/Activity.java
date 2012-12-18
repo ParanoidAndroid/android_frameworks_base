@@ -5173,6 +5173,10 @@ public class Activity extends ContextThemeWrapper
     }
     
     final void performResume() {
+
+        android.util.Log.d("PARANOID:performResume", "App="+ExtendedPropertiesUtils.mGlobalHook.name+" mWindow="+
+            (mWindow != null)+" IsForeground="+(mParent == null && mDecor != null && mDecor.getParent() != null));
+
         // Per-App-Extras
         if (mWindow != null && ExtendedPropertiesUtils.isInitialized() ) {
             try {
@@ -5189,16 +5193,14 @@ public class Activity extends ContextThemeWrapper
                             ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i]);
 
                         String[] colors = (setting == null || setting.equals("") ?
-                            ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[i] : setting).split(
+                            "00000000|00000000|0" : setting).split(
                             ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
 
                         // Sanity check
                         if (colors.length < 3) {
-                            colors = ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[i].split(
-                                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
                             Settings.System.putString(this.getContentResolver(),
                                 ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
-                                ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[i]);
+                                "00000000|00000000|0");
                         }
 
                         // Change color
@@ -5206,7 +5208,10 @@ public class Activity extends ContextThemeWrapper
                         String appColor = ExtendedPropertiesUtils.mGlobalHook.colors[i];
                         String nextColor = appColor == null ? colors[0] : appColor;
 
-                        // Change color if colors are actually different or at start-up
+                        android.util.Log.d("PARANOID:performResume", "---"+ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i]+"="+setting+
+                            " c="+currentColor+" a="+appColor+" n="+nextColor);
+
+                        // Change color if colors are actually different
                         if (!nextColor.toUpperCase().equals(currentColor.toUpperCase())) {
                             Settings.System.putString(this.getContentResolver(),
                                 ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
@@ -5249,6 +5254,10 @@ public class Activity extends ContextThemeWrapper
     }
 
     final void performPause() {
+
+        android.util.Log.d("PARANOID:performPause", "App="+ExtendedPropertiesUtils.mGlobalHook.name+" mWindow="+
+            (mWindow != null)+" IsForeground="+(mParent == null && mDecor != null && mDecor.getParent() != null));
+
         // Per-App-Extras
         if (ExtendedPropertiesUtils.isInitialized() &&
             mParent == null && mDecor != null && mDecor.getParent() != null &&

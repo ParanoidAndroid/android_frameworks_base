@@ -54,7 +54,7 @@ public class SignalClusterView
     ImageView mWifi, mMobile, mWifiActivity, mMobileActivity, mMobileType, mAirplane;
     View mSpacer;
 
-    int mColor = 0xF33B5E5;
+    int mColor = 0;
 
     public SignalClusterView(Context context) {
         this(context, null);
@@ -162,7 +162,10 @@ public class SignalClusterView
         if (mWifiVisible) {
             mWifiGroup.setVisibility(View.VISIBLE);
             Drawable wifiBitmap = mContext.getResources().getDrawable(mWifiStrengthId);
-            wifiBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
+            if (mColor != 0)
+                wifiBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
+            else
+                wifiBitmap.clearColorFilter();
             mWifi.setImageDrawable(wifiBitmap);
             mWifiActivity.setImageResource(mWifiActivityId);
             mWifiGroup.setContentDescription(mWifiDescription);
@@ -179,7 +182,10 @@ public class SignalClusterView
             mMobileGroup.setVisibility(View.VISIBLE);
             if(mMobileStrengthId != 0) {
                 Drawable mobileBitmap = mContext.getResources().getDrawable(mMobileStrengthId);
-                mobileBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
+                if (mColor != 0)
+                    mobileBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
+                else
+                    mobileBitmap.clearColorFilter();
                 mMobile.setImageDrawable(mobileBitmap);
             }
             mMobile.setImageResource(mMobileStrengthId);
@@ -194,7 +200,10 @@ public class SignalClusterView
             mAirplane.setVisibility(View.VISIBLE);
             if(mAirplaneIconId != 0) {
                 Drawable AirplaneBitmap = mContext.getResources().getDrawable(mAirplaneIconId);
-                AirplaneBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
+                if (mColor != 0)
+                    mAirplane.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
+                else
+                    mAirplane.clearColorFilter();
                 mAirplane.setImageDrawable(AirplaneBitmap);
             }
             mAirplane.setImageResource(mAirplaneIconId);

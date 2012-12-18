@@ -870,7 +870,10 @@ public class PhoneStatusBar extends BaseStatusBar {
                 + " icon=" + icon);
 
         Drawable iconDrawable = StatusBarIconView.getIcon(mContext, icon);
-        iconDrawable.setColorFilter(mIconColor, PorterDuff.Mode.SRC_IN);
+        if (mIconColor != 0)
+            iconDrawable.setColorFilter(mIconColor, PorterDuff.Mode.SRC_IN);
+        else
+            iconDrawable.clearColorFilter();
 
         StatusBarIconView view = new StatusBarIconView(mContext, slot, null);
         view.set(icon);
@@ -883,7 +886,10 @@ public class PhoneStatusBar extends BaseStatusBar {
                 + " old=" + old + " icon=" + icon);
 
         Drawable iconDrawable = StatusBarIconView.getIcon(mContext, icon);
-        iconDrawable.setColorFilter(mIconColor, PorterDuff.Mode.SRC_IN);
+        if (mIconColor != 0)
+            iconDrawable.setColorFilter(mIconColor, PorterDuff.Mode.SRC_IN);
+        else
+            iconDrawable.clearColorFilter();
 
         StatusBarIconView view = (StatusBarIconView)mStatusIcons.getChildAt(viewIndex);
         view.set(icon);
