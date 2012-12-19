@@ -33,6 +33,7 @@ import android.os.IBinder;
 import android.os.Parcelable;
 import android.os.SystemProperties;
 import android.provider.Settings;
+import android.util.ExtendedPropertiesUtils;
 import android.util.Log;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -73,6 +74,8 @@ public class KeyguardViewManager {
 
     private boolean mScreenOn = false;
     private LockPatternUtils mLockPatternUtils;
+
+    private String[] currentColors = new String[ExtendedPropertiesUtils.PARANOID_COLORS_COUNT];
 
     public interface ShowListener {
         void onShown(IBinder windowToken);
@@ -118,11 +121,49 @@ public class KeyguardViewManager {
         observer.observe();
     }
 
+    private void fadeColors(int speed, boolean stockColors) {
+        for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
+            String setting = Settings.System.getString(mContext.getContentResolver(),
+                ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i]);
+
+            String[] colors = (setting == null || setting.equals("") ?
+                "00000000|00000000|0" : setting).split(
+                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
+
+            android.util.Log.d("PARANOID", "fadeColors["+i+"]="+setting+" >> "+(colors[0] + "|" + (stockColors ? "00000000" : currentColors[i]) +
+                "|1|"+String.valueOf(speed)));
+
+            Settings.System.putString(mContext.getContentResolver(),
+                ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
+                colors[0] + "|" + (stockColors ? "00000000" : currentColors[i]) +
+                "|1|"+String.valueOf(speed));
+        }
+    }
+
     /**
      * Show the keyguard.  Will handle creating and attaching to the view manager
      * lazily.
      */
     public synchronized void show(Bundle options) {
+        android.util.Log.d("PARANOID", "show");
+
+        // Grab current colors
+        for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
+            String setting = Settings.System.getString(mContext.getContentResolver(),
+                ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i]);
+
+            String[] colors = (setting == null || setting.equals("") ?
+                "00000000|00000000|0" : setting).split(
+                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
+
+            android.util.Log.d("PARANOID", "show.currentColors["+i+"]="+colors[Integer.parseInt(colors[2])]);
+
+            currentColors[i] = (setting == null || setting.equals("") ? "00000000" : colors[Integer.parseInt(colors[2])] );
+        }
+
+        // Fade to stock
+        fadeColors(0, true);
+
         if (DEBUG) Log.d(TAG, "show(); mKeyguardView==" + mKeyguardView);
 
         boolean enableScreenRotation = shouldEnableScreenRotation();
@@ -422,6 +463,11 @@ public class KeyguardViewManager {
      * Hides the keyguard view
      */
     public synchronized void hide() {
+        android.util.Log.d("PARANOID", "hide");
+
+        // Fade to current colors   
+        fadeColors(800, false);
+
         if (DEBUG) Log.d(TAG, "hide()");
 
         if (mKeyguardHost != null) {
