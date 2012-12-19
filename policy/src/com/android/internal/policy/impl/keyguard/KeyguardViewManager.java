@@ -125,14 +125,9 @@ public class KeyguardViewManager {
         for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
             String setting = Settings.System.getString(mContext.getContentResolver(),
                 ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i]);
-
             String[] colors = (setting == null || setting.equals("") ?
                 "00000000|00000000|0" : setting).split(
                 ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
-
-            android.util.Log.d("PARANOID", "fadeColors["+i+"]="+setting+" >> "+(colors[0] + "|" + (stockColors ? "00000000" : currentColors[i]) +
-                "|1|"+String.valueOf(speed)));
-
             Settings.System.putString(mContext.getContentResolver(),
                 ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
                 colors[0] + "|" + (stockColors ? "00000000" : currentColors[i]) +
@@ -145,19 +140,13 @@ public class KeyguardViewManager {
      * lazily.
      */
     public synchronized void show(Bundle options) {
-        android.util.Log.d("PARANOID", "show");
-
         // Grab current colors
         for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
             String setting = Settings.System.getString(mContext.getContentResolver(),
                 ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i]);
-
             String[] colors = (setting == null || setting.equals("") ?
                 "00000000|00000000|0" : setting).split(
                 ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
-
-            android.util.Log.d("PARANOID", "show.currentColors["+i+"]="+colors[Integer.parseInt(colors[2])]);
-
             currentColors[i] = (setting == null || setting.equals("") ? "00000000" : colors[Integer.parseInt(colors[2])] );
         }
 
@@ -463,8 +452,6 @@ public class KeyguardViewManager {
      * Hides the keyguard view
      */
     public synchronized void hide() {
-        android.util.Log.d("PARANOID", "hide");
-
         // Fade to current colors   
         fadeColors(800, false);
 
