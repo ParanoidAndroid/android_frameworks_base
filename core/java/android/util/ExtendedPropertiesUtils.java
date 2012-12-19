@@ -67,6 +67,7 @@ public class ExtendedPropertiesUtils {
 
     // Color definitions
     public static final String PARANOID_COLORS_SUFFIX = ".colors";
+    public static final String PARANOID_MANCOL_SUFFIX = ".mancol";
     public static final int PARANOID_COLORS_COUNT = 5;
     public static final String[] PARANOID_COLORS_SETTINGS = {Settings.System.NAV_BAR_COLOR,
         Settings.System.NAV_BUTTON_COLOR, Settings.System.NAV_GLOW_COLOR,
@@ -112,6 +113,7 @@ public class ExtendedPropertiesUtils {
         public int large;
         public int expand;
         public int landsc;
+        public int mancol;
         public int firstRun;
         public float scaledDensity;
         public float density;
@@ -165,6 +167,7 @@ public class ExtendedPropertiesUtils {
             info.large = Integer.parseInt(getProperty(info.name + PARANOID_LARGE_SUFFIX));
             info.expand = Integer.parseInt(getProperty(info.name + PARANOID_EXPAND_SUFFIX));
             info.landsc = Integer.parseInt(getProperty(info.name + PARANOID_LANDSC_SUFFIX));
+            info.mancol = Integer.parseInt(getProperty(info.name + PARANOID_MANCOL_SUFFIX));
             info.firstRun = 0;
 
             // Color parameters

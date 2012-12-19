@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2006 The Android Open Source Project
+ * This code has been modified. Portions copyright (C) 2012, ParanoidAndroid Project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -5182,7 +5183,7 @@ public class Activity extends ContextThemeWrapper
                         Settings.System.EXPANDED_DESKTOP_STATE, 1);
                 }
                 // Per-App-Color
-                else {
+                else if (ExtendedPropertiesUtils.mGlobalHook.mancol != 1) {
                     for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
                         // Fetch defaults
                         String setting = Settings.System.getString(this.getContentResolver(),
@@ -5247,10 +5248,6 @@ public class Activity extends ContextThemeWrapper
     }
 
     final void performPause() {
-
-        android.util.Log.d("PARANOID:performPause", "App="+ExtendedPropertiesUtils.mGlobalHook.name+" mWindow="+
-            (mWindow != null)+" IsForeground="+(mParent == null && mDecor != null && mDecor.getParent() != null));
-
         // Per-App-Extras
         if (ExtendedPropertiesUtils.isInitialized() &&
             mParent == null && mDecor != null && mDecor.getParent() != null &&
