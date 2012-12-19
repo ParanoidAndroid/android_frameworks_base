@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.phone;
 
 import java.util.ArrayList;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -39,7 +40,7 @@ import com.android.systemui.statusbar.quicksettings.FlashLightTile;
 import com.android.systemui.statusbar.quicksettings.GpsTile;
 import com.android.systemui.statusbar.quicksettings.InputMethodTile;
 import com.android.systemui.statusbar.quicksettings.MobileNetworkTile;
-import com.android.systemui.statusbar.quicksettings.MobileNetworkTypeTile;
+import com.android.systemui.statusbar.quicksettings.MobileNetworkModeTile;
 import com.android.systemui.statusbar.quicksettings.NfcTile;
 import com.android.systemui.statusbar.quicksettings.PreferencesTile;
 import com.android.systemui.statusbar.quicksettings.QuickSettingsTile;
@@ -108,7 +109,7 @@ public class QuickSettingsController {
     public static final int GPS_TILE = 9;
     public static final int AUTO_ROTATION_TILE = 10;
     public static final int BRIGHTNESS_TILE = 11;
-    public static final int MOBILE_NETWORK_TYPE_TILE = 12;
+    public static final int MOBILE_NETWORK_MODE_TILE = 12;
     public static final int SETTINGS_TILE = 13;
     public static final int BATTERY_TILE = 14;
     public static final int IME_TILE = 15;
@@ -156,7 +157,9 @@ public class QuickSettingsController {
             } else if (tile.equals(TILE_GPS)) {
                 mQuickSettings.add(GPS_TILE);
             } else if (tile.equals(TILE_BLUETOOTH)) {
-                mQuickSettings.add(BLUETOOTH_TILE);
+                if(deviceSupportsBluetooth()) {
+                    mQuickSettings.add(BLUETOOTH_TILE);
+                }
             } else if (tile.equals(TILE_BRIGHTNESS)) {
                 mQuickSettings.add(BRIGHTNESS_TILE);
             } else if (tile.equals(TILE_SOUND)) {
@@ -164,7 +167,9 @@ public class QuickSettingsController {
             } else if (tile.equals(TILE_SYNC)) {
                 mQuickSettings.add(SYNC_TILE);
             } else if (tile.equals(TILE_WIFIAP)) {
-                mQuickSettings.add(WIFIAP_TILE);
+                if(deviceSupportsTelephony()) {
+                    mQuickSettings.add(WIFIAP_TILE);
+                }
             } else if (tile.equals(TILE_SCREENTIMEOUT)) {
                 // Not available yet
             } else if (tile.equals(TILE_MOBILEDATA)) {
@@ -172,8 +177,9 @@ public class QuickSettingsController {
                     mQuickSettings.add(MOBILE_NETWORK_TILE);
                 }
             } else if (tile.equals(TILE_NETWORKMODE)) {
-                // This toggle is still not working:
-                // quicksettings.add(MOBILE_NETWORK_TYPE_TILE);
+                if(deviceSupportsTelephony()) {
+                    mQuickSettings.add(MOBILE_NETWORK_MODE_TILE);
+                }
             } else if (tile.equals(TILE_AUTOROTATE)) {
                 mQuickSettings.add(AUTO_ROTATION_TILE);
             } else if (tile.equals(TILE_AIRPLANE)) {
@@ -216,6 +222,10 @@ public class QuickSettingsController {
     boolean deviceSupportsTelephony() {
         PackageManager pm = mContext.getPackageManager();
         return pm.hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
+    }
+
+    boolean deviceSupportsBluetooth() {
+        return (BluetoothAdapter.getDefaultAdapter() != null);
     }
 
     public void setBar(PanelBar bar) {
@@ -278,8 +288,8 @@ public class QuickSettingsController {
                 qs = new BrightnessTile(mContext, inflater,
                         (QuickSettingsContainerView) mContainerView, this, mHandler);
                 break;
-            case MOBILE_NETWORK_TYPE_TILE:
-                qs = new MobileNetworkTypeTile(mContext, inflater,
+            case MOBILE_NETWORK_MODE_TILE:
+                qs = new MobileNetworkModeTile(mContext, inflater,
                         (QuickSettingsContainerView) mContainerView, this);
                 break;
             case ALARM_TILE:
