@@ -33,6 +33,7 @@ import android.os.IBinder;
 import android.os.Parcelable;
 import android.os.SystemProperties;
 import android.provider.Settings;
+import android.util.ColorUtils;
 import android.util.ExtendedPropertiesUtils;
 import android.util.Log;
 import android.util.Slog;
@@ -126,7 +127,7 @@ public class KeyguardViewManager {
             String setting = Settings.System.getString(mContext.getContentResolver(),
                 ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i]);
             String[] colors = (setting == null || setting.equals("") ?
-                "00000000|00000000|0" : setting).split(
+                ColorUtils.NO_COLOR : setting).split(
                 ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
             Settings.System.putString(mContext.getContentResolver(),
                 ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
@@ -145,7 +146,7 @@ public class KeyguardViewManager {
             String setting = Settings.System.getString(mContext.getContentResolver(),
                 ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i]);
             String[] colors = (setting == null || setting.equals("") ?
-                "00000000|00000000|0" : setting).split(
+                ColorUtils.NO_COLOR : setting).split(
                 ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
             currentColors[i] = (setting == null || setting.equals("") ? "00000000" : colors[Integer.parseInt(colors[2])] );
         }
