@@ -56,6 +56,7 @@ import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.method.TextKeyListener;
 import android.util.AttributeSet;
+import android.util.ColorUtils;
 import android.util.EventLog;
 import android.util.ExtendedPropertiesUtils;
 import android.util.Log;
@@ -5180,24 +5181,24 @@ public class Activity extends ContextThemeWrapper
                 // Per-App-Expand
                 if (ExtendedPropertiesUtils.mGlobalHook.expand == 1) {
                     Settings.System.putInt(this.getContentResolver(),
-                        Settings.System.EXPANDED_DESKTOP_STATE, 1);
+                            Settings.System.EXPANDED_DESKTOP_STATE, 1);
                 }
                 // Per-App-Color
                 else if (ExtendedPropertiesUtils.mGlobalHook.mancol != 1) {
                     for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
                         // Fetch defaults
                         String setting = Settings.System.getString(this.getContentResolver(),
-                            ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i]);
+                                ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i]);
 
                         String[] colors = (setting == null || setting.equals("") ?
-                            "00000000|00000000|0" : setting).split(
-                            ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
+                                ColorUtils.NO_COLOR : setting).split(
+                                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
 
                         // Sanity check
                         if (colors.length < 3) {
                             Settings.System.putString(this.getContentResolver(),
-                                ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
-                                "00000000|00000000|0");
+                                    ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
+                                    ColorUtils.NO_COLOR);
                         }
 
                         // Change color
@@ -5208,8 +5209,8 @@ public class Activity extends ContextThemeWrapper
                         // Change color if colors are actually different
                         if (!nextColor.toUpperCase().equals(currentColor.toUpperCase())) {
                             Settings.System.putString(this.getContentResolver(),
-                                ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
-                                colors[0] + "|" + nextColor + "|1");
+                                    ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
+                                    colors[0] + "|" + nextColor + "|1");
                         }
                     }
                 }

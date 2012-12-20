@@ -39,6 +39,7 @@ import android.os.Message;
 import android.os.ServiceManager;
 import android.provider.Settings;
 import android.util.AttributeSet;
+import android.util.ColorUtils;
 import android.util.ExtendedPropertiesUtils;
 import android.util.Slog;
 import android.view.animation.AccelerateInterpolator;
@@ -214,8 +215,8 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         String setting = Settings.System.getString(mContext.getContentResolver(),
                 Settings.System.NAV_BAR_COLOR);
         String[] colors = (setting == null || setting.equals("")  ?
-            "00000000|00000000|0" : setting).split(
-            ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
+                ColorUtils.NO_COLOR : setting).split(
+                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
         String currentColorString = colors[Integer.parseInt(colors[2])];
         int currentColor = new BigInteger(currentColorString, 16).intValue();
         int speed = colors.length < 4 ? 500 : Integer.parseInt(colors[3]);

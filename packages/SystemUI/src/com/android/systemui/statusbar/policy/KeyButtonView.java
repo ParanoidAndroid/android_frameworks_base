@@ -35,6 +35,7 @@ import android.os.SystemClock;
 import android.provider.Settings;
 import android.os.ServiceManager;
 import android.util.AttributeSet;
+import android.util.ColorUtils;
 import android.util.ExtendedPropertiesUtils;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.HapticFeedbackConstants;
@@ -140,10 +141,10 @@ public class KeyButtonView extends ImageView {
         }
 
         String setting = Settings.System.getString(mContext.getContentResolver(),
-                Settings.System.NAV_BUTTON_COLOR);
+                    Settings.System.NAV_BUTTON_COLOR);
         String[] colors = (setting == null || setting.equals("")  ?
-            "00000000|00000000|0" : setting).split(
-            ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
+                ColorUtils.NO_COLOR : setting).split(
+                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
         String currentColor = colors[Integer.parseInt(colors[2])];
 
         if (!currentColor.equals("00000000")) {
@@ -152,8 +153,7 @@ public class KeyButtonView extends ImageView {
 
             BUTTON_QUIESCENT_ALPHA = (float)new BigInteger(currentColor.substring(0, 2), 16).intValue() / 255f;
             setDrawingAlpha(BUTTON_QUIESCENT_ALPHA);
-        }
-        else {
+        } else {
             clearColorFilter();
             BUTTON_QUIESCENT_ALPHA = 0.70f;
             setDrawingAlpha(BUTTON_QUIESCENT_ALPHA);
@@ -164,15 +164,16 @@ public class KeyButtonView extends ImageView {
         String setting = Settings.System.getString(mContext.getContentResolver(),
                 Settings.System.NAV_GLOW_COLOR);
         String[] colors = (setting == null || setting.equals("")  ?
-            "00000000|00000000|0" : setting).split(
-            ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
+                ColorUtils.NO_COLOR : setting).split(
+                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
         int currentColor = new BigInteger(colors[Integer.parseInt(colors[2])],
-            16).intValue();
+                16).intValue();
 
-        if (currentColor != 0)
+        if (currentColor != 0) {
             mGlowBG.setColorFilter(currentColor, PorterDuff.Mode.SRC_ATOP);
-        else
+        } else {
             mGlowBG.clearColorFilter();
+        }
      }
 
     @Override

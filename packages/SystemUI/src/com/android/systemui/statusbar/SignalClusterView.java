@@ -162,10 +162,11 @@ public class SignalClusterView
         if (mWifiVisible) {
             mWifiGroup.setVisibility(View.VISIBLE);
             Drawable wifiBitmap = mContext.getResources().getDrawable(mWifiStrengthId);
-            if (mColor != 0)
+            if (mColor != 0) {
                 wifiBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
-            else
+            } else {
                 wifiBitmap.clearColorFilter();
+            }
             mWifi.setImageDrawable(wifiBitmap);
             mWifiActivity.setImageResource(mWifiActivityId);
             mWifiGroup.setContentDescription(mWifiDescription);
@@ -182,10 +183,11 @@ public class SignalClusterView
             mMobileGroup.setVisibility(View.VISIBLE);
             if(mMobileStrengthId != 0) {
                 Drawable mobileBitmap = mContext.getResources().getDrawable(mMobileStrengthId);
-                if (mColor != 0)
+                if (mColor != 0) {
                     mobileBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
-                else
+                } else {
                     mobileBitmap.clearColorFilter();
+                }
                 mMobile.setImageDrawable(mobileBitmap);
             }
             mMobile.setImageResource(mMobileStrengthId);
@@ -200,10 +202,11 @@ public class SignalClusterView
             mAirplane.setVisibility(View.VISIBLE);
             if(mAirplaneIconId != 0) {
                 Drawable AirplaneBitmap = mContext.getResources().getDrawable(mAirplaneIconId);
-                if (mColor != 0)
+                if (mColor != 0) {
                     mAirplane.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
-                else
+                } else {
                     mAirplane.clearColorFilter();
+                }
                 mAirplane.setImageDrawable(AirplaneBitmap);
             }
             mAirplane.setImageResource(mAirplaneIconId);

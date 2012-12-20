@@ -92,10 +92,11 @@ public class BatteryController extends BroadcastReceiver {
         for (int i=0; i<N; i++) {
             ImageView v = mIconViews.get(i);
             Drawable batteryBitmap = mContext.getResources().getDrawable(icon);
-            if (mColor != 0)
+            if (mColor != 0) {
                 batteryBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
-            else
+            } else {
                 batteryBitmap.clearColorFilter();
+            }
             v.setImageDrawable(batteryBitmap);
             v.setImageLevel(mLevel);
             v.setContentDescription(mContext.getString(R.string.accessibility_battery_level,
