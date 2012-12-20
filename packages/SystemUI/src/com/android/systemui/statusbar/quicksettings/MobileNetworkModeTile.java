@@ -180,7 +180,7 @@ public class MobileNetworkModeTile extends QuickSettingsTile {
                     mDrawable = R.drawable.ic_qs_2g_on;
                 }
                 break;
-        case STATE_UNEXPECTED:
+            case STATE_UNEXPECTED:
                 mDrawable = R.drawable.ic_qs_unexpected_network;
                 break;
         }
