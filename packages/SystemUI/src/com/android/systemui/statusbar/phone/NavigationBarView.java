@@ -95,9 +95,9 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
     private DelegateViewHelper mDelegateHelper;
     private DeadZone mDeadZone;
 
-    private Canvas currentCanvas;
-    private Canvas newCanvas;
-    private TransitionDrawable transition;
+    private Canvas mCurrentCanvas;
+    private Canvas mNewCanvas;
+    private TransitionDrawable mTransition;
     public int mCurrentBackgroundColor;
 
     // workaround for LayoutTransitions leaving the nav buttons in a weird state (bug 5549288)
@@ -202,18 +202,18 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
 
         // Reset all colors
         Bitmap currentBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-        currentCanvas = new Canvas(currentBitmap);
-        currentCanvas.drawColor(0xFF000000);
+        mCurrentCanvas = new Canvas(currentBitmap);
+        mCurrentCanvas.drawColor(0xFF000000);
         BitmapDrawable currentBitmapDrawable = new BitmapDrawable(currentBitmap);
 
         Bitmap newBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-        newCanvas = new Canvas(newBitmap);
-        newCanvas.drawColor(0xFF000000);
+        mNewCanvas = new Canvas(newBitmap);
+        mNewCanvas.drawColor(0xFF000000);
         BitmapDrawable newBitmapDrawable = new BitmapDrawable(newBitmap);
 
-        transition = new TransitionDrawable(new Drawable[]{currentBitmapDrawable, newBitmapDrawable});
-        transition.setCrossFadeEnabled(true);
-        setBackground(transition);
+        mTransition = new TransitionDrawable(new Drawable[]{currentBitmapDrawable, newBitmapDrawable});
+        mTransition.setCrossFadeEnabled(true);
+        setBackground(mTransition);
 
         mCurrentBackgroundColor = 0xFF000000;
 
@@ -239,15 +239,15 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         int speed = colors.length < 4 ? 500 : Integer.parseInt(colors[3]);
 
         if (mCurrentBackgroundColor != newColor) {
-            // Clear canvas, repaint first layer, reset transition to first layer
-            currentCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            currentCanvas.drawColor(mCurrentBackgroundColor);
-            transition.resetTransition();
+            // Clear canvas, repaint first layer, reset mTransition to first layer
+            mCurrentCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            mCurrentCanvas.drawColor(mCurrentBackgroundColor);
+            mTransition.resetTransition();
 
-            // Clear second layer, paint new color, start transition
-            newCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            newCanvas.drawColor(newColor);
-            transition.startTransition(speed);
+            // Clear second layer, paint new color, start mTransition
+            mNewCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            mNewCanvas.drawColor(newColor);
+            mTransition.startTransition(speed);
 
             // Remember color for later
             mCurrentBackgroundColor = newColor;

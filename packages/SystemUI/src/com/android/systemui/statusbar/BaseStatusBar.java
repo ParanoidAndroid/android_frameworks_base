@@ -155,6 +155,13 @@ public abstract class BaseStatusBar extends SystemUI implements
     // Statusbar view container
     public ViewGroup mBarView;
 
+    // Color fields
+    private Canvas mCurrentCanvas;
+    private Canvas mNewCanvas;
+    private TransitionDrawable mTransition;
+    public int mCurrentIconColor = 0;
+    public int mCurrentBackgroundColor;
+
     // UI-specific methods
 
     /**
@@ -168,12 +175,7 @@ public abstract class BaseStatusBar extends SystemUI implements
     protected Display mDisplay;
 
     private boolean mDeviceProvisioned = false;
-    
-    private Canvas currentCanvas;
-    private Canvas newCanvas;
-    private TransitionDrawable transition;
-    public int mCurrentIconColor = 0;
-    public int mCurrentBackgroundColor;
+   
 
     public void collapse() {
     }
@@ -319,18 +321,18 @@ public abstract class BaseStatusBar extends SystemUI implements
 
         // Reset all colors
         Bitmap currentBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-        currentCanvas = new Canvas(currentBitmap);
-        currentCanvas.drawColor(0xFF000000);
+        mCurrentCanvas = new Canvas(currentBitmap);
+        mCurrentCanvas.drawColor(0xFF000000);
         BitmapDrawable currentBitmapDrawable = new BitmapDrawable(currentBitmap);
 
         Bitmap newBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-        newCanvas = new Canvas(newBitmap);
-        newCanvas.drawColor(0xFF000000);
+        mNewCanvas = new Canvas(newBitmap);
+        mNewCanvas.drawColor(0xFF000000);
         BitmapDrawable newBitmapDrawable = new BitmapDrawable(newBitmap);
 
-        transition = new TransitionDrawable(new Drawable[]{currentBitmapDrawable, newBitmapDrawable});
-        transition.setCrossFadeEnabled(true);
-        mBarView.setBackground(transition);
+        mTransition = new TransitionDrawable(new Drawable[]{currentBitmapDrawable, newBitmapDrawable});
+        mTransition.setCrossFadeEnabled(true);
+        mBarView.setBackground(mTransition);
 
         mCurrentBackgroundColor = 0xFF000000;
 
@@ -397,15 +399,15 @@ public abstract class BaseStatusBar extends SystemUI implements
         int speed = colors.length < 4 ? 500 : Integer.parseInt(colors[3]);
 
         if (mCurrentBackgroundColor != newColor) {
-            // Clear canvas, repaint first layer, reset transition to first layer
-            currentCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            currentCanvas.drawColor(mCurrentBackgroundColor);
-            transition.resetTransition();
+            // Clear canvas, repaint first layer, reset mTransition to first layer
+            mCurrentCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            mCurrentCanvas.drawColor(mCurrentBackgroundColor);
+            mTransition.resetTransition();
 
-            // Clear second layer, paint new color, start transition
-            newCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            newCanvas.drawColor(newColor);
-            transition.startTransition(speed);
+            // Clear second layer, paint new color, start mTransition
+            mNewCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            mNewCanvas.drawColor(newColor);
+            mTransition.startTransition(speed);
 
             // Remember color for later
             mCurrentBackgroundColor = newColor;
