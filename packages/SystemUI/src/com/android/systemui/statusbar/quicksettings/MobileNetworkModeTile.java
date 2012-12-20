@@ -44,11 +44,12 @@ public class MobileNetworkModeTile extends QuickSettingsTile {
     private static final String ACTION_MODIFY_NETWORK_MODE = "com.android.internal.telephony.MODIFY_NETWORK_MODE";
     private static final String EXTRA_NETWORK_MODE = "networkMode";
 
-    private static final int STATE_ENABLED = 1;
-    private static final int STATE_DISABLED = 2;
+    private static final int STATE_2G_AND_3G = 1;
+    private static final int STATE_2G_ONLY = 2;
     private static final int STATE_TURNING_ON = 3;
-    public static final int STATE_TURNING_OFF = 4;
+    private static final int STATE_TURNING_OFF = 4;
     private static final int STATE_INTERMEDIATE = 5;
+    private static final int STATE_UNEXPECTED = 6;
     private static final int NO_NETWORK_MODE_YET = -99;
     private static final int NETWORK_MODE_UNKNOWN = -100;
 
@@ -158,10 +159,10 @@ public class MobileNetworkModeTile extends QuickSettingsTile {
         mLabel = mContext.getString(R.string.quick_settings_network_mode);
 
         switch (mState) {
-            case STATE_DISABLED:
-                mDrawable = R.drawable.ic_qs_unexpected_network;
+            case STATE_2G_ONLY:
+                mDrawable = R.drawable.ic_qs_2g_on;
                 break;
-            case STATE_ENABLED:
+            case STATE_2G_AND_3G:
                 if (mMode == Phone.NT_MODE_WCDMA_ONLY) {
                     mDrawable = R.drawable.ic_qs_3g_on;
                 } else {
@@ -176,8 +177,11 @@ public class MobileNetworkModeTile extends QuickSettingsTile {
                         mDrawable = R.drawable.ic_qs_2g3g_on;
                     }
                 } else {
-                    mDrawable = R.drawable.ic_qs_2g3g_off;
+                    mDrawable = R.drawable.ic_qs_2g_on;
                 }
+                break;
+        case STATE_UNEXPECTED:
+                mDrawable = R.drawable.ic_qs_unexpected_network;
                 break;
         }
     }
@@ -202,16 +206,16 @@ public class MobileNetworkModeTile extends QuickSettingsTile {
             case Phone.NT_MODE_WCDMA_PREF:
             case Phone.NT_MODE_WCDMA_ONLY:
             case Phone.NT_MODE_GSM_UMTS:
-                return STATE_ENABLED;
+                return STATE_2G_AND_3G;
             case Phone.NT_MODE_GSM_ONLY:
-                return STATE_DISABLED;
+                return STATE_2G_ONLY;
             case Phone.NT_MODE_CDMA:
             case Phone.NT_MODE_CDMA_NO_EVDO:
             case Phone.NT_MODE_EVDO_NO_CDMA:
             case Phone.NT_MODE_GLOBAL:
                 // need to check wtf is going on
                 Log.d(TAG, "Unexpected network mode (" + mMode + ")");
-                return STATE_DISABLED;
+                return STATE_UNEXPECTED;
         }
         return STATE_INTERMEDIATE;
     }
