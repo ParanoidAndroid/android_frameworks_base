@@ -342,13 +342,13 @@ public abstract class BaseStatusBar extends SystemUI implements
         String setting = Settings.System.getString(mContext.getContentResolver(),
                 Settings.System.STATUS_ICON_COLOR);
         String[] colors = (setting == null || setting.equals("")  ?
-                ColorUtils.NO_COLOR : setting).split(
+                "00000000|00000000|0" : setting).split(
                 ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
         int currentColor = new BigInteger(colors[Integer.parseInt(colors[2])],
                 16).intValue();
         mIconColor = currentColor;
 
-        if(mClock != null) mClock.setTextColor(currentColor != 0 ? currentColor : ColorUtils.HOLO_BLUE);
+        if(mClock != null) mClock.setTextColor(currentColor != 0 ? currentColor : 0xFF33B5E5);
         if(mSignalCluster != null) mSignalCluster.setColor(currentColor);
         if(mBatteryController != null) mBatteryController.setColor(currentColor);
 
@@ -370,11 +370,13 @@ public abstract class BaseStatusBar extends SystemUI implements
                 isTablet ? Settings.System.NAV_BAR_COLOR :
                 Settings.System.STATUS_BAR_COLOR);
         String[] colors = (setting == null || setting.equals("")  ?
-                ColorUtils.NO_COLOR : setting).split(
+                "00000000|00000000|0" : setting).split(
                 ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
         String currentColorString = colors[Integer.parseInt(colors[2])];
         int currentColor = new BigInteger(currentColorString,16).intValue();
         int speed = colors.length < 4 ? 500 : Integer.parseInt(colors[3]);
+
+        Log.d("PARANOID","isTablet="+isTablet+" setting="+setting+" currentColorString="+currentColorString);
 
         Bitmap bm = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
         Canvas cnv = new Canvas(bm);
@@ -382,7 +384,7 @@ public abstract class BaseStatusBar extends SystemUI implements
 
         TransitionDrawable transition = new TransitionDrawable(new Drawable[]{
                 mBarView.getBackground(), new BitmapDrawable(bm)});
-        transition.setCrossFadeEnabled(!currentColorString.startsWith("FF"));
+        transition.setCrossFadeEnabled(true);
         mBarView.setBackground(transition);
         transition.startTransition(speed);
     }

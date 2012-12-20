@@ -173,10 +173,9 @@ public class ExtendedPropertiesUtils {
             // Color parameters
             String[] colors = getProperty(info.name +
                     PARANOID_COLORS_SUFFIX).split(PARANOID_STRING_DELIMITER);
-            if (colors.length == PARANOID_COLORS_COUNT) {
-                for(int i=0; i < colors.length; i++) {
-                    info.colors[i] = colors[i].toUpperCase();
-                }
+            for(int i=0; i < PARANOID_COLORS_COUNT; i++) {
+                    info.colors[i] = colors.length == PARANOID_COLORS_COUNT ?
+                            colors[i].toUpperCase() : "00000000";
             }
 
             // If everything went nice, stop parsing.

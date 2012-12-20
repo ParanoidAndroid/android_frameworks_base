@@ -41,7 +41,7 @@ public class ColorUtils {
     };
 
     public static final String NO_COLOR = "00000000|00000000|0";
-    public static final int HOLO_BLUE = 0xF33B5E5;
+    public static final int HOLO_BLUE = 0xFF33B5E5;
 
     private static final double COMPARATIVE_FACTOR = 3.5;
     private static final double COMPARATIVE_NUMBER = COMPARATIVE_FACTOR * 125;
