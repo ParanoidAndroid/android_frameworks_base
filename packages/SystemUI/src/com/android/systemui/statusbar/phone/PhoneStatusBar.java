@@ -870,8 +870,8 @@ public class PhoneStatusBar extends BaseStatusBar {
                 + " icon=" + icon);
 
         Drawable iconDrawable = StatusBarIconView.getIcon(mContext, icon);
-        if (mIconColor != 0) {
-            iconDrawable.setColorFilter(mIconColor, PorterDuff.Mode.SRC_IN);
+        if (mCurrentIconColor != 0) {
+            iconDrawable.setColorFilter(mCurrentIconColor, PorterDuff.Mode.SRC_IN);
         } else {
             iconDrawable.clearColorFilter();
         }
@@ -887,8 +887,8 @@ public class PhoneStatusBar extends BaseStatusBar {
                 + " old=" + old + " icon=" + icon);
 
         Drawable iconDrawable = StatusBarIconView.getIcon(mContext, icon);
-        if (mIconColor != 0) {
-            iconDrawable.setColorFilter(mIconColor, PorterDuff.Mode.SRC_IN);
+        if (mCurrentIconColor != 0) {
+            iconDrawable.setColorFilter(mCurrentIconColor, PorterDuff.Mode.SRC_IN);
         } else {
             iconDrawable.clearColorFilter();
         }

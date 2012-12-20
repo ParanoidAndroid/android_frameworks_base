@@ -33,6 +33,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.PorterDuff;
 import android.graphics.PorterDuff.Mode;
 import android.os.Handler;
 import android.os.Message;
@@ -93,6 +94,11 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
     
     private DelegateViewHelper mDelegateHelper;
     private DeadZone mDeadZone;
+
+    private Canvas currentCanvas;
+    private Canvas newCanvas;
+    private TransitionDrawable transition;
+    public int mCurrentBackgroundColor;
 
     // workaround for LayoutTransitions leaving the nav buttons in a weird state (bug 5549288)
     final static boolean WORKAROUND_INVALID_LAYOUT = true;
@@ -194,39 +200,58 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         mRecentsAltIcon = res.getDrawable(R.drawable.ic_sysbar_recent_clear);
         mRecentsAltLandIcon = res.getDrawable(R.drawable.ic_sysbar_recent_clear_land);
 
+        // Reset all colors
+        Bitmap currentBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+        currentCanvas = new Canvas(currentBitmap);
+        currentCanvas.drawColor(0xFF000000);
+        BitmapDrawable currentBitmapDrawable = new BitmapDrawable(currentBitmap);
+
+        Bitmap newBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+        newCanvas = new Canvas(newBitmap);
+        newCanvas.drawColor(0xFF000000);
+        BitmapDrawable newBitmapDrawable = new BitmapDrawable(newBitmap);
+
+        transition = new TransitionDrawable(new Drawable[]{currentBitmapDrawable, newBitmapDrawable});
+        transition.setCrossFadeEnabled(true);
+        setBackground(transition);
+
+        mCurrentBackgroundColor = 0xFF000000;
+
+        updateColor();
+
         mContext.getContentResolver().registerContentObserver(
             Settings.System.getUriFor(Settings.System.NAV_BAR_COLOR), false, new ContentObserver(new Handler()) {
                 @Override
                 public void onChange(boolean selfChange) {
-                    updateColor(false);
+                    updateColor();
                 }});
     }
 
-    private void updateColor(boolean defaults) {
-        Bitmap bm = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-        Canvas cnv = new Canvas(bm);
-
-        if (defaults) {
-            cnv.drawColor(0xFF000000);
-            setBackground(new BitmapDrawable(bm));
-            return;
-        }
-
+    private void updateColor() {
         String setting = Settings.System.getString(mContext.getContentResolver(),
                 Settings.System.NAV_BAR_COLOR);
         String[] colors = (setting == null || setting.equals("")  ?
                 ColorUtils.NO_COLOR : setting).split(
                 ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
         String currentColorString = colors[Integer.parseInt(colors[2])];
-        int currentColor = new BigInteger(currentColorString, 16).intValue();
+        int currentColor = new BigInteger(currentColorString,16).intValue();
+        int newColor = currentColor != 0 ? currentColor : 0xFF000000;
         int speed = colors.length < 4 ? 500 : Integer.parseInt(colors[3]);
 
-        cnv.drawColor(currentColor != 0 ? currentColor : 0xFF000000);
-        TransitionDrawable transition = new TransitionDrawable(new Drawable[]{
-                getBackground(), new BitmapDrawable(bm)});
-        transition.setCrossFadeEnabled(!currentColorString.startsWith("FF"));
-        setBackground(transition);
-        transition.startTransition(speed);
+        if (mCurrentBackgroundColor != newColor) {
+            // Clear canvas, repaint first layer, reset transition to first layer
+            currentCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            currentCanvas.drawColor(mCurrentBackgroundColor);
+            transition.resetTransition();
+
+            // Clear second layer, paint new color, start transition
+            newCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            newCanvas.drawColor(newColor);
+            transition.startTransition(speed);
+
+            // Remember color for later
+            mCurrentBackgroundColor = newColor;
+        }
     }
 
     public void notifyScreenOn(boolean screenOn) {
@@ -434,7 +459,7 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
                                                 ? findViewById(R.id.rot90)
                                                 : findViewById(R.id.rot270);
 
-        updateColor(true);
+        updateColor();
         mCurrentView = mRotatedViews[Surface.ROTATION_0];
     }
 

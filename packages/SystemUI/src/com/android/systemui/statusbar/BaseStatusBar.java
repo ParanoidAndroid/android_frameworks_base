@@ -168,8 +168,12 @@ public abstract class BaseStatusBar extends SystemUI implements
     protected Display mDisplay;
 
     private boolean mDeviceProvisioned = false;
-
-    public int mIconColor = 0;
+    
+    private Canvas currentCanvas;
+    private Canvas newCanvas;
+    private TransitionDrawable transition;
+    public int mCurrentIconColor = 0;
+    public int mCurrentBackgroundColor;
 
     public void collapse() {
     }
@@ -314,10 +318,22 @@ public abstract class BaseStatusBar extends SystemUI implements
             }}, filter);
 
         // Reset all colors
-        Bitmap bm = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-        Canvas cnv = new Canvas(bm);
-        cnv.drawColor(0xFF000000);
-        mBarView.setBackground(new BitmapDrawable(bm));
+        Bitmap currentBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+        currentCanvas = new Canvas(currentBitmap);
+        currentCanvas.drawColor(0xFF000000);
+        BitmapDrawable currentBitmapDrawable = new BitmapDrawable(currentBitmap);
+
+        Bitmap newBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+        newCanvas = new Canvas(newBitmap);
+        newCanvas.drawColor(0xFF000000);
+        BitmapDrawable newBitmapDrawable = new BitmapDrawable(newBitmap);
+
+        transition = new TransitionDrawable(new Drawable[]{currentBitmapDrawable, newBitmapDrawable});
+        transition.setCrossFadeEnabled(true);
+        mBarView.setBackground(transition);
+
+        mCurrentBackgroundColor = 0xFF000000;
+
         updateIconColor();
         updateBackgroundColor();
 
@@ -342,25 +358,28 @@ public abstract class BaseStatusBar extends SystemUI implements
         String setting = Settings.System.getString(mContext.getContentResolver(),
                 Settings.System.STATUS_ICON_COLOR);
         String[] colors = (setting == null || setting.equals("")  ?
-                "00000000|00000000|0" : setting).split(
+                ColorUtils.NO_COLOR : setting).split(
                 ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
-        int currentColor = new BigInteger(colors[Integer.parseInt(colors[2])],
-                16).intValue();
-        mIconColor = currentColor;
+        int currentColor = new BigInteger(colors[Integer.parseInt(colors[2])], 16).intValue();
+        int newColor = currentColor != 0 ? currentColor : 0xFF33B5E5;
+        
+        if (mCurrentIconColor != newColor) {
+            if(mClock != null) mClock.setTextColor(newColor);
+            if(mSignalCluster != null) mSignalCluster.setColor(currentColor);
+            if(mBatteryController != null) mBatteryController.setColor(currentColor);
 
-        if(mClock != null) mClock.setTextColor(currentColor != 0 ? currentColor : 0xFF33B5E5);
-        if(mSignalCluster != null) mSignalCluster.setColor(currentColor);
-        if(mBatteryController != null) mBatteryController.setColor(currentColor);
-
-        if (mStatusIcons != null) {
-            for(int i = 0; i < mStatusIcons.getChildCount(); i++) {
-                Drawable iconDrawable = ((ImageView)mStatusIcons.getChildAt(i)).getDrawable();
-                if (mIconColor != 0) {
-                    iconDrawable.setColorFilter(mIconColor, PorterDuff.Mode.SRC_IN);
-                } else {
-                    iconDrawable.clearColorFilter();
+            if (mStatusIcons != null) {
+                for(int i = 0; i < mStatusIcons.getChildCount(); i++) {
+                    Drawable iconDrawable = ((ImageView)mStatusIcons.getChildAt(i)).getDrawable();
+                    if (currentColor != 0) {
+                        iconDrawable.setColorFilter(currentColor, PorterDuff.Mode.SRC_IN);
+                    } else {
+                        iconDrawable.clearColorFilter();
+                    }
                 }
             }
+            // Remember color for later
+            mCurrentIconColor = currentColor;
         }
     }
 
@@ -370,23 +389,27 @@ public abstract class BaseStatusBar extends SystemUI implements
                 isTablet ? Settings.System.NAV_BAR_COLOR :
                 Settings.System.STATUS_BAR_COLOR);
         String[] colors = (setting == null || setting.equals("")  ?
-                "00000000|00000000|0" : setting).split(
+                ColorUtils.NO_COLOR : setting).split(
                 ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
         String currentColorString = colors[Integer.parseInt(colors[2])];
         int currentColor = new BigInteger(currentColorString,16).intValue();
+        int newColor = currentColor != 0 ? currentColor : 0xFF000000;
         int speed = colors.length < 4 ? 500 : Integer.parseInt(colors[3]);
 
-        Log.d("PARANOID","isTablet="+isTablet+" setting="+setting+" currentColorString="+currentColorString);
+        if (mCurrentBackgroundColor != newColor) {
+            // Clear canvas, repaint first layer, reset transition to first layer
+            currentCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            currentCanvas.drawColor(mCurrentBackgroundColor);
+            transition.resetTransition();
 
-        Bitmap bm = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-        Canvas cnv = new Canvas(bm);
-        cnv.drawColor(currentColor != 0 ? currentColor : 0xFF000000);
+            // Clear second layer, paint new color, start transition
+            newCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            newCanvas.drawColor(newColor);
+            transition.startTransition(speed);
 
-        TransitionDrawable transition = new TransitionDrawable(new Drawable[]{
-                mBarView.getBackground(), new BitmapDrawable(bm)});
-        transition.setCrossFadeEnabled(true);
-        mBarView.setBackground(transition);
-        transition.startTransition(speed);
+            // Remember color for later
+            mCurrentBackgroundColor = newColor;
+        }
     }
 
     public void userSwitched(int newUserId) {
