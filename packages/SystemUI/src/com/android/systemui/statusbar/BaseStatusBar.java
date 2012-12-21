@@ -172,7 +172,7 @@ public abstract class BaseStatusBar extends SystemUI implements
     private Canvas currentCanvas;
     private Canvas newCanvas;
     private TransitionDrawable transition;
-    public int mCurrentIconColor = 0;
+    public int mCurrentIconColor;
     public int mCurrentBackgroundColor;
 
     public void collapse() {
@@ -333,6 +333,7 @@ public abstract class BaseStatusBar extends SystemUI implements
         mBarView.setBackground(transition);
 
         mCurrentBackgroundColor = 0xFF000000;
+        mCurrentIconColor = 0;
 
         updateIconColor();
         updateBackgroundColor();

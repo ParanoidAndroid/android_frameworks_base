@@ -5204,7 +5204,8 @@ public class Activity extends ContextThemeWrapper
                         // Change color
                         String currentColor = colors[Integer.parseInt(colors[2])];
                         String appColor = ExtendedPropertiesUtils.mGlobalHook.colors[i];
-                        String nextColor = appColor == null ? colors[0] : appColor;
+                        String nextColor = (appColor == null || appColor.equals("") ||
+                                appColor.equals("00000000")) ? colors[0] : appColor;
 
                         // Change color if colors are actually different
                         if (!nextColor.toUpperCase().equals(currentColor.toUpperCase())) {
