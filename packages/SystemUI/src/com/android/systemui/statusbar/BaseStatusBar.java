@@ -364,7 +364,7 @@ public abstract class BaseStatusBar extends SystemUI implements
         int currentColor = new BigInteger(colors[Integer.parseInt(colors[2])], 16).intValue();
         int newColor = currentColor != 0 ? currentColor : 0xFF33B5E5;
         
-        if (mCurrentIconColor != newColor) {
+        if (mCurrentIconColor != currentColor) {
             if(mClock != null) mClock.setTextColor(newColor);
             if(mSignalCluster != null) mSignalCluster.setColor(currentColor);
             if(mBatteryController != null) mBatteryController.setColor(currentColor);
