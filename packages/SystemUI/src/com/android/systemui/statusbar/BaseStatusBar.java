@@ -348,7 +348,9 @@ public abstract class BaseStatusBar extends SystemUI implements
 
         // Listen for status bar background color changes
         mContext.getContentResolver().registerContentObserver(
-            Settings.System.getUriFor(Settings.System.STATUS_BAR_COLOR), false, new ContentObserver(new Handler()) {
+            Settings.System.getUriFor(ExtendedPropertiesUtils.isTablet() ?
+                    Settings.System.NAV_BAR_COLOR : Settings.System.STATUS_BAR_COLOR),
+                    false, new ContentObserver(new Handler()) {
                 @Override
                 public void onChange(boolean selfChange) {
                     updateBackgroundColor();
