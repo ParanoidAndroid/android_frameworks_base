@@ -330,7 +330,6 @@ public abstract class BaseStatusBar extends SystemUI implements
         BitmapDrawable newBitmapDrawable = new BitmapDrawable(newBitmap);
 
         mTransition = new TransitionDrawable(new Drawable[]{currentBitmapDrawable, newBitmapDrawable});
-        mTransition.setCrossFadeEnabled(true);
         mBarView.setBackground(mTransition);
 
         mCurrentBackgroundColor = 0xFF000000;
@@ -399,7 +398,10 @@ public abstract class BaseStatusBar extends SystemUI implements
         int speed = colors.length < 4 ? 500 : Integer.parseInt(colors[3]);
 
         if (mCurrentBackgroundColor != newColor) {
-            // Clear canvas, repaint first layer, reset mTransition to first layer
+            // Only enable crossfade for transparent backdrops
+            mTransition.setCrossFadeEnabled(!Integer.toHexString(newColor).startsWith("ff"));
+
+            // Clear first layer, paint current color, reset mTransition to first layer
             mCurrentCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
             mCurrentCanvas.drawColor(mCurrentBackgroundColor);
             mTransition.resetTransition();
