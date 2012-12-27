@@ -5186,32 +5186,18 @@ public class Activity extends ContextThemeWrapper
                 // Per-App-Color
                 else if (ExtendedPropertiesUtils.mGlobalHook.mancol != 1) {
                     for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
-                        // Fetch defaults
-                        String setting = Settings.System.getString(this.getContentResolver(),
-                                ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i]);
+                        // Get color settings
+                        String setting = ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i];
+                        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.GetColorSettingInfo(this, setting);
 
-                        String[] colors = (setting == null || setting.equals("") ?
-                                ColorUtils.NO_COLOR : setting).split(
-                                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
-
-                        // Sanity check
-                        if (colors.length < 3) {
-                            Settings.System.putString(this.getContentResolver(),
-                                    ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
-                                    ColorUtils.NO_COLOR);
-                        }
-
-                        // Change color
-                        String currentColor = colors[Integer.parseInt(colors[2])];
+                        // Get appropriate color
                         String appColor = ExtendedPropertiesUtils.mGlobalHook.colors[i];
-                        String nextColor = (appColor == null || appColor.equals("") ||
-                                appColor.equals("00000000")) ? colors[0] : appColor;
+                        String nextColor = (appColor == null || appColor.equals("")) ?
+                                colorInfo.systemColorString : appColor;
 
-                        // Change color if colors are actually different
-                        if (!nextColor.toUpperCase().equals(currentColor.toUpperCase())) {
-                            Settings.System.putString(this.getContentResolver(),
-                                    ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
-                                    colors[0] + "|" + nextColor + "|1");
+                        // Change only if colors actually differ
+                        if (!nextColor.toUpperCase().equals(colorInfo.lastColorString.toUpperCase())) {
+                            ColorUtils.SetColor(this, setting, colorInfo.systemColorString, nextColor, 1);
                         }
                     }
                 }

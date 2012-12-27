@@ -72,6 +72,9 @@ public class KeyButtonView extends ImageView {
     AnimatorSet mPressedAnim;
     Context mContext;
 
+    private ColorUtils.ColorSettingInfo mLastBackgroundColor;
+    private ColorUtils.ColorSettingInfo mLastGlowColor;
+
     Runnable mCheckLongPress = new Runnable() {
         public void run() {
             if (isPressed()) {
@@ -115,11 +118,16 @@ public class KeyButtonView extends ImageView {
         setClickable(true);
         mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
 
+        clearColorFilter();
+        BUTTON_QUIESCENT_ALPHA = 0.70f;
+        setDrawingAlpha(BUTTON_QUIESCENT_ALPHA);
+        updateButtonColor();
+
         mContext.getContentResolver().registerContentObserver(
             Settings.System.getUriFor(Settings.System.NAV_BUTTON_COLOR), false, new ContentObserver(new Handler()) {
                 @Override
                 public void onChange(boolean selfChange) {
-                    updateButtonColor(false);
+                    updateButtonColor();
                 }});
 
         mContext.getContentResolver().registerContentObserver(
@@ -128,51 +136,35 @@ public class KeyButtonView extends ImageView {
                 public void onChange(boolean selfChange) {
                     updateGlowColor();
                 }});
-
-        updateButtonColor(true);
     }
 
-    private void updateButtonColor(boolean defaults) {
-        if (defaults) {
-            clearColorFilter();
-            BUTTON_QUIESCENT_ALPHA = 0.70f;
-            setDrawingAlpha(BUTTON_QUIESCENT_ALPHA);
-            return;
-        }
-
-        String setting = Settings.System.getString(mContext.getContentResolver(),
-                    Settings.System.NAV_BUTTON_COLOR);
-        String[] colors = (setting == null || setting.equals("")  ?
-                ColorUtils.NO_COLOR : setting).split(
-                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
-        String currentColor = colors[Integer.parseInt(colors[2])];
-
-        if (!currentColor.equals("00000000")) {
-            setColorFilter(new BigInteger("FF" + currentColor.substring(2), 16).intValue(),
-                    PorterDuff.Mode.SRC_ATOP);
-
-            BUTTON_QUIESCENT_ALPHA = (float)new BigInteger(currentColor.substring(0, 2), 16).intValue() / 255f;
-            setDrawingAlpha(BUTTON_QUIESCENT_ALPHA);
-        } else {
-            clearColorFilter();
-            BUTTON_QUIESCENT_ALPHA = 0.70f;
-            setDrawingAlpha(BUTTON_QUIESCENT_ALPHA);
+    private void updateButtonColor() {
+        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.GetColorSettingInfo(mContext,
+                Settings.System.NAV_BUTTON_COLOR);
+        if (!colorInfo.lastColorString.equals(mLastBackgroundColor.lastColorString)) {
+            if (colorInfo.isLastColorNull) {
+                clearColorFilter();
+                BUTTON_QUIESCENT_ALPHA = 0.70f;
+                setDrawingAlpha(BUTTON_QUIESCENT_ALPHA);
+            } else {
+                setColorFilter(ColorUtils.extractRGB(colorInfo.lastColor) | 0xFF000000, PorterDuff.Mode.SRC_ATOP);
+                BUTTON_QUIESCENT_ALPHA = ColorUtils.extractAlpha(colorInfo.lastColor) / 255f;
+                setDrawingAlpha(BUTTON_QUIESCENT_ALPHA);
+            }
+            mLastBackgroundColor = colorInfo;
         }
     }
 
     private void updateGlowColor() {
-        String setting = Settings.System.getString(mContext.getContentResolver(),
+        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.GetColorSettingInfo(mContext,
                 Settings.System.NAV_GLOW_COLOR);
-        String[] colors = (setting == null || setting.equals("")  ?
-                ColorUtils.NO_COLOR : setting).split(
-                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
-        int currentColor = new BigInteger(colors[Integer.parseInt(colors[2])],
-                16).intValue();
-
-        if (currentColor != 0) {
-            mGlowBG.setColorFilter(currentColor, PorterDuff.Mode.SRC_ATOP);
-        } else {
-            mGlowBG.clearColorFilter();
+        if (!colorInfo.lastColorString.equals(mLastGlowColor.lastColorString)) {
+            if (colorInfo.isLastColorNull) {
+                mGlowBG.clearColorFilter();
+            } else {
+                mGlowBG.setColorFilter(colorInfo.lastColor, PorterDuff.Mode.SRC_ATOP);
+            }
+            mLastGlowColor = colorInfo;
         }
      }
 

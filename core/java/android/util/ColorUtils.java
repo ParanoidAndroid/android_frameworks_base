@@ -19,10 +19,12 @@ package android.util;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.provider.Settings;
 
 import com.android.internal.R;
 
 import java.lang.Math;
+import java.math.BigInteger;
 
 public class ColorUtils {
 
@@ -40,13 +42,113 @@ public class ColorUtils {
             R.color.holo_red_light
     };
 
-    public static final String NO_COLOR = "00000000|00000000|0";
+    public static class ColorSettingInfo {
+        public String currentSetting;
+        public int currentIndex;
+
+        public String systemColorString;
+        public String currentColorString;
+        public String lastColorString;
+        
+        public int systemColor;
+        public int currentColor;
+        public int lastColor;
+        public int defaultColor;
+        
+        public int speed;
+
+        public boolean isSystemColorNull;
+        public boolean isCurrentColorNull;
+        public boolean isLastColorNull;
+
+        public boolean isSystemColorOpaque;
+        public boolean isCurrentColorOpaque;
+        public boolean isLastColorOpaque;
+    }
+
+    public static final String NO_COLOR = "null|null|0";
     public static final int HOLO_BLUE = 0xFF33B5E5;
 
     private static final double COMPARATIVE_FACTOR = 3.5;
     private static final double COMPARATIVE_NUMBER = COMPARATIVE_FACTOR * 125;
     private static final double BLACK_OFFSET = 15;
     
+    public static void SetColor(Context context, String settingName, String systemColor,
+            String currentColor, int index) {
+        Settings.System.putString(context.getContentResolver(), settingName, 
+                systemColor + "|" + currentColor + "|" + index);
+    }
+
+    public static void SetColor(Context context, String settingName, String systemColor,
+            String currentColor, int index, int speed) {
+        Settings.System.putString(context.getContentResolver(), settingName, 
+                systemColor + "|" + currentColor + "|" + index + "|" + speed);
+    }
+
+    public static ColorSettingInfo GetColorSettingInfo(Context context, String settingName) {
+        ColorSettingInfo Result = new ColorSettingInfo();
+
+        // Get setting and parse
+        Result.currentSetting = Settings.System.getString(context.getContentResolver(), settingName);
+        String[] colors = (Result.currentSetting == null || Result.currentSetting.equals("")  ?
+                ColorUtils.NO_COLOR : Result.currentSetting).split(
+                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
+
+        // Sanity check
+        if (colors.length < 3) {
+            Settings.System.putString(context.getContentResolver(), settingName, ColorUtils.NO_COLOR);
+            colors = ColorUtils.NO_COLOR.split(ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
+        }
+
+        // Get index
+        Result.currentIndex = Integer.parseInt(colors[2]);
+
+        // Get color strings
+        Result.systemColorString = colors[0];
+        Result.currentColorString = colors[1];
+        Result.lastColorString = colors[Result.currentIndex];
+
+        // Check if null
+        Result.isSystemColorNull = Result.systemColorString.equals("null");
+        Result.isCurrentColorNull = Result.currentColorString.equals("null");
+        Result.isLastColorNull =  Result.currentIndex == 0 ? Result.isSystemColorNull :
+                Result.isCurrentColorNull;
+
+        // Get speed
+        Result.speed = colors.length < 4 ? 500 : Integer.parseInt(colors[3]);
+
+        // Get default color
+        for(int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS.length; i++) {
+            if (ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i] == settingName) {
+                Result.defaultColor = ExtendedPropertiesUtils.PARANOID_COLORCODES_DEFAULTS[i];
+                break;
+            }
+        }
+
+        // Get color values
+        Result.systemColor = Result.isSystemColorNull ? Result.defaultColor :
+                new BigInteger(Result.systemColorString, 16).intValue();
+        Result.currentColor = Result.isCurrentColorNull ? Result.defaultColor :
+                new BigInteger(Result.currentColorString, 16).intValue();
+        Result.lastColor = Result.currentIndex == 0 ? Result.systemColor : Result.currentColor;
+
+        // Check alpha state
+        Result.isSystemColorOpaque = (Result.systemColor & 0xFF000000) == 0xFF000000;
+        Result.isCurrentColorOpaque = (Result.currentColor & 0xFF000000) == 0xFF000000;
+        Result.isLastColorOpaque = (Result.lastColor & 0xFF000000) == 0xFF000000;
+
+        // Return structure
+        return Result;
+    }
+
+    public static int extractRGB(int color) {
+        return color & 0x00FFFFFF;
+    }
+
+    public static int extractAlpha(int color) {
+        return color >> 24;
+    }
+
     private static int getColorLuminance(int color) {
         int red = Color.red(color);
         int green = Color.green(color);

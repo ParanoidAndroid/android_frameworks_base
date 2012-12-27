@@ -124,15 +124,10 @@ public class KeyguardViewManager {
 
     private void fadeColors(int speed, boolean stockColors) {
         for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
-            String setting = Settings.System.getString(mContext.getContentResolver(),
-                ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i]);
-            String[] colors = (setting == null || setting.equals("") ?
-                ColorUtils.NO_COLOR : setting).split(
-                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
-            Settings.System.putString(mContext.getContentResolver(),
-                ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
-                colors[0] + "|" + (stockColors ? "00000000" : currentColors[i]) +
-                "|1|"+String.valueOf(speed));
+            String setting = ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i];
+            ColorUtils.ColorSettingInfo colorInfo = ColorUtils.GetColorSettingInfo(mContext, setting);
+            ColorUtils.SetColor(mContext, setting, colorInfo.systemColorString,
+                    (stockColors ? "null" : currentColors[i]), 1, speed);
         }
     }
 
@@ -143,12 +138,8 @@ public class KeyguardViewManager {
     public synchronized void show(Bundle options) {
         // Grab current colors
         for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
-            String setting = Settings.System.getString(mContext.getContentResolver(),
-                ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i]);
-            String[] colors = (setting == null || setting.equals("") ?
-                ColorUtils.NO_COLOR : setting).split(
-                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
-            currentColors[i] = (setting == null || setting.equals("") ? "00000000" : colors[Integer.parseInt(colors[2])] );
+            currentColors[i] = ColorUtils.GetColorSettingInfo(mContext,
+                    ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i]).lastColorString;
         }
 
         // Fade to stock

@@ -870,10 +870,10 @@ public class PhoneStatusBar extends BaseStatusBar {
                 + " icon=" + icon);
 
         Drawable iconDrawable = StatusBarIconView.getIcon(mContext, icon);
-        if (mCurrentIconColor != 0) {
-            iconDrawable.setColorFilter(mCurrentIconColor, PorterDuff.Mode.SRC_IN);
-        } else {
+        if (mLastIconColor == null || mLastIconColor.isLastColorNull) {
             iconDrawable.clearColorFilter();
+        } else {
+            iconDrawable.setColorFilter(mLastIconColor.lastColor, PorterDuff.Mode.SRC_IN);
         }
 
         StatusBarIconView view = new StatusBarIconView(mContext, slot, null);
@@ -887,10 +887,10 @@ public class PhoneStatusBar extends BaseStatusBar {
                 + " old=" + old + " icon=" + icon);
 
         Drawable iconDrawable = StatusBarIconView.getIcon(mContext, icon);
-        if (mCurrentIconColor != 0) {
-            iconDrawable.setColorFilter(mCurrentIconColor, PorterDuff.Mode.SRC_IN);
-        } else {
+        if (mLastIconColor == null || mLastIconColor.isLastColorNull) {
             iconDrawable.clearColorFilter();
+        } else {
+            iconDrawable.setColorFilter(mLastIconColor.lastColor, PorterDuff.Mode.SRC_IN);
         }
 
         StatusBarIconView view = (StatusBarIconView)mStatusIcons.getChildAt(viewIndex);

@@ -175,7 +175,7 @@ public class ExtendedPropertiesUtils {
                     PARANOID_COLORS_SUFFIX).split(PARANOID_STRING_DELIMITER);
             for(int i=0; i < PARANOID_COLORS_COUNT; i++) {
                     info.colors[i] = colors.length == PARANOID_COLORS_COUNT ?
-                            colors[i].toUpperCase() : "00000000";
+                            colors[i].toUpperCase() : "";
             }
 
             // If everything went nice, stop parsing.

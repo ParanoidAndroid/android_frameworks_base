@@ -21,6 +21,7 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.PorterDuff;
 import android.util.AttributeSet;
+import android.util.ColorUtils;
 import android.util.Slog;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,7 +55,7 @@ public class SignalClusterView
     ImageView mWifi, mMobile, mWifiActivity, mMobileActivity, mMobileType, mAirplane;
     View mSpacer;
 
-    int mColor = 0;
+    private ColorUtils.ColorSettingInfo mColorInfo;
 
     public SignalClusterView(Context context) {
         this(context, null);
@@ -150,8 +151,8 @@ public class SignalClusterView
         return super.dispatchPopulateAccessibilityEvent(event);
     }
 
-    public void setColor(int color) {
-        mColor = color;
+    public void setColor(ColorUtils.ColorSettingInfo colorInfo) {
+        mColorInfo = colorInfo;
         apply();
     }
 
@@ -162,10 +163,10 @@ public class SignalClusterView
         if (mWifiVisible) {
             mWifiGroup.setVisibility(View.VISIBLE);
             Drawable wifiBitmap = mContext.getResources().getDrawable(mWifiStrengthId);
-            if (mColor != 0) {
-                wifiBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
-            } else {
+            if (mColorInfo.isLastColorNull) {
                 wifiBitmap.clearColorFilter();
+            } else {
+                wifiBitmap.setColorFilter(mColorInfo.lastColor, PorterDuff.Mode.SRC_IN);
             }
             mWifi.setImageDrawable(wifiBitmap);
             mWifiActivity.setImageResource(mWifiActivityId);
@@ -183,10 +184,10 @@ public class SignalClusterView
             mMobileGroup.setVisibility(View.VISIBLE);
             if(mMobileStrengthId != 0) {
                 Drawable mobileBitmap = mContext.getResources().getDrawable(mMobileStrengthId);
-                if (mColor != 0) {
-                    mobileBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
-                } else {
+                if (mColorInfo.isLastColorNull) {
                     mobileBitmap.clearColorFilter();
+                } else {
+                    mobileBitmap.setColorFilter(mColorInfo.lastColor, PorterDuff.Mode.SRC_IN);
                 }
                 mMobile.setImageDrawable(mobileBitmap);
             }
@@ -202,10 +203,10 @@ public class SignalClusterView
             mAirplane.setVisibility(View.VISIBLE);
             if(mAirplaneIconId != 0) {
                 Drawable AirplaneBitmap = mContext.getResources().getDrawable(mAirplaneIconId);
-                if (mColor != 0) {
-                    mAirplane.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
-                } else {
+                if (mColorInfo.isLastColorNull) {
                     mAirplane.clearColorFilter();
+                } else {
+                    mAirplane.setColorFilter(mColorInfo.lastColor, PorterDuff.Mode.SRC_IN);
                 }
                 mAirplane.setImageDrawable(AirplaneBitmap);
             }

@@ -159,8 +159,8 @@ public abstract class BaseStatusBar extends SystemUI implements
     private Canvas mCurrentCanvas;
     private Canvas mNewCanvas;
     private TransitionDrawable mTransition;
-    public int mCurrentIconColor;
-    public int mCurrentBackgroundColor;
+    public ColorUtils.ColorSettingInfo mLastIconColor;
+    public ColorUtils.ColorSettingInfo mLastBackgroundColor;
 
     // UI-specific methods
 
@@ -332,9 +332,6 @@ public abstract class BaseStatusBar extends SystemUI implements
         mTransition = new TransitionDrawable(new Drawable[]{currentBitmapDrawable, newBitmapDrawable});
         mBarView.setBackground(mTransition);
 
-        mCurrentBackgroundColor = 0xFF000000;
-        mCurrentIconColor = 0;
-
         updateIconColor();
         updateBackgroundColor();
 
@@ -358,63 +355,46 @@ public abstract class BaseStatusBar extends SystemUI implements
     }
 
     private void updateIconColor() {
-        String setting = Settings.System.getString(mContext.getContentResolver(),
+        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.GetColorSettingInfo(mContext,
                 Settings.System.STATUS_ICON_COLOR);
-        String[] colors = (setting == null || setting.equals("")  ?
-                ColorUtils.NO_COLOR : setting).split(
-                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
-        int currentColor = new BigInteger(colors[Integer.parseInt(colors[2])], 16).intValue();
-        int newColor = currentColor != 0 ? currentColor : 0xFF33B5E5;
-        
-        if (mCurrentIconColor != currentColor) {
-            if(mClock != null) mClock.setTextColor(newColor);
-            if(mSignalCluster != null) mSignalCluster.setColor(currentColor);
-            if(mBatteryController != null) mBatteryController.setColor(currentColor);
-
+        if (!colorInfo.lastColorString.equals(mLastIconColor.lastColorString)) {
+            if(mClock != null) mClock.setTextColor(colorInfo.lastColor);
+            if(mSignalCluster != null) mSignalCluster.setColor(colorInfo);
+            if(mBatteryController != null) mBatteryController.setColor(colorInfo);
             if (mStatusIcons != null) {
                 for(int i = 0; i < mStatusIcons.getChildCount(); i++) {
                     Drawable iconDrawable = ((ImageView)mStatusIcons.getChildAt(i)).getDrawable();
-                    if (currentColor != 0) {
-                        iconDrawable.setColorFilter(currentColor, PorterDuff.Mode.SRC_IN);
+                    if (colorInfo.isLastColorNull) {
+                        iconDrawable.clearColorFilter();                        
                     } else {
-                        iconDrawable.clearColorFilter();
+                        iconDrawable.setColorFilter(colorInfo.lastColor, PorterDuff.Mode.SRC_IN);
                     }
                 }
             }
-            // Remember color for later
-            mCurrentIconColor = currentColor;
+            mLastIconColor = colorInfo;
         }
     }
 
     private void updateBackgroundColor() {
-        boolean isTablet = ExtendedPropertiesUtils.isTablet();
-        String setting = Settings.System.getString(mContext.getContentResolver(),
-                isTablet ? Settings.System.NAV_BAR_COLOR :
+        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.GetColorSettingInfo(mContext,
+                ExtendedPropertiesUtils.isTablet() ? Settings.System.NAV_BAR_COLOR :
                 Settings.System.STATUS_BAR_COLOR);
-        String[] colors = (setting == null || setting.equals("")  ?
-                ColorUtils.NO_COLOR : setting).split(
-                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
-        String currentColorString = colors[Integer.parseInt(colors[2])];
-        int currentColor = new BigInteger(currentColorString,16).intValue();
-        int newColor = currentColor != 0 ? currentColor : 0xFF000000;
-        int speed = colors.length < 4 ? 500 : Integer.parseInt(colors[3]);
-
-        if (mCurrentBackgroundColor != newColor) {
+        if (!colorInfo.lastColorString.equals(mLastBackgroundColor.lastColorString)) {
             // Only enable crossfade for transparent backdrops
-            mTransition.setCrossFadeEnabled(!Integer.toHexString(newColor).startsWith("ff"));
+            mTransition.setCrossFadeEnabled(!mLastBackgroundColor.isLastColorOpaque);
 
-            // Clear first layer, paint current color, reset mTransition to first layer
+            // Clear first layer, paint current color, reset transition to first layer
             mCurrentCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            mCurrentCanvas.drawColor(mCurrentBackgroundColor);
+            mCurrentCanvas.drawColor(mLastBackgroundColor.lastColor);
             mTransition.resetTransition();
 
-            // Clear second layer, paint new color, start mTransition
+            // Clear second layer, paint new color, start transition
             mNewCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            mNewCanvas.drawColor(newColor);
-            mTransition.startTransition(speed);
+            mNewCanvas.drawColor(colorInfo.lastColor);
+            mTransition.startTransition(colorInfo.speed);
 
-            // Remember color for later
-            mCurrentBackgroundColor = newColor;
+            // Remember for later
+            mLastBackgroundColor = colorInfo;
         }
     }
 

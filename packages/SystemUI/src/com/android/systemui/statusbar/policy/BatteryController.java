@@ -27,6 +27,7 @@ import android.content.IntentFilter;
 import android.graphics.drawable.Drawable;
 import android.graphics.PorterDuff;
 import android.os.BatteryManager;
+import android.util.ColorUtils;
 import android.util.Slog;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -45,7 +46,7 @@ public class BatteryController extends BroadcastReceiver {
 
     private int mLevel;
     private boolean mPlugged;
-    private int mColor = 0;
+    private ColorUtils.ColorSettingInfo mColorInfo;
 
     public interface BatteryStateChangeCallback {
         public void onBatteryLevelChanged(int level, boolean pluggedIn);
@@ -71,8 +72,8 @@ public class BatteryController extends BroadcastReceiver {
         mChangeCallbacks.add(cb);
     }
 
-    public void setColor(int color) {
-        mColor = color;
+    public void setColor(ColorUtils.ColorSettingInfo colorInfo) {
+        mColorInfo = colorInfo;
         updateBatteryLevel();
     }
 
@@ -92,10 +93,10 @@ public class BatteryController extends BroadcastReceiver {
         for (int i=0; i<N; i++) {
             ImageView v = mIconViews.get(i);
             Drawable batteryBitmap = mContext.getResources().getDrawable(icon);
-            if (mColor != 0) {
-                batteryBitmap.setColorFilter(mColor, PorterDuff.Mode.SRC_IN);
+            if (mColorInfo.isLastColorNull) {
+                batteryBitmap.clearColorFilter();                
             } else {
-                batteryBitmap.clearColorFilter();
+                batteryBitmap.setColorFilter(mColorInfo.lastColor, PorterDuff.Mode.SRC_IN);
             }
             v.setImageDrawable(batteryBitmap);
             v.setImageLevel(mLevel);
