@@ -37,8 +37,8 @@ import com.android.systemui.statusbar.policy.LocationController.LocationGpsState
 
 public class GpsTile extends QuickSettingsTile implements LocationGpsStateChangeCallback {
 
-    private boolean enabled;
-    private boolean working;
+    private boolean enabled = false;
+    private boolean working = false;
 
     ContentResolver mContentResolver;
 
@@ -54,7 +54,6 @@ public class GpsTile extends QuickSettingsTile implements LocationGpsStateChange
         enabled = Settings.Secure.isLocationProviderEnabled(mContentResolver, LocationManager.GPS_PROVIDER);
 
         onClick = new OnClickListener() {
-
             @Override
             public void onClick(View v) {
                 Settings.Secure.setLocationProviderEnabled(mContentResolver, LocationManager.GPS_PROVIDER, !enabled);
@@ -62,15 +61,14 @@ public class GpsTile extends QuickSettingsTile implements LocationGpsStateChange
         };
 
         onLongClick = new OnLongClickListener() {
-
             @Override
             public boolean onLongClick(View v) {
                 startSettingsActivity(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 return true;
             }
         };
-
-        mBroadcastReceiver = new BroadcastReceiver() {
+    
+        mBroadcastReceiver = new BroadcastReceiver() {      
 
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -90,12 +88,12 @@ public class GpsTile extends QuickSettingsTile implements LocationGpsStateChange
         super.onPostCreate();
     }
 
-    void applyGPSChanges(){
-        if(enabled && working){
+    void applyGPSChanges() {
+        if (enabled && working) {
             mDrawable = R.drawable.ic_qs_location;
-        }else if(enabled){
+        } else if (enabled) {
             mDrawable = R.drawable.ic_qs_gps_on;
-        }else{
+        } else {
             mDrawable = R.drawable.ic_qs_gps_off;
         }
         updateQuickSettings();
@@ -104,19 +102,17 @@ public class GpsTile extends QuickSettingsTile implements LocationGpsStateChange
     @Override
     public void onLocationGpsStateChanged(boolean inUse, String description) {
         working = inUse;
-        if(description != null){
+        if (description != null) {
             mLabel = description;
-        }else{
+        } else {
             setGenericLabel();
         }
         applyGPSChanges();
-
     }
 
-    private void setGenericLabel() {	
-		 // Show OFF next to the GPS label when in OFF state, ON/IN USE is indicated by the color	
-        String label = mContext.getString(R.string.quick_settings_gps);	
-        mLabel = (enabled ? label : label + " " + mContext.getString(R.string.quick_settings_label_d
-isabled));
+    private void setGenericLabel() {
+        // Show OFF next to the GPS label when in OFF state, ON/IN USE is indicated by the color
+        String label = mContext.getString(R.string.quick_settings_gps);
+        mLabel = (enabled ? label : label + " " + mContext.getString(R.string.quick_settings_label_disabled));
     }
 }

@@ -31,7 +31,7 @@ import com.android.systemui.R;
 import com.android.systemui.statusbar.phone.QuickSettingsController;
 import com.android.systemui.statusbar.phone.QuickSettingsContainerView;
 
-ublic class AutoRotateTile extends QuickSettingsTile {
+public class AutoRotateTile extends QuickSettingsTile {
 
     private static final String TAG = "AutoRotateButton";
 
