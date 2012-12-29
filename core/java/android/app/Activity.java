@@ -5188,7 +5188,7 @@ public class Activity extends ContextThemeWrapper
                     for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
                         // Get color settings
                         String setting = ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i];
-                        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.GetColorSettingInfo(this, setting);
+                        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(this, setting);
 
                         // Get appropriate color
                         String appColor = ExtendedPropertiesUtils.mGlobalHook.colors[i];
@@ -5197,7 +5197,7 @@ public class Activity extends ContextThemeWrapper
 
                         // Change only if colors actually differ
                         if (!nextColor.toUpperCase().equals(colorInfo.lastColorString.toUpperCase())) {
-                            ColorUtils.SetColor(this, setting, colorInfo.systemColorString, nextColor, 1);
+                            ColorUtils.setColor(this, setting, colorInfo.systemColorString, nextColor, 1);
                         }
                     }
                 }

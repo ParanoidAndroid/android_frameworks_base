@@ -20,6 +20,7 @@ package com.android.systemui.statusbar;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.PorterDuff;
+import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.ColorUtils;
 import android.util.Slog;
@@ -67,6 +68,7 @@ public class SignalClusterView
 
     public SignalClusterView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        mColorInfo = ColorUtils.getColorSettingInfo(context, Settings.System.STATUS_ICON_COLOR);
     }
 
     public void setNetworkController(NetworkController nc) {

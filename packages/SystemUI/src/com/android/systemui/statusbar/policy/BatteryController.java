@@ -27,6 +27,7 @@ import android.content.IntentFilter;
 import android.graphics.drawable.Drawable;
 import android.graphics.PorterDuff;
 import android.os.BatteryManager;
+import android.provider.Settings;
 import android.util.ColorUtils;
 import android.util.Slog;
 import android.widget.ImageView;
@@ -55,6 +56,7 @@ public class BatteryController extends BroadcastReceiver {
     public BatteryController(Context context) {
         mContext = context;
 
+        mColorInfo = ColorUtils.getColorSettingInfo(context, Settings.System.STATUS_ICON_COLOR);
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_BATTERY_CHANGED);
         context.registerReceiver(this, filter);

@@ -125,9 +125,9 @@ public class KeyguardViewManager {
     private void fadeColors(int speed, boolean stockColors) {
         for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
             String setting = ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i];
-            ColorUtils.ColorSettingInfo colorInfo = ColorUtils.GetColorSettingInfo(mContext, setting);
-            ColorUtils.SetColor(mContext, setting, colorInfo.systemColorString,
-                    (stockColors ? "null" : currentColors[i]), 1, speed);
+            ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext, setting);
+            ColorUtils.setColor(mContext, setting, colorInfo.systemColorString,
+                    (stockColors ? "NULL" : currentColors[i]), 1, speed);
         }
     }
 
@@ -138,7 +138,7 @@ public class KeyguardViewManager {
     public synchronized void show(Bundle options) {
         // Grab current colors
         for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
-            currentColors[i] = ColorUtils.GetColorSettingInfo(mContext,
+            currentColors[i] = ColorUtils.getColorSettingInfo(mContext,
                     ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i]).lastColorString;
         }
 

@@ -32,8 +32,8 @@ import android.hardware.input.InputManager;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.os.SystemClock;
-import android.provider.Settings;
 import android.os.ServiceManager;
+import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.ColorUtils;
 import android.util.ExtendedPropertiesUtils;
@@ -72,7 +72,7 @@ public class KeyButtonView extends ImageView {
     AnimatorSet mPressedAnim;
     Context mContext;
 
-    private ColorUtils.ColorSettingInfo mLastBackgroundColor;
+    private ColorUtils.ColorSettingInfo mLastButtonColor;
     private ColorUtils.ColorSettingInfo mLastGlowColor;
 
     Runnable mCheckLongPress = new Runnable() {
@@ -121,6 +121,10 @@ public class KeyButtonView extends ImageView {
         clearColorFilter();
         BUTTON_QUIESCENT_ALPHA = 0.70f;
         setDrawingAlpha(BUTTON_QUIESCENT_ALPHA);
+
+        mLastGlowColor = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_GLOW_COLOR);
+        mLastButtonColor = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BUTTON_COLOR);
+
         updateButtonColor();
 
         mContext.getContentResolver().registerContentObserver(
@@ -139,24 +143,24 @@ public class KeyButtonView extends ImageView {
     }
 
     private void updateButtonColor() {
-        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.GetColorSettingInfo(mContext,
+        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
                 Settings.System.NAV_BUTTON_COLOR);
-        if (!colorInfo.lastColorString.equals(mLastBackgroundColor.lastColorString)) {
+        if (!colorInfo.lastColorString.equals(mLastButtonColor.lastColorString)) {
             if (colorInfo.isLastColorNull) {
                 clearColorFilter();
                 BUTTON_QUIESCENT_ALPHA = 0.70f;
                 setDrawingAlpha(BUTTON_QUIESCENT_ALPHA);
             } else {
                 setColorFilter(ColorUtils.extractRGB(colorInfo.lastColor) | 0xFF000000, PorterDuff.Mode.SRC_ATOP);
-                BUTTON_QUIESCENT_ALPHA = ColorUtils.extractAlpha(colorInfo.lastColor) / 255f;
+                BUTTON_QUIESCENT_ALPHA = (float)ColorUtils.extractAlpha(colorInfo.lastColor) / 255f;
                 setDrawingAlpha(BUTTON_QUIESCENT_ALPHA);
             }
-            mLastBackgroundColor = colorInfo;
+            mLastButtonColor = colorInfo;
         }
     }
 
     private void updateGlowColor() {
-        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.GetColorSettingInfo(mContext,
+        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
                 Settings.System.NAV_GLOW_COLOR);
         if (!colorInfo.lastColorString.equals(mLastGlowColor.lastColorString)) {
             if (colorInfo.isLastColorNull) {

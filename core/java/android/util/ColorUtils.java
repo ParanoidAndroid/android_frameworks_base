@@ -66,39 +66,51 @@ public class ColorUtils {
         public boolean isLastColorOpaque;
     }
 
-    public static final String NO_COLOR = "null|null|0";
+    public static final String NO_COLOR = "NULL|NULL|0";
     public static final int HOLO_BLUE = 0xFF33B5E5;
 
     private static final double COMPARATIVE_FACTOR = 3.5;
     private static final double COMPARATIVE_NUMBER = COMPARATIVE_FACTOR * 125;
     private static final double BLACK_OFFSET = 15;
     
-    public static void SetColor(Context context, String settingName, String systemColor,
+    public static void setColor(Context context, String settingName, String systemColor,
             String currentColor, int index) {
         Settings.System.putString(context.getContentResolver(), settingName, 
                 systemColor + "|" + currentColor + "|" + index);
     }
 
-    public static void SetColor(Context context, String settingName, String systemColor,
+    public static void setColor(Context context, String settingName, String systemColor,
             String currentColor, int index, int speed) {
         Settings.System.putString(context.getContentResolver(), settingName, 
                 systemColor + "|" + currentColor + "|" + index + "|" + speed);
     }
 
-    public static ColorSettingInfo GetColorSettingInfo(Context context, String settingName) {
+    public static ColorSettingInfo getColorSettingInfo(Context context, String settingName) {
         ColorSettingInfo Result = new ColorSettingInfo();
 
         // Get setting and parse
-        Result.currentSetting = Settings.System.getString(context.getContentResolver(), settingName);
+        Result.currentSetting = Settings.System.getString(context.getContentResolver(), settingName).toUpperCase();
         String[] colors = (Result.currentSetting == null || Result.currentSetting.equals("")  ?
                 ColorUtils.NO_COLOR : Result.currentSetting).split(
                 ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
 
-        // Sanity check
-        if (colors.length < 3) {
+        // Sanity check 1, make sure array is within known bounds
+        boolean isSane = colors.length >= 3 && colors.length <= 4;
+        // Sanity check 2, do not allow null
+        if (isSane) {
+            for(int i = 0; i < colors.length; i++) {
+                if (colors[i].equals("") || colors[i] == null) {
+                    isSane = false;
+                    break;
+                }
+            }
+        }
+
+        // Restore setting in case something is botched
+        if (!isSane) {
             Settings.System.putString(context.getContentResolver(), settingName, ColorUtils.NO_COLOR);
             colors = ColorUtils.NO_COLOR.split(ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
-        }
+        }        
 
         // Get index
         Result.currentIndex = Integer.parseInt(colors[2]);
@@ -109,8 +121,8 @@ public class ColorUtils {
         Result.lastColorString = colors[Result.currentIndex];
 
         // Check if null
-        Result.isSystemColorNull = Result.systemColorString.equals("null");
-        Result.isCurrentColorNull = Result.currentColorString.equals("null");
+        Result.isSystemColorNull = Result.systemColorString.equals("NULL");
+        Result.isCurrentColorNull = Result.currentColorString.equals("NULL");
         Result.isLastColorNull =  Result.currentIndex == 0 ? Result.isSystemColorNull :
                 Result.isCurrentColorNull;
 
@@ -146,7 +158,7 @@ public class ColorUtils {
     }
 
     public static int extractAlpha(int color) {
-        return color >> 24;
+        return (color >> 24) & 0x000000FF;
     }
 
     private static int getColorLuminance(int color) {

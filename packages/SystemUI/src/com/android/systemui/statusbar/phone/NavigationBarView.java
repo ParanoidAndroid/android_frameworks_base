@@ -98,7 +98,7 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
     private Canvas mCurrentCanvas;
     private Canvas mNewCanvas;
     private TransitionDrawable mTransition;
-    public int mCurrentBackgroundColor;
+    private ColorUtils.ColorSettingInfo mLastBackgroundColor;
 
     // workaround for LayoutTransitions leaving the nav buttons in a weird state (bug 5549288)
     final static boolean WORKAROUND_INVALID_LAYOUT = true;
@@ -214,8 +214,7 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         mTransition = new TransitionDrawable(new Drawable[]{currentBitmapDrawable, newBitmapDrawable});        
         setBackground(mTransition);
 
-        mCurrentBackgroundColor = 0xFF000000;
-
+        mLastBackgroundColor = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BAR_COLOR);
         updateColor();
 
         mContext.getContentResolver().registerContentObserver(
@@ -227,32 +226,25 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
     }
 
     private void updateColor() {
-        String setting = Settings.System.getString(mContext.getContentResolver(),
+        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
                 Settings.System.NAV_BAR_COLOR);
-        String[] colors = (setting == null || setting.equals("")  ?
-                ColorUtils.NO_COLOR : setting).split(
-                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
-        String currentColorString = colors[Integer.parseInt(colors[2])];
-        int currentColor = new BigInteger(currentColorString,16).intValue();
-        int newColor = currentColor != 0 ? currentColor : 0xFF000000;
-        int speed = colors.length < 4 ? 500 : Integer.parseInt(colors[3]);
 
-        if (mCurrentBackgroundColor != newColor) {
+        if (!colorInfo.lastColorString.equals(mLastBackgroundColor.lastColorString)) {
             // Only enable crossfade for transparent backdrops
-            mTransition.setCrossFadeEnabled(!Integer.toHexString(newColor).startsWith("ff"));
+            mTransition.setCrossFadeEnabled(!colorInfo.isLastColorOpaque);
 
             // Clear first layer, paint current color, reset mTransition to first layer
             mCurrentCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            mCurrentCanvas.drawColor(mCurrentBackgroundColor);
+            mCurrentCanvas.drawColor(mLastBackgroundColor.lastColor);
             mTransition.resetTransition();
 
             // Clear second layer, paint new color, start mTransition
             mNewCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            mNewCanvas.drawColor(newColor);
-            mTransition.startTransition(speed);
+            mNewCanvas.drawColor(colorInfo.lastColor);
+            mTransition.startTransition(colorInfo.speed);
 
             // Remember color for later
-            mCurrentBackgroundColor = newColor;
+            mLastBackgroundColor = colorInfo;
         }
     }
 
