@@ -364,9 +364,9 @@ public abstract class BaseStatusBar extends SystemUI implements
                 @Override
                 public void onChange(boolean selfChange) {
                     if (!ColorUtils.getPerAppColorState(mContext)) {
-                        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
-                                Settings.System.STATUS_ICON_COLOR);
                         for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
+                            ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
+                                    Settings.System.STATUS_ICON_COLOR);
                             ColorUtils.setColor(mContext, ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
                                     colorInfo.systemColorString, "NULL", 1, 250);
                         }
