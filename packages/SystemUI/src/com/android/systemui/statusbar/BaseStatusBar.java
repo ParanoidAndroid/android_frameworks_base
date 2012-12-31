@@ -363,9 +363,13 @@ public abstract class BaseStatusBar extends SystemUI implements
                     false, new ContentObserver(new Handler()) {
                 @Override
                 public void onChange(boolean selfChange) {
-                    for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
-                        ColorUtils.setColor(mContext, ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
-                                "NULL", "NULL", 0, 250);
+                    if (!ColorUtils.getPerAppColorState(mContext)) {
+                        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
+                                Settings.System.STATUS_ICON_COLOR);
+                        for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
+                            ColorUtils.setColor(mContext, ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
+                                    colorInfo.systemColorString, "NULL", 1, 250);
+                        }
                     }
                 }});
     }
