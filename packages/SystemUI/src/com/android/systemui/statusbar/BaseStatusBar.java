@@ -356,6 +356,18 @@ public abstract class BaseStatusBar extends SystemUI implements
                 public void onChange(boolean selfChange) {
                     updateBackgroundColor();
                 }});
+
+        // Listen for per-app-color state changes, this one will revert to stock colors all over
+        mContext.getContentResolver().registerContentObserver(
+            Settings.System.getUriFor(Settings.System.PER_APP_COLOR),
+                    false, new ContentObserver(new Handler()) {
+                @Override
+                public void onChange(boolean selfChange) {
+                    for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
+                        ColorUtils.setColor(mContext, ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
+                                "NULL", "NULL", 0, 250);
+                    }
+                }});
     }
 
     private void updateIconColor() {

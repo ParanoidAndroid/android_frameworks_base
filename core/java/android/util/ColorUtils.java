@@ -73,6 +73,10 @@ public class ColorUtils {
     private static final double COMPARATIVE_NUMBER = COMPARATIVE_FACTOR * 125;
     private static final double BLACK_OFFSET = 15;
     
+    public static boolean getPerAppColorState(Context context) {
+        return Settings.System.getInt(context.getContentResolver(), Settings.System.PER_APP_COLOR, 1) == 1;
+    }
+
     public static void setColor(Context context, String settingName, String systemColor,
             String currentColor, int index) {
         Settings.System.putString(context.getContentResolver(), settingName, 
@@ -88,8 +92,13 @@ public class ColorUtils {
     public static ColorSettingInfo getColorSettingInfo(Context context, String settingName) {
         ColorSettingInfo Result = new ColorSettingInfo();
 
-        // Get setting and parse
-        Result.currentSetting = Settings.System.getString(context.getContentResolver(), settingName).toUpperCase();
+        // Get setting
+        Result.currentSetting = Settings.System.getString(context.getContentResolver(), settingName);
+        if (Result.currentSetting != null) {
+            Result.currentSetting = Result.currentSetting.toUpperCase();
+        }
+  
+        // Parse
         String[] colors = (Result.currentSetting == null || Result.currentSetting.equals("")  ?
                 ColorUtils.NO_COLOR : Result.currentSetting).split(
                 ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);

@@ -123,11 +123,13 @@ public class KeyguardViewManager {
     }
 
     private void fadeColors(int speed, boolean stockColors) {
-        for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
-            String setting = ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i];
-            ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext, setting);
-            ColorUtils.setColor(mContext, setting, colorInfo.systemColorString,
-                    (stockColors ? "NULL" : currentColors[i]), 1, speed);
+        if (ColorUtils.getPerAppColorState(mContext)) {
+            for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
+                String setting = ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i];
+                ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext, setting);
+                ColorUtils.setColor(mContext, setting, colorInfo.systemColorString,
+                        (stockColors ? "NULL" : currentColors[i]), 1, speed);
+            }
         }
     }
 

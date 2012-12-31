@@ -2365,6 +2365,14 @@ public final class Settings {
 
          /**
          * Ability to change navigation bar color
+         * 0 = P.A.C. is off, it will switch everything color related back to stock and ignore calls
+         * 1 = P.A.C. is on, it will listen to calls again
+         * @hide
+         */
+        public static final String PER_APP_COLOR = "per_app_color";
+
+         /**
+         * Ability to change navigation bar color
          * Format: AARRGGBB|AARRGGBB|index[|speed]
          * First color is the primary, systemwide color
          * Second is the color of the current foreground-app
@@ -2631,6 +2639,7 @@ public final class Settings {
          */
         public static final String[] INSECURE_SETTINGS = {
             EXPANDED_DESKTOP_STATE,
+            PER_APP_COLOR,
             NAV_BAR_COLOR,
             NAV_BUTTON_COLOR,
             NAV_GLOW_COLOR,
