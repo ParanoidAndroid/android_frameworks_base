@@ -66,7 +66,9 @@ public class ColorUtils {
         public boolean isLastColorOpaque;
     }
 
-    public static final String NO_COLOR = "NULL|NULL|0";
+    public static final String NULL_COLOR = "NULL";
+    public static final String NO_COLOR = NULL_COLOR + "|" + NULL_COLOR
+            + "|0";
     public static final int HOLO_BLUE = 0xFF33B5E5;
 
     private static final double COMPARATIVE_FACTOR = 3.5;
@@ -74,7 +76,8 @@ public class ColorUtils {
     private static final double BLACK_OFFSET = 15;
     
     public static boolean getPerAppColorState(Context context) {
-        return Settings.System.getInt(context.getContentResolver(), Settings.System.PER_APP_COLOR, 1) == 1;
+        return Settings.System.getInt(context.getContentResolver(),
+                Settings.System.PER_APP_COLOR, 1) == 1;
     }
 
     public static void setColor(Context context, String settingName, String systemColor,
@@ -90,17 +93,17 @@ public class ColorUtils {
     }
 
     public static ColorSettingInfo getColorSettingInfo(Context context, String settingName) {
-        ColorSettingInfo Result = new ColorSettingInfo();
+        ColorSettingInfo result = new ColorSettingInfo();
 
         // Get setting
-        Result.currentSetting = Settings.System.getString(context.getContentResolver(), settingName);
-        if (Result.currentSetting != null) {
-            Result.currentSetting = Result.currentSetting.toUpperCase();
+        result.currentSetting = Settings.System.getString(context.getContentResolver(), settingName);
+        if (result.currentSetting != null) {
+            result.currentSetting = result.currentSetting.toUpperCase();
         }
   
         // Parse
-        String[] colors = (Result.currentSetting == null || Result.currentSetting.equals("")  ?
-                ColorUtils.NO_COLOR : Result.currentSetting).split(
+        String[] colors = (result.currentSetting == null || result.currentSetting.isEmpty()  ?
+                ColorUtils.NO_COLOR : result.currentSetting).split(
                 ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
 
         // Sanity check 1, make sure array is within known bounds
@@ -108,7 +111,7 @@ public class ColorUtils {
         // Sanity check 2, do not allow null
         if (isSane) {
             for(int i = 0; i < colors.length; i++) {
-                if (colors[i].equals("") || colors[i] == null) {
+                if(colors[i] == null || colors[i].isEmpty()) {
                     isSane = false;
                     break;
                 }
@@ -122,44 +125,44 @@ public class ColorUtils {
         }        
 
         // Get index
-        Result.currentIndex = Integer.parseInt(colors[2]);
+        result.currentIndex = Integer.parseInt(colors[2]);
 
         // Get color strings
-        Result.systemColorString = colors[0];
-        Result.currentColorString = colors[1];
-        Result.lastColorString = colors[Result.currentIndex];
+        result.systemColorString = colors[0];
+        result.currentColorString = colors[1];
+        result.lastColorString = colors[result.currentIndex];
 
         // Check if null
-        Result.isSystemColorNull = Result.systemColorString.equals("NULL");
-        Result.isCurrentColorNull = Result.currentColorString.equals("NULL");
-        Result.isLastColorNull =  Result.currentIndex == 0 ? Result.isSystemColorNull :
-                Result.isCurrentColorNull;
+        result.isSystemColorNull = result.systemColorString.equals(NULL_COLOR);
+        result.isCurrentColorNull = result.currentColorString.equals(NULL_COLOR);
+        result.isLastColorNull =  result.currentIndex == 0 ? result.isSystemColorNull :
+                result.isCurrentColorNull;
 
         // Get speed
-        Result.speed = colors.length < 4 ? 500 : Integer.parseInt(colors[3]);
+        result.speed = colors.length < 4 ? 500 : Integer.parseInt(colors[3]);
 
         // Get default color
         for(int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS.length; i++) {
             if (ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i] == settingName) {
-                Result.defaultColor = ExtendedPropertiesUtils.PARANOID_COLORCODES_DEFAULTS[i];
+                result.defaultColor = ExtendedPropertiesUtils.PARANOID_COLORCODES_DEFAULTS[i];
                 break;
             }
         }
 
         // Get color values
-        Result.systemColor = Result.isSystemColorNull ? Result.defaultColor :
-                new BigInteger(Result.systemColorString, 16).intValue();
-        Result.currentColor = Result.isCurrentColorNull ? Result.defaultColor :
-                new BigInteger(Result.currentColorString, 16).intValue();
-        Result.lastColor = Result.currentIndex == 0 ? Result.systemColor : Result.currentColor;
+        result.systemColor = result.isSystemColorNull ? result.defaultColor :
+                new BigInteger(result.systemColorString, 16).intValue();
+        result.currentColor = result.isCurrentColorNull ? result.defaultColor :
+                new BigInteger(result.currentColorString, 16).intValue();
+        result.lastColor = result.currentIndex == 0 ? result.systemColor : result.currentColor;
 
         // Check alpha state
-        Result.isSystemColorOpaque = (Result.systemColor & 0xFF000000) == 0xFF000000;
-        Result.isCurrentColorOpaque = (Result.currentColor & 0xFF000000) == 0xFF000000;
-        Result.isLastColorOpaque = (Result.lastColor & 0xFF000000) == 0xFF000000;
+        result.isSystemColorOpaque = (result.systemColor & 0xFF000000) == 0xFF000000;
+        result.isCurrentColorOpaque = (result.currentColor & 0xFF000000) == 0xFF000000;
+        result.isLastColorOpaque = (result.lastColor & 0xFF000000) == 0xFF000000;
 
         // Return structure
-        return Result;
+        return result;
     }
 
     public static int extractRGB(int color) {
