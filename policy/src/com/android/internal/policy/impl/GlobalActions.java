@@ -476,25 +476,6 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
         for(int i = 0; i < names.length; i++) {
             addRebootItem(iconIds[i], names[i], actions[i]);
         }
-
-        mItems.add(
-            new SinglePressAction(
-                    R.drawable.ic_lock_reboot_safemode,
-                    R.string.reboot_safe_mode) {
-
-                public void onPress() {
-                   mWindowManagerFuncs.rebootSafeMode(true);
-                }
-
-                public boolean showDuringKeyguard() {
-                   return true;
-                }
-
-                public boolean showBeforeProvisioning() {
-                    return true;
-                }
-            }
-        );
     }
 
     private void addRebootItem(int drawable, String name, final String action) {
