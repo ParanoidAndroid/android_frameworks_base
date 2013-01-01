@@ -492,7 +492,7 @@ public class KeyguardViewManager {
             }
         }
         // fetch current colors
-        grabStockColors(true);
+        grabStockColors(false);
     }
 
     /**
