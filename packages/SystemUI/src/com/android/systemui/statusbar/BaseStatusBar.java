@@ -318,60 +318,64 @@ public abstract class BaseStatusBar extends SystemUI implements
                 }
             }}, filter);
 
-        // Reset all colors
-        Bitmap currentBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-        mCurrentCanvas = new Canvas(currentBitmap);
-        mCurrentCanvas.drawColor(0xFF000000);
-        BitmapDrawable currentBitmapDrawable = new BitmapDrawable(currentBitmap);
+        // Only watch for per app color changes when the setting is in check
+        if (ColorUtils.getPerAppColorState(mContext)) {
 
-        Bitmap newBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-        mNewCanvas = new Canvas(newBitmap);
-        mNewCanvas.drawColor(0xFF000000);
-        BitmapDrawable newBitmapDrawable = new BitmapDrawable(newBitmap);
+            // Reset all colors
+            Bitmap currentBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+            mCurrentCanvas = new Canvas(currentBitmap);
+            mCurrentCanvas.drawColor(0xFF000000);
+            BitmapDrawable currentBitmapDrawable = new BitmapDrawable(currentBitmap);
 
-        mTransition = new TransitionDrawable(new Drawable[]{currentBitmapDrawable, newBitmapDrawable});
-        mBarView.setBackground(mTransition);
+            Bitmap newBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+            mNewCanvas = new Canvas(newBitmap);
+            mNewCanvas.drawColor(0xFF000000);
+            BitmapDrawable newBitmapDrawable = new BitmapDrawable(newBitmap);
 
-        mLastIconColor = ColorUtils.getColorSettingInfo(mContext, Settings.System.STATUS_ICON_COLOR);
-        mLastBackgroundColor = ColorUtils.getColorSettingInfo(mContext, ExtendedPropertiesUtils.isTablet()
-                ? Settings.System.NAV_BAR_COLOR : Settings.System.STATUS_BAR_COLOR);
+            mTransition = new TransitionDrawable(new Drawable[]{currentBitmapDrawable, newBitmapDrawable});
+            mBarView.setBackground(mTransition);
 
-        updateIconColor();
-        updateBackgroundColor();
+            mLastIconColor = ColorUtils.getColorSettingInfo(mContext, Settings.System.STATUS_ICON_COLOR);
+            mLastBackgroundColor = ColorUtils.getColorSettingInfo(mContext, ExtendedPropertiesUtils.isTablet()
+                    ? Settings.System.NAV_BAR_COLOR : Settings.System.STATUS_BAR_COLOR);
 
-        // Listen for status bar icon color changes
-        mContext.getContentResolver().registerContentObserver(
-            Settings.System.getUriFor(Settings.System.STATUS_ICON_COLOR), false, new ContentObserver(new Handler()) {
-                @Override
-                public void onChange(boolean selfChange) {
-                    updateIconColor();
-                }});
+            updateIconColor();
+            updateBackgroundColor();
 
-        // Listen for status bar background color changes
-        mContext.getContentResolver().registerContentObserver(
-            Settings.System.getUriFor(ExtendedPropertiesUtils.isTablet() ?
-                    Settings.System.NAV_BAR_COLOR : Settings.System.STATUS_BAR_COLOR),
-                    false, new ContentObserver(new Handler()) {
-                @Override
-                public void onChange(boolean selfChange) {
-                    updateBackgroundColor();
-                }});
+            // Listen for status bar icon color changes
+            mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.STATUS_ICON_COLOR), false, new ContentObserver(new Handler()) {
+                    @Override
+                    public void onChange(boolean selfChange) {
+                        updateIconColor();
+                    }});
 
-        // Listen for per-app-color state changes, this one will revert to stock colors all over
-        mContext.getContentResolver().registerContentObserver(
-            Settings.System.getUriFor(Settings.System.PER_APP_COLOR),
-                    false, new ContentObserver(new Handler()) {
-                @Override
-                public void onChange(boolean selfChange) {
-                    if (!ColorUtils.getPerAppColorState(mContext)) {
-                        for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
-                            ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
-                                    Settings.System.STATUS_ICON_COLOR);
-                            ColorUtils.setColor(mContext, ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
-                                    colorInfo.systemColorString, "NULL", 1, 250);
+            // Listen for status bar background color changes
+            mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(ExtendedPropertiesUtils.isTablet() ?
+                        Settings.System.NAV_BAR_COLOR : Settings.System.STATUS_BAR_COLOR),
+                        false, new ContentObserver(new Handler()) {
+                    @Override
+                    public void onChange(boolean selfChange) {
+                        updateBackgroundColor();
+                    }});
+
+            // Listen for per-app-color state changes, this one will revert to stock colors all over
+            mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.PER_APP_COLOR),
+                        false, new ContentObserver(new Handler()) {
+                    @Override
+                    public void onChange(boolean selfChange) {
+                        if (!ColorUtils.getPerAppColorState(mContext)) {
+                            for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
+                                ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
+                                        Settings.System.STATUS_ICON_COLOR);
+                                ColorUtils.setColor(mContext, ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
+                                        colorInfo.systemColorString, "NULL", 1, 250);
+                            }
                         }
-                    }
-                }});
+                    }});
+        }
     }
 
     private void updateIconColor() {

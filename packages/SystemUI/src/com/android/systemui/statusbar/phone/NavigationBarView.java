@@ -200,29 +200,33 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         mRecentsAltIcon = res.getDrawable(R.drawable.ic_sysbar_recent_clear);
         mRecentsAltLandIcon = res.getDrawable(R.drawable.ic_sysbar_recent_clear_land);
 
-        // Reset all colors
-        Bitmap currentBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-        mCurrentCanvas = new Canvas(currentBitmap);
-        mCurrentCanvas.drawColor(0xFF000000);
-        BitmapDrawable currentBitmapDrawable = new BitmapDrawable(currentBitmap);
+        // Only watch for per app color changes when the setting is in check
+        if (ColorUtils.getPerAppColorState(mContext)) {
 
-        Bitmap newBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-        mNewCanvas = new Canvas(newBitmap);
-        mNewCanvas.drawColor(0xFF000000);
-        BitmapDrawable newBitmapDrawable = new BitmapDrawable(newBitmap);
+            // Reset all colors
+            Bitmap currentBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+            mCurrentCanvas = new Canvas(currentBitmap);
+            mCurrentCanvas.drawColor(0xFF000000);
+            BitmapDrawable currentBitmapDrawable = new BitmapDrawable(currentBitmap);
 
-        mTransition = new TransitionDrawable(new Drawable[]{currentBitmapDrawable, newBitmapDrawable});        
-        setBackground(mTransition);
+            Bitmap newBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+            mNewCanvas = new Canvas(newBitmap);
+            mNewCanvas.drawColor(0xFF000000);
+            BitmapDrawable newBitmapDrawable = new BitmapDrawable(newBitmap);
 
-        mLastBackgroundColor = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BAR_COLOR);
-        updateColor();
+            mTransition = new TransitionDrawable(new Drawable[]{currentBitmapDrawable, newBitmapDrawable});        
+            setBackground(mTransition);
 
-        mContext.getContentResolver().registerContentObserver(
-            Settings.System.getUriFor(Settings.System.NAV_BAR_COLOR), false, new ContentObserver(new Handler()) {
-                @Override
-                public void onChange(boolean selfChange) {
-                    updateColor();
-                }});
+            mLastBackgroundColor = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BAR_COLOR);
+            updateColor();
+
+            mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.NAV_BAR_COLOR), false, new ContentObserver(new Handler()) {
+                    @Override
+                    public void onChange(boolean selfChange) {
+                        updateColor();
+                    }});
+        }
     }
 
     private void updateColor() {
@@ -453,7 +457,11 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
                                                 ? findViewById(R.id.rot90)
                                                 : findViewById(R.id.rot270);
 
-        updateColor();
+
+        if (ColorUtils.getPerAppColorState(mContext)) {
+            updateColor();
+        }
+
         mCurrentView = mRotatedViews[Surface.ROTATION_0];
     }
 

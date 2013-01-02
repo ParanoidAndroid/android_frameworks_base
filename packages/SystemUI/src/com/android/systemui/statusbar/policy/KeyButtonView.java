@@ -122,24 +122,28 @@ public class KeyButtonView extends ImageView {
         BUTTON_QUIESCENT_ALPHA = 0.70f;
         setDrawingAlpha(BUTTON_QUIESCENT_ALPHA);
 
-        mLastGlowColor = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_GLOW_COLOR);
-        mLastButtonColor = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BUTTON_COLOR);
+        // Only watch for per app color changes when the setting is in check
+        if (ColorUtils.getPerAppColorState(mContext)) {
 
-        updateButtonColor();
+            mLastGlowColor = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_GLOW_COLOR);
+            mLastButtonColor = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BUTTON_COLOR);
 
-        mContext.getContentResolver().registerContentObserver(
-            Settings.System.getUriFor(Settings.System.NAV_BUTTON_COLOR), false, new ContentObserver(new Handler()) {
-                @Override
-                public void onChange(boolean selfChange) {
-                    updateButtonColor();
-                }});
+            updateButtonColor();
 
-        mContext.getContentResolver().registerContentObserver(
-            Settings.System.getUriFor(Settings.System.NAV_GLOW_COLOR), false, new ContentObserver(new Handler()) {
-                @Override
-                public void onChange(boolean selfChange) {
-                    updateGlowColor();
-                }});
+            mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.NAV_BUTTON_COLOR), false, new ContentObserver(new Handler()) {
+                    @Override
+                    public void onChange(boolean selfChange) {
+                        updateButtonColor();
+                    }});
+
+            mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.NAV_GLOW_COLOR), false, new ContentObserver(new Handler()) {
+                    @Override
+                    public void onChange(boolean selfChange) {
+                        updateGlowColor();
+                    }});
+        }
     }
 
     private void updateButtonColor() {
