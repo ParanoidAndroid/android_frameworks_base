@@ -2363,6 +2363,14 @@ public final class Settings {
          */
         public static final String VOLUME_LINK_NOTIFICATION = "volume_link_notification";
 
+        /**
+         * Whether to merge recents & menu or not
+         * 0 = do not merge
+         * 1 = merge
+         * @hide
+         */
+        public static final String NAV_BAR_TABUI_MENU = "nav_bar_tabui_menu";
+
          /**
          * Ability to change navigation bar color
          * 0 = P.A.C. is off, it will switch everything color related back to stock and ignore calls
