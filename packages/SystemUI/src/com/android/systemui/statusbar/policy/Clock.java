@@ -84,6 +84,16 @@ public class Clock extends TextView {
         }
 
         @Override public void onChange(boolean selfChange) {
+            // showAlways is only set on expanded statusbar, we must avoid
+            // to hide clock or add AM/PM there
+            if(!mShowAlways) {
+                setVisibility((Settings.System.getInt(mContext.getContentResolver(),
+                        Settings.System.STATUS_BAR_SHOW_CLOCK, 1) == 1)
+                        ? View.VISIBLE : View.GONE);
+                AM_PM_STYLE = Settings.System.getInt(mContext.getContentResolver(),
+                        Settings.System.STATUS_BAR_AM_PM_STYLE, 2);
+                mClockFormatString = null;
+            }
             updateClock();
         }
     }
@@ -101,6 +111,12 @@ public class Clock extends TextView {
         mContext = context;
         TypedArray a = context.obtainStyledAttributes(attrs, com.android.systemui.R.styleable.Clock, defStyle, 0);
         mShowAlways = a.getBoolean(com.android.systemui.R.styleable.Clock_showAlways, false);
+
+        setVisibility((Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.STATUS_BAR_SHOW_CLOCK, 1) == 1)
+                ? View.VISIBLE : View.GONE);
+        AM_PM_STYLE = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.STATUS_BAR_AM_PM_STYLE, 2);
 
         SettingsObserver observer = new SettingsObserver(new Handler());
         observer.observe();
@@ -157,16 +173,6 @@ public class Clock extends TextView {
     };
 
     final void updateClock() {
-        // showAlways is only set on expanded statusbar, we must avoid
-        // to hide clock or add AM/PM there
-        if(!mShowAlways) {
-            setVisibility((Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.STATUS_BAR_SHOW_CLOCK, 1) == 1)
-                    ? View.VISIBLE : View.GONE);
-            AM_PM_STYLE = Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.STATUS_BAR_AM_PM_STYLE, 2);
-            mClockFormatString = null;
-        }
         mCalendar.setTimeInMillis(System.currentTimeMillis());
         setText(getSmallTime());
     }

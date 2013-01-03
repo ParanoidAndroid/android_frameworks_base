@@ -38,6 +38,7 @@
             android:paddingTop="3dp"
             android:singleLine="true"
             android:textAppearance="@style/TextAppearance.SystemBar.Expanded.Clock"
+            systemui:showAlways="true"
             />
 
         <LinearLayout
