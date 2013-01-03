@@ -494,7 +494,8 @@ public class TabletStatusBar extends BaseStatusBar implements
                     mMenuNavIconWidth, ViewGroup.LayoutParams.MATCH_PARENT);
 
             // Whether to show the menu button separately or contained inside the recent-button to gain space
-            if (Settings.System.getInt(mContext.getContentResolver(), Settings.System.NAV_BAR_TABUI_MENU, 0) == 1) {
+            if (Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.NAV_BAR_TABUI_MENU, 0) == 1) {
                 rlp.addRule(RelativeLayout.RIGHT_OF, R.id.recent_apps);
                 rlp.setMargins(-(res.getDimensionPixelSize(R.dimen.navigation_menu_key_width)/3), 0, 0, 0);
                 ((ImageView)mMenuButton).setImageDrawable(res.getDrawable(R.drawable.ic_sysbar_menu));
@@ -604,21 +605,18 @@ public class TabletStatusBar extends BaseStatusBar implements
         mMenuButton = mNavigationArea.findViewById(R.id.menu);
         mRecentButton = mNavigationArea.findViewById(R.id.recent_apps);
 
-        // Whether to show the menu button separately or contained inside the recent-button to gain space
-        if (Settings.System.getInt(context.getContentResolver(), Settings.System.NAV_BAR_TABUI_MENU, 0) == 1) {
+        if (Settings.System.getInt(context.getContentResolver(),
+                Settings.System.NAV_BAR_TABUI_MENU, 0) == 1) {
             MarginLayoutParams marginParams = new MarginLayoutParams(mMenuButton.getLayoutParams());
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(marginParams);
             layoutParams.addRule(RelativeLayout.RIGHT_OF, R.id.recent_apps);
             layoutParams.setMargins(-(context.getResources().getDimensionPixelSize(R.dimen.navigation_menu_key_width)/3), 0, 0, 0);
             mMenuButton.setLayoutParams(layoutParams);
             ((ImageView)mMenuButton).setImageDrawable(context.getResources().getDrawable(R.drawable.ic_sysbar_menu));
-        }
-        else {
+        } else {
             mRecentButton.setOnLongClickListener(new OnLongClickListener() {
                 public boolean onLongClick(View v) {
-                    try {
-                        Runtime.getRuntime().exec("input keyevent 82");
-                    } catch (Exception ex) { }
+                    mRecentButton.performClick();
                     mButtonBusy = false;
                     return true;
                 }
@@ -629,8 +627,9 @@ public class TabletStatusBar extends BaseStatusBar implements
             public void onClick(View v) {
                 if(mButtonBusy){
                     onClickRecentButton();
-                } else
-                mButtonBusy = true;
+                } else {
+                    mButtonBusy = true;
+                }
             }
         });
 
