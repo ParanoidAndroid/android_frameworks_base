@@ -85,6 +85,7 @@ import com.android.systemui.statusbar.policy.BatteryController;
 import com.android.systemui.statusbar.policy.BluetoothController;
 import com.android.systemui.statusbar.policy.Clock;
 import com.android.systemui.statusbar.policy.CompatModeButton;
+import com.android.systemui.statusbar.policy.KeyButtonView;
 import com.android.systemui.statusbar.policy.LocationController;
 import com.android.systemui.statusbar.policy.NetworkController;
 import com.android.systemui.statusbar.policy.NotificationRowLayout;
@@ -616,7 +617,8 @@ public class TabletStatusBar extends BaseStatusBar implements
         } else {
             mRecentButton.setOnLongClickListener(new OnLongClickListener() {
                 public boolean onLongClick(View v) {
-                    mMenuButton.performClick();
+                    ((KeyButtonView)mMenuButton).sendEventSequence(new int[]{
+                            KeyEvent.ACTION_DOWN, KeyEvent.ACTION_UP});
                     mButtonBusy = false;
                     return true;
                 }
