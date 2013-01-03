@@ -616,7 +616,7 @@ public class TabletStatusBar extends BaseStatusBar implements
         } else {
             mRecentButton.setOnLongClickListener(new OnLongClickListener() {
                 public boolean onLongClick(View v) {
-                    mRecentButton.performClick();
+                    mMenuButton.performClick();
                     mButtonBusy = false;
                     return true;
                 }
