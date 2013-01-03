@@ -2495,6 +2495,11 @@ public final class Settings {
          */
         public static final String STATUS_BAR_NOTIF_COUNT = "status_bar_notif_count";
 
+        /**
+         * Maximal notification count as overlays on the status bar
+         * @hide
+         */
+        public static final String MAX_NOTIFICATION_ICONS = "max_notification_icons";
 
         /**	
          * Whether to show or not clock on statusbar

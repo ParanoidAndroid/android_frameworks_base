@@ -26,6 +26,7 @@ import android.app.PendingIntent;
 import android.app.StatusBarManager;
 import android.database.ContentObserver;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -217,6 +218,23 @@ public class TabletStatusBar extends BaseStatusBar implements
         }
     };
 
+    private final class SettingsObserver extends ContentObserver {
+        SettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        void observe() {
+            ContentResolver resolver = mContext.getContentResolver();
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.MAX_NOTIFICATION_ICONS), false, this);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            recreateStatusBar();
+        }
+    }
+
     @Override
     protected void createAndAddWindows() {
         addStatusBarWindow();
@@ -361,6 +379,9 @@ public class TabletStatusBar extends BaseStatusBar implements
 
         ScrollView scroller = (ScrollView)mPile.getParent();
         scroller.setFillViewport(true);
+
+        SettingsObserver settingsObserver = new SettingsObserver(new Handler());
+        settingsObserver.observe();
     }
 
     @Override
@@ -471,7 +492,10 @@ public class TabletStatusBar extends BaseStatusBar implements
             reloadAllNotificationIcons(); // reload the tray
         }
 
-        final int numIcons = res.getInteger(R.integer.config_maxNotificationIcons);
+        int numOriginalIcons = res.getInteger(R.integer.config_maxNotificationIcons);
+        final int numIcons = numOriginalIcons == 2 ? Settings.System.getInt(mContext.getContentResolver(),
+            Settings.System.MAX_NOTIFICATION_ICONS, 2) : numOriginalIcons;
+        
         if (numIcons != mMaxNotificationIcons) {
             mMaxNotificationIcons = numIcons;
             if (DEBUG) Slog.d(TAG, "max notification icons: " + mMaxNotificationIcons);
