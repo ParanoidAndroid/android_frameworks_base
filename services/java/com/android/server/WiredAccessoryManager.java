@@ -306,7 +306,8 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
                         FileReader file = new FileReader(uei.getSwitchStatePath());
                         int len = file.read(buffer, 0, 1024);
                         file.close();
-                        curState = Integer.valueOf((new String(buffer, 0, len)).trim());
+                        curState = validateSwitchState(
+                                Integer.valueOf((new String(buffer, 0, len)).trim()));
 
                         if (curState > 0) {
                             updateStateLocked(uei.getDevPath(), uei.getDevName(), curState);
@@ -327,6 +328,13 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
                 UEventInfo uei = mUEventInfo.get(i);
                 startObserving("DEVPATH="+uei.getDevPath());
             }
+        }
+
+        private int validateSwitchState(int state) {
+            // Some drivers, namely HTC headset ones, add additional bits to
+            // the switch state. As we only are able to deal with the states
+            // 0, 1 and 2, mask out all the other bits
+            return state & 0x3;
         }
 
         private List<UEventInfo> makeObservedUEventList() {
@@ -378,6 +386,7 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
         public void onUEvent(UEventObserver.UEvent event) {
             if (LOG) Slog.v(TAG, "Headset UEVENT: " + event.toString());
 
+            int state = validateSwitchState(Integer.parseInt(event.get("SWITCH_STATE")));
             try {
                 String devPath = event.get("DEVPATH");
                 String name = event.get("SWITCH_NAME");
