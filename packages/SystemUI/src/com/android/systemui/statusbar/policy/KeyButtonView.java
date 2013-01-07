@@ -358,6 +358,13 @@ public class KeyButtonView extends ImageView {
         return true;
     }
 
+    public void sendEventSequence(int[] actions) {
+        for(int action : actions) {
+            sendEvent(action, KeyEvent.FLAG_CANCELED,
+                SystemClock.uptimeMillis());
+        }
+    }   
+
     void sendEvent(int action, int flags) {
         sendEvent(action, flags, SystemClock.uptimeMillis());
     }
