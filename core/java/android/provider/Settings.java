@@ -2504,6 +2504,12 @@ public final class Settings {
         public static final String STATUS_BAR_NOTIF_COUNT = "status_bar_notif_count";
 
         /**
+         * Show the notification ticker (or not)
+         * @hide
+         */
+        public static final String STATUS_BAR_DONOTDISTURB = "status_bar_donotdisturb";
+
+        /**
          * Maximal notification count as overlays on the status bar
          * @hide
          */
