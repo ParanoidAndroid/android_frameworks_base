@@ -533,7 +533,9 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     public void showClock(boolean show) {
         if (mClock != null) {
-            mClock.setVisibility(show ? View.VISIBLE : View.GONE);
+            boolean setting = (Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.STATUS_BAR_SHOW_CLOCK, 1) == 1);
+            mClock.setVisibility(show && setting ? View.VISIBLE : View.GONE);
         }
     }
 
