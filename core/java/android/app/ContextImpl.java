@@ -1927,11 +1927,6 @@ class ContextImpl extends Context {
                 ExtendedPropertiesUtils.mPackageList = 
                     ExtendedPropertiesUtils.mPackageManager.getInstalledPackages(0);
                 ExtendedPropertiesUtils.mGlobalHook.pid = android.os.Process.myPid();
-
-                // Initialize constants to be public. sIsTablet constant returns whether if 
-                // workspace we're working on is tablet workspace, or something different
-                ExtendedPropertiesUtils.sIsTablet = Integer.parseInt(ExtendedPropertiesUtils.getProperty
-                    ("com.android.systemui.layout")) >= 1000;
                 ExtendedPropertiesUtils.mRomLcdDensity = SystemProperties.getInt("qemu.sf.lcd_density",
                     SystemProperties.getInt("ro.sf.lcd_density", DisplayMetrics.DENSITY_DEFAULT));
 

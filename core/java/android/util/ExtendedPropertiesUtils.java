@@ -91,7 +91,6 @@ public class ExtendedPropertiesUtils {
     public ParanoidAppInfo mLocalHook = new ParanoidAppInfo();
 
     public static boolean sIsHybridModeEnabled;
-    public static boolean sIsTablet;
 
     public static int mRomLcdDensity = DisplayMetrics.DENSITY_DEFAULT;
 
@@ -302,7 +301,7 @@ public class ExtendedPropertiesUtils {
      * @return device is tablet
      */
     public static boolean isTablet() {
-        return sIsTablet;
+        return getActualProperty("com.android.systemui.layout") >= 1000;
     }
 
     
@@ -391,8 +390,6 @@ public class ExtendedPropertiesUtils {
                 }
             }
         }
-        sIsTablet = Integer.parseInt(ExtendedPropertiesUtils.getProperty
-                    ("com.android.systemui.layout")) >= 1000;
     }
 
     /**
