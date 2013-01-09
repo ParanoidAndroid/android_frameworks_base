@@ -1320,6 +1320,8 @@ public class TabletStatusBar extends BaseStatusBar implements
             mFakeSpaceBar.setVisibility(((vis & InputMethodService.IME_VISIBLE) != 0)
                     ? View.VISIBLE : View.GONE);
         }
+
+        if (mNotificationPanel.mQS != null) mNotificationPanel.mQS.setImeWindowStatus(vis > 0);
     }
 
     @Override
