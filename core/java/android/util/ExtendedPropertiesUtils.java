@@ -301,7 +301,14 @@ public class ExtendedPropertiesUtils {
      * @return device is tablet
      */
     public static boolean isTablet() {
-        return getActualProperty("com.android.systemui.layout") >= 1000;
+        int layout;
+        String prop = readProperty("com.android.systemui.layout", "0");
+        if(isParsableToInt(prop)) {
+            layout = Integer.parseInt(prop);
+        } else {
+            layout = getActualProperty(prop);
+        }
+        return layout >= 1000;
     }
 
     
@@ -423,22 +430,36 @@ public class ExtendedPropertiesUtils {
                 }
                 return result;
             } else {
-                String[] props = readFile(PARANOID_PROPERTIES).split("\n");
-                for(int i=0; i<props.length; i++) {
-                    if(props[i].contains("=")) {
-                        if(props[i].substring(0, props[i].lastIndexOf("=")).equals(prop)) {
-                            String result = props[i].replace(prop+"=", "").trim();  
-                            if (result.startsWith(PARANOID_PREFIX)) {
-                                result = getProperty(result, def);
-                            }
-                            return result;
-                        }
-                    }
-                }
-                return def;
+                return readProperty(prop, def);
             }
         } catch (NullPointerException e){
             e.printStackTrace();
+        }
+        return def;
+    }
+
+    /**
+     * Returns a {@link String}, containing the result of the configuration
+     * for the input argument <code>prop</code>. If the property is not found
+     * it returns the input argument <code>def</code>. This property is directly
+     * read from the configuration file.
+     *
+     * @param  prop  a string containing the property to checkout
+     * @param  def  default value to be returned in case that property is missing
+     * @return current stored value of property
+     */
+    public static String readProperty(String prop, String def) {
+        String[] props = readFile(PARANOID_PROPERTIES).split("\n");
+        for(int i=0; i<props.length; i++) {
+            if(props[i].contains("=")) {
+                if(props[i].substring(0, props[i].lastIndexOf("=")).equals(prop)) {
+                    String result = props[i].replace(prop+"=", "").trim();  
+                    if (result.startsWith(PARANOID_PREFIX)) {
+                        result = getProperty(result, def);
+                    }
+                    return result;
+                }
+            }
         }
         return def;
     }
@@ -493,6 +514,21 @@ public class ExtendedPropertiesUtils {
         return result;
     }
 
+    /**
+     * Returns a {@link Boolean}, meaning if the input argument is an integer
+     * number.
+     *
+     * @param  str  the string to be tested
+     * @return the string is an integer number
+     */
+    public static boolean isParsableToInt(String str) {
+        try {
+            int i = Integer.parseInt(str);
+            return true;
+        } catch(NumberFormatException nfe) {
+            return false;
+        }
+    }
     
     public void debugOut(String msg) {
         Log.i(TAG + ":" + msg, "Init=" + (mMainThread != null && mContext != null && 
