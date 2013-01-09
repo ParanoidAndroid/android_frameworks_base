@@ -616,8 +616,9 @@ public class TabletStatusBar extends BaseStatusBar implements
         } else {
             mRecentButton.setOnLongClickListener(new OnLongClickListener() {
                 public boolean onLongClick(View v) {
-                    ((KeyButtonView)mMenuButton).sendEventSequence(new int[]{
-                            KeyEvent.ACTION_DOWN, KeyEvent.ACTION_UP});
+                    try {
+                        Runtime.getRuntime().exec("input keyevent 82");
+                    } catch (Exception ex) { }
                     mButtonBusy = false;
                     return true;
                 }
