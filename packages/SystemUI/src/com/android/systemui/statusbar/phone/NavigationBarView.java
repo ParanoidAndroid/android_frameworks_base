@@ -166,6 +166,18 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
 
     private H mHandler = new H();
 
+    private View getHomeButton() {
+        return mCurrentView.findViewWithTag(NavbarEditor.NAVBAR_HOME);
+    }
+
+    private View getRecentsButton() {
+        return mCurrentView.findViewWithTag(NavbarEditor.NAVBAR_RECENT);
+    }
+
+    private View getBackButton() {
+        return mCurrentView.findViewWithTag(NavbarEditor.NAVBAR_BACK);
+    }
+
     public static boolean getEditMode() {
         return EDIT_MODE;
     }
@@ -177,15 +189,14 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
     }
 
     protected void toggleButtonListener(boolean enable) {
-        View recentView = mCurrentView.findViewWithTag(NavbarEditor.NAVBAR_RECENT);
+        View recentView = getRecentsButton();
         if (recentView != null) {
             recentView.setOnClickListener(enable ? mRecentsClickListener : null);
             recentView.setOnTouchListener(enable ? mRecentsPreloadListener : null);
         }
-        View homeView = mCurrentView.findViewWithTag(NavbarEditor.NAVBAR_HOME);
-        if (homeView != null) {
-            homeView.setOnTouchListener(enable ? mHomeSearchActionListener : null);
-        }
+        View homeView = getHomeButton();
+        // We cannot remove home button, so no need to null-check
+        homeView.setOnTouchListener(enable ? mHomeSearchActionListener : null);
     }
 
     private void setButtonWithTagVisibility(String string, int visibility) {
@@ -356,23 +367,34 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         }
 
         mNavigationIconHints = hints;
-        getBackButton().setAlpha(
-            (0 != (hints & StatusBarManager.NAVIGATION_HINT_BACK_NOP)) ? 0.5f : 1.0f);
+
         getHomeButton().setAlpha(
             (0 != (hints & StatusBarManager.NAVIGATION_HINT_HOME_NOP)) ? 0.5f : 1.0f);
-        getRecentsButton().setAlpha(
-            (0 != (hints & StatusBarManager.NAVIGATION_HINT_RECENT_NOP)) ? 0.5f : 1.0f);
 
-        if(button == NavigationCallback.NAVBAR_BACK_HINT) {
+        View back = getBackButton();
+        if(back != null) {
+            back.setAlpha(
+                (0 != (hints & StatusBarManager.NAVIGATION_HINT_BACK_NOP)) ? 0.5f : 1.0f);
+        }
+
+        View recent = getRecentsButton();
+        if (recent != null) {
+            recent.setAlpha(
+                (0 != (hints & StatusBarManager.NAVIGATION_HINT_RECENT_NOP)) ? 0.5f : 1.0f);
+        }
+
+        if (button == NavigationCallback.NAVBAR_BACK_HINT) {
             ((ImageView)getBackButton()).setImageDrawable(
                 (0 != (hints & StatusBarManager.NAVIGATION_HINT_BACK_ALT))
                     ? (mVertical ? mBackAltLandIcon : mBackAltIcon)
                     : (mVertical ? mBackLandIcon : mBackIcon));
         } else if (button == NavigationCallback.NAVBAR_RECENTS_HINT) {
-            ((ImageView)getRecentsButton()).setImageDrawable(
-                (0 != (hints & StatusBarManager.NAVIGATION_HINT_RECENT_ALT))
-                    ? (mVertical ? mRecentsAltLandIcon : mRecentsAltIcon)
-                    : (mVertical ? mRecentsLandIcon : mRecentsIcon));
+            if (recent != null) {
+                ((ImageView)recent).setImageDrawable(
+                    (0 != (hints & StatusBarManager.NAVIGATION_HINT_RECENT_ALT))
+                        ? (mVertical ? mRecentsAltLandIcon : mRecentsAltIcon)
+                        : (mVertical ? mRecentsLandIcon : mRecentsIcon));
+            }
         }
         setDisabledFlags(mDisabledFlags, true);
     }
@@ -549,9 +571,12 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         }
 
         setNavigationIconHints(mNavigationIconHints, true);
-        // Reset recents hints after reorienting
-        ((ImageView)getRecentsButton()).setImageDrawable(mVertical
-                ? mRecentsLandIcon : mRecentsIcon);
+        // Reset recents hints after reorienting, if recents icon is present
+        View recent = getRecentsButton();
+        if(recent != null) {
+            ((ImageView)recent).setImageDrawable(mVertical
+                    ? mRecentsLandIcon : mRecentsIcon);
+        }
     }
 
     @Override
@@ -580,39 +605,6 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
 
         postCheckForInvalidLayout("sizeChanged");
         super.onSizeChanged(w, h, oldw, oldh);
-    }
-
-    /*
-    @Override
-    protected void onLayout (boolean changed, int left, int top, int right, int bottom) {
-        if (DEBUG) Slog.d(TAG, String.format(
-                    "onLayout: %s (%d,%d,%d,%d)", 
-                    changed?"changed":"notchanged", left, top, right, bottom));
-        super.onLayout(changed, left, top, right, bottom);
-    }
-
-    // uncomment this for extra defensiveness in WORKAROUND_INVALID_LAYOUT situations: if all else
-    // fails, any touch on the display will fix the layout.
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
-        if (DEBUG) Slog.d(TAG, "onInterceptTouchEvent: " + ev.toString());
-        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            postCheckForInvalidLayout("touch");
-        }
-        return super.onInterceptTouchEvent(ev);
-    }
-    */
-
-    private View getHomeButton() {
-        return mCurrentView.findViewWithTag(NavbarEditor.NAVBAR_HOME);
-    }
-
-    private View getRecentsButton() {
-        return mCurrentView.findViewWithTag(NavbarEditor.NAVBAR_RECENT);
-    }
-
-    private View getBackButton() {
-        return mCurrentView.findViewWithTag(NavbarEditor.NAVBAR_BACK);
     }
 
     private String getResourceName(int resId) {
@@ -671,22 +663,26 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
                         mLowProfile ? "true" : "false",
                         mShowMenu ? "true" : "false"));
 
-        final View back = mCurrentView.findViewWithTag("back");
-        final View home = mCurrentView.findViewWithTag("home");
-        final View recent = mCurrentView.findViewWithTag("recent");
+        final View back = getBackButton();
+        final View home = getHomeButton();
+        final View recent = getRecentsButton();
 
-        pw.println("      back: "
-                + PhoneStatusBar.viewInfo(back)
-                + " " + visibilityToString(back.getVisibility())
-                );
         pw.println("      home: "
                 + PhoneStatusBar.viewInfo(home)
                 + " " + visibilityToString(home.getVisibility())
                 );
-        pw.println("      rcnt: "
-                + PhoneStatusBar.viewInfo(recent)
-                + " " + visibilityToString(recent.getVisibility())
-                );
+        if(back != null) {
+            pw.println("      back: "
+                    + PhoneStatusBar.viewInfo(back)
+                    + " " + visibilityToString(back.getVisibility())
+                    );
+        }
+        if(recent != null) {
+            pw.println("      recent: "
+                    + PhoneStatusBar.viewInfo(recent)
+                    + " " + visibilityToString(recent.getVisibility())
+                    );
+        }
         pw.println("    }");
     }
 
