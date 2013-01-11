@@ -227,7 +227,6 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         mBarSize = res.getDimensionPixelSize(R.dimen.navigation_bar_size);
         mVertical = false;
         mShowMenu = false;
-        mIs600dp = ExtendedPropertiesUtils.getActualProperty("com.android.systemui.layout") == 600;
         mDelegateHelper = new DelegateViewHelper(this);
         updateResources();
 
@@ -551,7 +550,7 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         }
         mCurrentView = mRotatedViews[rot];
         mCurrentView.setVisibility(View.VISIBLE);
-        if (!mIs600dp) {
+        if (NavbarEditor.isDevicePhone()) {
             rot = mDisplay.getRotation();
             mVertical = (rot == Surface.ROTATION_90 || rot == Surface.ROTATION_270);
         } else {
