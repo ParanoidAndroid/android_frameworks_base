@@ -170,14 +170,10 @@ public class NavbarEditor implements OnTouchListener {
     };
 
     protected static boolean isDevicePhone() {
-        int mSysUILayout = ExtendedPropertiesUtils.getActualProperty(
+        int deviceLayout = ExtendedPropertiesUtils.getActualProperty(
                 "com.android.systemui.layout");
         if (mIsDevicePhone == null) {
-            if (mSysUILayout < 600) {
-                mIsDevicePhone = true;
-            } else {
-                mIsDevicePhone = false;
-            }
+            mIsDevicePhone = deviceLayout < 600;
         }
         return mIsDevicePhone;
     }
