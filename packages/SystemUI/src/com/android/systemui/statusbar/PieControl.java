@@ -118,7 +118,7 @@ public class PieControl implements PieMenu.PieController, OnClickListener {
         mRecent = makeItem(R.drawable.ic_sysbar_recent, 1);
         mMenu = makeItem(R.drawable.ic_sysbar_menu, 1);
         mMore = makeItem(R.drawable.stat_notify_more, 1);
-        mNotifications = makeItem(R.drawable.ic_notification_open, 1);
+        mNotifications = makeItem(R.drawable.ic_notifications_normal, 1);
         mSettings = makeItem(R.drawable.ic_notify_quicksettings_normal, 1);
         mScreenshot = makeItem(R.drawable.stat_notify_image, 1);
             
@@ -159,8 +159,9 @@ public class PieControl implements PieMenu.PieController, OnClickListener {
             buttonName = SCREENSHOT_BUTTON;
         }
 
-        if (mListener != null)
+        if (mListener != null) {
             mListener.onNavButtonPressed(buttonName);
+        }
     }
 
     protected PieItem makeItem(int image, int l) {
@@ -184,10 +185,6 @@ public class PieControl implements PieMenu.PieController, OnClickListener {
 
     public void setCenter(int x, int y) {
         mPie.setCenter(x, y);
-    }
-
-    @Override
-    public void stopEditingUrl() {
     }
 
     public void setOnNavButtonPressedListener(OnNavButtonPressedListener listener) {

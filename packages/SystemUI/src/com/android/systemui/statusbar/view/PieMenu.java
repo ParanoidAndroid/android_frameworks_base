@@ -53,7 +53,6 @@ public class PieMenu extends FrameLayout {
          * returns if pie state has been changed
          */
         public boolean onOpen();
-        public void stopEditingUrl();
 
     }
 
@@ -199,7 +198,6 @@ public class PieMenu extends FrameLayout {
             mCurrentItem = null;
             mOpenItem = null;
             mPieView = null;
-            mController.stopEditingUrl();
             mCurrentItems = mItems;
             for (PieItem item : mCurrentItems) {
                 item.setSelected(false);

@@ -58,7 +58,7 @@ public class QuickNavbarPanel extends FrameLayout implements StatusBarPanel, OnN
     ViewGroup mContentFrame;
     Rect mContentArea = new Rect();
 
-    private TabletStatusBar mStatusBar;
+    private BaseStatusBar mStatusBar;
 
     public QuickNavbarPanel(Context context) {
         this(context, null);
@@ -71,8 +71,8 @@ public class QuickNavbarPanel extends FrameLayout implements StatusBarPanel, OnN
         mPieControl.setOnNavButtonPressedListener(this);
     }
 
-    public void setBar(BaseStatusBar phoneStatusBar) {
-        mStatusBar = (TabletStatusBar)phoneStatusBar;
+    public void setBar(BaseStatusBar statusbar) {
+        mStatusBar = (BaseStatusBar) statusbar;
     }
 
     @Override
@@ -101,7 +101,7 @@ public class QuickNavbarPanel extends FrameLayout implements StatusBarPanel, OnN
 
         mContentFrame = (ViewGroup)findViewById(R.id.content_frame);
         setWillNotDraw(false);
-        mShowing = false;
+        mShowing = true;
         mPieControl.attachToContainer(this);
         mPieControl.forceToTop(this);
     }
@@ -114,11 +114,12 @@ public class QuickNavbarPanel extends FrameLayout implements StatusBarPanel, OnN
         return mShowing;
     }
 
-    public void show(boolean show, boolean animate) {
+    public void show(boolean show) {
         mShowing = show;
         setVisibility(show ? View.VISIBLE : View.GONE);
-        if (show)
+        if (show) {
             mPieControl.setCenter(this.getWidth() / 2, this.getHeight());
+        }
         mPieControl.show(show);
     }
 
@@ -139,15 +140,15 @@ public class QuickNavbarPanel extends FrameLayout implements StatusBarPanel, OnN
         } else if (buttonName.equals(PieControl.MENU_BUTTON)) {
             injectKeyDelayed(KeyEvent.KEYCODE_MENU);
         }/* else if (buttonName.equals(PieControl.RECENT_BUTTON)) {
-            Message peekMsg = mHandler.obtainMessage(TabletStatusBar.MSG_TOGGLE_RECENT_APPS);
+            Message peekMsg = mHandler.obtainMessage(BaseStatusBar.MSG_TOGGLE_RECENT_APPS);
             mHandler.sendMessage(peekMsg);
-        }*/ else if (buttonName.equals(PieControl.NOTIFICATION_BUTTON)) {
-            Message peekMsg = mHandler.obtainMessage(TabletStatusBar.MSG_OPEN_NOTIFICATION_PANEL);
+        } else if (buttonName.equals(PieControl.NOTIFICATION_BUTTON)) {
+            Message peekMsg = mHandler.obtainMessage(BaseStatusBar.MSG_OPEN_NOTIFICATION_PANEL);
             mHandler.sendMessage(peekMsg);
-        } else if (buttonName.equals(PieControl.SCREENSHOT_BUTTON)) {
+        } */else if (buttonName.equals(PieControl.SCREENSHOT_BUTTON)) {
             takeScreenshot();
         }
-        show(false, false);
+        show(false);
     }
 
     public void injectKeyDelayed(int keycode){

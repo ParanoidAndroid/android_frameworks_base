@@ -35,6 +35,14 @@
             android:clipChildren="false"
             >
 
+            <ImageView
+                android:id="@+id/popup_area1"
+                android:layout_width="match_parent"
+                android:layout_height="@*android:dimen/system_bar_height"
+                android:scaleType="fitXY"
+                android:layout_weight="1"
+                android:background="#00000000" />
+
             <!-- notification icons & panel access -->
             <include layout="@layout/system_bar_notification_area" 
                 android:layout_width="wrap_content"
