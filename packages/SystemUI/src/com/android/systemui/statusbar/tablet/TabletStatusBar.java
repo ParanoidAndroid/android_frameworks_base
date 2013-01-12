@@ -112,8 +112,6 @@ public class TabletStatusBar extends BaseStatusBar implements
     public static final int MSG_CLOSE_NOTIFICATION_PANEL = 1001;
     public static final int MSG_OPEN_NOTIFICATION_PEEK = 1002;
     public static final int MSG_CLOSE_NOTIFICATION_PEEK = 1003;
-    public static final int MSG_OPEN_QUICKNAVBAR_PANEL = 1004;
-    public static final int MSG_CLOSE_QUICKNAVBAR_PANEL = 1005;
     // 1020-1029 reserved for BaseStatusBar
     public static final int MSG_SHOW_CHROME = 1030;
     public static final int MSG_HIDE_CHROME = 1031;
@@ -177,9 +175,6 @@ public class TabletStatusBar extends BaseStatusBar implements
 
     int mNotificationPeekTapDuration;
     int mNotificationFlingVelocity;
-
-    QuickNavbarPanel mQuickNavbarPanel;
-    View mQuickNavbarTrigger;
 
     BluetoothController mBluetoothController;
     LocationController mLocationController;
@@ -398,35 +393,6 @@ public class TabletStatusBar extends BaseStatusBar implements
         mWindowManager.addView(mCompatModePanel, lp);
         mRecentButton.setOnTouchListener(mRecentsPreloadOnTouchListener);
 
-        // Quick navigation bar panel
-        mQuickNavbarPanel = (QuickNavbarPanel) View.inflate(context,
-                R.layout.quick_navigation_panel, null);
-        lp = new WindowManager.LayoutParams(
-                500,
-                500,
-                20,
-                0,
-                WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
-                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                    | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
-                    | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
-                    | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
-                PixelFormat.TRANSLUCENT);
-//        lp.gravity = Gravity.BOTTOM | Gravity.LEFT;
-        lp.setTitle("QuickNavbarPanel");
-        lp.windowAnimations = android.R.style.Animation;
-
-        mQuickNavbarPanel.setBar(this);
-        mQuickNavbarPanel.show(true);
-        mQuickNavbarPanel.setOnTouchListener(
-                new TouchOutsideListener(MSG_CLOSE_QUICKNAVBAR_PANEL, mQuickNavbarPanel));
-        if (mQuickNavbarTrigger != null) {
-            mStatusBarView.setIgnoreChildren(4, mQuickNavbarTrigger, mQuickNavbarPanel);
-        }
-        mQuickNavbarPanel.setHandler(mHandler);
-
-        mWindowManager.addView(mQuickNavbarPanel, lp);
-
         mPile = (NotificationRowLayout)mNotificationPanel.findViewById(R.id.content);
         mPile.removeAllViews();
         mPile.setLongPressListener(getNotificationLongClicker());
@@ -604,9 +570,6 @@ public class TabletStatusBar extends BaseStatusBar implements
         mStatusBarView = sb;
 
         sb.setHandler(mHandler);
-
-        mQuickNavbarTrigger = (View)sb.findViewById(R.id.popup_area1);
-        mQuickNavbarTrigger.setOnTouchListener(new QuickNavbarTouchListener());
 
         try {
             // Sanity-check that someone hasn't set up the config wrong and asked for a navigation
@@ -989,18 +952,6 @@ public class TabletStatusBar extends BaseStatusBar implements
                                 Settings.System.STATUS_BAR_SHOW_CLOCK, 1) == 1);
                         mNotificationPanel.show(false, true);
                     }
-                    break;
-                case MSG_OPEN_QUICKNAVBAR_PANEL:
-                    if (DEBUG) Slog.d(TAG, "opening quicknavbar panel");
-                    if (!mQuickNavbarPanel.isShowing()) {
-                        mQuickNavbarPanel.show(true);
-                    }
-                    break;
-                case MSG_CLOSE_QUICKNAVBAR_PANEL:
-                    if (DEBUG) Slog.d(TAG, "closing quicknavbar panel");
-                   //if (mQuickNavbarPanel.isShowing()) {
-                        mQuickNavbarPanel.show(false);
-                    //}
                     break;
                 case MSG_OPEN_INPUT_METHODS_PANEL:
                     if (DEBUG) Slog.d(TAG, "opening input methods panel");
@@ -1659,50 +1610,6 @@ public class TabletStatusBar extends BaseStatusBar implements
                     mVT.recycle();
                     mVT = null;
                     return true;
-            }
-            return false;
-        }
-    }
-
-    private class QuickNavbarTouchListener implements View.OnTouchListener {
-        VelocityTracker mVT;
-        int mPeekIndex;
-        float mInitialTouchX, mInitialTouchY;
-        int mTouchSlop;
-
-        public QuickNavbarTouchListener() {
-            mTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
-        }
-
-        public boolean onTouch(View v, MotionEvent event) {
-            boolean panelShowing = mQuickNavbarPanel.isShowing();
-
-            final int action = event.getAction();
-            switch (action) {
-                case MotionEvent.ACTION_DOWN:
-                    WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
-                            500,
-                            500,
-                            (int)event.getX() - 150,
-                            0,
-                            WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
-                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                                | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
-                                | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
-                                | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
-                            PixelFormat.TRANSLUCENT);
-                    lp.gravity = Gravity.BOTTOM | Gravity.LEFT;
-                    lp.setTitle("QuickNavbarPanel");
-                    lp.windowAnimations = android.R.style.Animation;
-                    mWindowManager.updateViewLayout(mQuickNavbarPanel, lp);
-
-                    Message peekMsg = mHandler.obtainMessage(MSG_OPEN_QUICKNAVBAR_PANEL);
-                    mHandler.sendMessage(peekMsg);
-                    if(DEBUG) Slog.d(TAG, "Sending MSG_OPEN_QUICKNAVBAR_PANEL");
-                    break;
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
-                    break;
             }
             return false;
         }

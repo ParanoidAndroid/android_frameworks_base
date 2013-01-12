@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.tablet;
+package com.android.systemui.statusbar;
 
-import com.android.systemui.R;
-import com.android.systemui.statusbar.PieControl;
-import com.android.systemui.statusbar.PieControl.OnNavButtonPressedListener;
-import com.android.systemui.statusbar.BaseStatusBar;
 
 import android.content.Context;
 import android.graphics.Rect;
@@ -35,16 +31,9 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
 
-/**
- * Needed for takeScreenshot
- */
-import android.content.Intent;
-import android.content.ServiceConnection;
-import android.content.ComponentName;
-import android.os.IBinder;
-import android.os.Messenger;
-import android.os.RemoteException;
-
+import com.android.systemui.R;
+import com.android.systemui.statusbar.tablet.StatusBarPanel;
+import com.android.systemui.statusbar.PieControl.OnNavButtonPressedListener;
 
 public class QuickNavbarPanel extends FrameLayout implements StatusBarPanel, OnNavButtonPressedListener {
     private static final boolean DEBUG = true;
@@ -78,7 +67,6 @@ public class QuickNavbarPanel extends FrameLayout implements StatusBarPanel, OnN
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         return mPieControl.onTouchEvent(event);
-        //return super.onTouchEvent(event);
     }
 
     @Override
@@ -106,10 +94,6 @@ public class QuickNavbarPanel extends FrameLayout implements StatusBarPanel, OnN
         mPieControl.forceToTop(this);
     }
 
-    /**
-     * Whether the panel is showing, or, if it's animating, whether it will be
-     * when the animation is done.
-     */
     public boolean isShowing() {
         return mShowing;
     }
@@ -139,14 +123,8 @@ public class QuickNavbarPanel extends FrameLayout implements StatusBarPanel, OnN
             injectKeyDelayed(KeyEvent.KEYCODE_HOME);
         } else if (buttonName.equals(PieControl.MENU_BUTTON)) {
             injectKeyDelayed(KeyEvent.KEYCODE_MENU);
-        }/* else if (buttonName.equals(PieControl.RECENT_BUTTON)) {
-            Message peekMsg = mHandler.obtainMessage(BaseStatusBar.MSG_TOGGLE_RECENT_APPS);
-            mHandler.sendMessage(peekMsg);
-        } else if (buttonName.equals(PieControl.NOTIFICATION_BUTTON)) {
-            Message peekMsg = mHandler.obtainMessage(BaseStatusBar.MSG_OPEN_NOTIFICATION_PANEL);
-            mHandler.sendMessage(peekMsg);
-        } */else if (buttonName.equals(PieControl.SCREENSHOT_BUTTON)) {
-            takeScreenshot();
+        } else if (buttonName.equals(PieControl.RECENT_BUTTON)) {
+            mStatusBar.toggleRecentApps();
         }
         show(false);
     }
@@ -169,79 +147,4 @@ public class QuickNavbarPanel extends FrameLayout implements StatusBarPanel, OnN
                     InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
     	}
     };
-
-    /**
-    * functions needed for taking screenhots.  
-    * This leverages the built in ICS screenshot functionality 
-    */
-   final Object mScreenshotLock = new Object();
-   ServiceConnection mScreenshotConnection = null;
-
-   final Runnable mScreenshotTimeout = new Runnable() {
-       @Override public void run() {
-           synchronized (mScreenshotLock) {
-               if (mScreenshotConnection != null) {
-                   mContext.unbindService(mScreenshotConnection);
-                   mScreenshotConnection = null;
-               }
-           }
-       }
-   };
-
-   private void takeScreenshot() {
-       synchronized (mScreenshotLock) {
-           if (mScreenshotConnection != null) {
-               return;
-           }
-           ComponentName cn = new ComponentName("com.android.systemui",
-                   "com.android.systemui.screenshot.TakeScreenshotService");
-           Intent intent = new Intent();
-           intent.setComponent(cn);
-           ServiceConnection conn = new ServiceConnection() {
-               @Override
-               public void onServiceConnected(ComponentName name, IBinder service) {
-                   synchronized (mScreenshotLock) {
-                       if (mScreenshotConnection != this) {
-                           return;
-                       }
-                       Messenger messenger = new Messenger(service);
-                       Message msg = Message.obtain(null, 1);
-                       final ServiceConnection myConn = this;
-                       Handler h = new Handler(mHandler.getLooper()) {
-                           @Override
-                           public void handleMessage(Message msg) {
-                               synchronized (mScreenshotLock) {
-                                   if (mScreenshotConnection == myConn) {
-                                       mContext.unbindService(mScreenshotConnection);
-                                       mScreenshotConnection = null;
-                                       mHandler.removeCallbacks(mScreenshotTimeout);
-                                   }
-                               }
-                           }
-                       };
-                       msg.replyTo = new Messenger(h);
-                       msg.arg1 = msg.arg2 = 0;
-
-                       /* wait for the panel to close */
-                       try {
-                           Thread.sleep(500); 
-                       } catch (InterruptedException ie) {
-                       }
-                       
-                       /* take the screenshot */
-                       try {
-                           messenger.send(msg);
-                       } catch (RemoteException e) {
-                       }
-                   }
-               }
-               @Override
-               public void onServiceDisconnected(ComponentName name) {}
-           };
-           if (mContext.bindService(intent, conn, Context.BIND_AUTO_CREATE)) {
-               mScreenshotConnection = conn;
-               mHandler.postDelayed(mScreenshotTimeout, 10000);
-           }
-       }
-   }
 }
