@@ -131,7 +131,7 @@ public class KeyButtonView extends ImageView {
             mLastGlowColor = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_GLOW_COLOR);
             mLastButtonColor = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BUTTON_COLOR);
 
-            //updateButtonColor();
+            updateButtonColor();
 
             mContext.getContentResolver().registerContentObserver(
                 Settings.System.getUriFor(Settings.System.NAV_BUTTON_COLOR), false, new ContentObserver(new Handler()) {
