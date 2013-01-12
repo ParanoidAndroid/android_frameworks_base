@@ -88,8 +88,6 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
     private OnTouchListener mRecentsPreloadListener;
     private OnTouchListener mHomeSearchActionListener;
 
-    private boolean mIs600dp;
-
     protected IStatusBarService mBarService;
     final Display mDisplay;
     View mCurrentView = null;
