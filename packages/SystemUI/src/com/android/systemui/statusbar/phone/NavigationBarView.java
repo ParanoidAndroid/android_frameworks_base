@@ -535,7 +535,6 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         mRotatedViews[Configuration.ORIENTATION_PORTRAIT] = findViewById(R.id.rot0);
         mRotatedViews[Configuration.ORIENTATION_LANDSCAPE] = findViewById(R.id.rot90);
         mCurrentView = mRotatedViews[mContext.getResources().getConfiguration().orientation];
-
         if (ColorUtils.getPerAppColorState(mContext)) {
             updateColor();
         }
