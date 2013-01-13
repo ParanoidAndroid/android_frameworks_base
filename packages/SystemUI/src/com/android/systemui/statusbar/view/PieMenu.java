@@ -223,7 +223,7 @@ public class PieMenu extends FrameLayout {
             }
 
         });
-        anim.setDuration(2*ANIMATION);
+        anim.setDuration(2 * ANIMATION);
         anim.start();
     }
 

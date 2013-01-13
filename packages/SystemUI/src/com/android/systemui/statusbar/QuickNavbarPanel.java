@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Android Open Source Project
+ * Copyright (C) 2010 ParanoidAndroid Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import com.android.systemui.statusbar.tablet.StatusBarPanel;
 import com.android.systemui.statusbar.PieControl.OnNavButtonPressedListener;
 
 public class QuickNavbarPanel extends FrameLayout implements StatusBarPanel, OnNavButtonPressedListener {
-    private static final boolean DEBUG = true;
+
     private Handler mHandler;
     boolean mShowing;
     private PieControl mPieControl;
