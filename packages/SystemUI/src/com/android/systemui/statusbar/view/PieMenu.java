@@ -279,8 +279,11 @@ public class PieMenu extends FrameLayout {
     }
 
     private void setColors() {
-        setBackgroundColor();
-        setGlowColor();
+        // Only watch for per app color changes when the setting is in check
+        if (ColorUtils.getPerAppColorState(mContext)) {
+            setBackgroundColor();
+            setGlowColor();
+        }
     }
 
     private void setBackgroundColor() {

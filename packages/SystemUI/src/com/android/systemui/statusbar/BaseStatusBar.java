@@ -364,6 +364,17 @@ public abstract class BaseStatusBar extends SystemUI implements
                 }
             }}, filter);
 
+
+        updateQickNavbarVisibility();
+        mContext.getContentResolver().registerContentObserver(
+            Settings.System.getUriFor(Settings.System.QUICK_NAVIGATION), false, new ContentObserver(new Handler()) {
+                @Override
+                public void onChange(boolean selfChange) {
+                    updateQickNavbarVisibility();
+                }
+            }
+        );
+
         // Only watch for per app color changes when the setting is in check
         if (ColorUtils.getPerAppColorState(mContext)) {
 
@@ -466,6 +477,13 @@ public abstract class BaseStatusBar extends SystemUI implements
             // Remember for later
             mLastBackgroundColor = colorInfo;
         }
+    }
+
+    public void updateQickNavbarVisibility() {
+        ContentResolver resolver = mContext.getContentResolver();
+        boolean show = Settings.System.getInt(resolver,
+                Settings.System.QUICK_NAVIGATION, 0) == 1;
+        mQuickNavbarTrigger.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
     public void userSwitched(int newUserId) {
