@@ -32,7 +32,7 @@ public class PieListView extends BasePieView {
 
     public PieListView(Context ctx) {
         mBgPaint = new Paint();
-        mBgPaint.setColor(ctx.getResources().getColor(R.color.qcMenuBackground));
+        mBgPaint.setColor(ctx.getResources().getColor(R.color.pie_menu_background));
     }
 
     /**

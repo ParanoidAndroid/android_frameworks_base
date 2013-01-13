@@ -44,7 +44,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.android.systemui.R;
-import com.android.systemui.statusbar.QuickNavbarPanel;
+import com.android.systemui.statusbar.PieControlPanel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -114,7 +114,7 @@ public class PieMenu extends FrameLayout {
     private boolean mUseBackground;
     private boolean mAnimating;
 
-    private QuickNavbarPanel mPanel;
+    private PieControlPanel mPanel;
 
     private ColorUtils.ColorSettingInfo mLastBackgroundColor;
     private ColorUtils.ColorSettingInfo mLastGlowColor;
@@ -172,10 +172,10 @@ public class PieMenu extends FrameLayout {
         mLevels = 0;
         mCounts = new int[MAX_LEVELS];
         Resources res = ctx.getResources();
-        mRadius = (int) res.getDimension(R.dimen.qc_radius_start);
-        mRadiusInc = (int) res.getDimension(R.dimen.qc_radius_increment);
-        mSlop = (int) res.getDimension(R.dimen.qc_slop);
-        mTouchOffset = (int) res.getDimension(R.dimen.qc_touch_offset);
+        mRadius = (int) res.getDimension(R.dimen.pie_radius_start);
+        mRadiusInc = (int) res.getDimension(R.dimen.pie_radius_increment);
+        mSlop = (int) res.getDimension(R.dimen.pie_slop);
+        mTouchOffset = (int) res.getDimension(R.dimen.pie_touch_offset);
         mOpen = false;
         setWillNotDraw(false);
         setDrawingCacheEnabled(false);
@@ -197,7 +197,7 @@ public class PieMenu extends FrameLayout {
         observer.observe();
     }
 
-    public void setPanel(QuickNavbarPanel panel) {
+    public void setPanel(PieControlPanel panel) {
         mPanel = panel;
     }
 

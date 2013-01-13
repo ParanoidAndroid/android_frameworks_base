@@ -33,7 +33,7 @@ import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.TextView;
 
-import com.android.systemui.statusbar.QuickNavbarPanel;
+import com.android.systemui.statusbar.PieControlPanel;
 import com.android.systemui.statusbar.view.PieItem;
 import com.android.systemui.statusbar.view.PieMenu;
 import com.android.systemui.statusbar.view.PieMenu.PieView.OnLayoutListener;
@@ -63,11 +63,11 @@ public class PieControl implements PieMenu.PieController, OnClickListener {
     private PieItem mMenu;
     private PieItem mRecent;
     private OnNavButtonPressedListener mListener;
-    private QuickNavbarPanel mPanel;
+    private PieControlPanel mPanel;
 
     public PieControl(Context context) {
         mContext = context;
-        mItemSize = (int) context.getResources().getDimension(R.dimen.qc_item_size);
+        mItemSize = (int) context.getResources().getDimension(R.dimen.pie_item_size);
     }
 
     public void attachToContainer(FrameLayout container) {
@@ -94,7 +94,7 @@ public class PieControl implements PieMenu.PieController, OnClickListener {
         }
     }
 
-    protected void setPanel(QuickNavbarPanel panel) {
+    protected void setPanel(PieControlPanel panel) {
         mPanel = panel;
     }
 

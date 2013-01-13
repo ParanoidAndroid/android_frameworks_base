@@ -35,7 +35,7 @@ import com.android.systemui.R;
 import com.android.systemui.statusbar.tablet.StatusBarPanel;
 import com.android.systemui.statusbar.PieControl.OnNavButtonPressedListener;
 
-public class QuickNavbarPanel extends FrameLayout implements StatusBarPanel, OnNavButtonPressedListener {
+public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNavButtonPressedListener {
 
     private Handler mHandler;
     boolean mShowing;
@@ -49,11 +49,11 @@ public class QuickNavbarPanel extends FrameLayout implements StatusBarPanel, OnN
 
     private BaseStatusBar mStatusBar;
 
-    public QuickNavbarPanel(Context context) {
+    public PieControlPanel(Context context) {
         this(context, null);
     }
 
-    public QuickNavbarPanel(Context context, AttributeSet attrs) {
+    public PieControlPanel(Context context, AttributeSet attrs) {
         super(context, attrs);
         mContext = context;
         mPieControl = new PieControl(context);

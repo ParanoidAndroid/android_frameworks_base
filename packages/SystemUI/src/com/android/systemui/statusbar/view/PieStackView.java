@@ -38,7 +38,7 @@ public class PieStackView extends BasePieView {
 
     public PieStackView(Context ctx) {
         mMinHeight = (int) ctx.getResources()
-                .getDimension(R.dimen.qc_tab_title_height);
+                .getDimension(R.dimen.pie_tab_title_height);
     }
 
     public void setOnCurrentListener(OnCurrentListener l) {

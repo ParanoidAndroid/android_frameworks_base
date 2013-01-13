@@ -2450,11 +2450,11 @@ public final class Settings {
         public static final String EXPANDED_DESKTOP_STATE = "expanded_desktop_state";
 
         /**
-         * Whether to enable or not quick navigation
+         * Whether to enable or not pie controls
          * The value is boolean (1 or 0).
          * @hide
          */
-        public static final String QUICK_NAVIGATION = "quick_navigation";
+        public static final String PIE_CONTROLS = "pie_controls";
 
         /**
          * User Interface State

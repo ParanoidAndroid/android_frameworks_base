@@ -145,9 +145,9 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     protected FrameLayout mStatusBarContainer;
 
-    // Quick nav bar
-    QuickNavbarPanel mQuickNavbarPanel;
-    View mQuickNavbarTrigger;
+    // Pie controls
+    PieControlPanel mPieControlPanel;
+    View mPieControlsTrigger;
 
     // Policy
     public NetworkController mNetworkController;
@@ -254,10 +254,10 @@ public abstract class BaseStatusBar extends SystemUI implements
 
         // Quick navigation bar trigger area
         final Resources res = mContext.getResources();
-        mQuickNavbarTrigger = new View(mContext);
+        mPieControlsTrigger = new View(mContext);
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 
-                res.getDimensionPixelSize(R.dimen.quick_nav_trigger_height),
+                res.getDimensionPixelSize(R.dimen.pie_trigger_height),
                 WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                         | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
@@ -268,12 +268,12 @@ public abstract class BaseStatusBar extends SystemUI implements
 
         lp.gravity = Gravity.BOTTOM;
 
-        mQuickNavbarTrigger.setOnTouchListener(new QuickNavbarTouchListener());
-        mWindowManager.addView(mQuickNavbarTrigger, lp);
+        mPieControlsTrigger.setOnTouchListener(new PieControlsTouchListener());
+        mWindowManager.addView(mPieControlsTrigger, lp);
 
         // Quick navigation bar panel
-        mQuickNavbarPanel = (QuickNavbarPanel) View.inflate(mContext,
-                R.layout.quick_navigation_panel, null);
+        mPieControlPanel = (PieControlPanel) View.inflate(mContext,
+                R.layout.pie_control_panel, null);
         lp = new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -284,13 +284,13 @@ public abstract class BaseStatusBar extends SystemUI implements
                         | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
                 PixelFormat.TRANSLUCENT);
         lp.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-        lp.setTitle("QuickNavbarPanel");
+        lp.setTitle("PieControlPanel");
         lp.windowAnimations = android.R.style.Animation;
 
-        mQuickNavbarPanel.setBar(this);
-        mQuickNavbarPanel.setHandler(mHandler);
+        mPieControlPanel.setBar(this);
+        mPieControlPanel.setHandler(mHandler);
 
-        mWindowManager.addView(mQuickNavbarPanel, lp);
+        mWindowManager.addView(mPieControlPanel, lp);
 
         // Connect in to the status bar manager service
         StatusBarIconList iconList = new StatusBarIconList();
@@ -365,12 +365,12 @@ public abstract class BaseStatusBar extends SystemUI implements
             }}, filter);
 
 
-        updateQickNavbarVisibility();
+        updatePieControlsVisibility();
         mContext.getContentResolver().registerContentObserver(
-            Settings.System.getUriFor(Settings.System.QUICK_NAVIGATION), false, new ContentObserver(new Handler()) {
+            Settings.System.getUriFor(Settings.System.PIE_CONTROLS), false, new ContentObserver(new Handler()) {
                 @Override
                 public void onChange(boolean selfChange) {
-                    updateQickNavbarVisibility();
+                    updatePieControlsVisibility();
                 }
             }
         );
@@ -479,11 +479,11 @@ public abstract class BaseStatusBar extends SystemUI implements
         }
     }
 
-    public void updateQickNavbarVisibility() {
+    public void updatePieControlsVisibility() {
         ContentResolver resolver = mContext.getContentResolver();
         boolean show = Settings.System.getInt(resolver,
-                Settings.System.QUICK_NAVIGATION, 0) == 1;
-        mQuickNavbarTrigger.setVisibility(show ? View.VISIBLE : View.GONE);
+                Settings.System.PIE_CONTROLS, 0) == 1;
+        mPieControlsTrigger.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
     public void userSwitched(int newUserId) {
@@ -830,10 +830,10 @@ public abstract class BaseStatusBar extends SystemUI implements
         }
     }
 
-    private class QuickNavbarTouchListener implements View.OnTouchListener {
+    private class PieControlsTouchListener implements View.OnTouchListener {
         public boolean onTouch(View v, MotionEvent event) {
 
-            final boolean panelShowing = mQuickNavbarPanel.isShowing();
+            final boolean panelShowing = mPieControlPanel.isShowing();
 
             if (!panelShowing) {
                 switch(event.getAction()) {
@@ -841,7 +841,7 @@ public abstract class BaseStatusBar extends SystemUI implements
                         final Resources res = mContext.getResources();
                         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                                 ViewGroup.LayoutParams.MATCH_PARENT,
-                                res.getDimensionPixelSize(R.dimen.quick_nav_panel_height),
+                                res.getDimensionPixelSize(R.dimen.pie_panel_height),
                                 (int)event.getX() - 150, 0,
                                 WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
                                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
@@ -850,17 +850,17 @@ public abstract class BaseStatusBar extends SystemUI implements
                                         | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
                                 PixelFormat.TRANSLUCENT);
                         lp.gravity = Gravity.BOTTOM | Gravity.LEFT;
-                        lp.setTitle("QuickNavbarPanel");
+                        lp.setTitle("PieControlPanel");
                         lp.windowAnimations = android.R.style.Animation;
-                        mWindowManager.updateViewLayout(mQuickNavbarPanel, lp);
-                        mQuickNavbarPanel.show(true);
+                        mWindowManager.updateViewLayout(mPieControlPanel, lp);
+                        mPieControlPanel.show(true);
 
                         event.setAction(MotionEvent.ACTION_DOWN);
-                        mQuickNavbarPanel.onTouchEvent(event);
+                        mPieControlPanel.onTouchEvent(event);
                     break;
                 }
             } else {
-                return mQuickNavbarPanel.onTouchEvent(event);
+                return mPieControlPanel.onTouchEvent(event);
             }
             return false;
         }
