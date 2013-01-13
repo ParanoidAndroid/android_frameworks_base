@@ -207,7 +207,7 @@
     <!-- For phones, this is close_handle_height + header_height -->
     <dimen name="peek_height">84dp</dimen>
 
-    <!-- Height of the quick navigation bar trigger -->
+    <!-- Height of the pie controls bar trigger -->
     <dimen name="pie_trigger_height">10dp</dimen>
 
     <!-- Height of the pie controls bar-->
