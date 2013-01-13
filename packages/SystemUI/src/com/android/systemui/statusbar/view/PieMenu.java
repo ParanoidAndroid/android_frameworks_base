@@ -271,8 +271,6 @@ public class PieMenu extends FrameLayout {
                         view.layout(x, y, x + w, y + h);
                     }
                     float itemstart = angle - sweep / 2;
-                    android.util.Log.d("PARANOID", "angle="+angle+ " sweep="+sweep+" start="+itemstart+ " end="+(itemstart+sweep));
-
                     item.setGeometry(itemstart, sweep, inner, outer);
                     angle += sweep;
                 }
@@ -376,10 +374,9 @@ public class PieMenu extends FrameLayout {
         int action = evt.getActionMasked();
 
         if (MotionEvent.ACTION_DOWN == action) {
-            if ((y > getHeight() - mSlop) || (y < mSlop)) {
+                android.util.Log.d("PARANOID", "---down");
                 mPanel.show(true);
                 return true;
-            }
         } else if (MotionEvent.ACTION_UP == action) {
 
             if (mOpen) {
