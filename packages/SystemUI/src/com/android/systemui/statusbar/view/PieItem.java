@@ -16,7 +16,16 @@
 
 package com.android.systemui.statusbar.view;
 
+import android.database.ContentObserver;
+import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuff.Mode;
+import android.os.Handler;
+import android.provider.Settings;
+import android.util.ColorUtils;
 import android.view.View;
+import android.widget.ImageView;
 
 import com.android.systemui.statusbar.view.PieMenu.PieView;
 
@@ -28,6 +37,7 @@ import java.util.List;
  */
 public class PieItem {
 
+    private Context mContext;
     private View mView;
     private PieView mPieView;
     private int level;
@@ -40,12 +50,28 @@ public class PieItem {
     private boolean mEnabled;
     private List<PieItem> mItems;
 
-    public PieItem(View view, int level) {
+    private ColorUtils.ColorSettingInfo mLastButtonColor;
+
+    public PieItem(View view, Context context, int level) {
+        mContext = context;
         mView = view;
         this.level = level;
         mEnabled = true;
         setAnimationAngle(getAnimationAngle());
         setAlpha(getAlpha());
+
+        if(mContext != null) {
+            if (ColorUtils.getPerAppColorState(mContext)) {
+                mLastButtonColor = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BUTTON_COLOR);
+                mContext.getContentResolver().registerContentObserver(
+                    Settings.System.getUriFor(Settings.System.NAV_BUTTON_COLOR), false, new ContentObserver(new Handler()) {
+                        @Override
+                        public void onChange(boolean selfChange) {
+                            setColor();
+                        }});
+                setColor();
+            }
+        }
     }
 
     public PieItem(View view, int level, PieView sym) {
@@ -156,4 +182,20 @@ public class PieItem {
         return null;
     }
 
+    private void setColor() {
+        ImageView imageView = ((ImageView) mView);
+        Drawable drawable = imageView.getDrawable();
+        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
+                Settings.System.NAV_BUTTON_COLOR);
+        if (!colorInfo.lastColorString.equals(mLastButtonColor.lastColorString)) {
+            if (colorInfo.isLastColorNull) {
+                drawable.clearColorFilter();
+            } else {
+                drawable.setColorFilter(ColorUtils.extractRGB(colorInfo.lastColor)
+                        | 0xFF000000, Mode.SRC_ATOP);
+            }
+            mLastButtonColor = colorInfo;
+        }
+        imageView.setImageDrawable(drawable);
+    }
 }

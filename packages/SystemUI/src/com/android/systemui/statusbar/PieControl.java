@@ -19,6 +19,7 @@ package com.android.systemui.statusbar;
 
 import android.app.ActionBar.Tab;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,7 +27,6 @@ import android.view.MotionEvent;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.webkit.WebView;
 import android.widget.BaseAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -63,7 +63,7 @@ public class PieControl implements PieMenu.PieController, OnClickListener {
     private PieItem mMenu;
     private PieItem mRecent;
     private OnNavButtonPressedListener mListener;
-    private QuickNavbarPanel mPanel = null;
+    private QuickNavbarPanel mPanel;
 
     public PieControl(Context context) {
         mContext = context;
@@ -153,11 +153,11 @@ public class PieControl implements PieMenu.PieController, OnClickListener {
         view.setScaleType(ScaleType.CENTER);
         LayoutParams lp = new LayoutParams(mItemSize, mItemSize);
         view.setLayoutParams(lp);
-        return new PieItem(view, l);
+        return new PieItem(view, mContext, l);
     }
 
     protected PieItem makeFiller() {
-        return new PieItem(null, 1);
+        return new PieItem(null, null, 1);
     }
 
     public void show(boolean show) {

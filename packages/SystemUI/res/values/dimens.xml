@@ -208,19 +208,19 @@
     <dimen name="peek_height">84dp</dimen>
 
     <!-- Height of the quick navigation bar trigger -->
-    <dimen name="quick_nav_trigger_height">5dp</dimen>
+    <dimen name="quick_nav_trigger_height">10dp</dimen>
 
     <!-- Height of the quick navigation bar-->
     <dimen name="quick_nav_panel_height">150dp</dimen>
 
     <!-- Quick Nav Panel -->
-    <dimen name="qc_radius_start">65dip</dimen>
-    <dimen name="qc_radius_increment">80dip</dimen>
-    <dimen name="qc_slop">10dip</dimen>
-    <dimen name="qc_touch_offset">15dip</dimen>
-    <dimen name="qc_tab_title_height">24dip</dimen>
-    <dimen name="qc_thumb_width">150dip</dimen>
-    <dimen name="qc_thumb_height">100dip</dimen>
-    <dimen name="qc_item_size">40dip</dimen>
+    <dimen name="qc_radius_start">65dp</dimen>
+    <dimen name="qc_radius_increment">80dp</dimen>
+    <dimen name="qc_slop">10dp</dimen>
+    <dimen name="qc_touch_offset">15dp</dimen>
+    <dimen name="qc_tab_title_height">24dp</dimen>
+    <dimen name="qc_thumb_width">150dp</dimen>
+    <dimen name="qc_thumb_height">100dp</dimen>
+    <dimen name="qc_item_size">40dp</dimen>
 
 </resources>

@@ -21,6 +21,8 @@ import android.animation.Animator.AnimatorListener;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
+import android.database.ContentObserver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
@@ -29,8 +31,12 @@ import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
+import android.provider.Settings;
 import android.util.AttributeSet;
+import android.util.ColorUtils;
 import android.view.MotionEvent;
 import android.view.SoundEffectConstants;
 import android.view.View;
@@ -77,6 +83,8 @@ public class PieMenu extends FrameLayout {
 
     }
 
+    private Context mContext;
+
     private Point mCenter;
     private int mRadius;
     private int mRadiusInc;
@@ -90,7 +98,7 @@ public class PieMenu extends FrameLayout {
     private List<PieItem> mItems;
     private int mLevels;
     private int[] mCounts;
-    private PieView mPieView = null;
+    private PieView mPieView;
 
     // sub menus
     private PieItem mOpenItem;
@@ -106,7 +114,10 @@ public class PieMenu extends FrameLayout {
     private boolean mUseBackground;
     private boolean mAnimating;
 
-    private QuickNavbarPanel mPanel = null;
+    private QuickNavbarPanel mPanel;
+
+    private ColorUtils.ColorSettingInfo mLastBackgroundColor;
+    private ColorUtils.ColorSettingInfo mLastGlowColor;
 
     /**
      * @param context
@@ -135,7 +146,28 @@ public class PieMenu extends FrameLayout {
         init(context);
     }
 
+    private final class ColorObserver extends ContentObserver {
+        ColorObserver(Handler handler) {
+            super(handler);
+        }
+
+        void observe() {
+            ContentResolver resolver = mContext.getContentResolver();
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NAV_BAR_COLOR), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NAV_GLOW_COLOR), false, this);
+            setColors();
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            setColors();
+        }
+    }
+
     private void init(Context ctx) {
+        mContext = ctx;
         mItems = new ArrayList<PieItem>();
         mLevels = 0;
         mCounts = new int[MAX_LEVELS];
@@ -147,17 +179,22 @@ public class PieMenu extends FrameLayout {
         mOpen = false;
         setWillNotDraw(false);
         setDrawingCacheEnabled(false);
-        mCenter = new Point(0,0);
-        mBackground = res.getDrawable(R.drawable.qc_background_normal);
+        mCenter = new Point(0, 0);
+        mBackground = new ColorDrawable(0x00000000);
         mNormalPaint = new Paint();
-        mNormalPaint.setColor(res.getColor(R.color.qc_normal));
         mNormalPaint.setAntiAlias(true);
         mSelectedPaint = new Paint();
-        mSelectedPaint.setColor(res.getColor(R.color.qc_selected));
         mSelectedPaint.setAntiAlias(true);
         mSubPaint = new Paint();
         mSubPaint.setAntiAlias(true);
-        mSubPaint.setColor(res.getColor(R.color.qc_sub));
+        mSubPaint.setColor(0xFF000000);
+        mLastBackgroundColor = ColorUtils.getColorSettingInfo(mContext,
+                Settings.System.NAV_BAR_COLOR);
+        mLastGlowColor = ColorUtils.getColorSettingInfo(mContext,
+                Settings.System.NAV_GLOW_COLOR);
+
+        ColorObserver observer = new ColorObserver(new Handler());
+        observer.observe();
     }
 
     public void setPanel(QuickNavbarPanel panel) {
@@ -239,6 +276,42 @@ public class PieMenu extends FrameLayout {
             mCenter.y = getHeight();
         }
         mCenter.x = x;
+    }
+
+    private void setColors() {
+        setBackgroundColor();
+        setGlowColor();
+    }
+
+    private void setBackgroundColor() {
+        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
+                Settings.System.NAV_BAR_COLOR);
+        int newColor = 0xFF000000;
+        if (!colorInfo.lastColorString.equals(mLastBackgroundColor.lastColorString)) {
+            if (!colorInfo.isLastColorNull) {
+                newColor = colorInfo.lastColor;
+            }
+            mNormalPaint.setColor(newColor);
+            mLastBackgroundColor = colorInfo;
+        }
+    }
+
+    private void setGlowColor() {
+        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
+                Settings.System.NAV_GLOW_COLOR);
+        int newColor = 0xE033B5E5;
+        if (!colorInfo.lastColorString.equals(mLastGlowColor.lastColorString)) {
+            if (!colorInfo.isLastColorNull) {
+                newColor = colorInfo.lastColor;
+            }
+            mSelectedPaint.setColor(newColor);
+            setDrawingAlpha(mSelectedPaint, 0.7f);
+            mLastGlowColor = colorInfo;
+        }
+    }
+
+    public void setDrawingAlpha(Paint paint, float x) {
+        paint.setAlpha((int) (x * 255));
     }
 
     private void layoutPie() {
@@ -377,7 +450,6 @@ public class PieMenu extends FrameLayout {
                 mPanel.show(true);
                 return true;
         } else if (MotionEvent.ACTION_UP == action) {
-
             if (mOpen) {
                 boolean handled = false;
                 if (mPieView != null) {
@@ -434,7 +506,6 @@ public class PieMenu extends FrameLayout {
             mPieView = null;
             mCurrentItem = item;
             if ((mCurrentItem != mOpenItem) && mCurrentItem.hasItems()) {
-                //openSub(mCurrentItem);
                 mOpenItem = item;
             }
         } else {

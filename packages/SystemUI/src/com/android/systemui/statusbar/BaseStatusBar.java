@@ -835,6 +835,7 @@ public abstract class BaseStatusBar extends SystemUI implements
                         lp.setTitle("QuickNavbarPanel");
                         lp.windowAnimations = android.R.style.Animation;
                         mWindowManager.updateViewLayout(mQuickNavbarPanel, lp);
+                        mQuickNavbarPanel.show(true);
 
                         event.setAction(MotionEvent.ACTION_DOWN);
                         mQuickNavbarPanel.onTouchEvent(event);

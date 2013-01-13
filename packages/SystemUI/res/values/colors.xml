@@ -38,8 +38,5 @@
 
     <!-- Quick Nav Panel -->
     <color name="qcMenuBackground">#C0000000</color>
-    <color name="qc_normal">#E0000000</color>
-    <color name="qc_selected">#E033B5E5</color>
-    <color name="qc_sub">#E0222222</color>
     <color name="qc_tab_nr">#F033B5E5</color>
 </resources>
