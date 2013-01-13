@@ -207,8 +207,11 @@
     <!-- For phones, this is close_handle_height + header_height -->
     <dimen name="peek_height">84dp</dimen>
 
-    <!-- Height of the slider when sliding navigation bar is enabled -->	
-    <dimen name="quick_nav_slider_height">10dp</dimen>
+    <!-- Height of the quick navigation bar trigger -->
+    <dimen name="quick_nav_trigger_height">5dp</dimen>
+
+    <!-- Height of the quick navigation bar-->
+    <dimen name="quick_nav_panel_height">150dp</dimen>
 
     <!-- Quick Nav Panel -->
     <dimen name="qc_radius_start">65dip</dimen>

@@ -253,10 +253,11 @@ public abstract class BaseStatusBar extends SystemUI implements
         mStatusBarContainer = new FrameLayout(mContext);
 
         // Quick navigation bar trigger area
+        final Resources res = mContext.getResources();
         mQuickNavbarTrigger = new View(mContext);
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                50,
+                ViewGroup.LayoutParams.MATCH_PARENT, 
+                res.getDimensionPixelSize(R.dimen.quick_nav_trigger_height),
                 WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                         | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
@@ -813,49 +814,30 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     private class QuickNavbarTouchListener implements View.OnTouchListener {
         public boolean onTouch(View v, MotionEvent event) {
-            float initialX = 0;
-            float initialY = 0;
-            float deltaX = 0;
-            float deltaY = 0;
 
-            final int action = event.getAction();
             final boolean panelShowing = mQuickNavbarPanel.isShowing();
 
             if (!panelShowing) {
-                switch(action) {
-                    case MotionEvent.ACTION_DOWN:       
-                        // reset deltaX and deltaY
-                        deltaX = deltaY = 0;
-
-                        // get initial positions
-                        initialX = event.getX();
-                        initialY = event.getY();
-                    break;
+                switch(event.getAction()) {
                     case MotionEvent.ACTION_MOVE:
-                        deltaX = event.getX() - initialX;
-                        deltaY = event.getY() - initialY;
-
-                        // swipe up event
-                        if(deltaY < 0) {
-                            WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
-                                    ViewGroup.LayoutParams.MATCH_PARENT,
-                                    300,
-                                    (int)event.getX() - 150,
-                                    0,
-                                    WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
-                                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                        final Resources res = mContext.getResources();
+                        WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                res.getDimensionPixelSize(R.dimen.quick_nav_panel_height),
+                                (int)event.getX() - 150, 0,
+                                WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
+                                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                                         | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
                                         | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
                                         | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
-                                    PixelFormat.TRANSLUCENT);
-                            lp.gravity = Gravity.BOTTOM | Gravity.LEFT;
-                            lp.setTitle("QuickNavbarPanel");
-                            lp.windowAnimations = android.R.style.Animation;
+                                PixelFormat.TRANSLUCENT);
+                        lp.gravity = Gravity.BOTTOM | Gravity.LEFT;
+                        lp.setTitle("QuickNavbarPanel");
+                        lp.windowAnimations = android.R.style.Animation;
+                        mWindowManager.updateViewLayout(mQuickNavbarPanel, lp);
 
-                            mWindowManager.updateViewLayout(mQuickNavbarPanel, lp);
-                            event.setAction(MotionEvent.ACTION_DOWN);
-                            mQuickNavbarPanel.onTouchEvent(event);
-                        }
+                        event.setAction(MotionEvent.ACTION_DOWN);
+                        mQuickNavbarPanel.onTouchEvent(event);
                     break;
                 }
             } else {

@@ -374,7 +374,6 @@ public class PieMenu extends FrameLayout {
         int action = evt.getActionMasked();
 
         if (MotionEvent.ACTION_DOWN == action) {
-                android.util.Log.d("PARANOID", "---down");
                 mPanel.show(true);
                 return true;
         } else if (MotionEvent.ACTION_UP == action) {
