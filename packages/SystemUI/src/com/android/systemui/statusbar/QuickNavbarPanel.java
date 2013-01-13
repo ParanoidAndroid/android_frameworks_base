@@ -58,6 +58,7 @@ public class QuickNavbarPanel extends FrameLayout implements StatusBarPanel, OnN
         mContext = context;
         mPieControl = new PieControl(context);
         mPieControl.setOnNavButtonPressedListener(this);
+        mPieControl.setPanel(this);
     }
 
     public void setBar(BaseStatusBar statusbar) {
@@ -89,9 +90,9 @@ public class QuickNavbarPanel extends FrameLayout implements StatusBarPanel, OnN
 
         mContentFrame = (ViewGroup)findViewById(R.id.content_frame);
         setWillNotDraw(false);
-        mShowing = true;
         mPieControl.attachToContainer(this);
         mPieControl.forceToTop(this);
+        show(false);
     }
 
     public boolean isShowing() {

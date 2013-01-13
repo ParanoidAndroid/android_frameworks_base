@@ -38,6 +38,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.android.systemui.R;
+import com.android.systemui.statusbar.QuickNavbarPanel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +46,7 @@ import java.util.List;
 public class PieMenu extends FrameLayout {
 
     private static final int MAX_LEVELS = 5;
-    private static final long ANIMATION = 80;
+    private static final long ANIMATION = 0;
 
     public interface PieController {
         /**
@@ -92,7 +93,6 @@ public class PieMenu extends FrameLayout {
     private PieView mPieView = null;
 
     // sub menus
-    private List<PieItem> mCurrentItems;
     private PieItem mOpenItem;
 
     private Drawable mBackground;
@@ -105,6 +105,8 @@ public class PieMenu extends FrameLayout {
 
     private boolean mUseBackground;
     private boolean mAnimating;
+
+    private QuickNavbarPanel mPanel = null;
 
     /**
      * @param context
@@ -158,6 +160,10 @@ public class PieMenu extends FrameLayout {
         mSubPaint.setColor(res.getColor(R.color.qc_sub));
     }
 
+    public void setPanel(QuickNavbarPanel panel) {
+        mPanel = panel;
+    }
+
     public void setController(PieController ctl) {
         mController = ctl;
     }
@@ -198,8 +204,7 @@ public class PieMenu extends FrameLayout {
             mCurrentItem = null;
             mOpenItem = null;
             mPieView = null;
-            mCurrentItems = mItems;
-            for (PieItem item : mCurrentItems) {
+            for (PieItem item : mItems) {
                 item.setSelected(false);
             }
             if (mController != null) {
@@ -216,7 +221,7 @@ public class PieMenu extends FrameLayout {
         anim.addUpdateListener(new AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                for (PieItem item : mCurrentItems) {
+                for (PieItem item : mItems) {
                     item.setAnimationAngle((1 - animation.getAnimatedFraction()) * (- item.getStart()));
                 }
                 invalidate();
@@ -247,7 +252,7 @@ public class PieMenu extends FrameLayout {
             float sweep = (float) (Math.PI - 2 * emptyangle) / mCounts[level];
             float angle = emptyangle + sweep / 2 - (float)Math.PI/2;
             mPath = makeSlice(getDegrees(0) - gap, getDegrees(sweep) + gap, outer, inner, mCenter);
-            for (PieItem item : mCurrentItems) {
+            for (PieItem item : mItems) {
                 if (item.getLevel() == level) {
                     View view = item.getView();
                     if (view != null) {
@@ -266,6 +271,8 @@ public class PieMenu extends FrameLayout {
                         view.layout(x, y, x + w, y + h);
                     }
                     float itemstart = angle - sweep / 2;
+                    android.util.Log.d("PARANOID", "angle="+angle+ " sweep="+sweep+" start="+itemstart+ " end="+(itemstart+sweep));
+
                     item.setGeometry(itemstart, sweep, inner, outer);
                     angle += sweep;
                 }
@@ -309,7 +316,7 @@ public class PieMenu extends FrameLayout {
             if (mOpenItem != null) {
                 last = mOpenItem;
             }
-            for (PieItem item : mCurrentItems) {
+            for (PieItem item : mItems) {
                 if (item != last) {
                     drawItem(canvas, item);
                 }
@@ -367,13 +374,14 @@ public class PieMenu extends FrameLayout {
         float x = evt.getX();
         float y = evt.getY();
         int action = evt.getActionMasked();
+
         if (MotionEvent.ACTION_DOWN == action) {
             if ((y > getHeight() - mSlop) || (y < mSlop)) {
-                setCenter((int) x, (int) y);
-                show(true);
+                mPanel.show(true);
                 return true;
             }
         } else if (MotionEvent.ACTION_UP == action) {
+
             if (mOpen) {
                 boolean handled = false;
                 if (mPieView != null) {
@@ -383,28 +391,18 @@ public class PieMenu extends FrameLayout {
                 if (!mAnimating) {
                     deselect();
                 }
-                show(false);
                 if (!handled && (item != null) && (item.getView() != null)) {
                     if ((item == mOpenItem) || !mAnimating) {
                         item.getView().performClick();
                     }
                 }
-                return true;
             }
-        } else if (MotionEvent.ACTION_CANCEL == action) {
-            if (mOpen) {
-                show(false);
-            }
-            if (!mAnimating) {
-                deselect();
-                invalidate();
-            }
-            return false;
+            mPanel.show(false);
+            return true;
         } else if (MotionEvent.ACTION_MOVE == action) {
             if (mAnimating) return false;
             boolean handled = false;
             PointF polar = getPolar(x, y);
-            int maxr = mRadius + mLevels * mRadiusInc + 50;
             if (mPieView != null) {
                 handled = mPieView.onTouchEvent(evt);
             }
@@ -412,45 +410,15 @@ public class PieMenu extends FrameLayout {
                 invalidate();
                 return false;
             }
-            if (polar.y < mRadius) {
-                if (mOpenItem != null) {
-                    closeSub();
-                } else if (!mAnimating) {
-                    deselect();
-                    invalidate();
-                }
-                return false;
-            }
-            if (polar.y > maxr) {
-                deselect();
-                show(false);
-                evt.setAction(MotionEvent.ACTION_DOWN);
-                if (getParent() != null) {
-                    ((ViewGroup) getParent()).dispatchTouchEvent(evt);
-                }
-                return false;
-            }
             PieItem item = findItem(polar);
             if (item == null) {
             } else if (mCurrentItem != item) {
                 onEnter(item);
-                if ((item != null) && item.isPieView() && (item.getView() != null)) {
-                    int cx = item.getView().getLeft() + (onTheTop()
-                            ? item.getView().getWidth() : 0);
-                    int cy = item.getView().getTop();
-                    mPieView = item.getPieView();
-                    layoutPieView(mPieView, cx, cy,
-                            (item.getStartAngle() + item.getSweep()) / 2);
-                }
                 invalidate();
             }
         }
         // always re-dispatch event
         return false;
-    }
-
-    private void layoutPieView(PieView pv, int x, int y, float angle) {
-        pv.layout(x, y, onTheTop(), angle, getHeight());
     }
 
     /**
@@ -470,7 +438,7 @@ public class PieMenu extends FrameLayout {
             mPieView = null;
             mCurrentItem = item;
             if ((mCurrentItem != mOpenItem) && mCurrentItem.hasItems()) {
-                openSub(mCurrentItem);
+                //openSub(mCurrentItem);
                 mOpenItem = item;
             }
         } else {
@@ -479,113 +447,12 @@ public class PieMenu extends FrameLayout {
 
     }
 
-    private void animateOut(final PieItem fixed, AnimatorListener listener) {
-        if ((mCurrentItems == null) || (fixed == null)) return;
-        final float target = fixed.getStartAngle();
-        ValueAnimator anim = ValueAnimator.ofFloat(0, 1);
-        anim.addUpdateListener(new AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                for (PieItem item : mCurrentItems) {
-                    if (item != fixed) {
-                        item.setAnimationAngle(animation.getAnimatedFraction()
-                                * (target - item.getStart()));
-                    }
-                }
-                invalidate();
-            }
-        });
-        anim.setDuration(ANIMATION);
-        anim.addListener(listener);
-        anim.start();
-    }
-
-    private void animateIn(final PieItem fixed, AnimatorListener listener) {
-        if ((mCurrentItems == null) || (fixed == null)) return;
-        final float target = fixed.getStartAngle();
-        ValueAnimator anim = ValueAnimator.ofFloat(0, 1);
-        anim.addUpdateListener(new AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                for (PieItem item : mCurrentItems) {
-                    if (item != fixed) {
-                        item.setAnimationAngle((1 - animation.getAnimatedFraction())
-                                * (target - item.getStart()));
-                    }
-                }
-                invalidate();
-
-            }
-
-        });
-        anim.setDuration(ANIMATION);
-        anim.addListener(listener);
-        anim.start();
-    }
-
-    private void openSub(final PieItem item) {
-        mAnimating = true;
-        animateOut(item, new AnimatorListenerAdapter() {
-            public void onAnimationEnd(Animator a) {
-                for (PieItem item : mCurrentItems) {
-                    item.setAnimationAngle(0);
-                }
-                mCurrentItems = new ArrayList<PieItem>(mItems.size());
-                int i = 0, j = 0;
-                while (i < mItems.size()) {
-                    if (mItems.get(i) == item) {
-                        mCurrentItems.add(item);
-                    } else {
-                        mCurrentItems.add(item.getItems().get(j++));
-                    }
-                    i++;
-                }
-                layoutPie();
-                animateIn(item, new AnimatorListenerAdapter() {
-                    public void onAnimationEnd(Animator a) {
-                        for (PieItem item : mCurrentItems) {
-                            item.setAnimationAngle(0);
-                        }
-                        mAnimating = false;
-                    }
-                });
-            }
-        });
-    }
-
-    private void closeSub() {
-        mAnimating = true;
-        if (mCurrentItem != null) {
-            mCurrentItem.setSelected(false);
-        }
-        animateOut(mOpenItem, new AnimatorListenerAdapter() {
-            public void onAnimationEnd(Animator a) {
-                for (PieItem item : mCurrentItems) {
-                    item.setAnimationAngle(0);
-                }
-                mCurrentItems = mItems;
-                mPieView = null;
-                animateIn(mOpenItem, new AnimatorListenerAdapter() {
-                    public void onAnimationEnd(Animator a) {
-                        for (PieItem item : mCurrentItems) {
-                            item.setAnimationAngle(0);
-                        }
-                        mAnimating = false;
-                        mOpenItem = null;
-                        mCurrentItem = null;
-                    }
-                });
-            }
-        });
-    }
-
     private void deselect() {
         if (mCurrentItem != null) {
             mCurrentItem.setSelected(false);
         }
         if (mOpenItem != null) {
             mOpenItem = null;
-            mCurrentItems = mItems;
         }
         mCurrentItem = null;
         mPieView = null;
@@ -615,20 +482,21 @@ public class PieMenu extends FrameLayout {
      * @return the item at angle/dist or null
      */
     private PieItem findItem(PointF polar) {
-        // find the matching item:
-        for (PieItem item : mCurrentItems) {
-            if (inside(polar, mTouchOffset, item)) {
-                return item;
+        if (mItems != null) {
+            int c = 0;
+            for (PieItem item : mItems) {
+                if (inside(polar, mTouchOffset, item)) {
+                    return item;
+                }
             }
         }
         return null;
     }
 
     private boolean inside(PointF polar, float offset, PieItem item) {
-        return (item.getInnerRadius() - offset < polar.y)
-        && (item.getOuterRadius() - offset > polar.y)
-        && (item.getStartAngle() < polar.x)
-        && (item.getStartAngle() + item.getSweep() > polar.x);
+        float sweep = polar.x < 0 ? -(item.getSweep()/2) : item.getSweep()/2;
+        return (item.getStartAngle() < polar.x + sweep)
+        && (item.getStartAngle() + item.getSweep() > polar.x + sweep);
     }
 
 }
