@@ -179,10 +179,15 @@ public class PieMenu extends FrameLayout {
         setWillNotDraw(false);
         setDrawingCacheEnabled(false);
         mCenter = new Point(0, 0);
+
         mNormalPaint = new Paint();
         mNormalPaint.setAntiAlias(true);
+        mNormalPaint.setColor(0x77000000);
+
         mSelectedPaint = new Paint();
         mSelectedPaint.setAntiAlias(true);
+        mSelectedPaint.setColor(0x7733b5e5);
+        
         mSubPaint = new Paint();
         mSubPaint.setAntiAlias(true);
         mSubPaint.setColor(0xFF000000);
@@ -190,13 +195,13 @@ public class PieMenu extends FrameLayout {
         mUseBackground = true;
         mBackgroundOpacity = 0;
         mTextOffset = 0;
+        mGlowColorHelper = false;
+
+        mLastBackgroundColor = new ColorUtils.ColorSettingInfo();
+        mLastGlowColor = new ColorUtils.ColorSettingInfo();
 
         // Only watch for per app color changes when the setting is in check
         if (ColorUtils.getPerAppColorState(mContext)) {
-
-            mLastBackgroundColor = new ColorUtils.ColorSettingInfo();
-            mLastGlowColor = new ColorUtils.ColorSettingInfo();
-
             setBackgroundColor();
             setGlowColor();
 
