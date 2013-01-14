@@ -44,10 +44,10 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.MotionEvent;
 import android.view.SoundEffectConstants;
-import android.widget.ImageView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import com.android.systemui.R;
 import com.android.systemui.statusbar.PieControl;
