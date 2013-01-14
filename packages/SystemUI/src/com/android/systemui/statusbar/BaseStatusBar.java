@@ -841,9 +841,8 @@ public abstract class BaseStatusBar extends SystemUI implements
                         final Resources res = mContext.getResources();
                         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                                 ViewGroup.LayoutParams.MATCH_PARENT,
-                                res.getDimensionPixelSize(R.dimen.pie_panel_height),
-                                (int)event.getX() - 150, 0,
-                                WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                 WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
                                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                                         | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
                                         | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH

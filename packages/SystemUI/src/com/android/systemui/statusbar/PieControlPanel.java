@@ -16,15 +16,18 @@
 
 package com.android.systemui.statusbar;
 
-
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Rect;
+import android.graphics.Point;
 import android.hardware.input.InputManager;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Slog;
+import android.util.ExtendedPropertiesUtils;
+import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.KeyEvent;
@@ -103,7 +106,11 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
         mShowing = show;
         setVisibility(show ? View.VISIBLE : View.GONE);
         if (show) {
-            mPieControl.setCenter(this.getWidth() / 2, this.getHeight());
+            Point outSize = new Point(0,0);
+            ExtendedPropertiesUtils.mDisplay.getRealSize(outSize);
+            int width = outSize.x;
+            int height = outSize.y;
+            mPieControl.setCenter(width / 2, height);
         }
         mPieControl.show(show);
     }

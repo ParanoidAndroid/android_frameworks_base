@@ -26,6 +26,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
@@ -118,6 +119,7 @@ public class PieMenu extends FrameLayout {
 
     private ColorUtils.ColorSettingInfo mLastBackgroundColor;
     private ColorUtils.ColorSettingInfo mLastGlowColor;
+    private boolean mGlowColorHelper;
 
     /**
      * @param context
@@ -146,26 +148,6 @@ public class PieMenu extends FrameLayout {
         init(context);
     }
 
-    private final class ColorObserver extends ContentObserver {
-        ColorObserver(Handler handler) {
-            super(handler);
-        }
-
-        void observe() {
-            ContentResolver resolver = mContext.getContentResolver();
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.NAV_BAR_COLOR), false, this);
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.NAV_GLOW_COLOR), false, this);
-            setColors();
-        }
-
-        @Override
-        public void onChange(boolean selfChange) {
-            setColors();
-        }
-    }
-
     private void init(Context ctx) {
         mContext = ctx;
         mItems = new ArrayList<PieItem>();
@@ -188,13 +170,32 @@ public class PieMenu extends FrameLayout {
         mSubPaint = new Paint();
         mSubPaint.setAntiAlias(true);
         mSubPaint.setColor(0xFF000000);
-        mLastBackgroundColor = ColorUtils.getColorSettingInfo(mContext,
-                Settings.System.NAV_BAR_COLOR);
-        mLastGlowColor = ColorUtils.getColorSettingInfo(mContext,
-                Settings.System.NAV_GLOW_COLOR);
 
-        ColorObserver observer = new ColorObserver(new Handler());
-        observer.observe();
+        // Only watch for per app color changes when the setting is in check
+        if (ColorUtils.getPerAppColorState(mContext)) {
+
+            mLastBackgroundColor = new ColorUtils.ColorSettingInfo();
+            mLastGlowColor = new ColorUtils.ColorSettingInfo();
+
+            setBackgroundColor();
+            setGlowColor();
+
+            // Listen for nav bar color changes
+            mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.NAV_BAR_COLOR), false, new ContentObserver(new Handler()) {
+                    @Override
+                    public void onChange(boolean selfChange) {
+                        setBackgroundColor();
+                    }});
+
+            // Listen for button glow color changes
+            mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.NAV_GLOW_COLOR), false, new ContentObserver(new Handler()) {
+                    @Override
+                    public void onChange(boolean selfChange) {
+                        setGlowColor();
+                    }});
+        }
     }
 
     public void setPanel(PieControlPanel panel) {
@@ -270,31 +271,15 @@ public class PieMenu extends FrameLayout {
     }
 
     public void setCenter(int x, int y) {
-        if (y < mSlop) {
-            mCenter.y = 0;
-        } else {
-            mCenter.y = getHeight();
-        }
+        mCenter.y = y;
         mCenter.x = x;
-    }
-
-    private void setColors() {
-        // Only watch for per app color changes when the setting is in check
-        if (ColorUtils.getPerAppColorState(mContext)) {
-            setBackgroundColor();
-            setGlowColor();
-        }
     }
 
     private void setBackgroundColor() {
         ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
                 Settings.System.NAV_BAR_COLOR);
-        int newColor = 0xFF000000;
         if (!colorInfo.lastColorString.equals(mLastBackgroundColor.lastColorString)) {
-            if (!colorInfo.isLastColorNull) {
-                newColor = colorInfo.lastColor;
-            }
-            mNormalPaint.setColor(newColor);
+            mNormalPaint.setColor(colorInfo.lastColor);
             mLastBackgroundColor = colorInfo;
         }
     }
@@ -302,13 +287,19 @@ public class PieMenu extends FrameLayout {
     private void setGlowColor() {
         ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
                 Settings.System.NAV_GLOW_COLOR);
-        int newColor = 0xE033B5E5;
         if (!colorInfo.lastColorString.equals(mLastGlowColor.lastColorString)) {
-            if (!colorInfo.isLastColorNull) {
-                newColor = colorInfo.lastColor;
-            }
-            mSelectedPaint.setColor(newColor);
-            setDrawingAlpha(mSelectedPaint, 0.7f);
+            ColorUtils.ColorSettingInfo buttonColorInfo = ColorUtils.getColorSettingInfo(mContext,
+                    Settings.System.NAV_BUTTON_COLOR);
+
+            // This helps us to discern when glow has the same color as the button color,
+            // in which case we have to counteract in order to prevent both from swallowing each other
+            int buttonRgb = ColorUtils.extractRGB(buttonColorInfo.lastColor);
+            mGlowColorHelper = glowRgb == buttonRgb;
+
+            int glowRgb = ColorUtils.extractRGB(colorInfo.lastColor);
+            mSelectedPaint.setColor(glowRgb | 0xFF000000);
+            setDrawingAlpha(mSelectedPaint, mGlowColorHelper ? 0.70f :
+                    (float)ColorUtils.extractAlpha(colorInfo.lastColor) / 255f);
             mLastGlowColor = colorInfo;
         }
     }
@@ -406,19 +397,27 @@ public class PieMenu extends FrameLayout {
 
     private void drawItem(Canvas canvas, PieItem item) {
         if (item.getView() != null) {
-            Paint p = item.isSelected() ? mSelectedPaint : mNormalPaint;
-            if (!mItems.contains(item)) {
-                p = item.isSelected() ? mSelectedPaint : mSubPaint;
-            }
             int state = canvas.save();
             if (onTheTop()) {
                 canvas.scale(-1, 1);
             }
             float r = getDegrees(item.getStartAngle()) - 270; // degrees(0)
             canvas.rotate(r, mCenter.x, mCenter.y);
-            canvas.drawPath(mPath, p);
+
+            // Draw normal background when ...
+            // 1. item is unselected
+            // 2. item is selected and buttoncolor & glowcolor are matching
+            // 3. item is selected and glowcolor is transparent
+            if (!item.isSelected() || (item.isSelected() && mGlowColorHelper) || (item.isSelected()
+                    && !mLastGlowColor.isLastColorOpaque)) {
+                canvas.drawPath(mPath, mNormalPaint);
+            }
+
+            // Draw glow background, if item is selected
+            if (item.isSelected()) {
+                canvas.drawPath(mPath, mSelectedPaint);
+            }
             canvas.restoreToCount(state);
-            // draw the item view
             View view = item.getView();
             state = canvas.save();
             canvas.translate(view.getX(), view.getY());
@@ -530,19 +529,10 @@ public class PieMenu extends FrameLayout {
 
     private PointF getPolar(float x, float y) {
         PointF res = new PointF();
-        // get angle and radius from x/y
-        res.x = (float) Math.PI / 2;
         x = mCenter.x - x;
-        if (mCenter.x < mSlop) {
-            x = -x;
-        }
         y = mCenter.y - y;
-        res.y = (float) Math.sqrt(x * x + y * y);
-        if (y > 0) {
-            res.x = (float) Math.asin(x / res.y);
-        } else if (y < 0) {
-            res.x = (float) (Math.PI - Math.asin(x / res.y ));
-        }
+        double angle = Math.acos(x / Math.sqrt(x * x + y * y)) * 180f / Math.PI;
+        res.x = -(((float)angle - 90) / 10);
         return res;
     }
 
@@ -564,9 +554,8 @@ public class PieMenu extends FrameLayout {
     }
 
     private boolean inside(PointF polar, float offset, PieItem item) {
-        float sweep = polar.x < 0 ? -(item.getSweep()/2) : item.getSweep()/2;
-        return (item.getStartAngle() < polar.x + sweep)
-        && (item.getStartAngle() + item.getSweep() > polar.x + sweep);
+        return (item.getStartAngle() < polar.x)
+        && (item.getStartAngle() + item.getSweep() > polar.x);
     }
 
 }

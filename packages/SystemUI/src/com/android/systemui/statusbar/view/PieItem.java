@@ -63,6 +63,7 @@ public class PieItem {
         if(mContext != null) {
             if (ColorUtils.getPerAppColorState(mContext)) {
                 mLastButtonColor = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BUTTON_COLOR);
+                setColor();
                 mContext.getContentResolver().registerContentObserver(
                     Settings.System.getUriFor(Settings.System.NAV_BUTTON_COLOR), false, new ContentObserver(new Handler()) {
                         @Override
