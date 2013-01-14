@@ -36,6 +36,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.os.Vibrator;
 import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.ColorUtils;
@@ -133,6 +134,8 @@ public class PieMenu extends FrameLayout {
     private ValueAnimator mIntoAnimation;
     private ValueAnimator mOutroAnimation;
 
+    private Vibrator vibrator;
+
     /**
      * @param context
      * @param attrs
@@ -162,6 +165,8 @@ public class PieMenu extends FrameLayout {
 
     private void init(Context ctx) {
         mContext = ctx;
+        vibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+
         mItems = new ArrayList<PieItem>();
         mLevels = 0;
         mCounts = new int[MAX_LEVELS];
@@ -517,10 +522,13 @@ public class PieMenu extends FrameLayout {
                 if (!mAnimating) {
                     deselect();
                 }
-                if (!handled && (item != null) && (item.getView() != null)) {
+
+                int absY = (int)Math.abs(y);
+                if (!handled && (item != null) && (item.getView() != null) && (absY > mTouchOffset && absY < (int)(mRadius + mRadiusInc) * 2.5f) ) {
                     if ((item == mOpenItem) || !mAnimating) {
+                        vibrator.vibrate(20);
                         item.getView().performClick();
-                        // Do try try to mess with androids native animations here
+                        // Do not try to mess with androids native animations here
                         if (item.getName().equals(PieControl.RECENT_BUTTON)) {
                             mPanel.show(false);
                             return true;
