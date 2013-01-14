@@ -43,6 +43,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.MotionEvent;
 import android.view.SoundEffectConstants;
+import android.widget.ImageView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -470,9 +471,11 @@ public class PieMenu extends FrameLayout {
                 canvas.drawPath(mPath, mSelectedPaint);
             }
             canvas.restoreToCount(state);
-            View view = item.getView();
+
+            ImageView view = (ImageView)item.getView();
             state = canvas.save();
             canvas.translate(view.getX(), view.getY());
+            canvas.rotate(getDegrees(item.getStartAngle() + item.getSweep() / 2) - 270, view.getWidth() / 2, view.getHeight() / 2);
             view.draw(canvas);
             canvas.restoreToCount(state);
         }
@@ -518,7 +521,7 @@ public class PieMenu extends FrameLayout {
                     if ((item == mOpenItem) || !mAnimating) {
                         item.getView().performClick();
                         // Do try try to mess with androids native animations here
-                        if (item.getName() == PieControl.RECENT_BUTTON) {
+                        if (item.getName().equals(PieControl.RECENT_BUTTON)) {
                             mPanel.show(false);
                             return true;
                         }
