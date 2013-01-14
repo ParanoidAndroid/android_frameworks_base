@@ -210,9 +210,6 @@
     <!-- Height of the pie controls bar trigger -->
     <dimen name="pie_trigger_height">10dp</dimen>
 
-    <!-- Height of the pie controls bar-->
-    <dimen name="pie_panel_height">150dp</dimen>
-
     <!-- Pie contols sizing -->
     <dimen name="pie_radius_start">65dp</dimen>
     <dimen name="pie_radius_increment">80dp</dimen>

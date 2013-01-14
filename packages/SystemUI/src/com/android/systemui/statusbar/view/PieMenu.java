@@ -43,10 +43,10 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.MotionEvent;
 import android.view.SoundEffectConstants;
-import android.widget.ImageView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import com.android.systemui.R;
 import com.android.systemui.statusbar.PieControl;
@@ -520,7 +520,7 @@ public class PieMenu extends FrameLayout {
                 if (!handled && (item != null) && (item.getView() != null)) {
                     if ((item == mOpenItem) || !mAnimating) {
                         item.getView().performClick();
-                        // Do try try to mess with androids native animations here
+                        // Do try to mess with androids native animations here
                         if (item.getName().equals(PieControl.RECENT_BUTTON)) {
                             mPanel.show(false);
                             return true;
