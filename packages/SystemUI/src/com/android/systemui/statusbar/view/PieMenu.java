@@ -526,13 +526,8 @@ public class PieMenu extends FrameLayout {
                 int absY = (int)Math.abs(y);
                 if (!handled && (item != null) && (item.getView() != null) && (absY > mTouchOffset && absY < (int)(mRadius + mRadiusInc) * 2.5f) ) {
                     if ((item == mOpenItem) || !mAnimating) {
-                        vibrator.vibrate(20);
+                        vibrator.vibrate(5);
                         item.getView().performClick();
-                        // Do not try to mess with androids native animations here
-                        if (item.getName().equals(PieControl.RECENT_BUTTON)) {
-                            mPanel.show(false);
-                            return true;
-                        }
                     }
                 }
             }
