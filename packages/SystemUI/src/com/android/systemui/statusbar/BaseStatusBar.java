@@ -830,33 +830,46 @@ public abstract class BaseStatusBar extends SystemUI implements
         }
     }
 
+    static float initialX = 0;
+    static float initialY = 0;
+    static float deltaX = 0;
+    static float deltaY = 0;
     private class PieControlsTouchListener implements View.OnTouchListener {
         public boolean onTouch(View v, MotionEvent event) {
-
+            final int action = event.getAction();
             final boolean panelShowing = mPieControlPanel.isShowing();
 
             if (!panelShowing) {
-                switch(event.getAction()) {
+                switch(action) {
+                    case MotionEvent.ACTION_DOWN:
+                        deltaX = deltaY = 0;
+                        initialX = event.getX();
+                        initialY = event.getY();
+                        break;
                     case MotionEvent.ACTION_MOVE:
-                        final Resources res = mContext.getResources();
-                        WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                 WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
-                                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                                        | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
-                                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
-                                        | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
-                                PixelFormat.TRANSLUCENT);
-                        lp.gravity = Gravity.BOTTOM | Gravity.LEFT;
-                        lp.setTitle("PieControlPanel");
-                        lp.windowAnimations = android.R.style.Animation;
-                        mWindowManager.updateViewLayout(mPieControlPanel, lp);
-                        mPieControlPanel.show(true);
+                        deltaX = event.getX() - initialX;
+                        deltaY = event.getY() - initialY;
+                        // Swipe up
+                        if(deltaY < -10) {
+                            final Resources res = mContext.getResources();
+                            WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
+                                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                                            | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+                                            | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
+                                            | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+                                    PixelFormat.TRANSLUCENT);
+                            lp.gravity = Gravity.BOTTOM | Gravity.LEFT;
+                            lp.setTitle("PieControlPanel");
+                            lp.windowAnimations = android.R.style.Animation;
+                            mWindowManager.updateViewLayout(mPieControlPanel, lp);
+                            mPieControlPanel.show(true);
 
-                        event.setAction(MotionEvent.ACTION_DOWN);
-                        mPieControlPanel.onTouchEvent(event);
-                    break;
+                            event.setAction(MotionEvent.ACTION_DOWN);
+                            mPieControlPanel.onTouchEvent(event);
+                        }
                 }
             } else {
                 return mPieControlPanel.onTouchEvent(event);

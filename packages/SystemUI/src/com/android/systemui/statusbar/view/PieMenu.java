@@ -21,6 +21,7 @@ import android.animation.Animator.AnimatorListener;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
+import android.animation.TimeInterpolator;
 import android.database.ContentObserver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -38,6 +39,8 @@ import android.os.Handler;
 import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.ColorUtils;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
 import android.view.MotionEvent;
 import android.view.SoundEffectConstants;
 import android.view.View;
@@ -45,6 +48,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.android.systemui.R;
+import com.android.systemui.statusbar.PieControl;
 import com.android.systemui.statusbar.PieControlPanel;
 
 import java.util.ArrayList;
@@ -53,7 +57,9 @@ import java.util.List;
 public class PieMenu extends FrameLayout {
 
     private static final int MAX_LEVELS = 5;
-    private static final long ANIMATION = 0;
+    private static final int BACKGROUND_COLOR = 0x66;
+    private static final int ANIMATION_IN = 2000;
+    private static final int ANIMATION_OUT = 50;
 
     public interface PieController {
         /**
@@ -104,7 +110,6 @@ public class PieMenu extends FrameLayout {
     // sub menus
     private PieItem mOpenItem;
 
-    private Drawable mBackground;
     private Paint mNormalPaint;
     private Paint mSelectedPaint;
     private Paint mSubPaint;
@@ -120,6 +125,12 @@ public class PieMenu extends FrameLayout {
     private ColorUtils.ColorSettingInfo mLastBackgroundColor;
     private ColorUtils.ColorSettingInfo mLastGlowColor;
     private boolean mGlowColorHelper;
+
+    private int mBackgroundOpacity;
+    private int mTextOffset;
+
+    private ValueAnimator mIntoAnimation;
+    private ValueAnimator mOutroAnimation;
 
     /**
      * @param context
@@ -162,7 +173,6 @@ public class PieMenu extends FrameLayout {
         setWillNotDraw(false);
         setDrawingCacheEnabled(false);
         mCenter = new Point(0, 0);
-        mBackground = new ColorDrawable(0x00000000);
         mNormalPaint = new Paint();
         mNormalPaint.setAntiAlias(true);
         mSelectedPaint = new Paint();
@@ -170,6 +180,10 @@ public class PieMenu extends FrameLayout {
         mSubPaint = new Paint();
         mSubPaint.setAntiAlias(true);
         mSubPaint.setColor(0xFF000000);
+
+        mUseBackground = true;
+        mBackgroundOpacity = 0;
+        mTextOffset = 0;
 
         // Only watch for per app color changes when the setting is in check
         if (ColorUtils.getPerAppColorState(mContext)) {
@@ -249,25 +263,8 @@ public class PieMenu extends FrameLayout {
                 boolean changed = mController.onOpen();
             }
             layoutPie();
-            animateOpen();
         }
         invalidate();
-    }
-
-    private void animateOpen() {
-        ValueAnimator anim = ValueAnimator.ofFloat(0, 1);
-        anim.addUpdateListener(new AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                for (PieItem item : mItems) {
-                    item.setAnimationAngle((1 - animation.getAnimatedFraction()) * (- item.getStart()));
-                }
-                invalidate();
-            }
-
-        });
-        anim.setDuration(2 * ANIMATION);
-        anim.start();
     }
 
     public void setCenter(int x, int y) {
@@ -293,10 +290,10 @@ public class PieMenu extends FrameLayout {
 
             // This helps us to discern when glow has the same color as the button color,
             // in which case we have to counteract in order to prevent both from swallowing each other
+            int glowRgb = ColorUtils.extractRGB(colorInfo.lastColor);
             int buttonRgb = ColorUtils.extractRGB(buttonColorInfo.lastColor);
             mGlowColorHelper = glowRgb == buttonRgb;
 
-            int glowRgb = ColorUtils.extractRGB(colorInfo.lastColor);
             mSelectedPaint.setColor(glowRgb | 0xFF000000);
             setDrawingAlpha(mSelectedPaint, mGlowColorHelper ? 0.70f :
                     (float)ColorUtils.extractAlpha(colorInfo.lastColor) / 255f);
@@ -359,22 +356,53 @@ public class PieMenu extends FrameLayout {
         return (float) (270 - 180 * angle / Math.PI);
     }
 
+    private void animateIn() {
+        mIntoAnimation = ValueAnimator.ofInt(0, 1);
+        mIntoAnimation.addUpdateListener(new AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mBackgroundOpacity = (int)(animation.getAnimatedFraction() * BACKGROUND_COLOR);
+                mTextOffset = (int)(animation.getAnimatedFraction() * 500);
+                invalidate();
+            }
+        });
+        mIntoAnimation.setDuration(ANIMATION_IN);
+        mIntoAnimation.setInterpolator(new AccelerateDecelerateInterpolator());
+        mIntoAnimation.start();
+    }
+
+    public void animateOut() {
+        if (mIntoAnimation != null && mIntoAnimation.isRunning()) {
+            mIntoAnimation.cancel();
+        }
+
+        final int currentOffset = mTextOffset;
+        final int currentOpacity = mBackgroundOpacity;
+        mOutroAnimation = ValueAnimator.ofInt(1, 0);
+        mOutroAnimation.addUpdateListener(new AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mBackgroundOpacity = (int)((1 - animation.getAnimatedFraction()) * currentOpacity);
+                mTextOffset = (int)((1 - animation.getAnimatedFraction()) * currentOffset);
+                invalidate();
+            }
+        });
+        mOutroAnimation.setDuration(ANIMATION_OUT);
+        mOutroAnimation.setInterpolator(new DecelerateInterpolator());
+        mOutroAnimation.addListener(new AnimatorListenerAdapter() {
+            public void onAnimationEnd(Animator a) {
+                mPanel.show(false);
+            }});
+
+        mOutroAnimation.start();
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         if (mOpen) {
             int state;
             if (mUseBackground) {
-                int w = mBackground.getIntrinsicWidth();
-                int h = mBackground.getIntrinsicHeight();
-                int left = mCenter.x - w;
-                int top = mCenter.y - h / 2;
-                mBackground.setBounds(left, top, left + w, top + h);
-                state = canvas.save();
-                if (onTheTop()) {
-                    canvas.scale(-1, 1);
-                }
-                mBackground.draw(canvas);
-                canvas.restoreToCount(state);
+                canvas.drawARGB(mBackgroundOpacity, 0, 0, 0);
             }
             // draw base menu
             PieItem last = mCurrentItem;
@@ -392,6 +420,30 @@ public class PieMenu extends FrameLayout {
             if (mPieView != null) {
                 mPieView.draw(canvas);
             }
+
+            /* STATUS BAR FLOATING TEXT
+            float width = (float)getWidth();
+			float height = (float)getHeight();
+			float radius;
+
+			Path path = new Path();
+			path.addCircle(mCenter.x, mCenter.y, mRadius + mRadiusInc, Path.Direction.CW);
+			Paint paint = new Paint();
+			paint.setColor(Color.WHITE);
+			paint.setStrokeWidth(5);
+            paint.setStyle(Paint.Style.FILL);
+			paint.setTextSize(150);
+
+            String text = "00:03 MON";
+            float w = paint.measureText(text, 0, text.length());
+            canvas.drawTextOnPath(text, path, mTextOffset, -40, paint);
+
+            paint.setColor(Color.RED);
+            canvas.drawTextOnPath(text, path, -w, -40, paint);
+
+            paint.setColor(Color.GREEN);
+            canvas.drawTextOnPath(text, path, w, -40, paint);
+            */
         }
     }
 
@@ -449,8 +501,9 @@ public class PieMenu extends FrameLayout {
         int action = evt.getActionMasked();
 
         if (MotionEvent.ACTION_DOWN == action) {
+                // Open panel
                 mPanel.show(true);
-                return true;
+                animateIn();
         } else if (MotionEvent.ACTION_UP == action) {
             if (mOpen) {
                 boolean handled = false;
@@ -464,10 +517,17 @@ public class PieMenu extends FrameLayout {
                 if (!handled && (item != null) && (item.getView() != null)) {
                     if ((item == mOpenItem) || !mAnimating) {
                         item.getView().performClick();
+                        // Do try try to mess with androids native animations here
+                        if (item.getName() == PieControl.RECENT_BUTTON) {
+                            mPanel.show(false);
+                            return true;
+                        }
                     }
                 }
             }
-            mPanel.show(false);
+
+            // Say good bye
+            animateOut();
             return true;
         } else if (MotionEvent.ACTION_MOVE == action) {
             if (mAnimating) return false;

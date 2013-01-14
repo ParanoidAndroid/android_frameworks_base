@@ -49,37 +49,32 @@ public class PieItem {
     private boolean mSelected;
     private boolean mEnabled;
     private List<PieItem> mItems;
+    private String mName;
 
     private ColorUtils.ColorSettingInfo mLastButtonColor;
 
-    public PieItem(View view, Context context, int level) {
+    public PieItem(View view, Context context, int level, String name) {
         mContext = context;
         mView = view;
         this.level = level;
         mEnabled = true;
         setAnimationAngle(getAnimationAngle());
         setAlpha(getAlpha());
+        mName = name;
 
         if(mContext != null) {
             if (ColorUtils.getPerAppColorState(mContext)) {
                 mLastButtonColor = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BUTTON_COLOR);
                 setColor();
+
                 mContext.getContentResolver().registerContentObserver(
                     Settings.System.getUriFor(Settings.System.NAV_BUTTON_COLOR), false, new ContentObserver(new Handler()) {
                         @Override
                         public void onChange(boolean selfChange) {
                             setColor();
                         }});
-                setColor();
             }
         }
-    }
-
-    public PieItem(View view, int level, PieView sym) {
-        mView = view;
-        this.level = level;
-        mPieView = sym;
-        mEnabled = false;
     }
 
     public boolean hasItems() {
@@ -95,6 +90,10 @@ public class PieItem {
             mItems = new ArrayList<PieItem>();
         }
         mItems.add(item);
+    }
+
+    public String getName() {
+        return  mName;
     }
 
     public void setAlpha(float alpha) {

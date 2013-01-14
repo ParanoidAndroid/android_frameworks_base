@@ -134,7 +134,6 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
         } else if (buttonName.equals(PieControl.RECENT_BUTTON)) {
             mStatusBar.toggleRecentApps();
         }
-        show(false);
     }
 
     public void injectKeyDelayed(int keycode){
