@@ -1187,7 +1187,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     Settings.System.VOLUME_WAKE_SCREEN, 0, UserHandle.USER_CURRENT) == 1);
             mVolBtnMusicControls = (Settings.System.getIntForUser(resolver,
                     Settings.System.VOLBTN_MUSIC_CONTROLS, 1, UserHandle.USER_CURRENT) == 1);
-            mHasNavigationBar &= Settings.System.getInt(mContext.getContentResolver(),
+            mHasNavigationBar = Settings.System.getInt(mContext.getContentResolver(),
                     Settings.System.EXPANDED_DESKTOP_STATE, 0) != 1 && !mHasSystemNavBar;
 
             getDimensions();
@@ -1288,16 +1288,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
              mNavigationBarCanMove = false;
          }
 
-        if (!mHasSystemNavBar) {
-            // Allow a system property to override this. Used by the emulator.
-            // See also hasNavigationBar().
-            String navBarOverride = SystemProperties.get("qemu.hw.mainkeys");
-            if (! "".equals(navBarOverride)) {
-                mHasNavigationBar = navBarOverride.equals("0");
-            }
-        } else {
-            mHasNavigationBar = false;
-        }
+        mHasNavigationBar = !mHasSystemNavBar;
 
         if (mHasSystemNavBar) {
             mCanHideNavigationBar = true;
@@ -4796,8 +4787,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     public boolean hasNavigationBar() {
-        return mContext.getResources().getBoolean(
-                com.android.internal.R.bool.config_showNavigationBar);
+        return mHasNavigationBar;
     }
 
     @Override
