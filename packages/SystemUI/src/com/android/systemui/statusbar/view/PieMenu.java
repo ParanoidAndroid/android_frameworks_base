@@ -182,11 +182,11 @@ public class PieMenu extends FrameLayout {
 
         mNormalPaint = new Paint();
         mNormalPaint.setAntiAlias(true);
-        mNormalPaint.setColor(0x77000000);
+        mNormalPaint.setColor(0xAA000000);
 
         mSelectedPaint = new Paint();
         mSelectedPaint.setAntiAlias(true);
-        mSelectedPaint.setColor(0x7733b5e5);
+        mSelectedPaint.setColor(0xAA33b5e5);
         
         mSubPaint = new Paint();
         mSubPaint.setAntiAlias(true);
@@ -287,7 +287,8 @@ public class PieMenu extends FrameLayout {
         ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
                 Settings.System.NAV_BAR_COLOR);
         if (!colorInfo.lastColorString.equals(mLastBackgroundColor.lastColorString)) {
-            mNormalPaint.setColor(colorInfo.lastColor);
+            int colorRgb = ColorUtils.extractRGB(colorInfo.lastColor);
+            mNormalPaint.setColor(colorRgb | 0xAA000000);
             mLastBackgroundColor = colorInfo;
         }
     }
@@ -304,10 +305,7 @@ public class PieMenu extends FrameLayout {
             int glowRgb = ColorUtils.extractRGB(colorInfo.lastColor);
             int buttonRgb = ColorUtils.extractRGB(buttonColorInfo.lastColor);
             mGlowColorHelper = glowRgb == buttonRgb;
-
-            mSelectedPaint.setColor(glowRgb | 0xFF000000);
-            setDrawingAlpha(mSelectedPaint, mGlowColorHelper ? 0.70f :
-                    (float)ColorUtils.extractAlpha(colorInfo.lastColor) / 255f);
+            mSelectedPaint.setColor(glowRgb | 0xAA000000);
             mLastGlowColor = colorInfo;
         }
     }
@@ -466,20 +464,7 @@ public class PieMenu extends FrameLayout {
             }
             float r = getDegrees(item.getStartAngle()) - 270; // degrees(0)
             canvas.rotate(r, mCenter.x, mCenter.y);
-
-            // Draw normal background when ...
-            // 1. item is unselected
-            // 2. item is selected and buttoncolor & glowcolor are matching
-            // 3. item is selected and glowcolor is transparent
-            if (!item.isSelected() || (item.isSelected() && mGlowColorHelper) || (item.isSelected()
-                    && !mLastGlowColor.isLastColorOpaque)) {
-                canvas.drawPath(mPath, mNormalPaint);
-            }
-
-            // Draw glow background, if item is selected
-            if (item.isSelected()) {
-                canvas.drawPath(mPath, mSelectedPaint);
-            }
+            canvas.drawPath(mPath, item.isSelected() ? mSelectedPaint : mNormalPaint);
             canvas.restoreToCount(state);
 
             ImageView view = (ImageView)item.getView();
