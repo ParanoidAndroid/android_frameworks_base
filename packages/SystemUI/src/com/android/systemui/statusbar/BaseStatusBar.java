@@ -239,11 +239,13 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     private class PieControlsTouchListener implements View.OnTouchListener {
         private final PieControlPanel mControlPanel;
+        private int orient;
         private float initialX = 0;
         private float initialY = 0;
 
         public PieControlsTouchListener(PieControlPanel panel) {
             mControlPanel = panel;
+            orient = mControlPanel.getOrientation();
         }
 
         @Override
@@ -256,14 +258,15 @@ public abstract class BaseStatusBar extends SystemUI implements
                         initialY = event.getY();
                         break;
                     case MotionEvent.ACTION_MOVE:
-                        float deltaX = event.getX() - initialX;
-                        float deltaY = event.getY() - initialY;
+                        float deltaX = Math.abs(event.getX() - initialX);
+                        float deltaY = Math.abs(event.getY() - initialY);
+                        float distance = orient == Gravity.BOTTOM || orient == Gravity.TOP ? deltaY : deltaX;
                         // Swipe up
-                        //if(deltaY < -10) {
+                        if (distance > 10) {
                             mControlPanel.show(true);
                             event.setAction(MotionEvent.ACTION_DOWN);
                             mControlPanel.onTouchEvent(event);
-                        //}
+                        }
                 }
             } else {
                 return mControlPanel.onTouchEvent(event);
@@ -301,7 +304,7 @@ public abstract class BaseStatusBar extends SystemUI implements
         lp = new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
+                WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG,
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                         | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
                         | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
