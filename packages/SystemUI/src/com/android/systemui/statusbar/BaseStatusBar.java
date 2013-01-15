@@ -258,7 +258,7 @@ public abstract class BaseStatusBar extends SystemUI implements
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, 
                 res.getDimensionPixelSize(R.dimen.pie_trigger_height),
-                WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
+                WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG,
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                         | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                         | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
