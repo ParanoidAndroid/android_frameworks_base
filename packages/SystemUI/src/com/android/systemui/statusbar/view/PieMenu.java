@@ -774,7 +774,7 @@ public class PieMenu extends FrameLayout {
 
             case Gravity.LEFT:
             case Gravity.RIGHT:
-                x = (size.y + x) * (orient == Gravity.RIGHT ? -1 : 1);
+                x = orient == Gravity.LEFT ? size.y + x : size.y - x;
                 y = (size.y / 2 - y) * (orient == Gravity.RIGHT ? -1 : 1);
                 break;
         }
