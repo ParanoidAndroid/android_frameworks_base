@@ -467,14 +467,26 @@ public class PieMenu extends FrameLayout {
             public void onAnimationUpdate(ValueAnimator animation) {
                 mBackgroundOpacity = (int)(animation.getAnimatedFraction() * BACKGROUND_COLOR);
                 mBatteryBackgroundAlpha = (int)(animation.getAnimatedFraction() * 0x55);
-                mBatteryJuiceAlpha = (int)(animation.getAnimatedFraction() * 0x88);
-                mBatteryMeter = (int)(animation.getAnimatedFraction() * 75);
+                mBatteryJuiceAlpha = (int)(animation.getAnimatedFraction() * 0x88);                
                 invalidate();
             }
         });
         mIntoAnimation.setDuration(ANIMATION_IN);
         mIntoAnimation.setInterpolator(new DecelerateInterpolator());
         mIntoAnimation.start();
+
+        // Background
+        ValueAnimator m1000Animation = ValueAnimator.ofInt(0, 1);
+        m1000Animation.addUpdateListener(new AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mBatteryMeter = (int)(animation.getAnimatedFraction() * 75);             
+                invalidate();
+            }
+        });
+        m1000Animation.setDuration(1500);
+        m1000Animation.setInterpolator(new DecelerateInterpolator());
+        m1000Animation.start();
 
         int textLen = mStatusText.length();
         for( int i = 0; i < textLen; i++ ) {
