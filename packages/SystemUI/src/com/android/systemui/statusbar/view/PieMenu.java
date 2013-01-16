@@ -444,6 +444,7 @@ public class PieMenu extends FrameLayout {
     }
 
     int mBatteryBackgroundAlpha;
+    int mBatteryJuiceAlpha;
     int mBatteryMeter;
 
     private void animateIn() {
@@ -451,6 +452,7 @@ public class PieMenu extends FrameLayout {
         // Reset base values
         mBatteryMeter = 0;
         mBatteryBackgroundAlpha = 0;
+        mBatteryJuiceAlpha = 0;
         mTextAlpha = 0;
         mBackgroundOpacity = 0;
         mCharOffest = new float[25];
@@ -465,6 +467,7 @@ public class PieMenu extends FrameLayout {
             public void onAnimationUpdate(ValueAnimator animation) {
                 mBackgroundOpacity = (int)(animation.getAnimatedFraction() * BACKGROUND_COLOR);
                 mBatteryBackgroundAlpha = (int)(animation.getAnimatedFraction() * 0x55);
+                mBatteryJuiceAlpha = (int)(animation.getAnimatedFraction() * 0x88);
                 mBatteryMeter = (int)(animation.getAnimatedFraction() * 75);
                 invalidate();
             }
@@ -573,7 +576,7 @@ public class PieMenu extends FrameLayout {
             state = canvas.save();
             canvas.rotate(90, mCenter.x, mCenter.y);
             Path mBatteryPath2 = makeSlice(mPanel.getDegree() + 13, mPanel.getDegree() + mBatteryMeter, outer + mTouchOffset * 2, outer + mTouchOffset, mCenter);
-            mBatteryJuice.setAlpha(mTextAlpha);
+            mBatteryJuice.setAlpha(mBatteryJuiceAlpha);
             canvas.drawPath(mBatteryPath2, mBatteryJuice);
             canvas.restoreToCount(state);
 
