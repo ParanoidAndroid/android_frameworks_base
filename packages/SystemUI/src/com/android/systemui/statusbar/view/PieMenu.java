@@ -28,14 +28,14 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.provider.Settings;
@@ -211,10 +211,10 @@ public class PieMenu extends FrameLayout {
         mTextOffset = 0;
         mTextAlpha = 0;
         mTextLen = 0;
-	    mStatusPaint = new Paint();
-		mStatusPaint.setColor(Color.WHITE);
+        mStatusPaint = new Paint();
+        mStatusPaint.setColor(Color.WHITE);
         mStatusPaint.setStyle(Paint.Style.FILL);
-	    mStatusPaint.setTextSize(150);
+        mStatusPaint.setTextSize(150);
         
         mStatusAnimate  = false;
         mStatusClock = new Clock(mContext);
@@ -478,7 +478,7 @@ public class PieMenu extends FrameLayout {
                 drawItem(canvas, item);
             }
 
-            //STATUS BAR FLOATING TEXT
+            // floating text
             state = canvas.save();
             canvas.rotate(mPanel.getDegree(), mCenter.x, mCenter.y);
             mStatusPaint.setAlpha(mTextAlpha);
@@ -495,14 +495,17 @@ public class PieMenu extends FrameLayout {
     private void drawItem(Canvas canvas, PieItem item) {
         if (item.getView() != null) {
             int state = canvas.save();
-            canvas.rotate(getDegrees(item.getStartAngle()) + mPanel.getDegree(), mCenter.x, mCenter.y);
+            canvas.rotate(getDegrees(item.getStartAngle())
+                        + mPanel.getDegree(), mCenter.x, mCenter.y);
             canvas.drawPath(mPath, item.isSelected() ? mSelectedPaint : mNormalPaint);
             canvas.restoreToCount(state);
 
             state = canvas.save();
             ImageView view = (ImageView)item.getView();
             canvas.translate(view.getX(), view.getY());
-            canvas.rotate(getDegrees(item.getStartAngle() + item.getSweep() / 2) + mPanel.getDegree(), view.getWidth() / 2, view.getHeight() / 2);
+            canvas.rotate(getDegrees(item.getStartAngle()
+                    + item.getSweep() / 2) + mPanel.getDegree(),
+                    view.getWidth() / 2, view.getHeight() / 2);
 
             view.draw(canvas);
             canvas.restoreToCount(state);
