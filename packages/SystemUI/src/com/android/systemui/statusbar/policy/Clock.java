@@ -56,6 +56,12 @@ import com.android.internal.R;
  * minutes.
  */
 public class Clock extends TextView {
+
+    public interface OnClockChangedListener
+    {
+        public abstract void onChange(CharSequence t);
+    }
+
     private boolean mAttached;
     private Calendar mCalendar;
     private String mClockFormatString;
@@ -69,6 +75,12 @@ public class Clock extends TextView {
 
     private Context mContext;
     private boolean mShowAlways;
+
+    private OnClockChangedListener clockChangeListener = null;
+    public void setOnClockChangedListener(OnClockChangedListener l)
+    {
+        clockChangeListener = l;
+    }
 
     class SettingsObserver extends ContentObserver {
         SettingsObserver(Handler handler) {
@@ -122,10 +134,7 @@ public class Clock extends TextView {
         observer.observe();
     }
 
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-
+    public void startBroadcastReceiver() {
         if (!mAttached) {
             mAttached = true;
             IntentFilter filter = new IntentFilter();
@@ -146,6 +155,12 @@ public class Clock extends TextView {
 
         // Make sure we update to the current time
         updateClock();
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        startBroadcastReceiver();
     }
 
     @Override
@@ -174,10 +189,14 @@ public class Clock extends TextView {
 
     final void updateClock() {
         mCalendar.setTimeInMillis(System.currentTimeMillis());
-        setText(getSmallTime());
+        CharSequence seq = getSmallTime();
+        setText(seq);
+        if (clockChangeListener != null) {
+            clockChangeListener.onChange(seq);
+        }
     }
 
-    private final CharSequence getSmallTime() {
+    public final CharSequence getSmallTime() {
         Context context = getContext();
         boolean b24 = DateFormat.is24HourFormat(context);
         int res;

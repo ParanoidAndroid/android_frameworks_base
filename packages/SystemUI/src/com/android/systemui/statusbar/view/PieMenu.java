@@ -33,6 +33,7 @@ import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
@@ -53,6 +54,7 @@ import android.widget.ImageView;
 import com.android.systemui.R;
 import com.android.systemui.statusbar.PieControl;
 import com.android.systemui.statusbar.PieControlPanel;
+import com.android.systemui.statusbar.policy.Clock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,9 +62,9 @@ import java.util.List;
 public class PieMenu extends FrameLayout {
 
     private static final int MAX_LEVELS = 5;
-    private static final int BACKGROUND_COLOR = 0x66;
-    private static final int ANIMATION_IN = 2000;
-    private static final int ANIMATION_OUT = 50;
+    private static final int BACKGROUND_COLOR = 0xAA;
+    private static final int ANIMATION_IN = 3000;
+    private static final int ANIMATION_OUT = 0;
 
     public interface PieController {
         /**
@@ -130,7 +132,15 @@ public class PieMenu extends FrameLayout {
     private boolean mGlowColorHelper;
 
     private int mBackgroundOpacity;
-    private int mTextOffset;
+
+    private float mTextOffset;
+    private int mTextAlpha;
+    private float mTextLen;
+    private Path mStatusPath;
+    private String mStatusText;
+    private Paint mStatusPaint;
+    private boolean mStatusAnimate;
+    private Clock mStatusClock;
 
     private ValueAnimator mIntoAnimation;
     private ValueAnimator mOutroAnimation;
@@ -195,8 +205,28 @@ public class PieMenu extends FrameLayout {
 
         mUseBackground = true;
         mBackgroundOpacity = 0;
-        mTextOffset = 0;
         mGlowColorHelper = false;
+
+        // Circle status text
+        mTextOffset = 0;
+        mTextAlpha = 0;
+        mTextLen = 0;
+	    mStatusPaint = new Paint();
+		mStatusPaint.setColor(Color.WHITE);
+        mStatusPaint.setStyle(Paint.Style.FILL);
+	    mStatusPaint.setTextSize(150);
+        
+        mStatusAnimate  = false;
+        mStatusClock = new Clock(mContext);
+        mStatusClock.startBroadcastReceiver();
+        mStatusText = mStatusClock.getSmallTime().toString();
+        mTextLen = mStatusPaint.measureText(mStatusText, 0, mStatusText.length());
+        mStatusClock.setOnClockChangedListener(new Clock.OnClockChangedListener() {
+            public void onChange(CharSequence t) {
+                mStatusText = t.toString();
+                mTextLen = mStatusPaint.measureText(mStatusText, 0, mStatusText.length());
+            }
+        });
 
         mLastBackgroundColor = new ColorUtils.ColorSettingInfo();
         mLastGlowColor = new ColorUtils.ColorSettingInfo();
@@ -282,6 +312,9 @@ public class PieMenu extends FrameLayout {
     public void setCenter(int x, int y) {
         mCenter.y = y;
         mCenter.x = x;
+
+        mStatusPath = new Path();
+        mStatusPath.addCircle(mCenter.x, mCenter.y, mRadius+mRadiusInc, Path.Direction.CW);
     }
 
     private void setBackgroundColor() {
@@ -307,6 +340,7 @@ public class PieMenu extends FrameLayout {
             int buttonRgb = ColorUtils.extractRGB(buttonColorInfo.lastColor);
             mGlowColorHelper = glowRgb == buttonRgb;
             mSelectedPaint.setColor(glowRgb | 0xAA000000);
+            mStatusPaint.setColor(glowRgb);
             mLastGlowColor = colorInfo;
         }
     }
@@ -386,28 +420,35 @@ public class PieMenu extends FrameLayout {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 mBackgroundOpacity = (int)(animation.getAnimatedFraction() * BACKGROUND_COLOR);
-                mTextOffset = (int)(animation.getAnimatedFraction() * 500);
+                mTextOffset = .4f + (float)(animation.getAnimatedFraction() * (mTextLen / 2));
+                mTextAlpha = (int)(animation.getAnimatedFraction() * 80);
                 invalidate();
             }
         });
         mIntoAnimation.setDuration(ANIMATION_IN);
         mIntoAnimation.setInterpolator(new AccelerateDecelerateInterpolator());
+        mIntoAnimation.addListener(new AnimatorListenerAdapter() {
+            public void onAnimationEnd(Animator a) {
+                mStatusAnimate = true;
+            }});
         mIntoAnimation.start();
     }
 
     public void animateOut() {
+        mStatusAnimate = false;
         if (mIntoAnimation != null && mIntoAnimation.isRunning()) {
             mIntoAnimation.cancel();
         }
 
-        final int currentOffset = mTextOffset;
+        final int currentAlpha = mTextAlpha;
+        final float currentOffset = mTextOffset;
         final int currentOpacity = mBackgroundOpacity;
         mOutroAnimation = ValueAnimator.ofInt(1, 0);
         mOutroAnimation.addUpdateListener(new AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 mBackgroundOpacity = (int)((1 - animation.getAnimatedFraction()) * currentOpacity);
-                mTextOffset = (int)((1 - animation.getAnimatedFraction()) * currentOffset);
+                mTextAlpha =  (int)((1 - animation.getAnimatedFraction()) * currentAlpha);
                 invalidate();
             }
         });
@@ -437,37 +478,17 @@ public class PieMenu extends FrameLayout {
                 drawItem(canvas, item);
             }
 
-            /*if (last != null) {
-                drawItem(canvas, last);
-            }
-            if (mPieView != null) {
-                mPieView.draw(canvas);
-            }*/
-
             //STATUS BAR FLOATING TEXT
-            /*
-            float width = (float)getWidth();
-			float height = (float)getHeight();
-			float radius;
+            state = canvas.save();
+            canvas.rotate(mPanel.getDegree(), mCenter.x, mCenter.y);
+            mStatusPaint.setAlpha(mTextAlpha);
+            canvas.drawTextOnPath(mStatusText, mStatusPath, 300 + mTextOffset, -10, mStatusPaint);
+            canvas.restoreToCount(state);
 
-			Path path = new Path();
-			path.addCircle(mCenter.x, mCenter.y, mRadius, Path.Direction.CW);
-			Paint paint = new Paint();
-			paint.setColor(Color.WHITE);
-			paint.setStrokeWidth(5);
-            paint.setStyle(Paint.Style.FILL);
-			paint.setTextSize(80);
-
-            String text = "00:03 MON";
-            float w = paint.measureText(text, 0, text.length());
-            canvas.drawTextOnPath(text, path, mTextOffset, -40, paint);
-
-            paint.setColor(Color.RED);
-            canvas.drawTextOnPath(text, path, -w, -40, paint);
-
-            paint.setColor(Color.GREEN);
-            canvas.drawTextOnPath(text, path, w, -40, paint);*/
-            
+            if (mStatusAnimate) {
+                mTextOffset += .4f;
+                invalidate();
+            }
         }
     }
 
