@@ -552,7 +552,7 @@
     <string name="navbar_menu_big_button">Menu button</string>
 
     <string name="pie_date_format">ccc, FF MMM yyyy</string>
-    <string name="pie_hour_format_12">h:mm</string>
+    <string name="pie_hour_format_12">hh:mm</string>
     <string name="pie_hour_format_24">HH:mm</string>
     <string name="pie_am_pm">a</string>
 
