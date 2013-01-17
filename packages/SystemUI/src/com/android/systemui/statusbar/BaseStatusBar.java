@@ -201,6 +201,25 @@ public abstract class BaseStatusBar extends SystemUI implements
         return mDeviceProvisioned;
     }
 
+    private final class SettingsObserver extends ContentObserver {
+        SettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        void observe() {
+            ContentResolver resolver = mContext.getContentResolver();
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.EXPANDED_DESKTOP_STATE), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.PIE_CONTROLS), false, this);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            updatePieControlsVisibility();
+        }
+    }
+
     private ContentObserver mProvisioningObserver = new ContentObserver(new Handler()) {
         @Override
         public void onChange(boolean selfChange) {
@@ -429,21 +448,28 @@ public abstract class BaseStatusBar extends SystemUI implements
                     }});
         }
 
-        // Add pie
-        //addPie(Gravity.TOP);
-        //addPie(Gravity.LEFT);
-        addPie(Gravity.BOTTOM);
-        //addPie(Gravity.RIGHT);
+        // Add pie, want some slice?
+        int gravity = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.PIE_GRAVITY, 1);
+
+        switch (gravity) {
+            case 0:
+                addPie(Gravity.TOP);
+            break;
+            case 1:
+                addPie(Gravity.BOTTOM);
+            break;
+            case 2:
+                addPie(Gravity.RIGHT);
+            break;
+            case 3:
+                addPie(Gravity.LEFT);
+            break;
+        }
 
         updatePieControlsVisibility();
-        mContext.getContentResolver().registerContentObserver(
-            Settings.System.getUriFor(Settings.System.PIE_CONTROLS), false, new ContentObserver(new Handler()) {
-                @Override
-                public void onChange(boolean selfChange) {
-                    updatePieControlsVisibility();
-                }
-            }
-        );
+        SettingsObserver settingsObserver = new SettingsObserver(new Handler());
+        settingsObserver.observe();
     }
 
     private void addPie(int gravity) {
