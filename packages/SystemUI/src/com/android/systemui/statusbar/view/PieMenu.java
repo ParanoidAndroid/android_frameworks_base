@@ -51,6 +51,7 @@ import android.util.ColorUtils;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.SoundEffectConstants;
 import android.view.View;
@@ -106,6 +107,7 @@ public class PieMenu extends FrameLayout {
 
     }
 
+    private WindowManager mWindowManager;
     private Context mContext;
 
     private Point mCenter;
@@ -163,6 +165,7 @@ public class PieMenu extends FrameLayout {
 
     private ViewManager mPanelParent;
     private ScrollView mScrollView;
+    private View mContainer;
     private boolean mPanelParentChanged;
 
     /**
@@ -195,6 +198,7 @@ public class PieMenu extends FrameLayout {
     private void init(Context ctx) {
         mContext = ctx;
         mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+        mWindowManager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
 
         mItems = new ArrayList<PieItem>();
         mLevels = 0;
@@ -262,7 +266,10 @@ public class PieMenu extends FrameLayout {
             }
         });
 
-        mScrollView = new ScrollView(mContext);
+        LayoutInflater inflater = (LayoutInflater) mContext
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
+        mContainer = inflater.inflate(R.layout.pie_notification_panel, null);
+        mScrollView = (ScrollView) mContainer.findViewById(R.id.notification_scroll);
 
         mLastBackgroundColor = new ColorUtils.ColorSettingInfo();
         mLastGlowColor = new ColorUtils.ColorSettingInfo();
@@ -584,9 +591,6 @@ public class PieMenu extends FrameLayout {
             canvas.drawBitmap(mBitmap1, null, new Rect(0,0,getWidth(),mGlowOffset), mGlowPaint);
             canvas.drawBitmap(mBitmap1, null, new Rect(0,0,getWidth(),mGlowOffset), mGlowPaint);
 
-
-
-
             // draw base menu
             PieItem last = mCurrentItem;
             if (mOpenItem != null) {
@@ -595,7 +599,6 @@ public class PieMenu extends FrameLayout {
             for (PieItem item : mItems) {
                 drawItem(canvas, item);
             }
-
 
             mStatusPath = new Path();
             mStatusPath.addCircle(mCenter.x, mCenter.y, mRadius+mRadiusInc+mTouchOffset, Path.Direction.CW);
@@ -608,13 +611,12 @@ public class PieMenu extends FrameLayout {
             mStatusPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
             mStatusPaint.setTextScaleX(1.2f);
             
-
-            //android.util.Log.d("PARANOID", "sweep="+getDegrees(last.getSweep()*1.5f));
             state = canvas.save();
             canvas.rotate(90 + (mCharOffest[1] / 2), mCenter.x, mCenter.y);
             int inner = mRadius + 2;
             int outer = mRadius + mRadiusInc - 2;
-            Path mBatteryPath = makeSlice(mPanel.getDegree() + 13, mPanel.getDegree() + 90 - 2, outer + mTouchOffset * 2, outer + mTouchOffset, mCenter);
+            Path mBatteryPath = makeSlice(mPanel.getDegree() + 13, mPanel.getDegree()
+                    + 90 - 2, outer + mTouchOffset * 2, outer + mTouchOffset, mCenter);
 
             mBatteryBackground.setAlpha(mBatteryBackgroundAlpha);
             canvas.drawPath(mBatteryPath, mBatteryBackground);
@@ -622,7 +624,8 @@ public class PieMenu extends FrameLayout {
 
             state = canvas.save();
             canvas.rotate(90, mCenter.x, mCenter.y);
-            Path mBatteryPath2 = makeSlice(mPanel.getDegree() + 13, mPanel.getDegree() + mBatteryMeter, outer + mTouchOffset * 2, outer + mTouchOffset, mCenter);
+            Path mBatteryPath2 = makeSlice(mPanel.getDegree() + 13, mPanel.getDegree()
+                    + mBatteryMeter, outer + mTouchOffset * 2, outer + mTouchOffset, mCenter);
             mBatteryJuice.setAlpha(mBatteryJuiceAlpha);
             canvas.drawPath(mBatteryPath2, mBatteryJuice);
             canvas.restoreToCount(state);
@@ -690,8 +693,8 @@ public class PieMenu extends FrameLayout {
         return path;
     }
 
-    // touch handling for pie
 
+    // touch handling for pie
     @Override
     public boolean onTouchEvent(MotionEvent evt) {
         float x = evt.getX();
@@ -713,7 +716,7 @@ public class PieMenu extends FrameLayout {
                     mPanelParentChanged = false;
                     //ViewManager currentParent = (ViewManager)mPanel.getParent();
                     mScrollView.removeView(mPanel.getBar().getNotificationRowLayout());
-                    mPanel.getBar().getWindowManager().removeView(mScrollView);
+                    mWindowManager.removeView(mContainer);
                     WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -732,7 +735,7 @@ public class PieMenu extends FrameLayout {
                     if(distance > mTouchOffset && distance < (int)(mRadius + mRadiusInc) * 2.5f) {
                         mVibrator.vibrate(5);
                         item.getView().performClick();
-                    } else if (distance > getWidth() - mTouchOffset) {
+                    } else if (distance > getHeight() - mTouchOffset) {
                         mPanelParent.removeView(mPanel.getBar().getNotificationRowLayout());
                         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -745,7 +748,7 @@ public class PieMenu extends FrameLayout {
                                         | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
                                 PixelFormat.TRANSLUCENT);
                         mScrollView.addView(mPanel.getBar().getNotificationRowLayout());
-                        mPanel.getBar().getWindowManager().addView(mScrollView, lp);
+                        mWindowManager.addView(mContainer, lp);
                         mPanelParentChanged = true;
                     }
                 }
