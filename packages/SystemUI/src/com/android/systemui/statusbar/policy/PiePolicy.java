@@ -20,6 +20,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.text.format.DateFormat;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
@@ -39,21 +40,42 @@ public class PiePolicy {
     private static Context mContext;
     private static int mBatteryLevel = 0;
 
-    private BroadcastReceiver mBatteryInfoReceiver = new BroadcastReceiver(){
+    private OnClockChangedListener mClockChangedListener;
+
+    private BroadcastReceiver mBatteryReceiver = new BroadcastReceiver(){
         @Override
         public void onReceive(Context arg0, Intent intent) {
             mBatteryLevel = intent.getIntExtra("level", 0);
         }
     };
 
+    private final BroadcastReceiver mClockReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            mClockChangedListener.onChange(getSimpleTime());
+        }
+    };
+
+    public interface OnClockChangedListener {
+        public abstract void onChange(String s);
+    }
+
     public PiePolicy(Context context) {
         mContext = context;
-        mContext.registerReceiver(mBatteryInfoReceiver, 
+        mContext.registerReceiver(mBatteryReceiver, 
                 new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_TIME_TICK);
+        filter.addAction(Intent.ACTION_TIME_CHANGED);
+        mContext.registerReceiver(mClockReceiver, filter);
         LOW_BATTERY_LEVEL = mContext.getResources().getInteger(
                 com.android.internal.R.integer.config_lowBatteryWarningLevel);
         CRITICAL_BATTERY_LEVEL = mContext.getResources().getInteger(
                 com.android.internal.R.integer.config_criticalBatteryWarningLevel);
+    }
+
+    public void setOnClockChangedListener(OnClockChangedListener l){
+        mClockChangedListener = l;
     }
 
     public static String getWifiSsid() {
@@ -65,7 +87,7 @@ public class PiePolicy {
             final WifiManager wifiManager = (WifiManager) mContext
                     .getSystemService(Context.WIFI_SERVICE);
             final WifiInfo connectionInfo = wifiManager.getConnectionInfo();
-            return NetworkController.huntForSsid(wifiManager, connectionInfo);
+            ssid = NetworkController.huntForSsid(wifiManager, connectionInfo);
         }
         return ssid.toUpperCase();
     }
@@ -82,9 +104,29 @@ public class PiePolicy {
     }
 
     public static String getSimpleDate() {
-        SimpleDateFormat sdf = new SimpleDateFormat("ccc, FF MMM yyyy");
+        SimpleDateFormat sdf = new SimpleDateFormat(
+                mContext.getString(R.string.pie_date_format));
         String date = sdf.format(new Date());
         return date.toUpperCase();
+    }
+
+    public static String getSimpleTime() {
+        boolean b24 = DateFormat.is24HourFormat(mContext);
+        SimpleDateFormat sdf = new SimpleDateFormat(
+                mContext.getString(b24 ? R.string.pie_hour_format_24 :
+                R.string.pie_hour_format_12));
+        String amPm = sdf.format(new Date());
+        return amPm.toUpperCase();
+    }
+
+    public static String getAmPm() {
+        String amPm = "";
+        if(!DateFormat.is24HourFormat(mContext)) {
+            SimpleDateFormat sdf = new SimpleDateFormat(
+                    mContext.getString(R.string.pie_am_pm));
+            amPm = sdf.format(new Date()).toUpperCase();
+        }
+        return amPm;
     }
 
     public static int getBatteryLevel() {

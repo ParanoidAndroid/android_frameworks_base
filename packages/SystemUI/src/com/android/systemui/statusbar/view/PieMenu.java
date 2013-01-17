@@ -158,7 +158,6 @@ public class PieMenu extends FrameLayout {
     private String mStatusText;
     private Paint mStatusPaint;
     private boolean mStatusAnimate;
-    private Clock mStatusClock;
 
     private ValueAnimator mIntoAnimation;
     private ValueAnimator mOutroAnimation;
@@ -258,13 +257,11 @@ public class PieMenu extends FrameLayout {
         mStatusPaint.setTextSize(150);
         
         mStatusAnimate  = false;
-        mStatusClock = new Clock(mContext);
-        mStatusClock.startBroadcastReceiver();
-        mStatusText = mStatusClock.getSmallTime().toString();
+        mStatusText = mPolicy.getSimpleTime();
         mTextLen = mStatusPaint.measureText(mStatusText, 0, mStatusText.length());
-        mStatusClock.setOnClockChangedListener(new Clock.OnClockChangedListener() {
-            public void onChange(CharSequence t) {
-                mStatusText = t.toString();
+        mPolicy.setOnClockChangedListener(new PiePolicy.OnClockChangedListener() {
+            public void onChange(String s) {
+                mStatusText = s;
                 mTextLen = mStatusPaint.measureText(mStatusText, 0, mStatusText.length());
             }
         });
@@ -654,8 +651,9 @@ public class PieMenu extends FrameLayout {
                 lastPos += mStatusPaint.measureText("" + character) * (character == '1' || character == ':' ? 0.5f : 0.8f);
             }
             mStatusPaint.setTextSize(50);
-            lastPos -= mStatusPaint.measureText("PM");
-            canvas.drawTextOnPath("PM", mStatusPath, lastPos, -mCharOffset[mStatusText.length()-1] - 160, mStatusPaint);
+            String amPm = mPolicy.getAmPm();
+            lastPos -= mStatusPaint.measureText(amPm);
+            canvas.drawTextOnPath(amPm, mStatusPath, lastPos, -mCharOffset[mStatusText.length()-1] - 160, mStatusPaint);
             canvas.restoreToCount(state);
 
             // Date circling in

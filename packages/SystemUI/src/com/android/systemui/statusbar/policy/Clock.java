@@ -71,12 +71,6 @@ public class Clock extends TextView {
     private Context mContext;
     private boolean mShowAlways;
 
-    private OnClockChangedListener mClockChangedListener;
-
-    public interface OnClockChangedListener {
-        public abstract void onChange(CharSequence t);
-    }
-
     class SettingsObserver extends ContentObserver {
         SettingsObserver(Handler handler) {
             super(handler);
@@ -93,13 +87,7 @@ public class Clock extends TextView {
         @Override public void onChange(boolean selfChange) {
             // showAlways is only set on expanded statusbar, we must avoid
             // to hide clock or add AM/PM there
-            if(!mShowAlways) {
-                setVisibility((Settings.System.getInt(mContext.getContentResolver(),
-                        Settings.System.STATUS_BAR_SHOW_CLOCK, 1) == 1) ? View.VISIBLE : View.GONE);
-                AM_PM_STYLE = Settings.System.getInt(mContext.getContentResolver(),
-                        Settings.System.STATUS_BAR_AM_PM_STYLE, 2);
-                mClockFormatString = null;
-            }
+            if(!mShowAlways) updateParameters();
             updateClock();
         }
     }
@@ -118,12 +106,7 @@ public class Clock extends TextView {
         TypedArray a = context.obtainStyledAttributes(attrs, com.android.systemui.R.styleable.Clock, defStyle, 0);
         mShowAlways = a.getBoolean(com.android.systemui.R.styleable.Clock_showAlways, false);
 
-        setVisibility((Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.STATUS_BAR_SHOW_CLOCK, 1) == 1) || mShowAlways ? View.VISIBLE : View.GONE);
-
-        AM_PM_STYLE = Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.STATUS_BAR_AM_PM_STYLE, 2);
-        mClockFormatString = null;
+        updateParameters();
 
         SettingsObserver observer = new SettingsObserver(new Handler());
         observer.observe();
@@ -150,10 +133,6 @@ public class Clock extends TextView {
 
         // Make sure we update to the current time
         updateClock();
-    }
-
-    public void setOnClockChangedListener(OnClockChangedListener l){
-        mClockChangedListener = l;
     }
 
     @Override
@@ -186,13 +165,18 @@ public class Clock extends TextView {
         }
     };
 
+    private void updateParameters() {
+        setVisibility((Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.STATUS_BAR_SHOW_CLOCK, 1) == 1) ? View.VISIBLE : View.GONE);
+        AM_PM_STYLE = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.STATUS_BAR_AM_PM_STYLE, 2);
+        mClockFormatString = null;
+    }
+
     final void updateClock() {
         mCalendar.setTimeInMillis(System.currentTimeMillis());
         CharSequence seq = getSmallTime();
         setText(seq);
-        if (mClockChangedListener != null) {
-            mClockChangedListener.onChange(seq);
-        }
     }
 
     public final CharSequence getSmallTime() {
