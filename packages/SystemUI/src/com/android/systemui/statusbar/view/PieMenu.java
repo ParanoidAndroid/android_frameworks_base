@@ -703,8 +703,10 @@ public class PieMenu extends FrameLayout {
         float y = evt.getY();
         int orient = mPanel.getOrientation();
         int distance = (int)Math.abs(orient == Gravity.TOP || orient == Gravity.BOTTOM ? y : x);    
-        int action = evt.getActionMasked();
+        int shadeTreshold = getHeight() - mTouchOffset * 10;
+        boolean pieTreshold = distance > mTouchOffset && distance < (int)(mRadius + mRadiusInc) * 2.5f;
 
+        int action = evt.getActionMasked();
         if (MotionEvent.ACTION_DOWN == action) {
                 // Open panel
                 mPanel.show(true);
@@ -715,7 +717,6 @@ public class PieMenu extends FrameLayout {
 
                 // Lets put the notification panel back
                 if(mPanelParentChanged) {
-                    mPanelParentChanged = false;
                     //ViewManager currentParent = (ViewManager)mPanel.getParent();
                     mScrollView.removeView(mPanel.getBar().getNotificationRowLayout());
                     mWindowManager.removeView(mContainer);
@@ -730,29 +731,33 @@ public class PieMenu extends FrameLayout {
                                     | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
                                             PixelFormat.TRANSLUCENT);
                     mPanelParent.addView(mPanel.getBar().getNotificationRowLayout(), lp);
+                    mPanelActive = false;
+                    mPanelParentChanged = false;
+                }
+
+                // Open the notification shade
+                if (mPanelActive) {
+                    mPanelParent.removeView(mPanel.getBar().getNotificationRowLayout());
+                    WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
+                            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                                    | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                                    | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                                    | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+                                    | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
+                                        PixelFormat.TRANSLUCENT);
+                    mScrollView.addView(mPanel.getBar().getNotificationRowLayout());
+                    mWindowManager.addView(mContainer, lp);
+                    mPanelParentChanged = true;
+                    mVibrator.vibrate(5);
                 }
       
-                // Check for actions
-                if (item != null && item.getView() != null) {
-                    if(distance > mTouchOffset && distance < (int)(mRadius + mRadiusInc) * 2.5f) {
-                        mVibrator.vibrate(5);
-                        item.getView().performClick();
-                    } else if (distance > getHeight() - mTouchOffset) {
-                        mPanelParent.removeView(mPanel.getBar().getNotificationRowLayout());
-                        WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
-                                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                                        | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                                        | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
-                                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
-                                PixelFormat.TRANSLUCENT);
-                        mScrollView.addView(mPanel.getBar().getNotificationRowLayout());
-                        mWindowManager.addView(mContainer, lp);
-                        mPanelParentChanged = true;
-                    }
+                // Check for click actions
+                if (item != null && item.getView() != null && pieTreshold) {
+                    mVibrator.vibrate(5);
+                    item.getView().performClick();
                 }
             }
 
@@ -763,17 +768,33 @@ public class PieMenu extends FrameLayout {
         } else if (MotionEvent.ACTION_MOVE == action) {
             int treshold = (int)(getHeight() * 0.6f);
             mGlowOffset = distance > treshold ? distance - treshold : 0;
-
-            PieItem item = findItem(getPolar(x, y));
-            if (item != null && mCurrentItem != item) {
-                onEnter(item);
+            
+            // Trigger the shade?
+            if (!mPanelActive && distance > shadeTreshold) {
+                mPanelActive = true;           
+                return true;
             }
 
+            // Take back shade trigger if user decides to abandon his gesture
+            if (distance < shadeTreshold) {
+                mPanelActive = false;
+            }
+
+            PieItem item = findItem(getPolar(x, y));
+            if (pieTreshold) {
+                // Check for onEnter separately or'll face constant deselect
+                if (item != null && mCurrentItem != item) {
+                    onEnter(item);
+                }
+            } else {
+                deselect();
+            }
             invalidate();
         }
         // always re-dispatch event
         return false;
     }
+    boolean mPanelActive = false;
 
     /**
      * enter a slice for a view
