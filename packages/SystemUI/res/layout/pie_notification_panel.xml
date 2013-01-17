@@ -17,7 +17,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:systemui="http://schemas.android.com/apk/res/com.android.systemui"
     android:id="@+id/content_frame"
-    android:background="#EE000000"
+    android:background="#AA000000"
     android:layout_height="match_parent"
     android:layout_width="match_parent"
     android:orientation="vertical">
