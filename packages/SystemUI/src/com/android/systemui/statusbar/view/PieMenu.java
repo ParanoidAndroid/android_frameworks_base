@@ -522,7 +522,7 @@ public class PieMenu extends FrameLayout {
         animation.addUpdateListener(new AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                mBatteryMeter = (int)(animation.getAnimatedFraction() * batteryLevel);
+                mBatteryMeter = (int)(animation.getAnimatedFraction() * (batteryLevel * 0.9f));
                 invalidate();
             }
         });
@@ -715,6 +715,8 @@ public class PieMenu extends FrameLayout {
         int distance = (int)Math.abs(orient == Gravity.TOP || orient == Gravity.BOTTOM ? y : x);    
         int shadeTreshold = getHeight() - mTouchOffset * 10;
         boolean pieTreshold = distance > mTouchOffset && distance < (int)(mRadius + mRadiusInc) * 2.5f;
+        final boolean hapticFeedback = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.HAPTIC_FEEDBACK_ENABLED, 1) != 0;
 
         int action = evt.getActionMasked();
         if (MotionEvent.ACTION_DOWN == action) {
@@ -761,7 +763,7 @@ public class PieMenu extends FrameLayout {
                     mScrollView.addView(mPanel.getBar().getNotificationRowLayout());
                     mWindowManager.addView(mContainer, lp);
                     mPanelParentChanged = true;
-                    mVibrator.vibrate(2);
+                    if(hapticFeedback) mVibrator.vibrate(2);
 
                     mContentFrame.setBackgroundColor(mBackgroundOpacity);
                     ValueAnimator mAlphaAnimation  = ValueAnimator.ofInt(0, 1);
@@ -780,7 +782,7 @@ public class PieMenu extends FrameLayout {
       
                 // Check for click actions
                 if (item != null && item.getView() != null && pieTreshold) {
-                    mVibrator.vibrate(2);
+                    if(hapticFeedback) mVibrator.vibrate(2);
                     item.getView().performClick();
                 }
             }
@@ -796,7 +798,7 @@ public class PieMenu extends FrameLayout {
             // Trigger the shade?
             if (!mPanelActive && distance > shadeTreshold) {
                 // Give the user a small hint that he's inside the upper touch area
-                mVibrator.vibrate(2);
+                if(hapticFeedback) mVibrator.vibrate(2);
                 mPanelActive = true;           
                 return true;
             }
