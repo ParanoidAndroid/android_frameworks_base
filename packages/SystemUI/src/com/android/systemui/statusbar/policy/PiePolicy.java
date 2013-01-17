@@ -33,6 +33,9 @@ import java.util.Date;
 
 public class PiePolicy {
 
+    public static int LOW_BATTERY_LEVEL;
+    public static int CRITICAL_BATTERY_LEVEL;
+
     private static Context mContext;
     private static int mBatteryLevel = 0;
 
@@ -47,6 +50,10 @@ public class PiePolicy {
         mContext = context;
         mContext.registerReceiver(mBatteryInfoReceiver, 
                 new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        LOW_BATTERY_LEVEL = mContext.getResources().getInteger(
+                com.android.internal.R.integer.config_lowBatteryWarningLevel);
+        CRITICAL_BATTERY_LEVEL = mContext.getResources().getInteger(
+                com.android.internal.R.integer.config_criticalBatteryWarningLevel);
     }
 
     public static String getWifiSsid() {
@@ -85,7 +92,11 @@ public class PiePolicy {
     }
 
     public static String getBatteryLevelReadable() {
-        return mContext.getString(R.string.accessibility_battery_level,
-                mBatteryLevel).toUpperCase();
+        return (mBatteryLevel > LOW_BATTERY_LEVEL ? 
+                mContext.getString(
+                        R.string.accessibility_battery_level, mBatteryLevel) :
+                mContext.getString(
+                        R.string.battery_low_percent_format, mBatteryLevel))
+                .toUpperCase();
     }
 }
