@@ -703,35 +703,34 @@ public class PieMenu extends FrameLayout {
         } else if (MotionEvent.ACTION_UP == action) {
             if (mOpen) {
                 PieItem item = mCurrentItem;
-                deselect();
+                
+                android.util.Log.d("PARANOID", "item="+item+"  item.getView()="+item.getView()+"  distance="+distance+"  treshold="+((mRadius + mRadiusInc) * 2.5f));
 
-                // Lets put the notification panel back
-                if(mPanelParentChanged) {
-                    ViewManager currentParent = (ViewManager)mPanel.getParent();
-                    currentParent.removeView(mPanel.getBar().getNotificationRowLayout());
-                    WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
-                                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                                        | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                                        | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
-                                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
-                                PixelFormat.TRANSLUCENT);
-                    mPanelParent.addView(mPanel.getBar().getNotificationRowLayout(), lp);
-                }
+            // Lets put the notification panel back
+            if(mPanelParentChanged) {
+                mPanelParentChanged = false;
+                //ViewManager currentParent = (ViewManager)mPanel.getParent();
+                mPanel.getBar().getWindowManager().removeView(mPanel.getBar().getNotificationRowLayout());
+                WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
+                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                                | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                                | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                                | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+                                | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
+                                        PixelFormat.TRANSLUCENT);
+                mPanelParent.addView(mPanel.getBar().getNotificationRowLayout(), lp);
+            }
 
+
+                // Check for actions
                 if (item != null && item.getView() != null) {
                     if(distance > mTouchOffset && distance < (int)(mRadius + mRadiusInc) * 2.5f) {
-                        if ((item == mOpenItem)) {
-
-
-                            vibrator.vibrate(5);
-                            item.getView().performClick();
-                        }
+                        vibrator.vibrate(5);
+                        item.getView().performClick();
                     } else if (distance > getWidth() - mTouchOffset) {
-                        mPanelParentChanged = true;
                         mPanelParent.removeView(mPanel.getBar().getNotificationRowLayout());
                         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -744,11 +743,13 @@ public class PieMenu extends FrameLayout {
                                         | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
                                 PixelFormat.TRANSLUCENT);
                         mPanel.getBar().getWindowManager().addView(mPanel.getBar().getNotificationRowLayout(), lp);
+                        mPanelParentChanged = true;
                     }
                 }
             }
 
             // Say good bye
+            deselect();
             animateOut();
             return true;
         } else if (MotionEvent.ACTION_MOVE == action) {

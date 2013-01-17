@@ -430,10 +430,10 @@ public abstract class BaseStatusBar extends SystemUI implements
         }
 
         // Add pie
-        addPie(Gravity.TOP);
-        addPie(Gravity.LEFT);
+        //addPie(Gravity.TOP);
+        //addPie(Gravity.LEFT);
         addPie(Gravity.BOTTOM);
-        addPie(Gravity.RIGHT);
+        //addPie(Gravity.RIGHT);
 
         updatePieControlsVisibility();
         mContext.getContentResolver().registerContentObserver(
