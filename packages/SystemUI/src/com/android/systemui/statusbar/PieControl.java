@@ -63,11 +63,14 @@ public class PieControl implements PieMenu.PieController, OnClickListener {
     private PieItem mMenu;
     private PieItem mRecent;
     private OnNavButtonPressedListener mListener;
-    private PieControlPanel mPanel;
 
     public PieControl(Context context) {
         mContext = context;
         mItemSize = (int) context.getResources().getDimension(R.dimen.pie_item_size);
+    }
+
+    public PieMenu getPieMenu() {
+        return mPie;
     }
 
     public void attachToContainer(FrameLayout container) {
@@ -78,7 +81,6 @@ public class PieControl implements PieMenu.PieController, OnClickListener {
             mPie.setLayoutParams(lp);
             populateMenu();
             mPie.setController(this);
-            mPie.setPanel(mPanel);
         }
         container.addView(mPie);
     }
@@ -92,10 +94,6 @@ public class PieControl implements PieMenu.PieController, OnClickListener {
             container.removeView(mPie);
             container.addView(mPie);
         }
-    }
-
-    protected void setPanel(PieControlPanel panel) {
-        mPanel = panel;
     }
 
     protected void setClickListener(OnClickListener listener, PieItem... items) {

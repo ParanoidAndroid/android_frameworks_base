@@ -182,6 +182,14 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     private boolean mDeviceProvisioned = false;
 
+    public WindowManager getWindowManager() {
+        return mWindowManager;
+    }
+
+    public NotificationRowLayout getNotificationRowLayout() {
+        return mPile;
+    }
+
     public void collapse() {
     }
 
@@ -275,50 +283,6 @@ public abstract class BaseStatusBar extends SystemUI implements
         }
     }
 
-    private void addPie(int gravity) {
-        // Quick navigation bar trigger area
-        final Resources res = mContext.getResources();
-        mPieControlsTrigger = new View(mContext);
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
-                (gravity == Gravity.TOP || gravity == Gravity.BOTTOM ?
-                        ViewGroup.LayoutParams.MATCH_PARENT : res.getDimensionPixelSize(R.dimen.pie_trigger_height)),
-                (gravity == Gravity.LEFT || gravity == Gravity.RIGHT ?
-                        ViewGroup.LayoutParams.MATCH_PARENT : res.getDimensionPixelSize(R.dimen.pie_trigger_height)),
-                WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG,
-                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                        | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
-                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
-                PixelFormat.TRANSLUCENT);
-
-        lp.gravity = gravity;
-
-        // Quick navigation bar panel
-        PieControlPanel panel = (PieControlPanel) View.inflate(mContext,
-                R.layout.pie_control_panel, null);
-
-        mPieControlsTrigger.setOnTouchListener(new PieControlsTouchListener(panel));
-        mWindowManager.addView(mPieControlsTrigger, lp);
-
-        lp = new WindowManager.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG,
-                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                        | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
-                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
-                        | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
-                PixelFormat.TRANSLUCENT);
-        lp.setTitle("PieControlPanel");
-        lp.windowAnimations = android.R.style.Animation;
-
-        panel.setBar(this);
-        panel.setHandler(mHandler);
-        panel.setOrientation(gravity);
-        mWindowManager.addView(panel, lp);
-    }
-
     public void start() {
         mWindowManager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
         mWindowManagerService = WindowManagerGlobal.getWindowManagerService();
@@ -333,12 +297,6 @@ public abstract class BaseStatusBar extends SystemUI implements
                 ServiceManager.getService(Context.STATUS_BAR_SERVICE));
 
         mStatusBarContainer = new FrameLayout(mContext);
-
-        // Add pie
-        addPie(Gravity.TOP);
-        addPie(Gravity.LEFT);
-        addPie(Gravity.BOTTOM);
-        addPie(Gravity.RIGHT);
 
         // Connect in to the status bar manager service
         StatusBarIconList iconList = new StatusBarIconList();
@@ -412,17 +370,6 @@ public abstract class BaseStatusBar extends SystemUI implements
                 }
             }}, filter);
 
-
-        updatePieControlsVisibility();
-        mContext.getContentResolver().registerContentObserver(
-            Settings.System.getUriFor(Settings.System.PIE_CONTROLS), false, new ContentObserver(new Handler()) {
-                @Override
-                public void onChange(boolean selfChange) {
-                    updatePieControlsVisibility();
-                }
-            }
-        );
-
         // Only watch for per app color changes when the setting is in check
         if (ColorUtils.getPerAppColorState(mContext)) {
 
@@ -481,6 +428,66 @@ public abstract class BaseStatusBar extends SystemUI implements
                         }
                     }});
         }
+
+        // Add pie
+        addPie(Gravity.TOP);
+        addPie(Gravity.LEFT);
+        addPie(Gravity.BOTTOM);
+        addPie(Gravity.RIGHT);
+
+        updatePieControlsVisibility();
+        mContext.getContentResolver().registerContentObserver(
+            Settings.System.getUriFor(Settings.System.PIE_CONTROLS), false, new ContentObserver(new Handler()) {
+                @Override
+                public void onChange(boolean selfChange) {
+                    updatePieControlsVisibility();
+                }
+            }
+        );
+    }
+
+    private void addPie(int gravity) {
+        // Quick navigation bar trigger area
+        final Resources res = mContext.getResources();
+        mPieControlsTrigger = new View(mContext);
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
+                (gravity == Gravity.TOP || gravity == Gravity.BOTTOM ?
+                        ViewGroup.LayoutParams.MATCH_PARENT : res.getDimensionPixelSize(R.dimen.pie_trigger_height)),
+                (gravity == Gravity.LEFT || gravity == Gravity.RIGHT ?
+                        ViewGroup.LayoutParams.MATCH_PARENT : res.getDimensionPixelSize(R.dimen.pie_trigger_height)),
+                WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG,
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                        | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
+                PixelFormat.TRANSLUCENT);
+
+        lp.gravity = gravity;
+
+        // Quick navigation bar panel
+        PieControlPanel panel = (PieControlPanel) View.inflate(mContext,
+                R.layout.pie_control_panel, null);
+
+        mPieControlsTrigger.setOnTouchListener(new PieControlsTouchListener(panel));
+        mWindowManager.addView(mPieControlsTrigger, lp);
+
+        lp = new WindowManager.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG,
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                        | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
+                        | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+                PixelFormat.TRANSLUCENT);
+        lp.setTitle("PieControlPanel");
+        lp.windowAnimations = android.R.style.Animation;
+
+        panel.setBar(this);
+        panel.setHandler(mHandler);
+        panel.setOrientation(gravity);
+        mWindowManager.addView(panel, lp);
     }
 
     private void updateIconColor() {

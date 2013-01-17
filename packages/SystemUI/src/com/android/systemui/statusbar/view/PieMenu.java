@@ -26,15 +26,22 @@ import android.database.ContentObserver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.Rect;
 import android.graphics.Paint;
+import android.graphics.PixelFormat;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuff.Mode;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.graphics.LightingColorFilter;
 import android.graphics.Typeface;
 import android.os.Handler;
 import android.os.Vibrator;
@@ -48,6 +55,9 @@ import android.view.MotionEvent;
 import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.view.ViewManager;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
@@ -120,6 +130,7 @@ public class PieMenu extends FrameLayout {
     private Paint mSubPaint;
     private Paint mBatteryJuice;
     private Paint mBatteryBackground;
+    private Paint mGlowPaint;
 
     // touch handling
     private PieItem mCurrentItem;
@@ -148,6 +159,9 @@ public class PieMenu extends FrameLayout {
     private ValueAnimator mOutroAnimation;
 
     private Vibrator vibrator;
+
+    private ViewManager mPanelParent;
+    private boolean mPanelParentChanged;
 
     /**
      * @param context
@@ -200,6 +214,9 @@ public class PieMenu extends FrameLayout {
         mSelectedPaint = new Paint();
         mSelectedPaint.setAntiAlias(true);
         mSelectedPaint.setColor(0xAA33b5e5);
+
+        mGlowPaint = new Paint(0xAA33b5e5);
+        mGlowPaint.setColorFilter(new LightingColorFilter(0xAA33b5e5, 1));
 
         mBatteryJuice = new Paint();
         mBatteryJuice.setAntiAlias(true);
@@ -271,6 +288,8 @@ public class PieMenu extends FrameLayout {
 
     public void setPanel(PieControlPanel panel) {
         mPanel = panel;
+        mPanelParent = (ViewManager)mPanel.getBar().getNotificationRowLayout().getParent();
+        mPanelParentChanged = false;
     }
 
     public void setController(PieController ctl) {
@@ -545,6 +564,8 @@ public class PieMenu extends FrameLayout {
 
     float mCharOffest[];
 
+    int mGlowOffset = 0;
+
     @Override
     protected void onDraw(Canvas canvas) {
         if (mOpen) {
@@ -552,6 +573,16 @@ public class PieMenu extends FrameLayout {
             if (mUseBackground) {
                 canvas.drawARGB(mBackgroundOpacity, 0, 0, 0);
             }
+
+            Bitmap mBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.bottom_divider_glow);
+            canvas.drawBitmap(mBitmap, null, new Rect(0,0,getWidth(),3), mGlowPaint);
+            Bitmap mBitmap1 = BitmapFactory.decodeResource(getResources(), R.drawable.notify_item_glow_bottom);
+            canvas.drawBitmap(mBitmap1, null, new Rect(0,0,getWidth(),mGlowOffset), mGlowPaint);
+            canvas.drawBitmap(mBitmap1, null, new Rect(0,0,getWidth(),mGlowOffset), mGlowPaint);
+
+
+
+
             // draw base menu
             PieItem last = mCurrentItem;
             if (mOpenItem != null) {
@@ -618,19 +649,6 @@ public class PieMenu extends FrameLayout {
             canvas.drawTextOnPath("BATTERY AT 75%", mStatusPath, mCharOffest[4], -25, mStatusPaint);
             canvas.drawTextOnPath("WIFI: SITECOM788A2A", mStatusPath, mCharOffest[4], 0, mStatusPaint);
             canvas.restoreToCount(state);
-
-            // floating text
-            /*
-            state = canvas.save();
-            canvas.rotate(mPanel.getDegree(), mCenter.x, mCenter.y);
-            mStatusPaint.setAlpha(mTextAlpha);
-            canvas.drawTextOnPath(mStatusText, mStatusPath, 0, 0, mStatusPaint);
-            canvas.restoreToCount(state);
-
-            if (mStatusAnimate) {
-                mTextOffset += .4f;
-                invalidate();
-            }*/
         }
     }
 
@@ -674,6 +692,8 @@ public class PieMenu extends FrameLayout {
     public boolean onTouchEvent(MotionEvent evt) {
         float x = evt.getX();
         float y = evt.getY();
+        int orient = mPanel.getOrientation();
+        int distance = (int)Math.abs(orient == Gravity.TOP || orient == Gravity.BOTTOM ? y : x);    
         int action = evt.getActionMasked();
 
         if (MotionEvent.ACTION_DOWN == action) {
@@ -682,22 +702,48 @@ public class PieMenu extends FrameLayout {
                 animateIn();
         } else if (MotionEvent.ACTION_UP == action) {
             if (mOpen) {
-                boolean handled = false;
-                if (mPieView != null) {
-                    handled = mPieView.onTouchEvent(evt);
-                }
                 PieItem item = mCurrentItem;
-                if (!mAnimating) {
-                    deselect();
+                deselect();
+
+                // Lets put the notification panel back
+                if(mPanelParentChanged) {
+                    ViewManager currentParent = (ViewManager)mPanel.getParent();
+                    currentParent.removeView(mPanel.getBar().getNotificationRowLayout());
+                    WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
+                                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                                        | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                                        | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+                                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
+                                PixelFormat.TRANSLUCENT);
+                    mPanelParent.addView(mPanel.getBar().getNotificationRowLayout(), lp);
                 }
 
-                int orient = mPanel.getOrientation();
-                int distance = (int)Math.abs(orient == Gravity.TOP || orient == Gravity.BOTTOM ? y : x);
-                if (!handled && (item != null) && (item.getView() != null) && (distance > mTouchOffset && distance
-                        < (int)(mRadius + mRadiusInc) * 2.5f) ) {
-                    if ((item == mOpenItem) || !mAnimating) {
-                        vibrator.vibrate(5);
-                        item.getView().performClick();
+                if (item != null && item.getView() != null) {
+                    if(distance > mTouchOffset && distance < (int)(mRadius + mRadiusInc) * 2.5f) {
+                        if ((item == mOpenItem)) {
+
+
+                            vibrator.vibrate(5);
+                            item.getView().performClick();
+                        }
+                    } else if (distance > getWidth() - mTouchOffset) {
+                        mPanelParentChanged = true;
+                        mPanelParent.removeView(mPanel.getBar().getNotificationRowLayout());
+                        WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
+                                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                                        | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                                        | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+                                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
+                                PixelFormat.TRANSLUCENT);
+                        mPanel.getBar().getWindowManager().addView(mPanel.getBar().getNotificationRowLayout(), lp);
                     }
                 }
             }
@@ -706,21 +752,15 @@ public class PieMenu extends FrameLayout {
             animateOut();
             return true;
         } else if (MotionEvent.ACTION_MOVE == action) {
-            if (mAnimating) return false;
-            boolean handled = false;
-            if (mPieView != null) {
-                handled = mPieView.onTouchEvent(evt);
-            }
-            if (handled) {
-                invalidate();
-                return false;
-            }
+            int treshold = (int)(getHeight() * 0.6f);
+            mGlowOffset = distance > treshold ? distance - treshold : 0;
+
             PieItem item = findItem(getPolar(x, y));
-            if (item == null) {
-            } else if (mCurrentItem != item) {
+            if (item != null && mCurrentItem != item) {
                 onEnter(item);
-                invalidate();
             }
+
+            invalidate();
         }
         // always re-dispatch event
         return false;
