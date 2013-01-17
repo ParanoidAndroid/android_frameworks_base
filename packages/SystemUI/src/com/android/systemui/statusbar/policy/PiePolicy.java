@@ -75,7 +75,7 @@ public class PiePolicy {
     }
 
     public static String getSimpleDate() {
-        SimpleDateFormat sdf = new SimpleDateFormat("ccc, FF MMM yy");
+        SimpleDateFormat sdf = new SimpleDateFormat("ccc, FF MMM yyyy");
         String date = sdf.format(new Date());
         return date.toUpperCase();
     }
