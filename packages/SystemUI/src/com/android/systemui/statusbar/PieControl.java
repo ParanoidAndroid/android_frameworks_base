@@ -51,7 +51,7 @@ import java.util.List;
 /**
  * Controller for Quick Controls pie menu
  */
-public class PieControl implements PieMenu.PieController, OnClickListener, NavigationCallback {
+public class PieControl implements OnClickListener, NavigationCallback {
     public static final String BACK_BUTTON = "##back##";
     public static final String HOME_BUTTON = "##home##";
     public static final String MENU_BUTTON = "##menu##";
@@ -90,7 +90,6 @@ public class PieControl implements PieMenu.PieController, OnClickListener, Navig
                     LayoutParams.MATCH_PARENT);
             mPie.setLayoutParams(lp);
             populateMenu();
-            mPie.setController(this);
             // set recents activity navigation bar view
             RecentsActivity.addNavigationCallback(this);
         }
@@ -110,11 +109,6 @@ public class PieControl implements PieMenu.PieController, OnClickListener, Navig
 
     protected void setIsAssistantAvailable(boolean isAvailable) {
         mIsAssistantAvailable = isAvailable;
-    }
-
-    @Override
-    public boolean onOpen() {
-        return true;
     }
 
     public boolean onTouchEvent(MotionEvent event) {

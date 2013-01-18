@@ -215,15 +215,15 @@ public class PieItem {
     private void setColor() {
         ImageView imageView = ((ImageView) mView);
         Drawable drawable = imageView.getDrawable();
+        boolean mPerAppColor = Settings.System.getInt(mContext.getContentResolver(), Settings.System.PIE_PAC, 0) == 1;
         ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
                 Settings.System.NAV_BUTTON_COLOR);
-        if (!colorInfo.lastColorString.equals(mLastButtonColor.lastColorString)) {
-            if (colorInfo.isLastColorNull) {
-                drawable.clearColorFilter();
-            } else {
-                drawable.setColorFilter(ColorUtils.extractRGB(colorInfo.lastColor)
+        if (!colorInfo.lastColorString.equals(mLastButtonColor.lastColorString) && mPerAppColor && !colorInfo.isLastColorNull) {
+            drawable.setColorFilter(ColorUtils.extractRGB(colorInfo.lastColor)
                         | 0xFF000000, Mode.SRC_ATOP);
-            }
+            mLastButtonColor = colorInfo;
+        } else {
+            drawable.clearColorFilter();
             mLastButtonColor = colorInfo;
         }
         imageView.setImageDrawable(drawable);
