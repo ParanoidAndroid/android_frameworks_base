@@ -500,7 +500,7 @@ public class PieMenu extends FrameLayout {
         animation.addUpdateListener(new AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                mBatteryMeter = (float)(animation.getAnimatedFraction());
+                mBatteryMeter = (float)(animation.getAnimatedFraction() * batteryLevel);
                 invalidate();
             }
         });
@@ -602,7 +602,7 @@ public class PieMenu extends FrameLayout {
 
                 state = canvas.save();
                 canvas.rotate(90, mCenter.x, mCenter.y);
-                Path mBatteryPath2 = makeSlice(start, start + mBatteryMeter * (end-start), inner, outer, mCenter);
+                Path mBatteryPath2 = makeSlice(start, start + mBatteryMeter * (end-start) / 100, inner, outer, mCenter);
                 mBatteryJuice.setAlpha(mBatteryJuiceAlpha);
                 canvas.drawPath(mBatteryPath2, mBatteryJuice);
                 canvas.restoreToCount(state);
