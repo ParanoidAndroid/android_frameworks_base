@@ -496,7 +496,7 @@ public class PieMenu extends FrameLayout {
         animation.addUpdateListener(new AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                mBatteryMeter = (int)(animation.getAnimatedFraction() * (batteryLevel * 0.9f));
+                mBatteryMeter = (int)(animation.getAnimatedFraction() * (batteryLevel * 0.87f));
                 invalidate();
             }
         });
