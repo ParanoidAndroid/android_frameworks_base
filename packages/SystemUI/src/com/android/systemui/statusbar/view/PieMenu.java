@@ -612,7 +612,7 @@ public class PieMenu extends FrameLayout {
                     mStatusPaint.setColor(COLOR_DEFAULT_STATUS);
                     mStatusPaint.setTextSize(125);
                     mStatusPaint.setAlpha(mTextAlpha);
-                    mStatusPaint.setTextScaleX(1.2f);
+                    mStatusPaint.setTextScaleX(1.1f);
 
                     // First measure
                     float totalOffset = 0;
