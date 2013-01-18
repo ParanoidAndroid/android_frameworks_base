@@ -381,7 +381,7 @@ public class PieMenu extends FrameLayout {
                 int x = (int) (r * Math.sin(total + angle));
                 int y = (int) (r * Math.cos(total + angle));
 
-                switch( mPanel.getOrientation() ) {
+                switch(mPanel.getOrientation()) {
                     case Gravity.LEFT:
                         y = mCenter.y - (int) (r * Math.sin(total + angle)) - h / 2;
                         x = (int) (r * Math.cos(total + angle)) - w / 2;
@@ -602,7 +602,7 @@ public class PieMenu extends FrameLayout {
 
                     // Then print
                     float lastPos = 0;
-                    for( int i = 0; i < mStatusText.length(); i++ ) {
+                    for(int i = 0; i < mStatusText.length(); i++) {
                         char character = mStatusText.charAt(i);
                         canvas.drawTextOnPath("" + character, mStatusPath, lastPos, -mCharOffset[i] - mTouchOffset * 2.3f, mStatusPaint);
                         lastPos += offsets[i];
@@ -724,7 +724,7 @@ public class PieMenu extends FrameLayout {
                         @Override
                         public void onAnimationUpdate(ValueAnimator animation) {
                             mScrollView.setX(-(int)((1-animation.getAnimatedFraction()) * getWidth()*1.5));
-                            mContentFrame.setBackgroundColor( (int)(animation.getAnimatedFraction() * 0xDD) << 24);
+                            mContentFrame.setBackgroundColor((int)(animation.getAnimatedFraction() * 0xDD) << 24);
                             invalidate();
                         }
                     });
@@ -800,7 +800,7 @@ public class PieMenu extends FrameLayout {
     private float getPolar(double x, double y) {
         PointF size = mPanel.getSize();
         int orient = mPanel.getOrientation();
-        switch( orient ) {
+        switch(orient) {
             case Gravity.TOP:
             case Gravity.BOTTOM:
                 x = (size.x / 2 - x) * (orient == Gravity.TOP ? -1 : 1);
@@ -813,7 +813,7 @@ public class PieMenu extends FrameLayout {
                 y = (size.y / 2 - y) * (orient == Gravity.RIGHT ? -1 : 1);
                 break;
         }
-        return -(((float)(Math.acos((orient == Gravity.TOP || orient == Gravity.BOTTOM ? x : y ) /
+        return -(((float)(Math.acos((orient == Gravity.TOP || orient == Gravity.BOTTOM ? x : y) /
                 Math.sqrt(x * x + y * y)) * 180 / Math.PI) - 90) / 10);
     }
 
