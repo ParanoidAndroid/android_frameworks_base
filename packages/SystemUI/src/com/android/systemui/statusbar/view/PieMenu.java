@@ -141,12 +141,12 @@ public class PieMenu extends FrameLayout {
     int mBatteryMeter = 0;
 
     // Flags
-    private boolean mPanelActive = false;
-    private boolean mPanelParentChanged = false;
-    private boolean mPerAppColor = false;
-    private boolean mOpen = false;
-    private boolean mStatusAnimate = false;;
-    private boolean mGlowColorHelper = false;
+    private boolean mPanelActive;
+    private boolean mPanelParentChanged;
+    private boolean mPerAppColor;
+    private boolean mOpen;
+    private boolean mStatusAnimate;
+    private boolean mGlowColorHelper;
     private int mStatusMode = 2;
 
     // Layout and UI
@@ -694,7 +694,7 @@ public class PieMenu extends FrameLayout {
                                     | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                                     | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
                                     | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
-                                            PixelFormat.TRANSLUCENT);
+                            PixelFormat.TRANSLUCENT);
                     mPanelParent.addView(mPanel.getBar().getNotificationRowLayout(), lp);
                     mPanelActive = false;
                     mPanelParentChanged = false;
@@ -712,7 +712,7 @@ public class PieMenu extends FrameLayout {
                                     | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                                     | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
                                     | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
-                                        PixelFormat.TRANSLUCENT);
+                            PixelFormat.TRANSLUCENT);
                     mScrollView.addView(mPanel.getBar().getNotificationRowLayout());
                     mWindowManager.addView(mContainer, lp);
                     mPanelParentChanged = true;
