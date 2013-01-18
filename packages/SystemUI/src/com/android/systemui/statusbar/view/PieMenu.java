@@ -644,7 +644,7 @@ public class PieMenu extends FrameLayout {
                     String amPm = mPolicy.getAmPm();
                     lastPos -= mStatusPaint.measureText(amPm);
                     canvas.drawTextOnPath(amPm, mStatusPath, lastPos,
-                            -mCharOffset[mStatusText.length()-1] - mTouchOffset * 5.8f, mStatusPaint);
+                        -mCharOffset[mStatusText.length()-1] - mTouchOffset * 5.8f, mStatusPaint);
                     canvas.restoreToCount(state);
 
                     // Device status information and date
@@ -652,7 +652,9 @@ public class PieMenu extends FrameLayout {
                     pos = mPanel.getDegree() + 180;
                     canvas.rotate(pos, mCenter.x, mCenter.y);
                     mStatusPaint.setTextSize(20);
-                    canvas.drawTextOnPath(mPolicy.getNetworkProvider(), mStatusPath, mCharOffset[4], -95, mStatusPaint);
+                    if (mPolicy.supportsTelephony()) {
+                        canvas.drawTextOnPath(mPolicy.getNetworkProvider(), mStatusPath, mCharOffset[4], -95, mStatusPaint);
+                    }
                     canvas.drawTextOnPath(mPolicy.getSimpleDate(), mStatusPath, mCharOffset[4], -70, mStatusPaint);
                     canvas.drawTextOnPath(mPolicy.getBatteryLevelReadable(), mStatusPath, mCharOffset[4], -45, mStatusPaint);
                     canvas.drawTextOnPath(mPolicy.getWifiSsid(), mStatusPath, mCharOffset[4], -20, mStatusPaint);

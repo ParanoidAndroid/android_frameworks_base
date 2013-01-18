@@ -20,6 +20,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.text.format.DateFormat;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -39,6 +40,7 @@ public class PiePolicy {
 
     private static Context mContext;
     private static int mBatteryLevel = 0;
+    private static boolean mTelephony;
 
     private OnClockChangedListener mClockChangedListener;
 
@@ -72,10 +74,15 @@ public class PiePolicy {
                 com.android.internal.R.integer.config_lowBatteryWarningLevel);
         CRITICAL_BATTERY_LEVEL = mContext.getResources().getInteger(
                 com.android.internal.R.integer.config_criticalBatteryWarningLevel);
+        mTelephony = mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
     }
 
     public void setOnClockChangedListener(OnClockChangedListener l){
         mClockChangedListener = l;
+    }
+    
+    public boolean supportsTelephony() {
+        return mTelephony;
     }
 
     public static String getWifiSsid() {
