@@ -699,7 +699,7 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     @Override
     public void animateCollapsePanels(int flags) {
-        if (flags == CommandQueue.FLAG_EXCLUDE_NONE) {
+        if (mPieControlPanel != null && flags == CommandQueue.FLAG_EXCLUDE_NONE) {
             mPieControlPanel.animateCollapsePanels();
         }
     }
