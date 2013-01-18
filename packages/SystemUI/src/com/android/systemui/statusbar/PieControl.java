@@ -52,6 +52,7 @@ public class PieControl implements PieMenu.PieController, OnClickListener {
     public static final String BACK_BUTTON = "##back##";
     public static final String HOME_BUTTON = "##home##";
     public static final String MENU_BUTTON = "##menu##";
+    public static final String SEARCH_BUTTON = "##search##";
     public static final String RECENT_BUTTON = "##recent##";
 
     protected Context mContext;
@@ -62,6 +63,7 @@ public class PieControl implements PieMenu.PieController, OnClickListener {
     private PieItem mHome;
     private PieItem mMenu;
     private PieItem mRecent;
+    private PieItem mSearch;
     private OnNavButtonPressedListener mListener;
 
     public PieControl(Context context) {
@@ -116,10 +118,12 @@ public class PieControl implements PieMenu.PieController, OnClickListener {
         mHome = makeItem(R.drawable.ic_sysbar_home, 1, HOME_BUTTON, false);
         mRecent = makeItem(R.drawable.ic_sysbar_recent, 1, RECENT_BUTTON, false);
         mMenu = makeItem(R.drawable.ic_sysbar_menu, 1, MENU_BUTTON, true);
+        mSearch = makeItem(R.drawable.ic_sysbar_search_side, 1, SEARCH_BUTTON, true);
             
         setClickListener(this, mBack, mHome, mRecent, mMenu);
 
         mPie.addItem(mMenu);
+        mPie.addItem(mSearch);
         mPie.addItem(mRecent);
         mPie.addItem(mHome);
         mPie.addItem(mBack);
@@ -136,6 +140,8 @@ public class PieControl implements PieMenu.PieController, OnClickListener {
             buttonName = RECENT_BUTTON;
         } else if (v == mMenu.getView()) {
             buttonName = MENU_BUTTON;
+        }else if (v == mMenu.getView()) {
+            buttonName = SEARCH_BUTTON;
         }
 
         if (mListener != null) {

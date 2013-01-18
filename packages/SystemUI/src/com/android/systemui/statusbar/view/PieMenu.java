@@ -812,14 +812,14 @@ public class PieMenu extends FrameLayout {
             }
 
             PieItem item = findItem(getPolar(x, y));
-            if (pieTreshold) {
+            //if (pieTreshold) {
                 // Check for onEnter separately or'll face constant deselect
                 if (item != null && mCurrentItem != item) {
                     onEnter(item);
                 }
-            } else {
-                deselect();
-            }
+            //} else {
+            //    deselect();
+            //}
             invalidate();
         }
         // always re-dispatch event
