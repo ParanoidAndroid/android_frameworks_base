@@ -206,6 +206,7 @@ public class PieMenu extends FrameLayout {
         mBatteryBackground.setColor(COLOR_DEFAULT_BATTERY_BACKGROUND);
 
         mStatusPaint = new Paint();
+        mStatusPaint.setAntiAlias(true);
         mStatusPaint.setColor(COLOR_DEFAULT_STATUS);
         mStatusPaint.setStyle(Paint.Style.FILL);
         mStatusPaint.setTextSize(150);
@@ -232,6 +233,14 @@ public class PieMenu extends FrameLayout {
         mContainer = inflater.inflate(R.layout.pie_notification_panel, null);
         mContentFrame = (View) mContainer.findViewById(R.id.content_frame);
         mScrollView = (ScrollView) mContainer.findViewById(R.id.notification_scroll);
+        mScrollView.setOnTouchListener(new OnTouchListener(){
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {         
+                if(event.getAction() == MotionEvent.ACTION_UP) {
+                    hideNotificationsPanel();
+                }
+                return false;
+            }});
 
         mLastBackgroundColor = new ColorUtils.ColorSettingInfo();
         mLastGlowColor = new ColorUtils.ColorSettingInfo();
