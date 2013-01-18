@@ -595,7 +595,7 @@ public class PieMenu extends FrameLayout {
                     mStatusPaint.setTextSize(35);
                     String amPm = mPolicy.getAmPm();
                     lastPos -= mStatusPaint.measureText(amPm);
-                    canvas.drawTextOnPath(amPm, mStatusPath, lastPos, -mCharOffset[mStatusText.length()-1] - 140, mStatusPaint);
+                    canvas.drawTextOnPath(amPm, mStatusPath, lastPos, -mCharOffset[mStatusText.length()-1] - mTouchOffset * 5.8f, mStatusPaint);
                     canvas.restoreToCount(state);
 
                     // Device status information and date
