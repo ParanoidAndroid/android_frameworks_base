@@ -583,15 +583,31 @@ public class PieMenu extends FrameLayout {
                     mStatusPaint.setAlpha(mTextAlpha);
                     mStatusPaint.setTextScaleX(1.2f);
 
+                    // First measure
+                    float totalOffset = 0;
+                    float offsets[] = new float[mStatusText.length()];
+                    for( int i = 0; i < mStatusText.length(); i++ ) {
+                        char character = mStatusText.charAt(i);
+                        float measure = mStatusPaint.measureText("" + character); 
+                        offsets[i] = measure * (character == '1' || character == ':' ? 0.5f : 0.8f);
+                        totalOffset += measure * (character == '1' || character == ':' ? 0.5f : 0.9f);
+                    }
+                    
+                    float fullCircle = 2f * (mRadius+mRadiusInc) * (float)Math.PI;
+                    float angle = totalOffset * 360 / fullCircle;
+                    float pos = mPanel.getDegree() + (180 - angle);
+
                     state = canvas.save();
-                    float pos = mPanel.getDegree() + 125;
                     canvas.rotate(pos, mCenter.x, mCenter.y);
+
+                    // Then print
                     float lastPos = 0;
                     for( int i = 0; i < mStatusText.length(); i++ ) {
                         char character = mStatusText.charAt(i);
                         canvas.drawTextOnPath("" + character, mStatusPath, lastPos, -mCharOffset[i] - mTouchOffset * 2.3f, mStatusPaint);
-                        lastPos += mStatusPaint.measureText("" + character) * (character == '1' || character == ':' ? 0.5f : 0.8f);
+                        lastPos += offsets[i];
                     }
+
                     mStatusPaint.setTextSize(35);
                     String amPm = mPolicy.getAmPm();
                     lastPos -= mStatusPaint.measureText(amPm);
