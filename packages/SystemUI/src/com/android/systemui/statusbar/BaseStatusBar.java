@@ -470,7 +470,7 @@ public abstract class BaseStatusBar extends SystemUI implements
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
+                WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG,
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                         | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                         | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
@@ -694,6 +694,13 @@ public abstract class BaseStatusBar extends SystemUI implements
             boolean setting = (Settings.System.getInt(mContext.getContentResolver(),
                     Settings.System.STATUS_BAR_SHOW_CLOCK, 1) == 1);
             mClock.setVisibility(show && setting ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    @Override
+    public void animateCollapsePanels(int flags) {
+        if (flags == CommandQueue.FLAG_EXCLUDE_NONE) {
+            mPieControlPanel.animateCollapsePanels();
         }
     }
 

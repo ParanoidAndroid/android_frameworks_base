@@ -101,6 +101,10 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
         return mStatusBar;
     }
 
+    public void animateCollapsePanels() {
+        mPieControl.getPieMenu().hideNotificationsPanel();
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         return mPieControl.onTouchEvent(event);
@@ -209,7 +213,6 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
                 mContext.startActivityAsUser(intent, opts.toBundle(),
                         new UserHandle(UserHandle.USER_CURRENT));
             } catch (ActivityNotFoundException e) {
-                // So bad, so sad...
             }
         }
     }
