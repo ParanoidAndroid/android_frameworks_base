@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.view;
 import android.database.ContentObserver;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuff.Mode;
 import android.os.Handler;
@@ -50,10 +51,12 @@ public class PieItem {
     private boolean mEnabled;
     private List<PieItem> mItems;
     private String mName;
+    private Path mPath;
+    private boolean mIsLesser;
 
     private ColorUtils.ColorSettingInfo mLastButtonColor;
 
-    public PieItem(View view, Context context, int level, String name) {
+    public PieItem(View view, Context context, int level, String name, boolean lesser) {
         mContext = context;
         mView = view;
         this.level = level;
@@ -61,6 +64,7 @@ public class PieItem {
         setAnimationAngle(getAnimationAngle());
         setAlpha(getAlpha());
         mName = name;
+        mIsLesser = lesser;
 
         if(mContext != null) {
             if (ColorUtils.getPerAppColorState(mContext)) {
@@ -75,6 +79,22 @@ public class PieItem {
                         }});
             }
         }
+    }
+
+    public void setLesser(boolean lesser) {
+        mIsLesser = lesser;
+    }
+
+    public boolean isLesser() {
+        return mIsLesser;
+    }
+
+    public void setPath(Path path) {
+        mPath = path;
+    }
+
+    public Path getPath() {
+        return mPath;
     }
 
     public boolean hasItems() {

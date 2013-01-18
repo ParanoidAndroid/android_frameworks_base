@@ -117,7 +117,6 @@ public class PieMenu extends FrameLayout {
     private int mRadiusInc;
     private int mSlop;
     private int mTouchOffset;
-    private Path mPath;
 
     private boolean mOpen;
     private PieController mController;
@@ -403,53 +402,57 @@ public class PieMenu extends FrameLayout {
         int outer = mRadius + mRadiusInc - rgap;
         int gap = 1;
 
-        for (int i = 0; i < mLevels; i++) {
-            int level = i + 1;
-            float sweep = (float) (Math.PI - 2 * emptyangle) / mCounts[level];
-            float angle = emptyangle + sweep / 2 - (float)Math.PI/2;
-            mPath = makeSlice(getDegrees(0) - gap, getDegrees(sweep) + gap, outer, inner, mCenter);
-            for (PieItem item : mItems) {
-                if (item.getLevel() == level) {
-                    View view = item.getView();
-                    if (view != null) {
-                        view.measure(view.getLayoutParams().width,
-                                view.getLayoutParams().height);
-                        int w = view.getMeasuredWidth();
-                        int h = view.getMeasuredHeight();
-                        int r = inner + (outer - inner) * 2 / 3;
-                        int x = (int) (r * Math.sin(angle));
-                        int y = (int) (r * Math.cos(angle));
-
-                        switch( mPanel.getOrientation() ) {
-                            case Gravity.LEFT:
-                                y = mCenter.y - (int) (r * Math.sin(angle)) - h / 2;
-                                x = (int) (r * Math.cos(angle)) - w / 2;
-                                break;
-                            case Gravity.RIGHT:
-                                y = mCenter.y - (int) (Math.PI/2-r * Math.sin(angle)) - h / 2;
-                                x = mCenter.x - (int) (r * Math.cos(angle)) - w / 2;
-                                break;
-                            case Gravity.TOP:
-                                y = y - h / 2;
-                                x = mCenter.x - (int)(Math.PI/2-x) - w / 2;
-                                break;
-                            case Gravity.BOTTOM: 
-                                y = mCenter.y - y - h / 2;
-                                x = mCenter.x - x - w / 2;
-                                break;
-                        }
-                        view.layout(x, y, x + w, y + h);
-                    }
-                    float itemstart = angle - sweep / 2;
-                    item.setGeometry(itemstart, sweep, inner, outer);
-                    angle += sweep;
-                }
+        int lesserSweepCount = 0;
+        for (PieItem item : mItems) {
+            if (item.isLesser()) {
+                lesserSweepCount += 1;
             }
-            inner += mRadiusInc;
-            outer += mRadiusInc;
+        }
+        float adjustedSweep = lesserSweepCount > 0 ? (((1-0.65f) * lesserSweepCount) / (mItems.size()-lesserSweepCount)) : 0;    
+        
+        float sweep = 0;
+        float angle = 0;
+        float total = 0;
+
+        for (PieItem item : mItems) {
+            sweep = ((float) (Math.PI - 2 * emptyangle) / mItems.size()) * (item.isLesser() ? 0.65f : 1 + adjustedSweep);
+            angle = (emptyangle + sweep / 2 - (float)Math.PI/2);
+            item.setPath(makeSlice(getDegrees(0) - gap, getDegrees(sweep) + gap, outer, inner, mCenter));
+            View view = item.getView();
+
+            if (view != null) {
+                view.measure(view.getLayoutParams().width, view.getLayoutParams().height);
+                int w = view.getMeasuredWidth();
+                int h = view.getMeasuredHeight();
+                int r = inner + (outer - inner) * 2 / 3;
+                int x = (int) (r * Math.sin(total + angle));
+                int y = (int) (r * Math.cos(total + angle));
+
+                switch( mPanel.getOrientation() ) {
+                    case Gravity.LEFT:
+                        y = mCenter.y - (int) (r * Math.sin(total + angle)) - h / 2;
+                        x = (int) (r * Math.cos(total + angle)) - w / 2;
+                        break;
+                    case Gravity.RIGHT:
+                        y = mCenter.y - (int) (Math.PI/2-r * Math.sin(total + angle)) - h / 2;
+                        x = mCenter.x - (int) (r * Math.cos(total + angle)) - w / 2;
+                        break;
+                    case Gravity.TOP:
+                        y = y - h / 2;
+                        x = mCenter.x - (int)(Math.PI/2-x) - w / 2;
+                        break;
+                    case Gravity.BOTTOM: 
+                        y = mCenter.y - y - h / 2;
+                        x = mCenter.x - x - w / 2;
+                        break;
+                }                
+                view.layout(x, y, x + w, y + h);
+            }                    
+            float itemstart = total + angle - sweep / 2;
+            item.setGeometry(itemstart, sweep, inner, outer);
+            total += sweep;
         }
     }
-
 
     /**
      * converts a
@@ -522,7 +525,7 @@ public class PieMenu extends FrameLayout {
         animation.addUpdateListener(new AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                mBatteryMeter = (int)(animation.getAnimatedFraction() * batteryLevel);
+                mBatteryMeter = (int)(animation.getAnimatedFraction() * (batteryLevel * 0.9f));
                 invalidate();
             }
         });
@@ -636,7 +639,7 @@ public class PieMenu extends FrameLayout {
             state = canvas.save();
             canvas.rotate(90, mCenter.x, mCenter.y);
             Path mBatteryPath2 = makeSlice(mPanel.getDegree() + 13, mPanel.getDegree()
-                    + mBatteryMeter, outer + mTouchOffset * 2, outer + mTouchOffset, mCenter);
+                    + mBatteryMeter - 2, outer + mTouchOffset * 2, outer + mTouchOffset, mCenter);
             mBatteryJuice.setAlpha(mBatteryJuiceAlpha);
             canvas.drawPath(mBatteryPath2, mBatteryJuice);
             canvas.restoreToCount(state);
@@ -676,7 +679,7 @@ public class PieMenu extends FrameLayout {
             int state = canvas.save();
             canvas.rotate(getDegrees(item.getStartAngle())
                         + mPanel.getDegree(), mCenter.x, mCenter.y);
-            canvas.drawPath(mPath, item.isSelected() ? mSelectedPaint : mNormalPaint);
+            canvas.drawPath(item.getPath(), item.isSelected() ? mSelectedPaint : mNormalPaint);
             canvas.restoreToCount(state);
 
             state = canvas.save();
