@@ -562,7 +562,9 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     public void updatePieControls(boolean updateViewLayout) {
         ContentResolver resolver = mContext.getContentResolver();
-        boolean show = Settings.System.getInt(resolver,
+        boolean expanded = Settings.System.getInt(resolver,
+                Settings.System.EXPANDED_DESKTOP_STATE, 0) == 1;
+        boolean show = expanded && Settings.System.getInt(resolver,
                 Settings.System.PIE_CONTROLS, 0) == 1;
         mPieControlsTrigger.setVisibility(show ? View.VISIBLE : View.GONE);
         if(show && updateViewLayout) {

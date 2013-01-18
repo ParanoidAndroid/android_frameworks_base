@@ -42,7 +42,6 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import com.android.systemui.R;
-import com.android.systemui.SearchPanelView;
 import com.android.systemui.statusbar.tablet.StatusBarPanel;
 import com.android.systemui.statusbar.PieControl.OnNavButtonPressedListener;
 
