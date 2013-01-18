@@ -216,8 +216,6 @@
     <dimen name="pie_slop">10dp</dimen>
     <dimen name="pie_touch_offset">15dp</dimen>
     <dimen name="pie_tab_title_height">24dp</dimen>
-    <dimen name="pie_thumb_width">150dp</dimen>
-    <dimen name="pie_thumb_height">100dp</dimen>
     <dimen name="pie_item_size">40dp</dimen>
 
 </resources>
