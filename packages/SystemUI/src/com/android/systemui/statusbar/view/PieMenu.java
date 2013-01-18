@@ -235,24 +235,28 @@ public class PieMenu extends FrameLayout {
         mScrollView = (ScrollView) mContainer.findViewById(R.id.notification_scroll);
         mScrollView.setOnTouchListener(new OnTouchListener(){
             final int SCROLLING_DISTANCE_TRIGGER = 100;
+            float scrollX;
             float scrollY;
-            boolean scrolled;
+            boolean hasScrolled;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
+                        scrollX = event.getX();
                         scrollY = event.getY();
-                        scrolled = false;
+                        hasScrolled = false;
                         break;
                     case MotionEvent.ACTION_MOVE:
-                        float distance = event.getY() - scrollY;
-                        if(Math.abs(distance) > SCROLLING_DISTANCE_TRIGGER) {
-                            scrolled = true;
+                        float distanceY = Math.abs(event.getY() - scrollY);
+                        float distanceX = Math.abs(event.getX() - scrollX);
+                        if(distanceY > SCROLLING_DISTANCE_TRIGGER
+                                || distanceX > SCROLLING_DISTANCE_TRIGGER) {
+                            hasScrolled = true;
                         }
                         break;
                     case MotionEvent.ACTION_UP:
-                        if(!scrolled) {
+                        if(!hasScrolled) {
                             hideNotificationsPanel();
                         }
                         break;
@@ -703,9 +707,9 @@ public class PieMenu extends FrameLayout {
 
         int action = evt.getActionMasked();
         if (MotionEvent.ACTION_DOWN == action) {
-                // Open panel
-                mPanel.show(true);
-                animateIn();
+            // Open panel
+            mPanel.show(true);
+            animateIn();
         } else if (MotionEvent.ACTION_UP == action) {
             if (mOpen) {
                 PieItem item = mCurrentItem;
