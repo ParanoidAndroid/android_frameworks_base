@@ -138,7 +138,7 @@ public class PieMenu extends FrameLayout {
     private int mGlowOffset = 0;
     int mBatteryBackgroundAlpha = 0;
     int mBatteryJuiceAlpha = 0;
-    int mBatteryMeter = 0;
+    float mBatteryMeter = 0;
 
     // Flags
     private boolean mPanelActive;
@@ -500,7 +500,7 @@ public class PieMenu extends FrameLayout {
         animation.addUpdateListener(new AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                mBatteryMeter = (int)(animation.getAnimatedFraction() * (batteryLevel * 0.87f));
+                mBatteryMeter = (float)(animation.getAnimatedFraction());
                 invalidate();
             }
         });
@@ -592,9 +592,9 @@ public class PieMenu extends FrameLayout {
 
                 int inner = (int)((mRadius + mRadiusInc - 2) + mTouchOffset * 0.7f);
                 int outer = (int)(mRadius + mRadiusInc - 2 + mTouchOffset * 1.7f);
-
-                Path mBatteryPath = makeSlice(mPanel.getDegree() + 13, mPanel.getDegree() + 90 - 2, 
-                    inner, outer, mCenter);
+                float start = mPanel.getDegree() + 13;
+                float end = mPanel.getDegree() + 90 - 2;
+                Path mBatteryPath = makeSlice(start, end, inner, outer, mCenter);
 
                 mBatteryBackground.setAlpha(mBatteryBackgroundAlpha);
                 canvas.drawPath(mBatteryPath, mBatteryBackground);
@@ -602,8 +602,7 @@ public class PieMenu extends FrameLayout {
 
                 state = canvas.save();
                 canvas.rotate(90, mCenter.x, mCenter.y);
-                Path mBatteryPath2 = makeSlice(mPanel.getDegree() + 13, mPanel.getDegree() + mBatteryMeter - 2, 
-                        inner, outer, mCenter);
+                Path mBatteryPath2 = makeSlice(start, start + mBatteryMeter * (end-start), inner, outer, mCenter);
                 mBatteryJuice.setAlpha(mBatteryJuiceAlpha);
                 canvas.drawPath(mBatteryPath2, mBatteryJuice);
                 canvas.restoreToCount(state);
