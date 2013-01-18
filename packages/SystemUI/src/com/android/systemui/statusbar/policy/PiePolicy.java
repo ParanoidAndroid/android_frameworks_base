@@ -110,10 +110,13 @@ public class PiePolicy {
         return date.toUpperCase();
     }
 
+    public static boolean is24Hours() {
+        return DateFormat.is24HourFormat(mContext);
+    }
+
     public static String getSimpleTime() {
-        boolean b24 = DateFormat.is24HourFormat(mContext);
         SimpleDateFormat sdf = new SimpleDateFormat(
-                mContext.getString(b24 ? R.string.pie_hour_format_24 :
+                mContext.getString(is24Hours() ? R.string.pie_hour_format_24 :
                 R.string.pie_hour_format_12));
         String amPm = sdf.format(new Date());
         return amPm.toUpperCase();
@@ -121,7 +124,7 @@ public class PiePolicy {
 
     public static String getAmPm() {
         String amPm = "";
-        if(!DateFormat.is24HourFormat(mContext)) {
+        if(!is24Hours()) {
             SimpleDateFormat sdf = new SimpleDateFormat(
                     mContext.getString(R.string.pie_am_pm));
             amPm = sdf.format(new Date()).toUpperCase();

@@ -620,7 +620,7 @@ public class PieMenu extends FrameLayout {
             mStatusPaint = new Paint();
             mStatusPaint.setColor(Color.WHITE);
             mStatusPaint.setStyle(Paint.Style.FILL);
-            mStatusPaint.setTextSize(150);
+            mStatusPaint.setTextSize(125);
             mStatusPaint.setAlpha(mTextAlpha);
             mStatusPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
             mStatusPaint.setTextScaleX(1.2f);
@@ -647,7 +647,7 @@ public class PieMenu extends FrameLayout {
 
             // Time falling into place
             state = canvas.save();
-            float pos = mPanel.getDegree() + 120;
+            float pos = mPanel.getDegree() + 125;
             canvas.rotate(pos, mCenter.x, mCenter.y);
             float lastPos = 0;
             for( int i = 0; i < mStatusText.length(); i++ ) {
@@ -655,13 +655,13 @@ public class PieMenu extends FrameLayout {
                 canvas.drawTextOnPath("" + character, mStatusPath, lastPos, -mCharOffset[i] - 40, mStatusPaint);
                 lastPos += mStatusPaint.measureText("" + character) * (character == '1' || character == ':' ? 0.5f : 0.8f);
             }
-            mStatusPaint.setTextSize(50);
+            mStatusPaint.setTextSize(35);
             String amPm = mPolicy.getAmPm();
             lastPos -= mStatusPaint.measureText(amPm);
-            canvas.drawTextOnPath(amPm, mStatusPath, lastPos, -mCharOffset[mStatusText.length()-1] - 160, mStatusPaint);
+            canvas.drawTextOnPath(amPm, mStatusPath, lastPos, -mCharOffset[mStatusText.length()-1] - 140, mStatusPaint);
             canvas.restoreToCount(state);
 
-            // Date circling in
+            // Device status information and date
             state = canvas.save();
             pos = mPanel.getDegree() + 180;
             canvas.rotate(pos, mCenter.x, mCenter.y);
@@ -718,6 +718,8 @@ public class PieMenu extends FrameLayout {
         int distance = (int)Math.abs(orient == Gravity.TOP || orient == Gravity.BOTTOM ? y : x);    
         int shadeTreshold = getHeight() - mTouchOffset * 10;
         boolean pieTreshold = distance > mTouchOffset && distance < (int)(mRadius + mRadiusInc) * 2.5f;
+        final boolean hapticFeedback = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.HAPTIC_FEEDBACK_ENABLED, 1) != 0;
 
         int action = evt.getActionMasked();
         if (MotionEvent.ACTION_DOWN == action) {
@@ -764,7 +766,7 @@ public class PieMenu extends FrameLayout {
                     mScrollView.addView(mPanel.getBar().getNotificationRowLayout());
                     mWindowManager.addView(mContainer, lp);
                     mPanelParentChanged = true;
-                    mVibrator.vibrate(2);
+                    if(hapticFeedback) mVibrator.vibrate(2);
 
                     mContentFrame.setBackgroundColor(mBackgroundOpacity);
                     ValueAnimator mAlphaAnimation  = ValueAnimator.ofInt(0, 1);
@@ -783,7 +785,7 @@ public class PieMenu extends FrameLayout {
       
                 // Check for click actions
                 if (item != null && item.getView() != null && pieTreshold) {
-                    mVibrator.vibrate(2);
+                    if(hapticFeedback) mVibrator.vibrate(2);
                     item.getView().performClick();
                 }
             }
@@ -799,7 +801,7 @@ public class PieMenu extends FrameLayout {
             // Trigger the shade?
             if (!mPanelActive && distance > shadeTreshold) {
                 // Give the user a small hint that he's inside the upper touch area
-                mVibrator.vibrate(2);
+                if(hapticFeedback) mVibrator.vibrate(2);
                 mPanelActive = true;           
                 return true;
             }
