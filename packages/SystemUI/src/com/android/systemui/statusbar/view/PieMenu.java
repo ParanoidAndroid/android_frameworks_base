@@ -159,6 +159,8 @@ public class PieMenu extends FrameLayout {
     private float mTextLen = 0;
     private String mStatusText;
 
+    //private float mScrollY;
+
     public PieMenu(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init(context);
@@ -232,6 +234,34 @@ public class PieMenu extends FrameLayout {
         mContainer = inflater.inflate(R.layout.pie_notification_panel, null);
         mContentFrame = (View) mContainer.findViewById(R.id.content_frame);
         mScrollView = (ScrollView) mContainer.findViewById(R.id.notification_scroll);
+        mScrollView.setOnTouchListener(new OnTouchListener(){
+
+            final int SCROLLING_DISTANCE_TRIGGER = 100;
+            float scrollY;
+            boolean scrolled;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        scrollY = event.getY();
+                        scrolled = false;
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        float distance = event.getY() - scrollY;
+                        if(Math.abs(distance) > SCROLLING_DISTANCE_TRIGGER) {
+                            scrolled = true;
+                        }
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        if(!scrolled) {
+                            hideNotificationsPanel();
+                        }
+                        break;
+                }
+                return false;
+            }                               
+        });
 
         mLastBackgroundColor = new ColorUtils.ColorSettingInfo();
         mLastGlowColor = new ColorUtils.ColorSettingInfo();
