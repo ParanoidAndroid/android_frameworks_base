@@ -579,7 +579,7 @@ public class PieMenu extends FrameLayout {
                 // Draw clock
                 if (mStatusPath != null) {
                     mStatusPaint.setColor(COLOR_DEFAULT_STATUS);
-                    mStatusPaint.setTextSize(130);
+                    mStatusPaint.setTextSize(125);
                     mStatusPaint.setAlpha(mTextAlpha);
                     mStatusPaint.setTextScaleX(1.2f);
 
