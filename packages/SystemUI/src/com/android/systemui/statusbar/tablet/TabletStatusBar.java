@@ -565,7 +565,7 @@ public class TabletStatusBar extends BaseStatusBar implements
         }
 
         // set recents activity navigation bar view
-        RecentsActivity.setNavigationCallback(this);
+        RecentsActivity.addNavigationCallback(this);
 
         mBarContents = (ViewGroup) sb.findViewById(R.id.bar_contents);
 

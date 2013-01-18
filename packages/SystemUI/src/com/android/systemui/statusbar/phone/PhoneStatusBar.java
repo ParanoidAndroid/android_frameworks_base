@@ -428,7 +428,7 @@ public class PhoneStatusBar extends BaseStatusBar {
             // no window manager? good luck with that
         }
         // set recents activity navigation bar view
-        RecentsActivity.setNavigationCallback(mNavigationBarView);
+        RecentsActivity.addNavigationCallback(mNavigationBarView);
 
         // figure out which pixel-format to use for the status bar.
         mPixelFormat = PixelFormat.TRANSLUCENT;

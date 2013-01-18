@@ -63,7 +63,7 @@ public class PieItem {
         mEnabled = true;
         setAnimationAngle(getAnimationAngle());
         setAlpha(getAlpha());
-        mName = name;
+        setName(name);
         mIsLesser = lesser;
 
         if(mContext != null) {
@@ -112,8 +112,14 @@ public class PieItem {
         mItems.add(item);
     }
 
+
+    public void setName(String name) {
+        mName = name;
+        mView.setTag(mName);
+    }
+
     public String getName() {
-        return  mName;
+        return mName;
     }
 
     public void setAlpha(float alpha) {
@@ -193,6 +199,10 @@ public class PieItem {
 
     public void setPieView(PieView sym) {
         mPieView = sym;
+    }
+
+    public void setIcon(int resId) {
+        ((ImageView)mView).setImageResource(resId);
     }
 
     public PieView getPieView() {

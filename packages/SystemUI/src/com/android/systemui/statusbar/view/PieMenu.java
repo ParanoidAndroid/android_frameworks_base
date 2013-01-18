@@ -169,6 +169,8 @@ public class PieMenu extends FrameLayout {
     private View mContentFrame;
     private boolean mPanelParentChanged;
 
+    private boolean mPanelActive;
+
     /**
      * @param context
      * @param attrs
@@ -812,20 +814,15 @@ public class PieMenu extends FrameLayout {
             }
 
             PieItem item = findItem(getPolar(x, y));
-            //if (pieTreshold) {
-                // Check for onEnter separately or'll face constant deselect
-                if (item != null && mCurrentItem != item) {
-                    onEnter(item);
-                }
-            //} else {
-            //    deselect();
-            //}
+            // Check for onEnter separately or'll face constant deselect
+            if (item != null && mCurrentItem != item) {
+                onEnter(item);
+            }
             invalidate();
         }
         // always re-dispatch event
         return false;
     }
-    boolean mPanelActive = false;
 
     /**
      * enter a slice for a view
