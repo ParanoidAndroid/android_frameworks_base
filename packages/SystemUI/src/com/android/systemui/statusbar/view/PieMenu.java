@@ -604,7 +604,7 @@ public class PieMenu extends FrameLayout {
                     float lastPos = 0;
                     for(int i = 0; i < mStatusText.length(); i++) {
                         char character = mStatusText.charAt(i);
-                        canvas.drawTextOnPath("" + character, mStatusPath, lastPos, -mCharOffset[i] - mTouchOffset * 2.3f, mStatusPaint);
+                        canvas.drawTextOnPath("" + character, mStatusPath, lastPos, -mTouchOffset * 2.3f, mStatusPaint);
                         lastPos += offsets[i];
                     }
 
