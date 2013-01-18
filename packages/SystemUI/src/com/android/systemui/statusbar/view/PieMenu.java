@@ -234,13 +234,32 @@ public class PieMenu extends FrameLayout {
         mContentFrame = (View) mContainer.findViewById(R.id.content_frame);
         mScrollView = (ScrollView) mContainer.findViewById(R.id.notification_scroll);
         mScrollView.setOnTouchListener(new OnTouchListener(){
+            final int SCROLLING_DISTANCE_TRIGGER = 100;
+            float scrollY;
+            boolean scrolled;
+
             @Override
-            public boolean onTouch(View v, MotionEvent event) {         
-                if(event.getAction() == MotionEvent.ACTION_UP) {
-                    hideNotificationsPanel();
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        scrollY = event.getY();
+                        scrolled = false;
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        float distance = event.getY() - scrollY;
+                        if(Math.abs(distance) > SCROLLING_DISTANCE_TRIGGER) {
+                            scrolled = true;
+                        }
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        if(!scrolled) {
+                            hideNotificationsPanel();
+                        }
+                        break;
                 }
                 return false;
-            }});
+            }                               
+        });
 
         mLastBackgroundColor = new ColorUtils.ColorSettingInfo();
         mLastGlowColor = new ColorUtils.ColorSettingInfo();
@@ -588,7 +607,7 @@ public class PieMenu extends FrameLayout {
                 // Draw clock
                 if (mStatusPath != null) {
                     mStatusPaint.setColor(COLOR_DEFAULT_STATUS);
-                    mStatusPaint.setTextSize(130);
+                    mStatusPaint.setTextSize(125);
                     mStatusPaint.setAlpha(mTextAlpha);
                     mStatusPaint.setTextScaleX(1.2f);
 
