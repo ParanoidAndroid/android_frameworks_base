@@ -612,7 +612,7 @@ public class PieMenu extends FrameLayout {
                     mStatusPaint.setColor(COLOR_DEFAULT_STATUS);
                     mStatusPaint.setTextSize(125);
                     mStatusPaint.setAlpha(mTextAlpha);
-                    mStatusPaint.setTextScaleX(1.1f);
+                    mStatusPaint.setTextScaleX(0.8f);
 
                     // First measure
                     float totalOffset = 0;
@@ -640,11 +640,11 @@ public class PieMenu extends FrameLayout {
                         lastPos += offsets[i];
                     }
 
-                    mStatusPaint.setTextSize(35);
+                    mStatusPaint.setTextSize(30);
                     String amPm = mPolicy.getAmPm();
                     lastPos -= mStatusPaint.measureText(amPm);
                     canvas.drawTextOnPath(amPm, mStatusPath, lastPos,
-                        -mCharOffset[mStatusText.length()-1] - mTouchOffset * 5.8f, mStatusPaint);
+                        -mTouchOffset * 5.6f, mStatusPaint);
                     canvas.restoreToCount(state);
 
                     // Device status information and date
@@ -697,12 +697,14 @@ public class PieMenu extends FrameLayout {
     // touch handling for pie
     @Override
     public boolean onTouchEvent(MotionEvent evt) {
-        float x = evt.getX();
-        float y = evt.getY();
-        int orient = mPanel.getOrientation();
-        int distance = (int)Math.abs(orient == Gravity.TOP || orient == Gravity.BOTTOM ? y : x);    
-        int shadeTreshold = getHeight() - mTouchOffset * 10;
-        boolean pieTreshold = distance > mTouchOffset && distance < (int)(mRadius + mRadiusInc) * 2.5f;
+        float x = evt.getRawX();
+        float y = evt.getRawY();
+        float distanceX = mCenter.x-x;
+	    float distanceY = mCenter.y-y;
+    	float distance = (float)Math.sqrt(distanceX*distanceX + distanceY*distanceY);
+
+        float shadeTreshold = getHeight() * 0.6f;
+        boolean pieTreshold = distanceY < shadeTreshold;
         final boolean hapticFeedback = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.HAPTIC_FEEDBACK_ENABLED, 1) != 0;
 
@@ -753,26 +755,26 @@ public class PieMenu extends FrameLayout {
             animateOut();
             return true;
         } else if (MotionEvent.ACTION_MOVE == action) {
-            int treshold = (int)(getHeight() * 0.6f);
-            mGlowOffset = distance > treshold ? distance - treshold : 0;
+            mGlowOffset = distanceY > shadeTreshold ? (int)(distanceY - shadeTreshold) : 0;
             
             // Trigger the shade?
-            if (!mPanelActive && distance > shadeTreshold) {
+            if (!mPanelActive && distanceY > shadeTreshold) {
                 // Give the user a small hint that he's inside the upper touch area
                 if(hapticFeedback) mVibrator.vibrate(2);
-                mPanelActive = true;           
-                return true;
+                mPanelActive = true;
             }
 
             // Take back shade trigger if user decides to abandon his gesture
-            if (distance < shadeTreshold) {
-                mPanelActive = false;
-            }
+            if (distanceY < shadeTreshold) mPanelActive = false;
 
-            PieItem item = findItem(getPolar(x, y));
             // Check for onEnter separately or'll face constant deselect
-            if (item != null && mCurrentItem != item) {
-                onEnter(item);
+            PieItem item = findItem(getPolar(x, y));
+            if (item != null) {
+                if (distanceY < shadeTreshold && distance > mTouchOffset * 2.5f) {
+                    onEnter(item);
+                } else {
+                    deselect();
+                }
             }
             invalidate();
         }
@@ -805,6 +807,8 @@ public class PieMenu extends FrameLayout {
     }
 
     private void onEnter(PieItem item) {
+        if (mCurrentItem == item) return;
+
         // deselect
         if (mCurrentItem != null) {
             mCurrentItem.setSelected(false);
@@ -829,24 +833,23 @@ public class PieMenu extends FrameLayout {
         mPieView = null;
     }
 
-    private float getPolar(double x, double y) {
-        PointF size = mPanel.getSize();
+    private float getPolar(float x, float y) {
+        float deltaY = mCenter.y - y;
+        float deltaX = mCenter.x - x;
+        float adjustAngle = 0;
         int orient = mPanel.getOrientation();
         switch(orient) {
             case Gravity.TOP:
-            case Gravity.BOTTOM:
-                x = (size.x / 2 - x) * (orient == Gravity.TOP ? -1 : 1);
-                y = orient == Gravity.BOTTOM ? mCenter.y - y : size.y + y;
-                break;
-
             case Gravity.LEFT:
+                adjustAngle = 90;
+                break;
             case Gravity.RIGHT:
-                x = orient == Gravity.LEFT ? size.y + x : size.y - x;
-                y = (size.y / 2 - y) * (orient == Gravity.RIGHT ? -1 : 1);
+                adjustAngle = -90;
                 break;
         }
-        return -(((float)(Math.acos((orient == Gravity.TOP || orient == Gravity.BOTTOM ? x : y) /
-                Math.sqrt(x * x + y * y)) * 180 / Math.PI) - 90) / 10);
+        return (adjustAngle + (float)Math.atan2(orient == Gravity.TOP ? deltaY : deltaX,
+                orient == Gravity.TOP ? deltaX : deltaY) * 180 / (float)Math.PI)
+                * (orient == Gravity.TOP ? -1 : 1) * (float)Math.PI / 180;
     }
 
     private PieItem findItem(float polar) {
