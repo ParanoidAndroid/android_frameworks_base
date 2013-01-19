@@ -642,6 +642,11 @@ public class PhoneStatusBar extends BaseStatusBar {
     }
 
     @Override
+    public QuickSettingsContainerView getQuickSettingsPanel() {
+        return mSettingsContainer;
+    }
+
+    @Override
     protected WindowManager.LayoutParams getRecentsLayoutParams(LayoutParams layoutParams) {
         boolean opaque = false;
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(

@@ -86,6 +86,7 @@ import com.android.systemui.statusbar.NotificationData;
 import com.android.systemui.statusbar.NotificationData.Entry;
 import com.android.systemui.statusbar.SignalClusterView;
 import com.android.systemui.statusbar.StatusBarIconView;
+import com.android.systemui.statusbar.phone.QuickSettingsContainerView;
 import com.android.systemui.statusbar.policy.BatteryController;
 import com.android.systemui.statusbar.policy.BluetoothController;
 import com.android.systemui.statusbar.policy.Clock;
@@ -537,6 +538,11 @@ public class TabletStatusBar extends BaseStatusBar implements
     @Override
     public View getStatusBarView() {
         return mStatusBarView;
+    }
+
+    @Override
+    public QuickSettingsContainerView getQuickSettingsPanel() {
+        return mNotificationPanel.mSettingsContainer;
     }
 
     protected View makeStatusBarView() {

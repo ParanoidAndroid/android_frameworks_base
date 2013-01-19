@@ -57,7 +57,6 @@ import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.view.ViewManager;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -66,7 +65,9 @@ import android.widget.ScrollView;
 import com.android.systemui.R;
 import com.android.systemui.statusbar.PieControl;
 import com.android.systemui.statusbar.PieControlPanel;
+import com.android.systemui.statusbar.phone.QuickSettingsContainerView;
 import com.android.systemui.statusbar.policy.Clock;
+import com.android.systemui.statusbar.policy.NotificationRowLayout;
 import com.android.systemui.statusbar.policy.PiePolicy;
 
 import java.util.ArrayList;
@@ -86,6 +87,9 @@ public class PieMenu extends FrameLayout {
     private static final int COLOR_DEFAULT_BATTERY_JUICE_LOW = 0xffbb33;
     private static final int COLOR_DEFAULT_BATTERY_JUICE_CRITICAL = 0xff4444;
     private static final int COLOR_DEFAULT_BATTERY_BACKGROUND = 0xFFFFFF;
+
+    private static final int NOTIFICATIONS_PANEL = 1;
+    private static final int QUICK_SETTINGS_PANEL = 2;
 
     // A view like object that lives off of the pie menu
     public interface PieView {
@@ -142,7 +146,6 @@ public class PieMenu extends FrameLayout {
 
     // Flags
     private boolean mPanelActive;
-    private boolean mPanelParentChanged;
     private boolean mPerAppColor;
     private boolean mOpen;
     private boolean mStatusAnimate;
@@ -150,10 +153,13 @@ public class PieMenu extends FrameLayout {
     private int mStatusMode = 2;
 
     // Layout and UI
-    private ViewManager mPanelParent;
+    private ViewGroup mPanelParent;
     private ScrollView mScrollView;
     private View mContainer;
     private View mContentFrame;
+    private QuickSettingsContainerView mQS;
+    private NotificationRowLayout mNotificationPanel;
+    private int mFlipViewState = 0;
 
     private Path mStatusPath;
     private float mTextLen = 0;
@@ -231,6 +237,7 @@ public class PieMenu extends FrameLayout {
         LayoutInflater inflater = (LayoutInflater) mContext
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
         mContainer = inflater.inflate(R.layout.pie_notification_panel, null);
+
         mContentFrame = (View) mContainer.findViewById(R.id.content_frame);
         mScrollView = (ScrollView) mContainer.findViewById(R.id.notification_scroll);
         mScrollView.setOnTouchListener(new OnTouchListener(){
@@ -257,13 +264,17 @@ public class PieMenu extends FrameLayout {
                         break;
                     case MotionEvent.ACTION_UP:
                         if(!hasScrolled) {
-                            hideNotificationsPanel();
+                            hidePanels();
+                            mFlipViewState = 0;
                         }
                         break;
                 }
                 return false;
             }                               
         });
+
+        mContainer.setVisibility(View.GONE);
+        mWindowManager.addView(mContainer, getFlipPanelLayoutParams());
 
         mLastBackgroundColor = new ColorUtils.ColorSettingInfo();
         mLastGlowColor = new ColorUtils.ColorSettingInfo();
@@ -293,8 +304,8 @@ public class PieMenu extends FrameLayout {
 
     public void setPanel(PieControlPanel panel) {
         mPanel = panel;
-        mPanelParent = (ViewManager)mPanel.getBar().getNotificationRowLayout().getParent();
-        mPanelParentChanged = false;
+        mQS = mPanel.getBar().getQuickSettingsPanel();
+        mNotificationPanel = mPanel.getBar().getNotificationRowLayout();
     }
 
     public void addItem(PieItem item) {
@@ -700,8 +711,8 @@ public class PieMenu extends FrameLayout {
         float x = evt.getRawX();
         float y = evt.getRawY();
         float distanceX = mCenter.x-x;
-        float distanceY = mCenter.y-y;
-        float distance = (float)Math.sqrt(distanceX*distanceX + distanceY*distanceY);
+	    float distanceY = mCenter.y-y;
+    	float distance = (float)Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
 
         float shadeTreshold = getHeight() * 0.6f;
         boolean pieTreshold = distanceY < shadeTreshold;
@@ -717,31 +728,30 @@ public class PieMenu extends FrameLayout {
             if (mOpen) {
                 PieItem item = mCurrentItem;
 
-                // Lets put the notification panel back
-                hideNotificationsPanel();
-
-                // Open the notification shade
-                if (mPanelActive) {
-                    mPanelParent.removeView(mPanel.getBar().getNotificationRowLayout());
-                    mScrollView.addView(mPanel.getBar().getNotificationRowLayout());
-                    mWindowManager.addView(mContainer, getNotificationsPanelLayoutParams());
-                    mPanelParentChanged = true;
-                    if(hapticFeedback) mVibrator.vibrate(2);
-
-                    mContentFrame.setBackgroundColor(mBackgroundOpacity);
-                    ValueAnimator mAlphaAnimation  = ValueAnimator.ofInt(0, 1);
-                    mAlphaAnimation.addUpdateListener(new AnimatorUpdateListener() {
-                        @Override
-                        public void onAnimationUpdate(ValueAnimator animation) {
-                            mScrollView.setX(-(int)((1-animation.getAnimatedFraction()) * getWidth()*1.5));
-                            mContentFrame.setBackgroundColor((int)(animation.getAnimatedFraction() * 0xDD) << 24);
-                            invalidate();
-                        }
-                    });
-                    mAlphaAnimation.setDuration(1000);
-                    mAlphaAnimation.setInterpolator(new DecelerateInterpolator());
-                    mAlphaAnimation.start();
+                switch(mFlipViewState) {
+                    case NOTIFICATIONS_PANEL:
+                        mPanelParent = (ViewGroup)mNotificationPanel.getParent();
+                        showPanel(mNotificationPanel);
+                        break;
+                    case QUICK_SETTINGS_PANEL:
+                        mPanelParent = (ViewGroup)mQS.getParent();
+                        showPanel(mQS);
+                        break;
                 }
+
+                mContentFrame.setBackgroundColor(mBackgroundOpacity);
+                ValueAnimator alphAnimation  = ValueAnimator.ofInt(0, 1);
+                alphAnimation.addUpdateListener(new AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        mScrollView.setX(-(int)((1-animation.getAnimatedFraction()) * getWidth()*1.5));
+                        mContentFrame.setBackgroundColor((int)(animation.getAnimatedFraction() * 0xDD) << 24);
+                        invalidate();
+                    }
+                });
+                alphAnimation.setDuration(1000);
+                alphAnimation.setInterpolator(new DecelerateInterpolator());
+                alphAnimation.start();
       
                 // Check for click actions
                 if (item != null && item.getView() != null && pieTreshold) {
@@ -761,7 +771,7 @@ public class PieMenu extends FrameLayout {
             if (!mPanelActive && distanceY > shadeTreshold) {
                 // Give the user a small hint that he's inside the upper touch area
                 if(hapticFeedback) mVibrator.vibrate(2);
-                mPanelActive = true;
+                if(mFlipViewState == 0) mFlipViewState = NOTIFICATIONS_PANEL;
             }
 
             // Take back shade trigger if user decides to abandon his gesture
@@ -782,18 +792,45 @@ public class PieMenu extends FrameLayout {
         return false;
     }
 
-    public void hideNotificationsPanel() {
-        if(mPanelParentChanged) {
-            mScrollView.removeView(mPanel.getBar().getNotificationRowLayout());
-            mWindowManager.removeView(mContainer);
-            mPanelParent.addView(mPanel.getBar()
-                    .getNotificationRowLayout(), getNotificationsPanelLayoutParams());
-            mPanelActive = false;
-            mPanelParentChanged = false;
+    public void hidePanels() {
+        if (mFlipViewState == NOTIFICATIONS_PANEL) {
+            hidePanel(mNotificationPanel);
+        } else if (mFlipViewState == QUICK_SETTINGS_PANEL) {
+            hidePanel(mQS);
         }
+        updateContainer(false);
     }
 
-    private WindowManager.LayoutParams getNotificationsPanelLayoutParams() {
+    public void swapPanels() {
+        hidePanels();
+        if (mFlipViewState == NOTIFICATIONS_PANEL) {
+            showPanel(mQS);
+        } else if (mFlipViewState == QUICK_SETTINGS_PANEL) {
+            showPanel(mNotificationPanel);
+        }
+        updateContainer(true);
+    }
+
+    private void hidePanel(View panel) {
+        mScrollView.removeView(panel);
+        mPanelParent.removeAllViews();
+        mPanelParent.addView(panel, panel.getLayoutParams());
+    }
+
+    private void showPanel(View panel) {
+        mScrollView.removeAllViews();
+        mPanelParent.removeView(panel);
+        mScrollView.addView(panel);
+        updateContainer(true);
+    }
+
+    private void updateContainer(boolean visible) {
+        mContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
+        mWindowManager.updateViewLayout(mContainer,
+                getFlipPanelLayoutParams());
+    }
+
+    private WindowManager.LayoutParams getFlipPanelLayoutParams() {
         return new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,

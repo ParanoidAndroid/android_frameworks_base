@@ -102,7 +102,7 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
     }
 
     public void animateCollapsePanels() {
-        mPieControl.getPieMenu().hideNotificationsPanel();
+        mPieControl.getPieMenu().hidePanels();
     }
 
     @Override
