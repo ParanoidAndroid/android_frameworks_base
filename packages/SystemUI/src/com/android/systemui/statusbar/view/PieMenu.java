@@ -813,8 +813,9 @@ public class PieMenu extends FrameLayout {
 
     private void hidePanel(View panel) {
         mScrollView.removeView(panel);
-        mPanelParent.removeAllViews();
-        mPanelParent.addView(panel, panel.getLayoutParams());
+        if(mPanelParent.getChildCount() == 0) {
+            mPanelParent.addView(panel, panel.getLayoutParams());
+        }
     }
 
     private void showPanel(View panel) {
