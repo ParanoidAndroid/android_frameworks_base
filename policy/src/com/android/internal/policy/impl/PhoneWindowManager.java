@@ -978,16 +978,36 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 updateHybridLayout();
                 update(false);
 
-                // Make sure we are safely closing all launcher to let them re-do their layouts.
-                // The following code will shoot an onDestroy() to each launcher installed.
-                PackageManager mPm = mContext.getPackageManager();
-                Intent i = new Intent("android.intent.action.MAIN");
-                i.addCategory("android.intent.category.HOME");
-                List<ResolveInfo> lst = mPm.queryIntentActivities(i, 0);
-                if (lst != null) {
-                   for (ResolveInfo resolveInfo : lst) {
-                        closeApplication(resolveInfo.activityInfo.packageName);
-                   }
+                // Make sure we are safely closing all launchers to let them re-do their layouts.
+                // This needs to be done to prevent app-drawer screw-ups and worse, dock swallowing drop-targets
+                final PackageManager mPm = mContext.getPackageManager();
+                final ActivityManager am = (ActivityManager)mContext.getSystemService(Context.ACTIVITY_SERVICE);
+                if (mPm!= null && am != null) {
+                    final Intent intent = new Intent(Intent.ACTION_MAIN); 
+                    intent.addCategory(Intent.CATEGORY_HOME); 
+                    final ResolveInfo res = mPm.resolveActivity(intent, 0); 
+                    if (res.activityInfo == null || res.activityInfo.packageName.equals("android")) {
+                        // No default selected or launcher simply not found, now lets get a hammer...
+                        Intent i = new Intent("android.intent.action.MAIN");
+                        i.addCategory("android.intent.category.HOME");
+                        List<ResolveInfo> activityInfo = mPm.queryIntentActivities(i, 0);
+                        if (activityInfo != null) {
+                           for (ResolveInfo resolveInfo : activityInfo) {
+                                closeApplication(resolveInfo.activityInfo.packageName);
+                           }
+                        }
+                    } else {
+                         // Default launcher found, we can safely remove it from the running-tasks list
+                        List<ActivityManager.RunningTaskInfo> runningTasks = am.getRunningTasks(20);
+                        if (runningTasks != null) {
+                            for (ActivityManager.RunningTaskInfo task : runningTasks) {
+                                if (task.baseActivity.getPackageName().equals(res.activityInfo.packageName)) {
+                                    am.removeTask(task.id, ActivityManager.REMOVE_TASK_KILL_PROCESS);
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
             }});
 
