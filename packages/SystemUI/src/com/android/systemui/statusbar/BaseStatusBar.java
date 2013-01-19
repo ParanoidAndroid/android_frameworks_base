@@ -147,8 +147,8 @@ public abstract class BaseStatusBar extends SystemUI implements
     protected FrameLayout mStatusBarContainer;
 
     // Pie controls
-    PieControlPanel mPieControlPanel;
-    View mPieControlsTrigger;
+    public PieControlPanel mPieControlPanel;
+    public View mPieControlsTrigger;
 
     // Policy
     public NetworkController mNetworkController;
@@ -705,7 +705,8 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     @Override
     public void animateCollapsePanels(int flags) {
-        if (mPieControlPanel != null && flags == CommandQueue.FLAG_EXCLUDE_NONE) {
+        if (mPieControlPanel != null
+                && flags == CommandQueue.FLAG_EXCLUDE_NONE) {
             mPieControlPanel.animateCollapsePanels();
         }
     }

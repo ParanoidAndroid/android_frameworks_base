@@ -1420,6 +1420,7 @@ public class PhoneStatusBar extends BaseStatusBar {
 
         mStatusBarWindow.cancelExpandHelper();
         mStatusBarView.collapseAllPanels(true);
+        mStatusBarView.setAlternativePanel(mPieControlPanel);
         super.animateCollapsePanels(flags);
     }
 

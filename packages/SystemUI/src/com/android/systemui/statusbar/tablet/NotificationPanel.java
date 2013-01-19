@@ -82,6 +82,8 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
     QuickSettingsContainerView mSettingsContainer;
     QuickSettings mQS;
 
+    public QuickSettingsCallback mCallback;
+
     // Simple callback used to provide a bar to QuickSettings
     class QuickSettingsCallback extends PanelBar {
         public QuickSettingsCallback(Context context, AttributeSet attrs) {
@@ -90,6 +92,7 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
 
         @Override
         public void collapseAllPanels(boolean animate) {
+            super.collapseAllPanels(animate);
             show(false, animate);
         }
     }
@@ -344,11 +347,11 @@ public class NotificationPanel extends RelativeLayout implements StatusBarPanel,
     public void setupQuickSettings(BaseStatusBar statusBar, NetworkController networkController,
             BluetoothController bluetoothController, BatteryController batteryController,
             LocationController locationController) {
-
+        mCallback = new QuickSettingsCallback(mContext, null);
         // Add Quick Settings
         mSettingsContainer = (QuickSettingsContainerView)mSettingsView.findViewById(R.id.quick_settings_container);
         mQS = new QuickSettings(mContext, mSettingsContainer, statusBar);
-        mQS.setBar(new QuickSettingsCallback(mContext, null));
+        mQS.setBar(mCallback);
         mQS.setupQuickSettings();
     }
 

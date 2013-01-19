@@ -25,6 +25,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import com.android.systemui.statusbar.PieControlPanel;
+
 public class PanelBar extends FrameLayout {
     public static final boolean DEBUG = false;
     public static final String TAG = PanelBar.class.getSimpleName();
@@ -40,6 +42,7 @@ public class PanelBar extends FrameLayout {
     PanelHolder mPanelHolder;
     ArrayList<PanelView> mPanels = new ArrayList<PanelView>();
     PanelView mTouchingPanel;
+    PieControlPanel mAlternativePanel;
     private int mState = STATE_CLOSED;
     private boolean mTracking;
 
@@ -193,6 +196,13 @@ public class PanelBar extends FrameLayout {
             go(STATE_CLOSED);
             onAllPanelsCollapsed();
         }
+        if(mAlternativePanel != null) {
+            mAlternativePanel.animateCollapsePanels();
+        }
+    }
+
+    public void setAlternativePanel(PieControlPanel panel){
+        mAlternativePanel = panel;
     }
 
     public void onPanelPeeked() {
