@@ -700,8 +700,8 @@ public class PieMenu extends FrameLayout {
         float x = evt.getRawX();
         float y = evt.getRawY();
         float distanceX = mCenter.x-x;
-	    float distanceY = mCenter.y-y;
-    	float distance = (float)Math.sqrt(distanceX*distanceX + distanceY*distanceY);
+        float distanceY = mCenter.y-y;
+        float distance = (float)Math.sqrt(distanceX*distanceX + distanceY*distanceY);
 
         float shadeTreshold = getHeight() * 0.6f;
         boolean pieTreshold = distanceY < shadeTreshold;
