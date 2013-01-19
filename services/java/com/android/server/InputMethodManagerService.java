@@ -1427,7 +1427,7 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
     }
 
     private boolean needsToShowImeSwitchOngoingNotification() {
-        if (!mShowOngoingImeSwitcherForPhones) return false;
+        if (!mShowOngoingImeSwitcherForPhones || ExtendedPropertiesUtils.isTablet()) return false;
         if (isScreenLocked()) return false;
         synchronized (mMethodMap) {
             List<InputMethodInfo> imis = mSettings.getEnabledInputMethodListLocked();
