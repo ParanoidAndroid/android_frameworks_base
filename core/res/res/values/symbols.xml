@@ -1867,6 +1867,7 @@
 
   <!-- Extra -->
   <java-symbol type="integer" name="config_wallpaperMaxWidth" />
+  <java-symbol type="bool" name="config_hasDockBattery" />
   <java-symbol type="bool" name="config_hasRemovableLid" />
 
 </resources>
