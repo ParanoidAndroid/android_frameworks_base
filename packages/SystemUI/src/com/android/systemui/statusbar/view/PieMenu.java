@@ -95,6 +95,10 @@ public class PieMenu extends FrameLayout {
     private static final int COLOR_DEFAULT_BATTERY_JUICE_CRITICAL = 0xff4444;
     private static final int COLOR_DEFAULT_BATTERY_BACKGROUND = 0xFFFFFF;
 
+    private static final int SPEED_QUICK = 400;
+    private static final int SPEED_DEFAULT = 1000;
+    private static final int SPEED_SLOW = 2000;
+
     private static final int NOTIFICATIONS_PANEL = 0;
     private static final int QUICK_SETTINGS_PANEL = 1;
 
@@ -151,6 +155,7 @@ public class PieMenu extends FrameLayout {
     int mBatteryBackgroundAlpha = 0;
     int mBatteryJuiceAlpha = 0;
     float mBatteryMeter = 0;
+    int mOverallSpeed = SPEED_DEFAULT;
 
     // Flags
     private boolean mPerAppColor;
@@ -308,6 +313,67 @@ public class PieMenu extends FrameLayout {
         }
     }
 
+    public void hidePanels(boolean reset) {
+        if (mFlipViewState == NOTIFICATIONS_PANEL) {
+            hidePanel(mNotificationPanel);
+        } else if (mFlipViewState == QUICK_SETTINGS_PANEL) {
+            hidePanel(mQS);
+        }
+        if (reset) mFlipViewState = -1;
+    }
+
+    public void swapPanels() {
+        hidePanels(false);
+        if (mFlipViewState == NOTIFICATIONS_PANEL) {
+            mFlipViewState = QUICK_SETTINGS_PANEL;
+            showPanel(mQS);
+        } else if (mFlipViewState == QUICK_SETTINGS_PANEL) {
+            mFlipViewState = NOTIFICATIONS_PANEL;
+            showPanel(mNotificationPanel);
+        }
+    }
+
+    private ViewGroup getPanelParent(View panel) {
+        if (((Integer)panel.getTag()).intValue() == NOTIFICATIONS_PANEL) {
+            return mPanelParents[NOTIFICATIONS_PANEL];
+        } else {
+            return mPanelParents[QUICK_SETTINGS_PANEL];
+        }
+    }
+
+    private void hidePanel(View panel) {
+        ViewGroup parent = getPanelParent(panel);
+        mScrollView.removeView(panel);
+        parent.addView(panel, panel.getLayoutParams());
+        updateContainer(false);
+    }
+
+    private void showPanel(View panel) {
+        ViewGroup parent = getPanelParent(panel);
+        parent.removeView(panel);
+        mScrollView.addView(panel);
+        updateContainer(true);
+    }
+
+    private void updateContainer(boolean visible) {
+        mContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
+        mWindowManager.updateViewLayout(mContainer,
+                getFlipPanelLayoutParams());
+    }
+
+    private WindowManager.LayoutParams getFlipPanelLayoutParams() {
+        return new WindowManager.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                        | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
+                PixelFormat.TRANSLUCENT);
+    }
+
     public void setPanel(PieControlPanel panel) {
         mPanel = panel;
         mPanelParents = new ViewGroup[2];
@@ -343,6 +409,21 @@ public class PieMenu extends FrameLayout {
             // ensure clean state
             mStatusMode = Settings.System.getInt(mContext.getContentResolver(), Settings.System.PIE_MODE, 2);
             mPerAppColor = Settings.System.getInt(mContext.getContentResolver(), Settings.System.PIE_PAC, 0) == 1;
+
+            switch(mStatusMode) {
+                case 0: 
+                    mOverallSpeed = 0;
+                    break;
+                case 1: 
+                    mOverallSpeed = SPEED_QUICK;
+                    break;
+                case 2: 
+                    mOverallSpeed = SPEED_DEFAULT;
+                    break;
+                case 3: 
+                    mOverallSpeed = SPEED_SLOW;
+                    break;
+            }
 
             if (!mPerAppColor) {
                 mNormalPaint.setColor(COLOR_DEFAULT_BACKGROUND);
@@ -475,7 +556,7 @@ public class PieMenu extends FrameLayout {
 
         @Override
         public void onAnimationUpdate(ValueAnimator animation) {
-            mCharOffset[mIndex] = (float)((1 - animation.getAnimatedFraction()) * 1000);
+            mCharOffset[mIndex] = (float)((1 - animation.getAnimatedFraction()) * mOverallSpeed);
             invalidate();
         }
     }
@@ -527,7 +608,7 @@ public class PieMenu extends FrameLayout {
                 invalidate();
             }
         });
-        animation.setDuration(1500);
+        animation.setDuration((int)(mOverallSpeed * 1.5));
         animation.setInterpolator(new DecelerateInterpolator());
         animation.start();
 
@@ -543,7 +624,7 @@ public class PieMenu extends FrameLayout {
                         invalidate();
                     }
                 });
-                mTextAlphaAnimation.setDuration(2000);
+                mTextAlphaAnimation.setDuration(mOverallSpeed);
                 mTextAlphaAnimation.setInterpolator(new AccelerateInterpolator());
                 mTextAlphaAnimation.start();
             }
@@ -551,9 +632,9 @@ public class PieMenu extends FrameLayout {
             // Chracters falling into place
             ValueAnimator mTextAnimation = ValueAnimator.ofInt(0, 1);
             mTextAnimation.addUpdateListener(new customAnimatorUpdateListener(i));
-            mTextAnimation.setDuration(1000 - 800 / (i + 2));
+            mTextAnimation.setDuration((int)(mOverallSpeed - (mOverallSpeed * 0.8) / (i + 2)));
             mTextAnimation.setInterpolator(new AccelerateInterpolator());
-            mTextAnimation.setStartDelay(i * 100);
+            mTextAnimation.setStartDelay(i * mOverallSpeed / 10);
             mTextAnimation.start();
         }
     }
@@ -674,8 +755,8 @@ public class PieMenu extends FrameLayout {
                     for( int i = 0; i < mStatusText.length(); i++ ) {
                         char character = mStatusText.charAt(i);
                         float measure = mStatusPaint.measureText("" + character); 
-                        offsets[i] = measure * (character == '1' || character == ':' ? 0.5f : 0.8f);
-                        totalOffset += measure * (character == '1' || character == ':' ? 0.5f : 0.9f);
+                        offsets[i] = measure * (character == '1' || character == ':' ? 0.5f : 0.9f);
+                        totalOffset += measure * (character == '1' || character == ':' ? 0.5f : 1f);
                     }
                     
                     float fullCircle = 2f * (mRadius+mRadiusInc) * (float)Math.PI;
@@ -880,67 +961,6 @@ public class PieMenu extends FrameLayout {
         }
         // always re-dispatch event
         return false;
-    }
-
-    public void hidePanels(boolean reset) {
-        if (mFlipViewState == NOTIFICATIONS_PANEL) {
-            hidePanel(mNotificationPanel);
-        } else if (mFlipViewState == QUICK_SETTINGS_PANEL) {
-            hidePanel(mQS);
-        }
-        if (reset) mFlipViewState = -1;
-    }
-
-    public void swapPanels() {
-        hidePanels(false);
-        if (mFlipViewState == NOTIFICATIONS_PANEL) {
-            mFlipViewState = QUICK_SETTINGS_PANEL;
-            showPanel(mQS);
-        } else if (mFlipViewState == QUICK_SETTINGS_PANEL) {
-            mFlipViewState = NOTIFICATIONS_PANEL;
-            showPanel(mNotificationPanel);
-        }
-    }
-
-    private ViewGroup getPanelParent(View panel) {
-        if (((Integer)panel.getTag()).intValue() == NOTIFICATIONS_PANEL) {
-            return mPanelParents[NOTIFICATIONS_PANEL];
-        } else {
-            return mPanelParents[QUICK_SETTINGS_PANEL];
-        }
-    }
-
-    private void hidePanel(View panel) {
-        ViewGroup parent = getPanelParent(panel);
-        mScrollView.removeView(panel);
-        parent.addView(panel, panel.getLayoutParams());
-        updateContainer(false);
-    }
-
-    private void showPanel(View panel) {
-        ViewGroup parent = getPanelParent(panel);
-        parent.removeView(panel);
-        mScrollView.addView(panel);
-        updateContainer(true);
-    }
-
-    private void updateContainer(boolean visible) {
-        mContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
-        mWindowManager.updateViewLayout(mContainer,
-                getFlipPanelLayoutParams());
-    }
-
-    private WindowManager.LayoutParams getFlipPanelLayoutParams() {
-        return new WindowManager.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
-                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                        | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
-                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
-                PixelFormat.TRANSLUCENT);
     }
 
     private void onEnter(PieItem item) {
