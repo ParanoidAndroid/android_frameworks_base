@@ -165,6 +165,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -972,44 +973,34 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         // Expanded desktop
         mContext.getContentResolver().registerContentObserver(
-                Settings.System.getUriFor(Settings.System.EXPANDED_DESKTOP_STATE), false, new ContentObserver(new Handler()) {
+                Settings.System.getUriFor(Settings.System.EXPANDED_DESKTOP_STATE),
+                    false, new ContentObserver(new Handler()) {
             @Override
             public void onChange(boolean selfChange) {
                 updateHybridLayout();
                 update(false);
 
-                // Make sure we are safely closing all launchers to let them re-do their layouts.
-                // This needs to be done to prevent app-drawer screw-ups and worse, dock swallowing drop-targets
+                // Restart default launcher activity
                 final PackageManager mPm = mContext.getPackageManager();
-                final ActivityManager am = (ActivityManager)mContext.getSystemService(Context.ACTIVITY_SERVICE);
-                if (mPm!= null && am != null) {
-                    final Intent intent = new Intent(Intent.ACTION_MAIN); 
-                    intent.addCategory(Intent.CATEGORY_HOME); 
-                    final ResolveInfo res = mPm.resolveActivity(intent, 0); 
-                    if (res.activityInfo == null || res.activityInfo.packageName.equals("android")) {
-                        // No default selected or launcher simply not found, now lets get a hammer...
-                        Intent i = new Intent("android.intent.action.MAIN");
-                        i.addCategory("android.intent.category.HOME");
-                        List<ResolveInfo> activityInfo = mPm.queryIntentActivities(i, 0);
-                        if (activityInfo != null) {
-                           for (ResolveInfo resolveInfo : activityInfo) {
-                                closeApplication(resolveInfo.activityInfo.packageName);
-                           }
-                        }
-                    } else {
-                         // Default launcher found, we can safely remove it from the running-tasks list
-                        List<ActivityManager.RunningTaskInfo> runningTasks = am.getRunningTasks(20);
-                        if (runningTasks != null) {
-                            for (ActivityManager.RunningTaskInfo task : runningTasks) {
-                                if (task.baseActivity.getPackageName().equals(res.activityInfo.packageName)) {
-                                    am.removeTask(task.id, ActivityManager.REMOVE_TASK_KILL_PROCESS);
-                                    break;
-                                }
-                            }
+                final ActivityManager am = (ActivityManager)mContext
+                        .getSystemService(Context.ACTIVITY_SERVICE);
+                final Intent intent = new Intent(Intent.ACTION_MAIN); 
+                intent.addCategory(Intent.CATEGORY_HOME); 
+                final ResolveInfo res = mPm.resolveActivity(intent, 0);
+
+                // Launcher is running task #1
+                List<ActivityManager.RunningTaskInfo> runningTasks = am.getRunningTasks(1);
+                if (runningTasks != null) {
+                    for (ActivityManager.RunningTaskInfo task : runningTasks) {
+                        String packageName = task.baseActivity.getPackageName();
+                        if (packageName.equals(res.activityInfo.packageName)) {
+                            closeApplication(packageName);
+                            break;
                         }
                     }
                 }
-            }});
+            }
+        });
 
         mShortcutManager = new ShortcutManager(context, mHandler);
         mShortcutManager.observe();
