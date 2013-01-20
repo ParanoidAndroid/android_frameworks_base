@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.view;
 
+import android.app.Notification;
 import android.animation.Animator;
 import android.animation.Animator.AnimatorListener;
 import android.animation.AnimatorListenerAdapter;
@@ -26,6 +27,7 @@ import android.database.ContentObserver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -63,12 +65,17 @@ import android.widget.ImageView;
 import android.widget.ScrollView;
 
 import com.android.systemui.R;
+import com.android.systemui.statusbar.NotificationData;
 import com.android.systemui.statusbar.PieControl;
 import com.android.systemui.statusbar.PieControlPanel;
+import com.android.systemui.statusbar.StatusBarIconView;
 import com.android.systemui.statusbar.phone.QuickSettingsContainerView;
 import com.android.systemui.statusbar.policy.Clock;
 import com.android.systemui.statusbar.policy.NotificationRowLayout;
 import com.android.systemui.statusbar.policy.PiePolicy;
+
+import com.android.internal.statusbar.StatusBarNotification;
+import com.android.internal.statusbar.StatusBarIcon;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -480,7 +487,7 @@ public class PieMenu extends FrameLayout {
         mTextAlpha = 0;
         mBackgroundOpacity = 0;
         mCharOffset = new float[25];
-        for (int i = 0; i < mCharOffset.length; i++) {
+        for (int i = 0; i < 25; i++) {
             mCharOffset[i] = 1000;
         }
 
@@ -524,7 +531,7 @@ public class PieMenu extends FrameLayout {
         animation.start();
 
         int textLen = mStatusText.length();
-        for(int i = 0; i < textLen; i++) {
+        for(int i = 0; i < 20; i++) {
             // Text alpha
             if (i == 0) {
                 ValueAnimator mTextAlphaAnimation  = ValueAnimator.ofInt(0, 1);
@@ -545,6 +552,7 @@ public class PieMenu extends FrameLayout {
             mTextAnimation.addUpdateListener(new customAnimatorUpdateListener(i));
             mTextAnimation.setDuration(1000 - 800 / (i + 2));
             mTextAnimation.setInterpolator(new AccelerateInterpolator());
+            mTextAnimation.setStartDelay(i * 100);
             mTextAnimation.start();
         }
     }
@@ -594,10 +602,40 @@ public class PieMenu extends FrameLayout {
             canvas.drawBitmap(mBitmap1, null, new Rect(0,0,getWidth(),mGlowOffset), null);
             canvas.drawBitmap(mBitmap1, null, new Rect(0,0,getWidth(),mGlowOffset), null);
 
-            // draw base menu
+            // Draw base menu
             for (PieItem item : mItems) {
                 drawItem(canvas, item);
             }
+
+            // Draw shade rings
+            Paint chevronBackground1 = new Paint();
+            chevronBackground1.setAntiAlias(true);
+            chevronBackground1.setColor(0xffbb33);
+            chevronBackground1.setAlpha(100+mGlowOffset);
+
+            Paint chevronBackground2 = new Paint();
+            chevronBackground2.setAntiAlias(true);
+            chevronBackground2.setColor(0x99cc00);
+            chevronBackground2.setAlpha(100+mGlowOffset);
+
+                state = canvas.save();
+                canvas.rotate(90, mCenter.x, mCenter.y);
+                int in = (int)((mRadius + mRadiusInc) + mTouchOffset * 7.5f);
+                int o = (int)(mRadius + mRadiusInc + mTouchOffset * 7.65);
+                float s = mPanel.getDegree() + 0;
+                float e = mPanel.getDegree() + 90 - 8;
+                Path test = makeSlice(s, e, in, o, mCenter);
+                canvas.drawPath(test, chevronBackground1);
+                canvas.restoreToCount(state);
+
+                state = canvas.save();
+                canvas.rotate(180, mCenter.x, mCenter.y);
+                s = mPanel.getDegree() -4;
+                e = mPanel.getDegree() + 90;
+                Path test2 = makeSlice(s, e, in, o, mCenter);
+                canvas.drawPath(test2, chevronBackground2);
+                canvas.restoreToCount(state);
+
 
             // Paint status report only if settings allow
             if (mStatusMode != 0) {
@@ -659,7 +697,7 @@ public class PieMenu extends FrameLayout {
                     String amPm = mPolicy.getAmPm();
                     lastPos -= mStatusPaint.measureText(amPm);
                     canvas.drawTextOnPath(amPm, mStatusPath, lastPos,
-                        -mTouchOffset * 5.6f, mStatusPaint);
+                        -mTouchOffset * 6f, mStatusPaint);
                     canvas.restoreToCount(state);
 
                     // Device status information and date
@@ -673,6 +711,44 @@ public class PieMenu extends FrameLayout {
                     canvas.drawTextOnPath(mPolicy.getSimpleDate(), mStatusPath, mCharOffset[4], -70, mStatusPaint);
                     canvas.drawTextOnPath(mPolicy.getBatteryLevelReadable(), mStatusPath, mCharOffset[4], -45, mStatusPaint);
                     canvas.drawTextOnPath(mPolicy.getWifiSsid(), mStatusPath, mCharOffset[4], -20, mStatusPaint);
+
+                    mStatusPaint.setTextSize(25);
+                    mStatusPaint.setAlpha(150);
+                    float scale = 0.5f;
+                    float offset = -250;
+                    int row = 4;
+                    NotificationData notifData = mPanel.getBar().getNotificationData();
+                    if (notifData != null) {
+                        for (int i = 0; i < notifData.size(); i++ ) {
+                            NotificationData.Entry entry = notifData.get(i);
+                            StatusBarNotification statusNotif = entry.notification;
+                            if (statusNotif == null) continue;
+                            Notification notif = statusNotif.notification;
+                            if (notif == null) continue;
+                            CharSequence tickerText = notif.tickerText;
+                            if (tickerText == null) continue;
+
+                            mStatusPaint.setTextScaleX(scale);
+                            canvas.drawTextOnPath(tickerText.toString(), mStatusPath, mCharOffset[row], offset, mStatusPaint);
+                            scale -= 0.015;
+                            offset -= 35;
+                            row += 1;
+
+                            if (entry.icon != null) {
+
+                                
+                                StatusBarIconView iconView = entry.icon;
+                                StatusBarIcon icon = iconView.getStatusBarIcon();
+                                Drawable drawable = entry.icon.getIcon(mContext, icon);
+                                Bitmap bitmap = ((BitmapDrawable)drawable).getBitmap();
+
+                                int posX = (int)(mCenter.x + (mTouchOffset * 11.9) + row * 35 + mCharOffset[row]);
+                                int posY = (int)mCenter.y - 40;
+                                canvas.drawBitmap(bitmap, null, new Rect(posX, posY,posX + 30,posY +30), mStatusPaint);
+                            }
+
+                        }
+                    }
                     canvas.restoreToCount(state);
                 }
             }
@@ -770,7 +846,7 @@ public class PieMenu extends FrameLayout {
             mGlowOffset = distanceY > shadeTreshold ? (int)(distanceY - shadeTreshold) : 0;
             
             // Trigger the shade?
-            if (distanceY > shadeTreshold) {
+            if (distanceY > shadeTreshold && mFlipViewState == -1) {
                 // Give the user a small hint that he's inside the upper touch area
                 if(hapticFeedback) mVibrator.vibrate(2);
                 if(mFlipViewState == -1) mFlipViewState = NOTIFICATIONS_PANEL;
@@ -815,8 +891,7 @@ public class PieMenu extends FrameLayout {
     }
 
     private ViewGroup getPanelParent(View panel) {
-        if (((Integer)panel.getTag()).intValue()
-                == NOTIFICATIONS_PANEL) {
+        if (((Integer)panel.getTag()).intValue() == NOTIFICATIONS_PANEL) {
             return mPanelParents[NOTIFICATIONS_PANEL];
         } else {
             return mPanelParents[QUICK_SETTINGS_PANEL];
