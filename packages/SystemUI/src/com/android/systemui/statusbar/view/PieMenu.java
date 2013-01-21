@@ -861,6 +861,7 @@ public class PieMenu extends FrameLayout {
                                     StatusBarIconView iconView = entry.icon;
                                     StatusBarIcon icon = iconView.getStatusBarIcon();
                                     Drawable drawable = entry.icon.getIcon(mContext, icon);
+                                    if (!(drawable instanceof BitmapDrawable)) continue;
                                     Bitmap bitmap = ((BitmapDrawable)drawable).getBitmap();
 
                                     int posX = (int)(mCenter.x + (mTouchOffset * 11.9) + row * 35 + mCharOffset[row]);
