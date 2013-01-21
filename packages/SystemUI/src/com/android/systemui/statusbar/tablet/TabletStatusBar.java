@@ -91,6 +91,7 @@ import com.android.systemui.statusbar.policy.BatteryController;
 import com.android.systemui.statusbar.policy.BluetoothController;
 import com.android.systemui.statusbar.policy.Clock;
 import com.android.systemui.statusbar.policy.CompatModeButton;
+import com.android.systemui.statusbar.policy.DockBatteryController;
 import com.android.systemui.statusbar.policy.KeyButtonView;
 import com.android.systemui.statusbar.policy.LocationController;
 import com.android.systemui.statusbar.policy.NetworkController;
@@ -178,6 +179,7 @@ public class TabletStatusBar extends BaseStatusBar implements
     int mNotificationFlingVelocity;
 
     BluetoothController mBluetoothController;
+    DockBatteryController mDockBatteryController;
     LocationController mLocationController;
     DoNotDisturb mDoNotDisturb;
 
@@ -208,6 +210,8 @@ public class TabletStatusBar extends BaseStatusBar implements
     private int mShowSearchHoldoff;
 
     private boolean mButtonBusy = true;
+
+    private boolean mHasDockBattery;
 
     public Context getContext() { return mContext; }
 
@@ -614,6 +618,14 @@ public class TabletStatusBar extends BaseStatusBar implements
         mSignalCluster.setNetworkController(mNetworkController);
 
         mBarView = (ViewGroup) mStatusBarView;
+
+        mHasDockBattery = mContext.getResources().getBoolean(
+                com.android.internal.R.bool.config_hasDockBattery);
+
+        if (mHasDockBattery) {
+            mDockBatteryController = new DockBatteryController(mContext);
+            mDockBatteryController.addIconView((ImageView)sb.findViewById(R.id.dock_battery));
+        }
 
         // The navigation buttons
         mBackButton = (ImageView)sb.findViewById(R.id.back);

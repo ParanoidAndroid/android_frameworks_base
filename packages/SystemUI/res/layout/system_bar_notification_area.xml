@@ -128,6 +128,12 @@
                 android:layout_width="wrap_content"
                 android:paddingLeft="4dip"
                 />
+            <ImageView
+                android:id="@+id/dock_battery"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:paddingLeft="4dip"
+                />
         </LinearLayout>
     </LinearLayout>
 </com.android.systemui.statusbar.tablet.NotificationArea>
