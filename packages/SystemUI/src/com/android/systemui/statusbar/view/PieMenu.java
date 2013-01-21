@@ -27,11 +27,11 @@ import android.database.ContentObserver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.Rect;
@@ -64,6 +64,9 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 
+import com.android.internal.statusbar.StatusBarNotification;
+import com.android.internal.statusbar.StatusBarIcon;
+
 import com.android.systemui.R;
 import com.android.systemui.statusbar.NotificationData;
 import com.android.systemui.statusbar.PieControl;
@@ -73,9 +76,6 @@ import com.android.systemui.statusbar.phone.QuickSettingsContainerView;
 import com.android.systemui.statusbar.policy.Clock;
 import com.android.systemui.statusbar.policy.NotificationRowLayout;
 import com.android.systemui.statusbar.policy.PiePolicy;
-
-import com.android.internal.statusbar.StatusBarNotification;
-import com.android.internal.statusbar.StatusBarIcon;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -857,7 +857,7 @@ public class PieMenu extends FrameLayout {
                                 row += 1;
 
                                 if (entry.icon != null) {
-                                    int IconState = canvas.save();
+                                    int iconState = canvas.save();
                                     StatusBarIconView iconView = entry.icon;
                                     StatusBarIcon icon = iconView.getStatusBarIcon();
                                     Drawable drawable = entry.icon.getIcon(mContext, icon);
@@ -867,7 +867,7 @@ public class PieMenu extends FrameLayout {
                                     int posY = (int)mCenter.y - 40;
                                     canvas.rotate(90,posX+15, posY+15);
                                     canvas.drawBitmap(bitmap, null, new Rect(posX, posY,posX + 30,posY +30), mStatusPaint);
-                                    canvas.restoreToCount(IconState);
+                                    canvas.restoreToCount(iconState);
                                 }
                             }
                         }
@@ -993,12 +993,14 @@ public class PieMenu extends FrameLayout {
                         break;
                 }
 
-                if (state == QUICK_SETTINGS_PANEL && mFlipViewState != QUICK_SETTINGS_PANEL && mCurrentViewState != QUICK_SETTINGS_PANEL) {
+                if (state == QUICK_SETTINGS_PANEL && mFlipViewState != QUICK_SETTINGS_PANEL
+                        && mCurrentViewState != QUICK_SETTINGS_PANEL) {
                     mGlowOffsetRight = 90;
                     mGlowOffsetLeft = 255;
                     mFlipViewState = QUICK_SETTINGS_PANEL;
                     if(hapticFeedback) mVibrator.vibrate(2);
-                } else if (state == NOTIFICATIONS_PANEL && mFlipViewState != NOTIFICATIONS_PANEL && mCurrentViewState != NOTIFICATIONS_PANEL) {
+                } else if (state == NOTIFICATIONS_PANEL && mFlipViewState != NOTIFICATIONS_PANEL
+                        && mCurrentViewState != NOTIFICATIONS_PANEL) {
                     mGlowOffsetRight = 255;
                     mGlowOffsetLeft = 90;
                     mFlipViewState = NOTIFICATIONS_PANEL;
