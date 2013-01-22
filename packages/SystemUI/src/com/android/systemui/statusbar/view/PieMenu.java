@@ -273,6 +273,7 @@ public class PieMenu extends FrameLayout {
             mAmPmPaint.setColor(colorInfo.lastColor);
             mNotificationPaint.setColor(colorInfo.lastColor);
             mClockPaint.setColor(colorInfo.lastColor);
+            mStatusPaint.setColor(colorInfo.lastColor);
 
             colorInfo = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BUTTON_COLOR);
             // Buttons?
