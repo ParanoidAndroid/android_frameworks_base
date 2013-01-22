@@ -2484,6 +2484,12 @@ public final class Settings {
         public static final String PIE_MODE = "pie_mode";
 
         /**
+         * Pie size fraction
+         * @hide
+         */
+        public static final String PIE_SIZE = "pie_size";
+
+        /**
          * User Interface State
          * 1 = Rebuild UI, resets to 0 automatically
          * @hide

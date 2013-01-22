@@ -27,11 +27,11 @@ import android.database.ContentObserver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.Rect;
@@ -64,9 +64,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 
-import com.android.internal.statusbar.StatusBarNotification;
-import com.android.internal.statusbar.StatusBarIcon;
-
 import com.android.systemui.R;
 import com.android.systemui.statusbar.NotificationData;
 import com.android.systemui.statusbar.PieControl;
@@ -77,380 +74,412 @@ import com.android.systemui.statusbar.policy.Clock;
 import com.android.systemui.statusbar.policy.NotificationRowLayout;
 import com.android.systemui.statusbar.policy.PiePolicy;
 
+import com.android.internal.statusbar.StatusBarNotification;
+import com.android.internal.statusbar.StatusBarIcon;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class PieMenu extends FrameLayout {
 
-    private static final int BACKGROUND_COLOR = 0xCC;
-    private static final int ANIMATION_OUT = 0;
+    // Linear
+    private static int ANIMATOR_DEC_SPEED10 = 0;
+    private static int ANIMATOR_DEC_SPEED15 = 1;
+    private static int ANIMATOR_DEC_SPEED30 = 2;
+    private static int ANIMATOR_ACC_SPEED10 = 3;
+    private static int ANIMATOR_ACC_SPEED15 = 4;
+    private static int ANIMATOR_ACC_SPEED30 = 5;
 
-    private static final int COLOR_DEFAULT_BACKGROUND = 0xAAFF005E;
-    private static final int COLOR_DEFAULT_SELECT = 0xAADBFF00;
-    private static final int COLOR_DEFAULT_BUTTONS = 0xB2FFFFFF;
-    private static final int COLOR_DEFAULT_STATUS = 0xFFFFFFFF;
-    private static final int COLOR_DEFAULT_BATTERY_JUICE = 0x33b5e5;
-    private static final int COLOR_DEFAULT_BATTERY_JUICE_LOW = 0xffbb33;
-    private static final int COLOR_DEFAULT_BATTERY_JUICE_CRITICAL = 0xff4444;
-    private static final int COLOR_DEFAULT_BATTERY_BACKGROUND = 0xFFFFFF;
+    // Cascade
+    private static int ANIMATOR_ACC_INC_1 = 6;
+    private static int ANIMATOR_ACC_INC_15 = 20;
 
-    private static final int SPEED_QUICK = 400;
-    private static final int SPEED_DEFAULT = 1000;
-    private static final int SPEED_SLOW = 2000;
+    // Special purpose
+    private static int ANIMATOR_BATTERY_METER = 21;
 
-    private static final int NOTIFICATIONS_PANEL = 0;
-    private static final int QUICK_SETTINGS_PANEL = 1;
-
-    // A view like object that lives off of the pie menu
-    public interface PieView {
-        public interface OnLayoutListener {
-            public void onLayout(int ax, int ay, boolean left);
-        }
-        public void setLayoutListener(OnLayoutListener l);
-        public void layout(int anchorX, int anchorY, boolean onleft, float angle,
-                int parentHeight);
-        public void draw(Canvas c);
-        public boolean onTouchEvent(MotionEvent evt);
-    }
+    private static final int COLOR_ALPHA_MASK = 0xaa000000;
+    private static final int COLOR_PIE_BACKGROUND = 0xaaff005e;
+    private static final int COLOR_PIE_SELECT = 0xaadbff00;
+    private static final int COLOR_CHEVRON_LEFT = 0x0999cc;
+    private static final int COLOR_CHEVRON_RIGHT = 0x33b5e5;
+    private static final int COLOR_BATTERY_JUICE = 0x33b5e5;
+    private static final int COLOR_BATTERY_JUICE_LOW = 0xffbb33;
+    private static final int COLOR_BATTERY_JUICE_CRITICAL = 0xff4444;
+    private static final int COLOR_BATTERY_BACKGROUND = 0xffffff;
+    private static final int COLOR_STATUS = 0xffffff;
+    private static final int BASE_SPEED = 500;
+    private static final int EMPTY_ANGLE_BASE = 12;
+    private static final float SIZE_BASE = 1f;
 
     // System
-    private WindowManager mWindowManager;
     private Context mContext;
+    private Resources mResources;
     private PiePolicy mPolicy;
     private Vibrator mVibrator;
 
-    // Geometry
-    private Point mCenter = new Point(0, 0);
-    private int mRadius;
-    private int mRadiusInc;
-    private int mSlop;
-    private int mTouchOffset;
-
-    private List<PieItem> mItems;
-    private PieView mPieView;
-
-    // touch handling
+    // Pie handlers
     private PieItem mCurrentItem;
+    private List<PieItem> mItems;
     private PieControlPanel mPanel;
+    private PieStatusPanel mStatusPanel;
 
-    // Colors
-    private ColorUtils.ColorSettingInfo mLastBackgroundColor;
-    private ColorUtils.ColorSettingInfo mLastGlowColor;
-    private Paint mNormalPaint;
-    private Paint mSelectedPaint;
-    private Paint mBatteryJuice;
-    private Paint mBatteryBackground;
-    private Paint mStatusPaint;
-    private Paint mChevronBackground1;
-    private Paint mChevronBackground2;
+    private int mOverallSpeed = BASE_SPEED;
+    private int mPanelDegree;
+    private int mInnerPieRadius;
+    private int mOuterPieRadius;
+    private int mInnerChevronRadius;
+    private int mOuterChevronRadius;
+    private int mInnerBatteryRadius;
+    private int mOuterBatteryRadius;
+    private int mStatusRadius;
+    private int mNotificationsRadius;
+    private int mEmptyAngle = EMPTY_ANGLE_BASE;
 
-    // Animations
-    private ValueAnimator mIntoAnimation;
-    private ValueAnimator mOutroAnimation;
-    private int mBackgroundOpacity = 0;
-    private float mTextOffset = 0;
-    private int mTextAlpha = 0;
-    private float mCharOffset[];
-    private int mGlowOffsetLeft = 90;
-    private int mGlowOffsetRight = 90;
-    private int mBatteryBackgroundAlpha = 0;
-    private int mBatteryJuiceAlpha = 0;
-    private float mBatteryMeter = 0;
-    private int mOverallSpeed = SPEED_DEFAULT;
-    private float mDecelerateFraction = 0;
+    private Point mCenter = new Point(0, 0);
 
-    // Flags
-    private boolean mPerAppColor;
-    private boolean mOpen;
-    private boolean mStatusAnimate;
-    private boolean mGlowColorHelper;
-    private int mStatusMode = 2;
-
-    // Layout and UI
-    private ViewGroup[] mPanelParents;
-    private ScrollView mScrollView;
-    private View mContainer;
-    private View mContentFrame;
-    private QuickSettingsContainerView mQS;
-    private NotificationRowLayout mNotificationPanel;
-    private int mCurrentViewState = -1;
-    private int mFlipViewState = -1;
-
-    private Path mStatusPath;
+    private Path mStatusPath = new Path();
     private Path mChevronPathLeft;
     private Path mChevronPathRight;
-    private float mTextLen = 0;
-    private String mStatusText;
+    private Path mBatteryPathBackground;
+    private Path mBatteryPathJuice;
 
-    public PieMenu(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        init(context);
+    private Paint mPieBackground = new Paint(COLOR_PIE_BACKGROUND);
+    private Paint mPieSelected = new Paint(COLOR_PIE_SELECT);
+    private Paint mChevronBackgroundLeft = new Paint(COLOR_CHEVRON_LEFT);
+    private Paint mChevronBackgroundRight = new Paint(COLOR_CHEVRON_RIGHT);
+    private Paint mBatteryJuice = new Paint(COLOR_BATTERY_JUICE);
+    private Paint mBatteryBackground = new Paint(COLOR_BATTERY_BACKGROUND);
+
+    private Paint mClockPaint;
+    private Paint mAmPmPaint;
+    private Paint mStatusPaint;
+    private Paint mNotificationPaint;
+
+    private String mClockText;
+    private String mClockTextAmPm;
+    private float mClockTextAmPmSize;
+    private float mClockTextTotalOffset = 0;
+    private float[] mClockTextOffsets = new float[20];
+    private float mClockTextRotation;
+    private float mClockOffset;
+    private float mAmPmOffset;
+    private float mStatusOffset;
+
+    private int mNotificationCount;
+    private float mNotificationsRowSize;
+    private int mNotificationIconSize;
+    private int mNotificationTextSize;
+    private String[] mNotificationText;
+    private Bitmap[] mNotificationIcon;
+    private Path[] mNotificationPath;
+
+    private float mStartBattery;
+    private float mEndBattery;
+    private int mBatteryLevel;
+
+    // Flags
+    private int mStatusMode;
+    private float mPieSize = SIZE_BASE;
+    private boolean mPerAppColor;
+    private boolean mOpen;
+
+    // Animations
+    private int mGlowOffsetLeft = 100;
+    private int mGlowOffsetRight = 100;
+    private ValueAnimator[] mAnimators = new ValueAnimator[25];
+    private float[] mAnimatedFraction = new float[25];
+
+    private void getDimensions() {
+        mPanelDegree = mPanel.getDegree();
+
+        // Fetch modes
+        mStatusMode = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.PIE_MODE, 2);
+        mPerAppColor = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.PIE_PAC, 0) == 1;
+        mPieSize = Settings.System.getFloat(mContext.getContentResolver(),
+                Settings.System.PIE_SIZE, 1f);
+
+        // Create Pie
+        mEmptyAngle = (int)(EMPTY_ANGLE_BASE * mPieSize);
+        mInnerPieRadius = (int)(mResources.getDimensionPixelSize(R.dimen.pie_radius_start) * mPieSize);
+        mOuterPieRadius = (int)(mInnerPieRadius + mResources.getDimensionPixelSize(R.dimen.pie_radius_increment) * mPieSize);
+
+        // Calculate chevrons: 0 - 82 & -4 - 90
+        mInnerChevronRadius = (int)(mResources.getDimensionPixelSize(R.dimen.pie_chevron_start) * mPieSize);
+        mOuterChevronRadius = (int)(mInnerChevronRadius + mResources.getDimensionPixelSize(R.dimen.pie_chevron_increment) * mPieSize);
+        mChevronPathLeft = makeSlice(mPanelDegree, mPanelDegree + 82, mInnerChevronRadius,
+                mOuterChevronRadius, mCenter);
+        mChevronPathRight = makeSlice(mPanelDegree - 4, mPanelDegree + 90, mInnerChevronRadius,
+                mOuterChevronRadius, mCenter);
+
+        // Calculate text circle
+        mStatusRadius = (int)(mResources.getDimensionPixelSize(R.dimen.pie_status_start) * mPieSize);
+        mStatusPath.reset();
+        mStatusPath.addCircle(mCenter.x, mCenter.y, mStatusRadius, Path.Direction.CW);
+
+        mClockPaint.setTextSize(mResources.getDimensionPixelSize(R.dimen.pie_clock_size) * mPieSize);
+        mClockOffset = mResources.getDimensionPixelSize(R.dimen.pie_clock_offset) * mPieSize;
+        mAmPmPaint.setTextSize(mResources.getDimensionPixelSize(R.dimen.pie_ampm_size) * mPieSize);
+        mAmPmOffset = mResources.getDimensionPixelSize(R.dimen.pie_ampm_offset) * mPieSize;
+
+        mStatusPaint.setTextSize((int)(mResources.getDimensionPixelSize(R.dimen.pie_status_size) * mPieSize));
+        mStatusOffset = mResources.getDimensionPixelSize(R.dimen.pie_status_offset) * mPieSize;
+        mNotificationTextSize = mResources.getDimensionPixelSize(R.dimen.pie_notification_size);
+        mNotificationPaint.setTextSize(mNotificationTextSize);
+
+        // Colors
+        mChevronBackgroundLeft.setColor(COLOR_CHEVRON_LEFT);
+        mChevronBackgroundRight.setColor(COLOR_CHEVRON_RIGHT);
+
+        // Battery
+        mInnerBatteryRadius = (int)(mResources.getDimensionPixelSize(R.dimen.pie_battery_start) * mPieSize);
+        mOuterBatteryRadius = (int)(mInnerBatteryRadius + mResources.getDimensionPixelSize(R.dimen.pie_battery_increment) * mPieSize);
+
+        mBatteryBackground.setColor(COLOR_BATTERY_BACKGROUND);
+        mBatteryLevel = mPolicy.getBatteryLevel();
+        if(mBatteryLevel <= PiePolicy.LOW_BATTERY_LEVEL
+                && mBatteryLevel > PiePolicy.CRITICAL_BATTERY_LEVEL) {
+            mBatteryJuice.setColor(COLOR_BATTERY_JUICE_LOW);
+        } else if(mBatteryLevel <= PiePolicy.CRITICAL_BATTERY_LEVEL) {
+            mBatteryJuice.setColor(COLOR_BATTERY_JUICE_CRITICAL);
+        } else {
+            mBatteryJuice.setColor(COLOR_BATTERY_JUICE);
+        }
+
+        mStartBattery = mPanel.getDegree() + mEmptyAngle + 1;
+        mEndBattery = mPanel.getDegree() + 88;
+        mBatteryPathBackground = makeSlice(mStartBattery, mEndBattery, mInnerBatteryRadius, mOuterBatteryRadius, mCenter);
+        mBatteryPathJuice = makeSlice(mStartBattery, mStartBattery + mBatteryLevel * (mEndBattery-mStartBattery) /
+                100, mInnerBatteryRadius, mOuterBatteryRadius, mCenter);
+
+        if (!mPerAppColor) {
+            mPieBackground.setColor(COLOR_PIE_BACKGROUND);
+            mPieSelected.setColor(COLOR_PIE_SELECT);
+            mClockPaint.setColor(COLOR_STATUS);
+            mAmPmPaint.setColor(COLOR_STATUS);
+            mStatusPaint.setColor(COLOR_STATUS);
+            mNotificationPaint.setColor(COLOR_STATUS);
+        } else {
+            ColorUtils.ColorSettingInfo colorInfo;
+            colorInfo = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BAR_COLOR);
+            mPieBackground.setColor(ColorUtils.extractRGB(colorInfo.lastColor) | COLOR_ALPHA_MASK);
+
+            colorInfo = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_GLOW_COLOR);
+            mPieSelected.setColor(ColorUtils.extractRGB(colorInfo.lastColor) | COLOR_ALPHA_MASK);
+
+            colorInfo = ColorUtils.getColorSettingInfo(mContext, Settings.System.STATUS_ICON_COLOR);
+            mClockPaint.setColor(colorInfo.lastColor);
+            mAmPmPaint.setColor(colorInfo.lastColor);
+            mNotificationPaint.setColor(colorInfo.lastColor);
+            mClockPaint.setColor(colorInfo.lastColor);
+
+            colorInfo = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BUTTON_COLOR);
+            // Buttons?
+        }
+
+        // Notifications
+        mNotificationCount = 0;
+        mNotificationsRadius = (int)(mResources.getDimensionPixelSize(R.dimen.pie_notifications_start) * mPieSize);
+        mNotificationIconSize = mResources.getDimensionPixelSize(R.dimen.pie_notification_icon_size);
+        mNotificationsRowSize = mResources.getDimensionPixelSize(R.dimen.pie_notification_row_size);
+
+        if (mPanel.getBar() != null) {
+            getNotifications();
+        }
+
+        // Measure clock
+        measureClock(mPolicy.getSimpleTime());
+
+        // Determine animationspeed
+        mOverallSpeed = BASE_SPEED * mStatusMode;
+
+        // Create animators
+        for (int i = 0; i < mAnimators.length; i++) {
+            ValueAnimator animator = ValueAnimator.ofInt(0, 1);
+            animator.addUpdateListener(new customAnimatorUpdateListener(i));
+            mAnimators[i] = animator;
+            mAnimatedFraction[i] = 0;
+        }
+
+        // Linear animators
+        mAnimators[ANIMATOR_DEC_SPEED10].setDuration((int)(mOverallSpeed * 1));
+        mAnimators[ANIMATOR_DEC_SPEED10].setInterpolator(new DecelerateInterpolator());
+
+        mAnimators[ANIMATOR_DEC_SPEED15].setDuration((int)(mOverallSpeed * 1.5));
+        mAnimators[ANIMATOR_DEC_SPEED15].setInterpolator(new DecelerateInterpolator());
+
+        mAnimators[ANIMATOR_DEC_SPEED30].setDuration((int)(mOverallSpeed * 3));
+        mAnimators[ANIMATOR_DEC_SPEED30].setInterpolator(new DecelerateInterpolator());
+
+        mAnimators[ANIMATOR_ACC_SPEED10].setDuration((int)(mOverallSpeed * 1));
+        mAnimators[ANIMATOR_ACC_SPEED10].setInterpolator(new AccelerateInterpolator());
+
+        mAnimators[ANIMATOR_ACC_SPEED15].setDuration((int)(mOverallSpeed * 1.5));
+        mAnimators[ANIMATOR_ACC_SPEED15].setInterpolator(new AccelerateInterpolator());
+
+        mAnimators[ANIMATOR_ACC_SPEED30].setDuration((int)(mOverallSpeed * 3));
+        mAnimators[ANIMATOR_ACC_SPEED30].setInterpolator(new AccelerateInterpolator());
+
+        // Cascade accelerators
+        for(int i = ANIMATOR_ACC_INC_1; i < ANIMATOR_ACC_INC_15 + 1; i++) {
+            mAnimators[i].setDuration((int)(mOverallSpeed - (mOverallSpeed * 0.8) / (i + 2)));
+            mAnimators[i].setInterpolator(new AccelerateInterpolator());
+            mAnimators[i].setStartDelay(i * mOverallSpeed / 10);
+        }
+
+        // Special purpose
+        mAnimators[ANIMATOR_BATTERY_METER].setDuration((int)(mOverallSpeed * 1.5));
+        mAnimators[ANIMATOR_BATTERY_METER].setInterpolator(new DecelerateInterpolator());
     }
 
-    public PieMenu(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init(context);
+    private void measureClock(String text) {
+        mClockText = text;
+        mClockTextAmPm = mPolicy.getAmPm();
+        mClockTextAmPmSize = mAmPmPaint.measureText(mClockTextAmPm);
+        mClockTextTotalOffset = 0;
+
+        for( int i = 0; i < mClockText.length(); i++ ) {
+            char character = mClockText.charAt(i);
+            float measure = mClockPaint.measureText("" + character); 
+            mClockTextOffsets[i] = measure * (character == '1' || character == ':' ? 0.5f : 0.8f);
+            mClockTextTotalOffset += measure * (character == '1' || character == ':' ? 0.6f : 0.9f);
+        }
+
+        mClockTextRotation = mPanel.getDegree() + (180 - (mClockTextTotalOffset * 360 /
+                (2f * (mStatusRadius+Math.abs(mClockOffset)) * (float)Math.PI))) - 2;
     }
 
-    public PieMenu(Context context) {
+    private void getNotifications() {
+        NotificationData notifData = mPanel.getBar().getNotificationData();
+        if (notifData != null) {
+
+            mNotificationText = new String[notifData.size()];
+            mNotificationIcon = new Bitmap[notifData.size()];
+            mNotificationPath = new Path[notifData.size()];
+
+            for (int i = 0; i < notifData.size(); i++ ) {
+                NotificationData.Entry entry = notifData.get(i);
+                StatusBarNotification statusNotif = entry.notification;
+                if (statusNotif == null) continue;
+                Notification notif = statusNotif.notification;
+                if (notif == null) continue;
+                CharSequence tickerText = notif.tickerText;
+                if (tickerText == null) continue;
+
+                if (entry.icon != null) {
+                    StatusBarIconView iconView = entry.icon;
+                    StatusBarIcon icon = iconView.getStatusBarIcon();
+                    Drawable drawable = entry.icon.getIcon(mContext, icon);
+                    if (!(drawable instanceof BitmapDrawable)) continue;
+                    
+                    mNotificationIcon[mNotificationCount] = ((BitmapDrawable)drawable).getBitmap();
+                    mNotificationText[mNotificationCount] = tickerText.toString();
+
+                    Path notifictionPath = new Path();
+                    notifictionPath.addCircle(mCenter.x, mCenter.y, mNotificationsRadius +
+                            (mNotificationsRowSize * mNotificationCount) + (mNotificationsRowSize-mNotificationTextSize),
+                            Path.Direction.CW);
+                    mNotificationPath[mNotificationCount] = notifictionPath;
+
+                    mNotificationCount++;
+                }
+            }
+        }
+    }
+
+    public PieMenu(Context context, PieControlPanel panel) {
         super(context);
-        init(context);
-    }
 
-    private void init(Context ctx) {
-        mContext = ctx;
-        mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
-        mWindowManager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
-        mPolicy = new PiePolicy(mContext);
+        mContext = context;
+        mResources = mContext.getResources();
+        mPanel = panel;
 
-        mItems = new ArrayList<PieItem>();
-        Resources res = ctx.getResources();
-        mRadius = (int) res.getDimension(R.dimen.pie_radius_start);
-        mRadiusInc = (int) res.getDimension(R.dimen.pie_radius_increment);
-        mSlop = (int) res.getDimension(R.dimen.pie_slop);
-        mTouchOffset = (int) res.getDimension(R.dimen.pie_touch_offset);
         setWillNotDraw(false);
         setDrawingCacheEnabled(false);
 
-        mNormalPaint = new Paint();
-        mNormalPaint.setAntiAlias(true);
-        mNormalPaint.setColor(COLOR_DEFAULT_BACKGROUND);
+        mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+        mPolicy = new PiePolicy(mContext);
 
-        mSelectedPaint = new Paint();
-        mSelectedPaint.setAntiAlias(true);
-        mSelectedPaint.setColor(COLOR_DEFAULT_SELECT);
-
-        mBatteryJuice = new Paint();
+        // Initialize classes
+        mItems = new ArrayList<PieItem>();
+        mPieBackground.setAntiAlias(true);
+        mPieSelected.setAntiAlias(true);
+        mChevronBackgroundLeft.setAntiAlias(true);
+        mChevronBackgroundRight.setAntiAlias(true);
         mBatteryJuice.setAntiAlias(true);
-        mBatteryJuice.setColor(COLOR_DEFAULT_BATTERY_JUICE);
-
-        mBatteryBackground = new Paint();
         mBatteryBackground.setAntiAlias(true);
-        mBatteryBackground.setColor(COLOR_DEFAULT_BATTERY_BACKGROUND);
 
-        mChevronBackground1 = new Paint();
-        mChevronBackground1.setAntiAlias(true);
-        mChevronBackground1.setColor(0x0999cc);
+        Typeface robotoThin = Typeface.create("sans-serif-light", Typeface.NORMAL);
 
-        mChevronBackground2 = new Paint();
-        mChevronBackground2.setAntiAlias(true);
-        mChevronBackground2.setColor(0x33b5e5);
+        mClockPaint = new Paint();
+        mClockPaint.setAntiAlias(true);     
+        mClockPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
+
+        mAmPmPaint = new Paint();
+        mAmPmPaint.setAntiAlias(true);
+        mAmPmPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
 
         mStatusPaint = new Paint();
         mStatusPaint.setAntiAlias(true);
-        mStatusPaint.setColor(COLOR_DEFAULT_STATUS);
-        mStatusPaint.setStyle(Paint.Style.FILL);
-        mStatusPaint.setTextSize(150);
         mStatusPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
 
+        mNotificationPaint = new Paint();
+        mNotificationPaint.setAntiAlias(true);
+        mNotificationPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
 
-        // Circle status text
-        mCharOffset = new float[25];
-        for (int i = 0; i < mCharOffset.length; i++) {
-            mCharOffset[i] = 1000;
-        }
-
-        mStatusText = mPolicy.getSimpleTime();
-        mTextLen = mStatusPaint.measureText(mStatusText, 0, mStatusText.length());
+        // Clock observer
         mPolicy.setOnClockChangedListener(new PiePolicy.OnClockChangedListener() {
             public void onChange(String s) {
-                mStatusText = s;
-                mTextLen = mStatusPaint.measureText(mStatusText, 0, mStatusText.length());
+                measureClock(s);
             }
         });
 
-        LayoutInflater inflater = (LayoutInflater) mContext
-                .getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
-        mContainer = inflater.inflate(R.layout.pie_notification_panel, null);
+        // Get all dimensions
+        getDimensions();
+    }
 
-        mContentFrame = (View) mContainer.findViewById(R.id.content_frame);
-        mScrollView = (ScrollView) mContainer.findViewById(R.id.notification_scroll);
-        mScrollView.setOnTouchListener(new OnTouchListener(){
-            final int SCROLLING_DISTANCE_TRIGGER = 100;
-            float scrollX;
-            float scrollY;
-            boolean hasScrolled;
+    class customAnimatorUpdateListener implements ValueAnimator.AnimatorUpdateListener {
+        private int mIndex = 0;
+        public customAnimatorUpdateListener(int index) {
+            mIndex = index;
+        }
 
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        scrollX = event.getX();
-                        scrollY = event.getY();
-                        hasScrolled = false;
-                        break;
-                    case MotionEvent.ACTION_MOVE:
-                        float distanceY = Math.abs(event.getY() - scrollY);
-                        float distanceX = Math.abs(event.getX() - scrollX);
-                        if(distanceY > SCROLLING_DISTANCE_TRIGGER ||
-                            distanceX > SCROLLING_DISTANCE_TRIGGER) {
-                            hasScrolled = true;
-                        }
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        if(!hasScrolled) {
-                            hidePanels(true);
-                        }
-                        break;
-                }
-                return false;
-            }                               
-        });
+        @Override
+        public void onAnimationUpdate(ValueAnimator animation) {
+            mAnimatedFraction[mIndex] = (float)animation.getAnimatedFraction();
 
-        mContainer.setVisibility(View.GONE);
-        mWindowManager.addView(mContainer, getFlipPanelLayoutParams());
-
-        mLastBackgroundColor = new ColorUtils.ColorSettingInfo();
-        mLastGlowColor = new ColorUtils.ColorSettingInfo();
-
-        // Only watch for per app color changes when the setting is in check
-        if (ColorUtils.getPerAppColorState(mContext)) {
-            setBackgroundColor();
-            setGlowColor();
-
-            // Listen for nav bar color changes
-            mContext.getContentResolver().registerContentObserver(
-                Settings.System.getUriFor(Settings.System.NAV_BAR_COLOR), false, new ContentObserver(new Handler()) {
-                    @Override
-                    public void onChange(boolean selfChange) {
-                        setBackgroundColor();
-                    }});
-
-            // Listen for button glow color changes
-            mContext.getContentResolver().registerContentObserver(
-                Settings.System.getUriFor(Settings.System.NAV_GLOW_COLOR), false, new ContentObserver(new Handler()) {
-                    @Override
-                    public void onChange(boolean selfChange) {
-                        setGlowColor();
-                    }});
+            // Special purpose animators go here
+            if (mIndex == ANIMATOR_BATTERY_METER) {
+                mBatteryPathJuice = makeSlice(mStartBattery, mStartBattery + (float)animation.getAnimatedFraction() *
+                        (mBatteryLevel * (mEndBattery-mStartBattery) / 100), mInnerBatteryRadius, mOuterBatteryRadius, mCenter);
+            }
+            invalidate();
         }
     }
 
-    public void hidePanels(boolean reset) {
-        if (mCurrentViewState == NOTIFICATIONS_PANEL) {
-            hidePanel(mNotificationPanel);
-        } else if (mCurrentViewState == QUICK_SETTINGS_PANEL) {
-            hidePanel(mQS);
-        }
-        if (reset) mCurrentViewState = -1;
+    public void init() {
+        mStatusPanel = new PieStatusPanel(mContext, mPanel);
+        getNotifications();
     }
 
-    public void swapPanels() {
-        hidePanels(false);
-        if (mCurrentViewState == NOTIFICATIONS_PANEL) {
-            mCurrentViewState = QUICK_SETTINGS_PANEL;
-            showPanel(mQS);
-        } else if (mCurrentViewState == QUICK_SETTINGS_PANEL) {
-            mCurrentViewState = NOTIFICATIONS_PANEL;
-            showPanel(mNotificationPanel);
-        }
-    }
-
-    private ViewGroup getPanelParent(View panel) {
-        if (((Integer)panel.getTag()).intValue() == NOTIFICATIONS_PANEL) {
-            return mPanelParents[NOTIFICATIONS_PANEL];
-        } else {
-            return mPanelParents[QUICK_SETTINGS_PANEL];
-        }
-    }
-
-    private void hidePanel(View panel) {
-        ViewGroup parent = getPanelParent(panel);
-        mScrollView.removeView(panel);
-        parent.addView(panel, panel.getLayoutParams());
-        updateContainer(false);
-    }
-
-    private void showPanel(View panel) {
-        ViewGroup parent = getPanelParent(panel);
-        parent.removeView(panel);
-        mScrollView.addView(panel);
-        updateContainer(true);
-    }
-
-    private void updateContainer(boolean visible) {
-        mContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
-        mWindowManager.updateViewLayout(mContainer,
-                getFlipPanelLayoutParams());
-    }
-
-    private WindowManager.LayoutParams getFlipPanelLayoutParams() {
-        return new WindowManager.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
-                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                        | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
-                PixelFormat.TRANSLUCENT);
-    }
-
-    public void setPanel(PieControlPanel panel) {
-        mPanel = panel;
-        mPanelParents = new ViewGroup[2];
-        mNotificationPanel = mPanel.getBar().getNotificationRowLayout();
-        mNotificationPanel.setTag(NOTIFICATIONS_PANEL);
-        mQS = mPanel.getBar().getQuickSettingsPanel();
-        mQS.setTag(QUICK_SETTINGS_PANEL);
-
-        mPanelParents[NOTIFICATIONS_PANEL] = (ViewGroup) mNotificationPanel.getParent();
-        mPanelParents[QUICK_SETTINGS_PANEL] = (ViewGroup) mQS.getParent();
+    public PieStatusPanel getStatusPanel() {
+        return mStatusPanel;
     }
 
     public void addItem(PieItem item) {
-        // add the item to the pie itself
         mItems.add(item);
-    }
-
-    public void removeItem(PieItem item) {
-        mItems.remove(item);
-    }
-
-    public void clearItems() {
-        mItems.clear();
-    }
-
-    private boolean onTheTop() {
-        return mCenter.y < mSlop;
     }
 
     public void show(boolean show) {
         mOpen = show;
         if (mOpen) {
 
-            // Fetch modes
-            mStatusMode = Settings.System.getInt(mContext.getContentResolver(), Settings.System.PIE_MODE, 2);
-            mPerAppColor = Settings.System.getInt(mContext.getContentResolver(), Settings.System.PIE_PAC, 0) == 1;
-
-            // Determine animationspeed
-            switch(mStatusMode) {
-                case 0: 
-                    mOverallSpeed = 0;
-                    break;
-                case 1: 
-                    mOverallSpeed = SPEED_QUICK;
-                    break;
-                case 2: 
-                    mOverallSpeed = SPEED_DEFAULT;
-                    break;
-                case 3: 
-                    mOverallSpeed = SPEED_SLOW;
-                    break;
-            }
-
-            // Reset colors
-            if (!mPerAppColor) {
-                mNormalPaint.setColor(COLOR_DEFAULT_BACKGROUND);
-                mSelectedPaint.setColor(COLOR_DEFAULT_SELECT);
-                mStatusPaint.setColor(COLOR_DEFAULT_STATUS);
-
-                // To-do: tint battery perhaps?
-                //mBatteryJuice.setColor(COLOR_DEFAULT_BATTERY_JUICE);
-                //mBatteryBackground.setColor(COLOR_DEFAULT_BATTERY_BACKGROUND);
-            }
+            // Get fresh dimensions
+            getDimensions();
 
             // De-select all items
             mCurrentItem = null;
-            mPieView = null;
             for (PieItem item : mItems) {
                 item.setSelected(false);
             }
@@ -465,58 +494,14 @@ public class PieMenu extends FrameLayout {
         mCenter.y = y;
         mCenter.x = x;
 
-        // Calculate text circle
-        mStatusPath = new Path();
-        mStatusPath.addCircle(mCenter.x, mCenter.y, mRadius+mRadiusInc, Path.Direction.CW);
-
-        // Calculate chevrons
-        int in = (int)((mRadius + mRadiusInc) + mTouchOffset * 7.5f);
-        int o = (int)(mRadius + mRadiusInc + mTouchOffset * 7.65);
-        float s = mPanel.getDegree() + 0;
-        float e = mPanel.getDegree() + 90 - 8;
-        mChevronPathLeft = makeSlice(s, e, in, o, mCenter);
-        s = mPanel.getDegree() -4;
-        e = mPanel.getDegree() + 90;
-        mChevronPathRight = makeSlice(s, e, in, o, mCenter);
-    }
-
-    private void setBackgroundColor() {
-        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
-                Settings.System.NAV_BAR_COLOR);
-        if (!colorInfo.lastColorString.equals(mLastBackgroundColor.lastColorString) && mPerAppColor) {
-            int colorRgb = ColorUtils.extractRGB(colorInfo.lastColor);
-            mNormalPaint.setColor(colorRgb | 0xAA000000);
-            mLastBackgroundColor = colorInfo;
-        }
-    }
-
-    private void setGlowColor() {
-        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
-                Settings.System.NAV_GLOW_COLOR);
-        if (!colorInfo.lastColorString.equals(mLastGlowColor.lastColorString) && mPerAppColor) {
-            ColorUtils.ColorSettingInfo buttonColorInfo = ColorUtils.getColorSettingInfo(mContext,
-                    Settings.System.NAV_BUTTON_COLOR);
-
-            // This helps us to discern when glow has the same color as the button color,
-            // in which case we have to counteract in order to prevent both from swallowing each other
-            int glowRgb = ColorUtils.extractRGB(colorInfo.lastColor);
-            int buttonRgb = ColorUtils.extractRGB(buttonColorInfo.lastColor);
-            mGlowColorHelper = glowRgb == buttonRgb;
-            mSelectedPaint.setColor(glowRgb | 0xAA000000);
-            mStatusPaint.setColor(glowRgb);
-            mLastGlowColor = colorInfo;
-        }
-    }
-
-    public void setDrawingAlpha(Paint paint, float x) {
-        paint.setAlpha((int) (x * 255));
+        mStatusPath.reset();
+        mStatusPath.addCircle(mCenter.x, mCenter.y, mStatusRadius, Path.Direction.CW);
     }
 
     private void layoutPie() {
-        float emptyangle = (float) Math.PI / 16;
-        int rgap = 2;
-        int inner = mRadius + rgap;
-        int outer = mRadius + mRadiusInc - rgap;
+        float emptyangle = mEmptyAngle * (float)Math.PI / 180;
+        int inner = mInnerPieRadius;
+        int outer = mOuterPieRadius;
         int gap = 1;
 
         int lesserSweepCount = 0;
@@ -525,8 +510,8 @@ public class PieMenu extends FrameLayout {
                 lesserSweepCount += 1;
             }
         }
+
         float adjustedSweep = lesserSweepCount > 0 ? (((1-0.65f) * lesserSweepCount) / (mItems.size()-lesserSweepCount)) : 0;    
-        
         float sweep = 0;
         float angle = 0;
         float total = 0;
@@ -576,151 +561,27 @@ public class PieMenu extends FrameLayout {
         return (float) (270 - 180 * angle / Math.PI);
     }
 
-    class customAnimatorUpdateListener implements ValueAnimator.AnimatorUpdateListener {
-        private int mIndex = 0;
-        public customAnimatorUpdateListener(int index) {
-            mIndex = index;
-        }
-
-        @Override
-        public void onAnimationUpdate(ValueAnimator animation) {
-            mCharOffset[mIndex] = (float)((1 - animation.getAnimatedFraction()) * mOverallSpeed);
-            invalidate();
-        }
-    }
-
-    /* NEW ANIMATION SYSTEM HERE, USING BASIC ACCELERATORS AND DECCELERATORS + FRACTIONS, NO SPECIFIC VARIABLES
-    class customAnimatorListenerAdapter implements ValueAnimator.AnimatorListenerAdapter {
-        private int mIndex = 0;
-        public customAnimatorListenerAdapter(int index) {
-            mIndex = index;
-        }
-
-        public void onAnimationEnd(Animator a) {
-            invalidate();
-        }
-    }
-
-    private static int ANIMATOR_DEC_SPEED30 = 0;
-    private static int ANIMATOR_DEC_SPEED15 = 0;
-    private static int ANIMATOR_ACC_SPEED10 = 0;
-
-    private ValueAnimator mAnimators[25];
-
-        for (int i = 0; mAnimators.length; i++) {
-            ValueAnimator animator = ValueAnimator.ofInt(0, 1);
-            animator.addUpdateListener(new customAnimatorUpdateListener(i));
-            animator.addListener(new customAnimatorListenerAdapter(i));
-            mAnimators[i] = animator;
-        }
-    */
-
     private void animateIn() {
-        // Reset base values
-        mBatteryMeter = 0;
-        mBatteryBackgroundAlpha = 0;
-        mBatteryJuiceAlpha = 0;
-        mTextAlpha = 0;
-        mBackgroundOpacity = 0;
-        mCharOffset = new float[25];
-        mDecelerateFraction = 0;
-        for (int i = 0; i < 25; i++) {
-            mCharOffset[i] = 1000;
+        // Cancel & start all animations
+        for (int i = 0; i < mAnimators.length; i++) {
+            mAnimators[i].cancel();
+            mAnimatedFraction[i] = 0;
         }
 
-        // Decides the color of battery bar, depending on battery level
-        final int batteryLevel = mPolicy.getBatteryLevel();
-        if(batteryLevel <= PiePolicy.LOW_BATTERY_LEVEL
-                && batteryLevel > PiePolicy.CRITICAL_BATTERY_LEVEL) {
-            mBatteryJuice.setColor(COLOR_DEFAULT_BATTERY_JUICE_LOW);
-        } else if(batteryLevel <= PiePolicy.CRITICAL_BATTERY_LEVEL) {
-            mBatteryJuice.setColor(COLOR_DEFAULT_BATTERY_JUICE_CRITICAL);
-        } else {
-            mBatteryJuice.setColor(COLOR_DEFAULT_BATTERY_JUICE);
-        }
+        invalidate();
 
-        // Background
-        mIntoAnimation = ValueAnimator.ofInt(0, 1);
-        mIntoAnimation.addUpdateListener(new AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                mBackgroundOpacity = (int)(animation.getAnimatedFraction() * BACKGROUND_COLOR);
-                mBatteryBackgroundAlpha = (int)(animation.getAnimatedFraction() * 0x55);
-                mBatteryJuiceAlpha = (int)(animation.getAnimatedFraction() * 0x88);
-                invalidate();
-            }
-        });
-        mIntoAnimation.setDuration(mOverallSpeed * 3);
-        mIntoAnimation.setInterpolator(new DecelerateInterpolator());
-        mIntoAnimation.start();
-
-        // Background
-        ValueAnimator animation = ValueAnimator.ofInt(0, 1);
-        animation.addUpdateListener(new AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                mBatteryMeter = (float)(animation.getAnimatedFraction() * batteryLevel);
-                invalidate();
-            }
-        });
-        animation.setDuration((int)(mOverallSpeed * 1.5));
-        animation.setInterpolator(new DecelerateInterpolator());
-        animation.start();
-
-        int textLen = mStatusText.length();
-        for(int i = 0; i < 20; i++) {
-            // Text alpha
-            if (i == 0) {
-                ValueAnimator mTextAlphaAnimation  = ValueAnimator.ofInt(0, 1);
-                mTextAlphaAnimation.addUpdateListener(new AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        mTextAlpha = (int)(animation.getAnimatedFraction() * 255);
-                        mDecelerateFraction = (float)animation.getAnimatedFraction();
-                        invalidate();
-                    }
-                });
-                mTextAlphaAnimation.setDuration(mOverallSpeed);
-                mTextAlphaAnimation.setInterpolator(new AccelerateInterpolator());
-                mTextAlphaAnimation.start();
-            }
-
-            // Chracters falling into place
-            ValueAnimator mTextAnimation = ValueAnimator.ofInt(0, 1);
-            mTextAnimation.addUpdateListener(new customAnimatorUpdateListener(i));
-            mTextAnimation.setDuration((int)(mOverallSpeed - (mOverallSpeed * 0.8) / (i + 2)));
-            mTextAnimation.setInterpolator(new AccelerateInterpolator());
-            mTextAnimation.setStartDelay(i * mOverallSpeed / 10);
-            mTextAnimation.start();
+        for (int i = 0; i < mAnimators.length; i++) {
+            mAnimators[i].start();
         }
     }
 
     public void animateOut() {
-        mStatusAnimate = false;
-        if (mIntoAnimation != null && mIntoAnimation.isRunning()) {
-            mIntoAnimation.cancel();
+        mPanel.show(false);
+        // Cancel & start all animations
+        for (int i = 0; i < mAnimators.length; i++) {
+            mAnimators[i].cancel();
+            mAnimatedFraction[i] = 0;
         }
-
-        final int currentAlpha = mTextAlpha;
-        final float currentOffset = mTextOffset;
-        final int currentOpacity = mBackgroundOpacity;
-        mOutroAnimation = ValueAnimator.ofInt(1, 0);
-        mOutroAnimation.addUpdateListener(new AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                mBackgroundOpacity = (int)((1 - animation.getAnimatedFraction()) * currentOpacity);                
-                mTextAlpha =  (int)((1 - animation.getAnimatedFraction()) * currentAlpha);
-                invalidate();
-            }
-        });
-        mOutroAnimation.setDuration(ANIMATION_OUT);
-        mOutroAnimation.setInterpolator(new DecelerateInterpolator());
-        mOutroAnimation.addListener(new AnimatorListenerAdapter() {
-            public void onAnimationEnd(Animator a) {
-                mPanel.show(false);
-            }});
-
-        mOutroAnimation.start();
     }
 
     @Override
@@ -730,7 +591,7 @@ public class PieMenu extends FrameLayout {
 
             // Draw background
             if (mStatusMode != 0) {
-                canvas.drawARGB(mBackgroundOpacity, 0, 0, 0);
+                canvas.drawARGB((int)(mAnimatedFraction[ANIMATOR_DEC_SPEED15] * 0xcc), 0, 0, 0);
             }
 
             // Draw base menu
@@ -742,139 +603,82 @@ public class PieMenu extends FrameLayout {
             if (mStatusMode != 0) {
 
                 // Draw chevron rings
-                mChevronBackground1.setAlpha((int)(mDecelerateFraction*mGlowOffsetLeft));
-                mChevronBackground2.setAlpha((int)(mDecelerateFraction*mGlowOffsetRight));
+                mChevronBackgroundLeft.setAlpha((int)(mAnimatedFraction[ANIMATOR_DEC_SPEED30] * mGlowOffsetLeft));
+                mChevronBackgroundRight.setAlpha((int)(mAnimatedFraction[ANIMATOR_DEC_SPEED30] * mGlowOffsetRight));
 
-                if (mCurrentViewState != QUICK_SETTINGS_PANEL && mChevronPathLeft != null) {
+                if (mStatusPanel.getCurrentViewState() != PieStatusPanel.QUICK_SETTINGS_PANEL && mChevronPathLeft != null) {
                     state = canvas.save();
                     canvas.rotate(90, mCenter.x, mCenter.y);
-                    canvas.drawPath(mChevronPathLeft, mChevronBackground1);
+                    canvas.drawPath(mChevronPathLeft, mChevronBackgroundLeft);
                     canvas.restoreToCount(state);
                 }
 
-                if (mCurrentViewState != NOTIFICATIONS_PANEL && mChevronPathRight != null) {
+                if (mStatusPanel.getCurrentViewState() != PieStatusPanel.NOTIFICATIONS_PANEL && mChevronPathRight != null) {
                     state = canvas.save();
                     canvas.rotate(180, mCenter.x, mCenter.y);
-                    canvas.drawPath(mChevronPathRight, mChevronBackground2);
+                    canvas.drawPath(mChevronPathRight, mChevronBackgroundRight);
                     canvas.restoreToCount(state);
                 }
 
                 // Draw Battery
+                mBatteryBackground.setAlpha((int)(mAnimatedFraction[ANIMATOR_ACC_SPEED15] * 0x22));
+                mBatteryJuice.setAlpha((int)(mAnimatedFraction[ANIMATOR_ACC_SPEED15] * 0x88));
+
                 state = canvas.save();
-                canvas.rotate(90 + (mCharOffset[1] / 2), mCenter.x, mCenter.y);
-
-                int inner = (int)((mRadius + mRadiusInc - 2) + mTouchOffset * 0.7f);
-                int outer = (int)(mRadius + mRadiusInc - 2 + mTouchOffset * 1.7f);
-                float start = mPanel.getDegree() + 13;
-                float end = mPanel.getDegree() + 90 - 2;
-                Path mBatteryPath = makeSlice(start, end, inner, outer, mCenter);
-
-                mBatteryBackground.setAlpha(mBatteryBackgroundAlpha);
-                canvas.drawPath(mBatteryPath, mBatteryBackground);
+                canvas.rotate(90 + (1-mAnimatedFraction[ANIMATOR_ACC_INC_1]) * 1000, mCenter.x, mCenter.y);
+                canvas.drawPath(mBatteryPathBackground, mBatteryBackground);
                 canvas.restoreToCount(state);
 
                 state = canvas.save();
                 canvas.rotate(90, mCenter.x, mCenter.y);
-                Path mBatteryPath2 = makeSlice(start, start + mBatteryMeter * (end-start) / 100, inner, outer, mCenter);
-                mBatteryJuice.setAlpha(mBatteryJuiceAlpha);
-                canvas.drawPath(mBatteryPath2, mBatteryJuice);
+                canvas.drawPath(mBatteryPathJuice, mBatteryJuice);
                 canvas.restoreToCount(state);
 
-                // Draw clock
-                if (mStatusPath != null) {
-                    mStatusPaint.setColor(COLOR_DEFAULT_STATUS);
-                    mStatusPaint.setTextSize(125);
-                    mStatusPaint.setAlpha(mTextAlpha);
-                    mStatusPaint.setTextScaleX(0.8f);
+                // Draw clock && AM/PM
+                state = canvas.save();
+                canvas.rotate(mClockTextRotation, mCenter.x, mCenter.y);
 
-                    // First measure
-                    float totalOffset = 0;
-                    float offsets[] = new float[mStatusText.length()];
-                    for( int i = 0; i < mStatusText.length(); i++ ) {
-                        char character = mStatusText.charAt(i);
-                        float measure = mStatusPaint.measureText("" + character); 
-                        offsets[i] = measure * (character == '1' || character == ':' ? 0.5f : 0.9f);
-                        totalOffset += measure * (character == '1' || character == ':' ? 0.6f : 1f);
-                    }
-                    
-                    float fullCircle = 2f * (mRadius+mRadiusInc) * (float)Math.PI;
-                    float angle = totalOffset * 360 / fullCircle;
-                    float pos = mPanel.getDegree() + (180 - angle);
-
-                    state = canvas.save();
-                    canvas.rotate(pos, mCenter.x, mCenter.y);
-
-                    // Then print
-                    float lastPos = 0;
-                    for(int i = 0; i < mStatusText.length(); i++) {
-                        char character = mStatusText.charAt(i);
-                        canvas.drawTextOnPath("" + character, mStatusPath, lastPos,
-                                -mTouchOffset * 2.3f, mStatusPaint);
-                        lastPos += offsets[i];
-                    }
-
-                    mStatusPaint.setTextSize(30);
-                    String amPm = mPolicy.getAmPm();
-                    lastPos -= mStatusPaint.measureText(amPm);
-                    canvas.drawTextOnPath(amPm, mStatusPath, lastPos,
-                        -mTouchOffset * 6f, mStatusPaint);
-                    canvas.restoreToCount(state);
-
-                    // Device status information and date
-                    state = canvas.save();
-                    pos = mPanel.getDegree() + 180;
-                    canvas.rotate(pos, mCenter.x, mCenter.y);
-                    mStatusPaint.setTextSize(20);
-                    if (mPolicy.supportsTelephony()) {
-                        canvas.drawTextOnPath(mPolicy.getNetworkProvider(), mStatusPath, mCharOffset[4], -95, mStatusPaint);
-                    }
-                    canvas.drawTextOnPath(mPolicy.getSimpleDate(), mStatusPath, mCharOffset[4], -70, mStatusPaint);
-                    canvas.drawTextOnPath(mPolicy.getBatteryLevelReadable(), mStatusPath, mCharOffset[4], -45, mStatusPaint);
-                    canvas.drawTextOnPath(mPolicy.getWifiSsid(), mStatusPath, mCharOffset[4], -20, mStatusPaint);
-
-                    // Notifications
-                    if (mCurrentViewState != NOTIFICATIONS_PANEL) {
-                        mStatusPaint.setTextSize(25);
-                        mStatusPaint.setAlpha(mGlowOffsetRight);
-                        float scale = 0.55f;
-                        float offset = -250;
-                        int row = 4;
-                        NotificationData notifData = mPanel.getBar().getNotificationData();
-                        if (notifData != null) {
-                            for (int i = 0; i < notifData.size(); i++ ) {
-                                NotificationData.Entry entry = notifData.get(i);
-                                StatusBarNotification statusNotif = entry.notification;
-                                if (statusNotif == null) continue;
-                                Notification notif = statusNotif.notification;
-                                if (notif == null) continue;
-                                CharSequence tickerText = notif.tickerText;
-                                if (tickerText == null) continue;
-
-                                mStatusPaint.setTextScaleX(scale);
-                                canvas.drawTextOnPath(tickerText.toString(), mStatusPath, mCharOffset[row], offset, mStatusPaint);
-                                scale -= 0.024;
-                                offset -= 35;
-                                row += 1;
-
-                                if (entry.icon != null) {
-                                    int iconState = canvas.save();
-                                    StatusBarIconView iconView = entry.icon;
-                                    StatusBarIcon icon = iconView.getStatusBarIcon();
-                                    Drawable drawable = entry.icon.getIcon(mContext, icon);
-                                    if (!(drawable instanceof BitmapDrawable)) continue;
-                                    Bitmap bitmap = ((BitmapDrawable)drawable).getBitmap();
-
-                                    int posX = (int)(mCenter.x + (mTouchOffset * 11.9) + row * 35 + mCharOffset[row]);
-                                    int posY = (int)mCenter.y - 40;
-                                    canvas.rotate(90,posX+15, posY+15);
-                                    canvas.drawBitmap(bitmap, null, new Rect(posX, posY,posX + 30,posY +30), mStatusPaint);
-                                    canvas.restoreToCount(iconState);
-                                }
-                            }
-                        }
-                    }
-                    canvas.restoreToCount(state);
+                mClockPaint.setAlpha((int)(mAnimatedFraction[ANIMATOR_DEC_SPEED30] * 0xcc));
+                float lastPos = 0;
+                for(int i = 0; i < mClockText.length(); i++) {
+                    canvas.drawTextOnPath("" + mClockText.charAt(i), mStatusPath, lastPos, mClockOffset, mClockPaint);
+                    lastPos += mClockTextOffsets[i];
                 }
+
+                mAmPmPaint.setAlpha((int)(mAnimatedFraction[ANIMATOR_DEC_SPEED15] * 0xaa));
+                canvas.drawTextOnPath(mClockTextAmPm, mStatusPath, lastPos - mClockTextAmPmSize, mAmPmOffset, mAmPmPaint);
+                canvas.restoreToCount(state);
+
+                // Device status information and date
+                mStatusPaint.setAlpha((int)(mAnimatedFraction[ANIMATOR_ACC_SPEED15] * 0xaa));
+                
+                state = canvas.save();
+                canvas.rotate(mPanel.getDegree() + 180, mCenter.x, mCenter.y);
+                if (mPolicy.supportsTelephony()) {
+                    canvas.drawTextOnPath(mPolicy.getNetworkProvider(), mStatusPath, 0, mStatusOffset * 3, mStatusPaint);
+                }
+                canvas.drawTextOnPath(mPolicy.getSimpleDate(), mStatusPath, 0, mStatusOffset * 2, mStatusPaint);
+                canvas.drawTextOnPath(mPolicy.getBatteryLevelReadable(), mStatusPath, 0, mStatusOffset * 1, mStatusPaint);
+                canvas.drawTextOnPath(mPolicy.getWifiSsid(), mStatusPath, 0, mStatusOffset * 0, mStatusPaint);
+
+                // Notifications
+                if (mStatusPanel.getCurrentViewState() != PieStatusPanel.NOTIFICATIONS_PANEL) {
+                    mNotificationPaint.setAlpha((int)(mAnimatedFraction[ANIMATOR_ACC_SPEED30] * mGlowOffsetRight));
+
+                    for (int i = 0; i < mNotificationCount && i < 10; i++) {
+                        canvas.drawTextOnPath(mNotificationText[i], mNotificationPath[i], (1-mAnimatedFraction[ANIMATOR_ACC_INC_1 + i]) * 500, 0, mNotificationPaint);
+
+                        int IconState = canvas.save();
+                        int posX = (int)(mCenter.x + mNotificationsRadius + i * mNotificationsRowSize + (1-mAnimatedFraction[ANIMATOR_ACC_INC_1 + i]) * 2000);
+                        int posY = (int)(mCenter.y - mNotificationIconSize * 1.4f);
+                        int iconCenter = mNotificationIconSize / 2;
+
+                        canvas.rotate(90, posX + iconCenter, posY + iconCenter);
+                        canvas.drawBitmap(mNotificationIcon[i], null, new Rect(posX, posY, posX + mNotificationIconSize,posY + mNotificationIconSize), mNotificationPaint);
+                        canvas.restoreToCount(IconState);
+                    }
+                }
+                canvas.restoreToCount(state);
             }
         }
     }
@@ -884,7 +688,7 @@ public class PieMenu extends FrameLayout {
             int state = canvas.save();
             canvas.rotate(getDegrees(item.getStartAngle())
                         + mPanel.getDegree(), mCenter.x, mCenter.y);
-            canvas.drawPath(item.getPath(), item.isSelected() ? mSelectedPaint : mNormalPaint);
+            canvas.drawPath(item.getPath(), item.isSelected() ? mPieSelected : mPieBackground);
             canvas.restoreToCount(state);
 
             state = canvas.save();
@@ -920,8 +724,7 @@ public class PieMenu extends FrameLayout {
         float distanceY = mCenter.y-y;
         float distance = (float)Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
 
-        float shadeTreshold = mRadius + mRadiusInc + mTouchOffset * 7.65f; 
-        boolean pieTreshold = distanceY < shadeTreshold;
+        float shadeTreshold = mOuterChevronRadius; 
         final boolean hapticFeedback = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.HAPTIC_FEEDBACK_ENABLED, 1) != 0;
 
@@ -934,36 +737,22 @@ public class PieMenu extends FrameLayout {
             if (mOpen) {
                 PieItem item = mCurrentItem;
 
-                hidePanels(true);
-                if (mFlipViewState != -1) {
-                    switch(mFlipViewState) {
-                        case NOTIFICATIONS_PANEL:
-                            mCurrentViewState = NOTIFICATIONS_PANEL;
-                            showPanel(mNotificationPanel);
+                mStatusPanel.hidePanels(true);
+                if (mStatusPanel.getFlipViewState() != -1) {
+                    switch(mStatusPanel.getFlipViewState()) {
+                        case PieStatusPanel.NOTIFICATIONS_PANEL:
+                            mStatusPanel.setCurrentViewState(PieStatusPanel.NOTIFICATIONS_PANEL);
+                            mStatusPanel.showNotificationsPanel();
                             break;
-                        case QUICK_SETTINGS_PANEL:
-                            mCurrentViewState = QUICK_SETTINGS_PANEL;
-                            showPanel(mQS);
+                        case PieStatusPanel.QUICK_SETTINGS_PANEL:
+                            mStatusPanel.setCurrentViewState(PieStatusPanel.QUICK_SETTINGS_PANEL);
+                            mStatusPanel.showTilesPanel();
                             break;
                     }
                 }
-
-                mContentFrame.setBackgroundColor(mBackgroundOpacity);
-                ValueAnimator alphAnimation  = ValueAnimator.ofInt(0, 1);
-                alphAnimation.addUpdateListener(new AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        mScrollView.setX(-(int)((1-animation.getAnimatedFraction()) * getWidth()*1.5));
-                        mContentFrame.setBackgroundColor((int)(animation.getAnimatedFraction() * 0xDD) << 24);
-                        invalidate();
-                    }
-                });
-                alphAnimation.setDuration(1000);
-                alphAnimation.setInterpolator(new DecelerateInterpolator());
-                alphAnimation.start();
       
                 // Check for click actions
-                if (item != null && item.getView() != null && pieTreshold) {
+                if (item != null && item.getView() != null && distance < shadeTreshold) {
                     if(hapticFeedback) mVibrator.vibrate(2);
                     item.getView().performClick();
                 }
@@ -981,30 +770,30 @@ public class PieMenu extends FrameLayout {
                 int state = -1;
                 switch (mPanel.getOrientation()) {
                     case Gravity.BOTTOM:
-                        state = distanceX > 0 ? QUICK_SETTINGS_PANEL : NOTIFICATIONS_PANEL;
+                        state = distanceX > 0 ? PieStatusPanel.QUICK_SETTINGS_PANEL : PieStatusPanel.NOTIFICATIONS_PANEL;
                         break;
                     case Gravity.TOP:
-                        state = distanceX < 0 ? QUICK_SETTINGS_PANEL : NOTIFICATIONS_PANEL;
+                        state = distanceX < 0 ? PieStatusPanel.QUICK_SETTINGS_PANEL : PieStatusPanel.NOTIFICATIONS_PANEL;
                         break;
                     case Gravity.LEFT:
-                        state = distanceY > 0 ? QUICK_SETTINGS_PANEL : NOTIFICATIONS_PANEL;
+                        state = distanceY > 0 ? PieStatusPanel.QUICK_SETTINGS_PANEL : PieStatusPanel.NOTIFICATIONS_PANEL;
                         break;
                     case Gravity.RIGHT:
-                        state = distanceY < 0 ? QUICK_SETTINGS_PANEL : NOTIFICATIONS_PANEL;
+                        state = distanceY < 0 ? PieStatusPanel.QUICK_SETTINGS_PANEL : PieStatusPanel.NOTIFICATIONS_PANEL;
                         break;
                 }
 
-                if (state == QUICK_SETTINGS_PANEL && mFlipViewState != QUICK_SETTINGS_PANEL
-                        && mCurrentViewState != QUICK_SETTINGS_PANEL) {
-                    mGlowOffsetRight = 90;
+                if (state == PieStatusPanel.QUICK_SETTINGS_PANEL && mStatusPanel.getFlipViewState() != PieStatusPanel.QUICK_SETTINGS_PANEL
+                        && mStatusPanel.getCurrentViewState() != PieStatusPanel.QUICK_SETTINGS_PANEL) {
+                    mGlowOffsetRight = 100;
                     mGlowOffsetLeft = 255;
-                    mFlipViewState = QUICK_SETTINGS_PANEL;
+                    mStatusPanel.setFlipViewState(PieStatusPanel.QUICK_SETTINGS_PANEL);
                     if(hapticFeedback) mVibrator.vibrate(2);
-                } else if (state == NOTIFICATIONS_PANEL && mFlipViewState != NOTIFICATIONS_PANEL
-                        && mCurrentViewState != NOTIFICATIONS_PANEL) {
+                } else if (state == PieStatusPanel.NOTIFICATIONS_PANEL && mStatusPanel.getFlipViewState() != PieStatusPanel.NOTIFICATIONS_PANEL
+                        && mStatusPanel.getCurrentViewState() != PieStatusPanel.NOTIFICATIONS_PANEL) {
                     mGlowOffsetRight = 255;
-                    mGlowOffsetLeft = 90;
-                    mFlipViewState = NOTIFICATIONS_PANEL;
+                    mGlowOffsetLeft = 100;
+                    mStatusPanel.setFlipViewState(PieStatusPanel.NOTIFICATIONS_PANEL);
                     if(hapticFeedback) mVibrator.vibrate(2);
                 }
                 deselect();
@@ -1012,14 +801,14 @@ public class PieMenu extends FrameLayout {
 
             // Take back shade trigger if user decides to abandon his gesture
             if (distance < shadeTreshold) {
-                mFlipViewState = -1;
-                mGlowOffsetLeft = 90;
-                mGlowOffsetRight = 90;
+                mStatusPanel.setFlipViewState(-1);
+                mGlowOffsetLeft = 100;
+                mGlowOffsetRight = 100;
 
                 // Check for onEnter separately or'll face constant deselect
                 PieItem item = findItem(getPolar(x, y));
                 if (item != null) {
-                    if (distanceY < shadeTreshold && distance > mTouchOffset * 2.5f) {
+                    if (distance < shadeTreshold && distance > (mInnerPieRadius/2)) {
                         onEnter(item);
                     } else {
                         deselect();
@@ -1043,7 +832,6 @@ public class PieMenu extends FrameLayout {
             // clear up stack
             playSoundEffect(SoundEffectConstants.CLICK);
             item.setSelected(true);
-            mPieView = null;
             mCurrentItem = item;
         } else {
             mCurrentItem = null;
@@ -1056,7 +844,6 @@ public class PieMenu extends FrameLayout {
             mCurrentItem.setSelected(false);
         }
         mCurrentItem = null;
-        mPieView = null;
     }
 
     private float getPolar(float x, float y) {
@@ -1082,7 +869,7 @@ public class PieMenu extends FrameLayout {
         if (mItems != null) {
             int c = 0;
             for (PieItem item : mItems) {
-                if (inside(polar, mTouchOffset, item)) {
+                if (inside(polar, item)) {
                     return item;
                 }
             }
@@ -1090,7 +877,7 @@ public class PieMenu extends FrameLayout {
         return null;
     }
 
-    private boolean inside(float polar, float offset, PieItem item) {
+    private boolean inside(float polar, PieItem item) {
         return (item.getStartAngle() < polar)
         && (item.getStartAngle() + item.getSweep() > polar);
     }

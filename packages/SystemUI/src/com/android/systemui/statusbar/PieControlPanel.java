@@ -71,7 +71,7 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
     public PieControlPanel(Context context, AttributeSet attrs) {
         super(context, attrs);
         mContext = context;
-        mPieControl = new PieControl(context);
+        mPieControl = new PieControl(context, this);
         mPieControl.setOnNavButtonPressedListener(this);
         mOrientation = Gravity.BOTTOM;
     }
@@ -96,7 +96,7 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
 
     public void setBar(BaseStatusBar statusbar) {
         mStatusBar = (BaseStatusBar) statusbar;
-        mPieControl.getPieMenu().setPanel(this);
+        mPieControl.init();
     }
 
     public BaseStatusBar getBar() {
@@ -104,7 +104,7 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
     }
 
     public void animateCollapsePanels() {
-        mPieControl.getPieMenu().hidePanels(true);
+        mPieControl.getPieMenu().getStatusPanel().hidePanels(true);
     }
 
     @Override

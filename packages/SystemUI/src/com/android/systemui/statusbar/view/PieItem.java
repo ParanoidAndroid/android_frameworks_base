@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.view;
 
 import android.database.ContentObserver;
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.graphics.Path;
 import android.graphics.PorterDuff;
@@ -25,10 +26,9 @@ import android.graphics.PorterDuff.Mode;
 import android.os.Handler;
 import android.provider.Settings;
 import android.util.ColorUtils;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
-
-import com.android.systemui.statusbar.view.PieMenu.PieView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +40,6 @@ public class PieItem {
 
     private Context mContext;
     private View mView;
-    private PieView mPieView;
     private int level;
     private float start;
     private float sweep;
@@ -189,27 +188,12 @@ public class PieItem {
         return outer;
     }
 
-    public boolean isPieView() {
-        return (mPieView != null);
-    }
-
     public View getView() {
         return mView;
     }
 
-    public void setPieView(PieView sym) {
-        mPieView = sym;
-    }
-
     public void setIcon(int resId) {
         ((ImageView)mView).setImageResource(resId);
-    }
-
-    public PieView getPieView() {
-        if (mEnabled) {
-            return mPieView;
-        }
-        return null;
     }
 
     private void setColor() {
