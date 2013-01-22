@@ -39,6 +39,7 @@ import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuff.Mode;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PointF;
@@ -98,6 +99,7 @@ public class PieMenu extends FrameLayout {
     private static int ANIMATOR_BATTERY_METER = 21;
 
     private static final int COLOR_ALPHA_MASK = 0xaa000000;
+    private static final int COLOR_OPAQUE_MASK = 0xff000000;
     private static final int COLOR_PIE_BACKGROUND = 0xaaff005e;
     private static final int COLOR_PIE_SELECT = 0xaadbff00;
     private static final int COLOR_CHEVRON_LEFT = 0x0999cc;
@@ -228,10 +230,6 @@ public class PieMenu extends FrameLayout {
         mNotificationTextSize = (int)(mResources.getDimensionPixelSize(R.dimen.pie_notification_size) * mPieSize);
         mNotificationPaint.setTextSize(mNotificationTextSize);
 
-        // Colors
-        mChevronBackgroundLeft.setColor(COLOR_CHEVRON_LEFT);
-        mChevronBackgroundRight.setColor(COLOR_CHEVRON_RIGHT);
-
         // Battery
         mInnerBatteryRadius = (int)(mResources.getDimensionPixelSize(R.dimen.pie_battery_start) * mPieSize);
         mOuterBatteryRadius = (int)(mInnerBatteryRadius + mResources.getDimensionPixelSize(R.dimen.pie_battery_increment) * mPieSize);
@@ -253,14 +251,14 @@ public class PieMenu extends FrameLayout {
         mBatteryPathJuice = makeSlice(mStartBattery, mStartBattery + mBatteryLevel * (mEndBattery-mStartBattery) /
                 100, mInnerBatteryRadius, mOuterBatteryRadius, mCenter);
 
-        if (!mPerAppColor) {
-            mPieBackground.setColor(COLOR_PIE_BACKGROUND);
-            mPieSelected.setColor(COLOR_PIE_SELECT);
-            mClockPaint.setColor(COLOR_STATUS);
-            mAmPmPaint.setColor(COLOR_STATUS);
-            mStatusPaint.setColor(COLOR_STATUS);
-            mNotificationPaint.setColor(COLOR_STATUS);
-        } else {
+        // Colors
+        boolean pac = mPerAppColor && ColorUtils.getPerAppColorState(mContext);
+        ColorUtils.ColorSettingInfo buttonColorInfo = ColorUtils.getColorSettingInfo(mContext,
+                Settings.System.NAV_BUTTON_COLOR);
+
+        mNotificationPaint.setColor(COLOR_STATUS);
+
+        if (pac) {
             ColorUtils.ColorSettingInfo colorInfo;
             colorInfo = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BAR_COLOR);
             mPieBackground.setColor(ColorUtils.extractRGB(colorInfo.lastColor) | COLOR_ALPHA_MASK);
@@ -271,12 +269,27 @@ public class PieMenu extends FrameLayout {
             colorInfo = ColorUtils.getColorSettingInfo(mContext, Settings.System.STATUS_ICON_COLOR);
             mClockPaint.setColor(colorInfo.lastColor);
             mAmPmPaint.setColor(colorInfo.lastColor);
-            mNotificationPaint.setColor(colorInfo.lastColor);
             mClockPaint.setColor(colorInfo.lastColor);
             mStatusPaint.setColor(colorInfo.lastColor);
 
-            colorInfo = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BUTTON_COLOR);
-            // Buttons?
+            mChevronBackgroundLeft.setColor(ColorUtils.extractRGB(buttonColorInfo.lastColor) | COLOR_OPAQUE_MASK);
+            mChevronBackgroundRight.setColor(ColorUtils.extractRGB(buttonColorInfo.lastColor) | COLOR_OPAQUE_MASK);
+            mBatteryJuice.setColorFilter(buttonColorInfo.isLastColorNull ? null :
+                    new PorterDuffColorFilter(ColorUtils.extractRGB(buttonColorInfo.lastColor) | COLOR_OPAQUE_MASK, Mode.SRC_ATOP));
+        } else {
+            mPieBackground.setColor(COLOR_PIE_BACKGROUND);
+            mPieSelected.setColor(COLOR_PIE_SELECT);
+            mClockPaint.setColor(COLOR_STATUS);
+            mAmPmPaint.setColor(COLOR_STATUS);
+            mStatusPaint.setColor(COLOR_STATUS);
+            mChevronBackgroundLeft.setColor(COLOR_CHEVRON_LEFT);
+            mChevronBackgroundRight.setColor(COLOR_CHEVRON_RIGHT);
+            mBatteryJuice.setColorFilter(null);
+        }
+
+        buttonColorInfo = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BUTTON_COLOR);
+        for (PieItem item : mItems) {
+            item.setColor(buttonColorInfo.lastColor, buttonColorInfo.isLastColorNull ? false : pac);
         }
 
         // Notifications
