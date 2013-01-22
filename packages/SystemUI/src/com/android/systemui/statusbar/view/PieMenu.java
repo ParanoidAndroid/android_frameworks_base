@@ -36,6 +36,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.Rect;
 import android.graphics.Paint;
+import android.graphics.Paint.Style;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuff.Mode;
@@ -102,6 +103,7 @@ public class PieMenu extends FrameLayout {
     private static final int COLOR_OPAQUE_MASK = 0xff000000;
     private static final int COLOR_PIE_BACKGROUND = 0xaaff005e;
     private static final int COLOR_PIE_SELECT = 0xaadbff00;
+    private static final int COLOR_PIE_OUTLINES = 0x55ffffff;
     private static final int COLOR_CHEVRON_LEFT = 0x0999cc;
     private static final int COLOR_CHEVRON_RIGHT = 0x33b5e5;
     private static final int COLOR_BATTERY_JUICE = 0x33b5e5;
@@ -147,6 +149,7 @@ public class PieMenu extends FrameLayout {
 
     private Paint mPieBackground = new Paint(COLOR_PIE_BACKGROUND);
     private Paint mPieSelected = new Paint(COLOR_PIE_SELECT);
+    private Paint mPieOutlines = new Paint(COLOR_PIE_OUTLINES);
     private Paint mChevronBackgroundLeft = new Paint(COLOR_CHEVRON_LEFT);
     private Paint mChevronBackgroundRight = new Paint(COLOR_CHEVRON_RIGHT);
     private Paint mBatteryJuice = new Paint(COLOR_BATTERY_JUICE);
@@ -274,11 +277,13 @@ public class PieMenu extends FrameLayout {
 
             mChevronBackgroundLeft.setColor(ColorUtils.extractRGB(buttonColorInfo.lastColor) | COLOR_OPAQUE_MASK);
             mChevronBackgroundRight.setColor(ColorUtils.extractRGB(buttonColorInfo.lastColor) | COLOR_OPAQUE_MASK);
+            mPieOutlines.setColor(buttonColorInfo.lastColor);
             mBatteryJuice.setColorFilter(buttonColorInfo.isLastColorNull ? null :
                     new PorterDuffColorFilter(ColorUtils.extractRGB(buttonColorInfo.lastColor) | COLOR_OPAQUE_MASK, Mode.SRC_ATOP));
         } else {
             mPieBackground.setColor(COLOR_PIE_BACKGROUND);
             mPieSelected.setColor(COLOR_PIE_SELECT);
+            mPieOutlines.setColor(COLOR_PIE_OUTLINES);
             mClockPaint.setColor(COLOR_STATUS);
             mAmPmPaint.setColor(COLOR_STATUS);
             mStatusPaint.setColor(COLOR_STATUS);
@@ -419,6 +424,9 @@ public class PieMenu extends FrameLayout {
         mItems = new ArrayList<PieItem>();
         mPieBackground.setAntiAlias(true);
         mPieSelected.setAntiAlias(true);
+        mPieOutlines.setAntiAlias(true);
+        mPieOutlines.setStyle(Style.STROKE);
+        mPieOutlines.setStrokeWidth(0);
         mChevronBackgroundLeft.setAntiAlias(true);
         mChevronBackgroundRight.setAntiAlias(true);
         mBatteryJuice.setAntiAlias(true);
@@ -703,6 +711,7 @@ public class PieMenu extends FrameLayout {
             canvas.rotate(getDegrees(item.getStartAngle())
                         + mPanel.getDegree(), mCenter.x, mCenter.y);
             canvas.drawPath(item.getPath(), item.isSelected() ? mPieSelected : mPieBackground);
+            canvas.drawPath(item.getPath(), mPieOutlines);
             canvas.restoreToCount(state);
 
             state = canvas.save();
