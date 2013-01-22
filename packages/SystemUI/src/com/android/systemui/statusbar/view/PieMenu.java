@@ -225,7 +225,7 @@ public class PieMenu extends FrameLayout {
 
         mStatusPaint.setTextSize((int)(mResources.getDimensionPixelSize(R.dimen.pie_status_size) * mPieSize));
         mStatusOffset = mResources.getDimensionPixelSize(R.dimen.pie_status_offset) * mPieSize;
-        mNotificationTextSize = mResources.getDimensionPixelSize(R.dimen.pie_notification_size);
+        mNotificationTextSize = (int)(mResources.getDimensionPixelSize(R.dimen.pie_notification_size) * mPieSize);
         mNotificationPaint.setTextSize(mNotificationTextSize);
 
         // Colors
@@ -281,8 +281,8 @@ public class PieMenu extends FrameLayout {
         // Notifications
         mNotificationCount = 0;
         mNotificationsRadius = (int)(mResources.getDimensionPixelSize(R.dimen.pie_notifications_start) * mPieSize);
-        mNotificationIconSize = mResources.getDimensionPixelSize(R.dimen.pie_notification_icon_size);
-        mNotificationsRowSize = mResources.getDimensionPixelSize(R.dimen.pie_notification_row_size);
+        mNotificationIconSize = (int)(mResources.getDimensionPixelSize(R.dimen.pie_notification_icon_size) * mPieSize);
+        mNotificationsRowSize = mResources.getDimensionPixelSize(R.dimen.pie_notification_row_size) * mPieSize;
 
         if (mPanel.getBar() != null) {
             getNotifications();
