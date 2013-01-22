@@ -2450,18 +2450,11 @@ public final class Settings {
         public static final String EXPANDED_DESKTOP_STATE = "expanded_desktop_state";
 
         /**
-         * Whether to enable or not pie controls
+         * Whether to enable or not pie controls (who wouldn't?!)
          * The value is boolean (1 or 0).
          * @hide
          */
         public static final String PIE_CONTROLS = "pie_controls";
-
-        /**
-         * Whether to enable or not pie per-app-coloring
-         * The value is boolean (1 or 0).
-         * @hide
-         */
-        public static final String PIE_PAC = "pie_pac";
 
         /**
          * Location of the pie in the screen

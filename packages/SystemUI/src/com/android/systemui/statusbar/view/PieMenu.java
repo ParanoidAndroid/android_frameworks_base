@@ -27,17 +27,19 @@ import android.database.ContentObserver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.Rect;
 import android.graphics.Paint;
+import android.graphics.Paint.Style;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.Path;
 import android.graphics.Point;
@@ -64,6 +66,9 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 
+import com.android.internal.statusbar.StatusBarNotification;
+import com.android.internal.statusbar.StatusBarIcon;
+
 import com.android.systemui.R;
 import com.android.systemui.statusbar.NotificationData;
 import com.android.systemui.statusbar.PieControl;
@@ -73,9 +78,6 @@ import com.android.systemui.statusbar.phone.QuickSettingsContainerView;
 import com.android.systemui.statusbar.policy.Clock;
 import com.android.systemui.statusbar.policy.NotificationRowLayout;
 import com.android.systemui.statusbar.policy.PiePolicy;
-
-import com.android.internal.statusbar.StatusBarNotification;
-import com.android.internal.statusbar.StatusBarIcon;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,8 +100,10 @@ public class PieMenu extends FrameLayout {
     private static int ANIMATOR_BATTERY_METER = 21;
 
     private static final int COLOR_ALPHA_MASK = 0xaa000000;
+    private static final int COLOR_OPAQUE_MASK = 0xff000000;
     private static final int COLOR_PIE_BACKGROUND = 0xaaff005e;
     private static final int COLOR_PIE_SELECT = 0xaadbff00;
+    private static final int COLOR_PIE_OUTLINES = 0x55ffffff;
     private static final int COLOR_CHEVRON_LEFT = 0x0999cc;
     private static final int COLOR_CHEVRON_RIGHT = 0x33b5e5;
     private static final int COLOR_BATTERY_JUICE = 0x33b5e5;
@@ -145,6 +149,7 @@ public class PieMenu extends FrameLayout {
 
     private Paint mPieBackground = new Paint(COLOR_PIE_BACKGROUND);
     private Paint mPieSelected = new Paint(COLOR_PIE_SELECT);
+    private Paint mPieOutlines = new Paint(COLOR_PIE_OUTLINES);
     private Paint mChevronBackgroundLeft = new Paint(COLOR_CHEVRON_LEFT);
     private Paint mChevronBackgroundRight = new Paint(COLOR_CHEVRON_RIGHT);
     private Paint mBatteryJuice = new Paint(COLOR_BATTERY_JUICE);
@@ -180,7 +185,6 @@ public class PieMenu extends FrameLayout {
     // Flags
     private int mStatusMode;
     private float mPieSize = SIZE_BASE;
-    private boolean mPerAppColor;
     private boolean mOpen;
 
     // Animations
@@ -195,8 +199,6 @@ public class PieMenu extends FrameLayout {
         // Fetch modes
         mStatusMode = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.PIE_MODE, 2);
-        mPerAppColor = Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.PIE_PAC, 0) == 1;
         mPieSize = Settings.System.getFloat(mContext.getContentResolver(),
                 Settings.System.PIE_SIZE, 1f);
 
@@ -228,10 +230,6 @@ public class PieMenu extends FrameLayout {
         mNotificationTextSize = (int)(mResources.getDimensionPixelSize(R.dimen.pie_notification_size) * mPieSize);
         mNotificationPaint.setTextSize(mNotificationTextSize);
 
-        // Colors
-        mChevronBackgroundLeft.setColor(COLOR_CHEVRON_LEFT);
-        mChevronBackgroundRight.setColor(COLOR_CHEVRON_RIGHT);
-
         // Battery
         mInnerBatteryRadius = (int)(mResources.getDimensionPixelSize(R.dimen.pie_battery_start) * mPieSize);
         mOuterBatteryRadius = (int)(mInnerBatteryRadius + mResources.getDimensionPixelSize(R.dimen.pie_battery_increment) * mPieSize);
@@ -253,14 +251,13 @@ public class PieMenu extends FrameLayout {
         mBatteryPathJuice = makeSlice(mStartBattery, mStartBattery + mBatteryLevel * (mEndBattery-mStartBattery) /
                 100, mInnerBatteryRadius, mOuterBatteryRadius, mCenter);
 
-        if (!mPerAppColor) {
-            mPieBackground.setColor(COLOR_PIE_BACKGROUND);
-            mPieSelected.setColor(COLOR_PIE_SELECT);
-            mClockPaint.setColor(COLOR_STATUS);
-            mAmPmPaint.setColor(COLOR_STATUS);
-            mStatusPaint.setColor(COLOR_STATUS);
-            mNotificationPaint.setColor(COLOR_STATUS);
-        } else {
+        // Colors
+        ColorUtils.ColorSettingInfo buttonColorInfo = ColorUtils.getColorSettingInfo(mContext,
+                Settings.System.NAV_BUTTON_COLOR);
+
+        mNotificationPaint.setColor(COLOR_STATUS);
+
+        if (ColorUtils.getPerAppColorState(mContext)) {
             ColorUtils.ColorSettingInfo colorInfo;
             colorInfo = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BAR_COLOR);
             mPieBackground.setColor(ColorUtils.extractRGB(colorInfo.lastColor) | COLOR_ALPHA_MASK);
@@ -271,11 +268,31 @@ public class PieMenu extends FrameLayout {
             colorInfo = ColorUtils.getColorSettingInfo(mContext, Settings.System.STATUS_ICON_COLOR);
             mClockPaint.setColor(colorInfo.lastColor);
             mAmPmPaint.setColor(colorInfo.lastColor);
-            mNotificationPaint.setColor(colorInfo.lastColor);
             mClockPaint.setColor(colorInfo.lastColor);
+            mStatusPaint.setColor(colorInfo.lastColor);
 
-            colorInfo = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BUTTON_COLOR);
-            // Buttons?
+            mChevronBackgroundLeft.setColor(ColorUtils.extractRGB(buttonColorInfo.lastColor) | COLOR_OPAQUE_MASK);
+            mChevronBackgroundRight.setColor(ColorUtils.extractRGB(buttonColorInfo.lastColor) | COLOR_OPAQUE_MASK);
+            mPieOutlines.setColor(buttonColorInfo.lastColor);
+            mBatteryJuice.setColorFilter(buttonColorInfo.isLastColorNull ? null :
+                    new PorterDuffColorFilter(ColorUtils.extractRGB(buttonColorInfo.lastColor) | COLOR_OPAQUE_MASK, Mode.SRC_ATOP));
+        } else {
+            mPieBackground.setColor(COLOR_PIE_BACKGROUND);
+            mPieSelected.setColor(COLOR_PIE_SELECT);
+            mPieOutlines.setColor(COLOR_PIE_OUTLINES);
+            mClockPaint.setColor(COLOR_STATUS);
+            mAmPmPaint.setColor(COLOR_STATUS);
+            mStatusPaint.setColor(COLOR_STATUS);
+            mChevronBackgroundLeft.setColor(COLOR_CHEVRON_LEFT);
+            mChevronBackgroundRight.setColor(COLOR_CHEVRON_RIGHT);
+            mBatteryJuice.setColorFilter(null);
+        }
+
+        buttonColorInfo = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BUTTON_COLOR);
+        if(!buttonColorInfo.isLastColorNull){
+            for (PieItem item : mItems) {
+                item.setColor(buttonColorInfo.lastColor);
+            }
         }
 
         // Notifications
@@ -405,6 +422,9 @@ public class PieMenu extends FrameLayout {
         mItems = new ArrayList<PieItem>();
         mPieBackground.setAntiAlias(true);
         mPieSelected.setAntiAlias(true);
+        mPieOutlines.setAntiAlias(true);
+        mPieOutlines.setStyle(Style.STROKE);
+        mPieOutlines.setStrokeWidth(0);
         mChevronBackgroundLeft.setAntiAlias(true);
         mChevronBackgroundRight.setAntiAlias(true);
         mBatteryJuice.setAntiAlias(true);
@@ -689,6 +709,7 @@ public class PieMenu extends FrameLayout {
             canvas.rotate(getDegrees(item.getStartAngle())
                         + mPanel.getDegree(), mCenter.x, mCenter.y);
             canvas.drawPath(item.getPath(), item.isSelected() ? mPieSelected : mPieBackground);
+            canvas.drawPath(item.getPath(), mPieOutlines);
             canvas.restoreToCount(state);
 
             state = canvas.save();

@@ -64,20 +64,6 @@ public class PieItem {
         setAlpha(getAlpha());
         setName(name);
         mIsLesser = lesser;
-
-        if(mContext != null) {
-            if (ColorUtils.getPerAppColorState(mContext)) {
-                mLastButtonColor = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BUTTON_COLOR);
-                setColor();
-
-                mContext.getContentResolver().registerContentObserver(
-                    Settings.System.getUriFor(Settings.System.NAV_BUTTON_COLOR), false, new ContentObserver(new Handler()) {
-                        @Override
-                        public void onChange(boolean selfChange) {
-                            setColor();
-                        }});
-            }
-        }
     }
 
     public void setLesser(boolean lesser) {
@@ -196,20 +182,10 @@ public class PieItem {
         ((ImageView)mView).setImageResource(resId);
     }
 
-    private void setColor() {
+    public void setColor(int color) {
         ImageView imageView = ((ImageView) mView);
         Drawable drawable = imageView.getDrawable();
-        boolean mPerAppColor = Settings.System.getInt(mContext.getContentResolver(), Settings.System.PIE_PAC, 0) == 1;
-        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
-                Settings.System.NAV_BUTTON_COLOR);
-        if (!colorInfo.lastColorString.equals(mLastButtonColor.lastColorString) && mPerAppColor && !colorInfo.isLastColorNull) {
-            drawable.setColorFilter(ColorUtils.extractRGB(colorInfo.lastColor)
-                        | 0xFF000000, Mode.SRC_ATOP);
-            mLastButtonColor = colorInfo;
-        } else {
-            drawable.clearColorFilter();
-            mLastButtonColor = colorInfo;
-        }
+        drawable.setColorFilter(color, Mode.SRC_ATOP);
         imageView.setImageDrawable(drawable);
     }
 }
