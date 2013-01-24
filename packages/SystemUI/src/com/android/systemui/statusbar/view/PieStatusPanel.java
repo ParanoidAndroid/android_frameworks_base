@@ -58,9 +58,7 @@ public class PieStatusPanel {
     public static final int QUICK_SETTINGS_PANEL = 1;
 
     private Context mContext;
-    private WindowManager mWindowManager;
     private ScrollView mScrollView;
-    private View mContainer;
     private View mContentFrame;
     private QuickSettingsContainerView mQS;
     private NotificationRowLayout mNotificationPanel;
@@ -73,7 +71,6 @@ public class PieStatusPanel {
     public PieStatusPanel(Context context, PieControlPanel panel) {
         mContext = context;
         mPanel = panel;
-        mWindowManager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
 
         mNotificationPanel = mPanel.getBar().getNotificationRowLayout();
         mNotificationPanel.setTag(NOTIFICATIONS_PANEL);
@@ -83,12 +80,8 @@ public class PieStatusPanel {
         mPanelParents[NOTIFICATIONS_PANEL] = (ViewGroup) mNotificationPanel.getParent();
         mPanelParents[QUICK_SETTINGS_PANEL] = (ViewGroup) mQS.getParent();
 
-        LayoutInflater inflater = (LayoutInflater) mContext
-                .getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
-        mContainer = inflater.inflate(R.layout.pie_notification_panel, null);
-
-        mContentFrame = (View) mContainer.findViewById(R.id.content_frame);
-        mScrollView = (ScrollView) mContainer.findViewById(R.id.notification_scroll);
+        mContentFrame = (View) mPanel.getBar().mContainer.findViewById(R.id.content_frame);
+        mScrollView = (ScrollView) mPanel.getBar().mContainer.findViewById(R.id.notification_scroll);
         mScrollView.setOnTouchListener(new OnTouchListener(){
             final int SCROLLING_DISTANCE_TRIGGER = 100;
             float scrollX;
@@ -121,8 +114,7 @@ public class PieStatusPanel {
             }                               
         });
 
-        mContainer.setVisibility(View.GONE);
-        mWindowManager.addView(mContainer, getFlipPanelLayoutParams());
+        mPanel.getBar().mContainer.setVisibility(View.GONE);
     }
 
     public int getFlipViewState() {
@@ -201,30 +193,32 @@ public class PieStatusPanel {
         alphAnimation.start();
 
         ViewGroup parent = getPanelParent(panel);
-        parent.removeView(panel);
+        parent.removeAllViews();
+        mScrollView.removeAllViews();
         mScrollView.addView(panel);
         updateContainer(true);
     }
 
     private void hidePanel(View panel) {
         ViewGroup parent = getPanelParent(panel);
-        mScrollView.removeView(panel);
+        mScrollView.removeAllViews();
+        parent.removeAllViews();
         parent.addView(panel, panel.getLayoutParams());
         updateContainer(false);
     }
 
     private void updateContainer(boolean visible) {
-        mContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
-        mWindowManager.updateViewLayout(mContainer,
-                getFlipPanelLayoutParams());
+        mPanel.getBar().mContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
-    private WindowManager.LayoutParams getFlipPanelLayoutParams() {
+    public static WindowManager.LayoutParams getFlipPanelLayoutParams() {
         return new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
                         WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                      | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                      | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
                         | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
                 PixelFormat.TRANSLUCENT);
     }

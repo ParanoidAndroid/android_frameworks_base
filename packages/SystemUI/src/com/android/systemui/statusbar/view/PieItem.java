@@ -182,16 +182,10 @@ public class PieItem {
         ((ImageView)mView).setImageResource(resId);
     }
 
-    public void setColor(int color, boolean pac) {
+    public void setColor(int color) {
         ImageView imageView = ((ImageView) mView);
         Drawable drawable = imageView.getDrawable();
-
-        if (pac) {
-            drawable.setColorFilter(color, Mode.SRC_ATOP);
-        } else {
-            drawable.clearColorFilter();
-        }
-
+        drawable.setColorFilter(color, Mode.SRC_ATOP);
         imageView.setImageDrawable(drawable);
     }
 }

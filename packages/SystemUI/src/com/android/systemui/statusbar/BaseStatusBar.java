@@ -96,6 +96,7 @@ import com.android.systemui.statusbar.policy.Clock;
 import com.android.systemui.statusbar.policy.NetworkController;
 import com.android.systemui.statusbar.policy.NotificationRowLayout;
 import com.android.systemui.statusbar.tablet.StatusBarPanel;
+import com.android.systemui.statusbar.view.PieStatusPanel;
 
 import java.util.ArrayList;
 import java.math.BigInteger;
@@ -466,18 +467,44 @@ public abstract class BaseStatusBar extends SystemUI implements
         settingsObserver.observe();
     }
 
-    private void attachPies() {
-        // Add pie (s), want some slice?
-        int gravity = Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.PIE_GRAVITY, 2);
-
-        ContentResolver resolver = mContext.getContentResolver();
-        boolean expanded = Settings.System.getInt(resolver,
+    private boolean showPie() {
+        // Is expanded desktop active?
+        boolean expanded = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.EXPANDED_DESKTOP_STATE, 0) == 1;
-        boolean show = expanded && Settings.System.getInt(resolver,
+
+        // PIE active?
+        boolean pie = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.PIE_CONTROLS, 0) == 1;
 
-        if(show) {
+        // Do we have pies clenched to the sides vertically?
+        int gravity = Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.PIE_GRAVITY, 2);
+        boolean vertical = ((gravity & 1) != 0 || (gravity & 2) != 0);
+
+        // Navigationbar is down to 0% ?
+        boolean navbarZero = Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.navbar.dpi", "100")) == 0;
+
+        // Make a choice ...
+        return ((expanded && pie) || (!vertical && navbarZero && pie));
+    }
+
+
+    public View mContainer;
+    private void attachPies() {
+        if(showPie()) {
+
+            if (mContainer == null) {
+                // Add panel window, one to be used by all pies that is
+                LayoutInflater inflater = (LayoutInflater) mContext
+                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
+                mContainer = inflater.inflate(R.layout.pie_notification_panel, null);
+                mWindowManager.addView(mContainer, PieStatusPanel.getFlipPanelLayoutParams());
+            }
+
+            // Add pie (s), want some slice?
+            int gravity = Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.PIE_GRAVITY, 2);
+
             if ((gravity & 1) != 0) {
                 addPieInLocation(Gravity.TOP);
             }
@@ -515,11 +542,10 @@ public abstract class BaseStatusBar extends SystemUI implements
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG,
+                WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                         | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                         | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
                         | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
                 PixelFormat.TRANSLUCENT);
         lp.setTitle("PieControlPanel");
@@ -535,13 +561,11 @@ public abstract class BaseStatusBar extends SystemUI implements
                     ViewGroup.LayoutParams.MATCH_PARENT : res.getDimensionPixelSize(R.dimen.pie_trigger_height)),
               (gravity == Gravity.LEFT || gravity == Gravity.RIGHT ?
                     ViewGroup.LayoutParams.MATCH_PARENT : res.getDimensionPixelSize(R.dimen.pie_trigger_height)),
-              WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG,
-              WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                      | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                      | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                      | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
-                      | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
-              PixelFormat.TRANSLUCENT);
+                WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                        | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
+                PixelFormat.TRANSLUCENT);
         lp.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED
                 | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING;
         lp.gravity = gravity;
