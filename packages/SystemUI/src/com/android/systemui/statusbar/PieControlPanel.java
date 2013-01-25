@@ -58,6 +58,8 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
     private int mOrientation;
     private int mWidth;
     private int mHeight;
+    private View mTrigger;
+    private WindowManager mWindowManager;
     
     ViewGroup mContentFrame;
     Rect mContentArea = new Rect();
@@ -71,13 +73,10 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
     public PieControlPanel(Context context, AttributeSet attrs) {
         super(context, attrs);
         mContext = context;
+        mWindowManager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
         mPieControl = new PieControl(context, this);
         mPieControl.setOnNavButtonPressedListener(this);
         mOrientation = Gravity.BOTTOM;
-    }
-
-    public void setOrientation(int orientation) {
-        mOrientation = orientation;
     }
 
     public int getOrientation() {
@@ -92,11 +91,6 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
             case Gravity.BOTTOM: return 90;
         }
         return 0;
-    }
-
-    public void setBar(BaseStatusBar statusbar) {
-        mStatusBar = (BaseStatusBar) statusbar;
-        mPieControl.init();
     }
 
     public BaseStatusBar getBar() {
@@ -127,8 +121,43 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
         show(false);
     }
 
-    public void setHandler(Handler h) {
+    public void init(Handler h, BaseStatusBar statusbar, View trigger, int orientation) {
         mHandler = h;
+        mStatusBar = (BaseStatusBar) statusbar;
+        mTrigger = trigger;
+        mOrientation = orientation;
+        setCenter();
+        mPieControl.init();
+    }
+
+    public void reOrient(int orientation) {
+        mOrientation = orientation;
+        mWindowManager.removeView(mTrigger);
+        mWindowManager.addView(mTrigger, BaseStatusBar.getPieTriggerLayoutParams(mContext, mOrientation));
+        setCenter();
+        show(mShowing);
+    }
+
+    public void setCenter() {
+        Point outSize = new Point(0,0);
+        WindowManager windowManager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
+        windowManager.getDefaultDisplay().getRealSize(outSize);
+        mWidth = outSize.x;
+        mHeight = outSize.y;
+        switch(mOrientation) {
+            case Gravity.LEFT:
+                mPieControl.setCenter(0, mHeight / 2);
+                break;
+            case Gravity.TOP:
+                mPieControl.setCenter(mWidth / 2, 0);
+                break;
+            case Gravity.RIGHT:
+                mPieControl.setCenter(mWidth, mHeight / 2);
+                break;
+            case Gravity.BOTTOM: 
+                mPieControl.setCenter(mWidth / 2, mHeight);
+                break;
+        }
     }
 
     @Override
@@ -153,29 +182,7 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
     public void show(boolean show) {
         mShowing = show;
         setVisibility(show ? View.VISIBLE : View.GONE);
-
-        if (show) {
-            Point outSize = new Point(0,0);
-            WindowManager windowManager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
-            windowManager.getDefaultDisplay().getRealSize(outSize);
-            mWidth = outSize.x;
-            mHeight = outSize.y;
-
-            switch(mOrientation) {
-                case Gravity.LEFT:
-                    mPieControl.setCenter(0, mHeight / 2);
-                    break;
-                case Gravity.TOP:
-                    mPieControl.setCenter(mWidth / 2, 0);
-                    break;
-                case Gravity.RIGHT:
-                    mPieControl.setCenter(mWidth, mHeight / 2);
-                    break;
-                case Gravity.BOTTOM: 
-                    mPieControl.setCenter(mWidth / 2, mHeight);
-                    break;
-            }
-        }
+        setCenter();
         mPieControl.show(show);
     }
 

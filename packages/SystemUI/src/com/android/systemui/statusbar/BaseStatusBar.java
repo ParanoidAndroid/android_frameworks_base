@@ -533,12 +533,9 @@ public abstract class BaseStatusBar extends SystemUI implements
         mPieControlsTrigger.add(pieControlsTrigger);
 
         pieControlsTrigger.setOnTouchListener(new PieControlsTouchListener(mIndex ++));
-        mWindowManager.addView(pieControlsTrigger, getPieTriggerLayoutParams(gravity));
+        mWindowManager.addView(pieControlsTrigger, getPieTriggerLayoutParams(mContext, gravity));
 
-        panel.setBar(this);
-        panel.setHandler(mHandler);
-        panel.setOrientation(gravity);
-
+        panel.init(mHandler, this, pieControlsTrigger, gravity);
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -554,8 +551,8 @@ public abstract class BaseStatusBar extends SystemUI implements
         mWindowManager.addView(panel, lp);
     }
 
-    private WindowManager.LayoutParams getPieTriggerLayoutParams(int gravity) {
-        final Resources res = mContext.getResources();
+    public static WindowManager.LayoutParams getPieTriggerLayoutParams(Context context, int gravity) {
+        final Resources res = context.getResources();
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
               (gravity == Gravity.TOP || gravity == Gravity.BOTTOM ?
                     ViewGroup.LayoutParams.MATCH_PARENT : res.getDimensionPixelSize(R.dimen.pie_trigger_height)),

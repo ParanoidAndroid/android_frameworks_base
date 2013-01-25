@@ -230,6 +230,8 @@
     <dimen name="pie_notification_row_size">16dp</dimen>
     <dimen name="pie_notification_icon_size">15dp</dimen>
 
+    <dimen name="pie_snap_radius">30dp</dimen>
+
     <dimen name="pie_touch_offset">15dp</dimen>
     <dimen name="pie_tab_title_height">24dp</dimen>
     <dimen name="pie_item_size">40dp</dimen>

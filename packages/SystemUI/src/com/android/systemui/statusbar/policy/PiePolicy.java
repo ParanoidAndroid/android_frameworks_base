@@ -144,11 +144,7 @@ public class PiePolicy {
     }
 
     public static String getBatteryLevelReadable() {
-        return (mBatteryLevel > LOW_BATTERY_LEVEL ? 
-                mContext.getString(
-                        R.string.accessibility_battery_level, mBatteryLevel) :
-                mContext.getString(
-                        R.string.battery_low_percent_format, mBatteryLevel))
+        return mContext.getString(R.string.battery_low_percent_format, mBatteryLevel)
                 .toUpperCase();
     }
 }
