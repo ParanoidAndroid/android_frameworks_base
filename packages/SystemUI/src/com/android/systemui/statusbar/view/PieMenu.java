@@ -100,6 +100,7 @@ public class PieMenu extends FrameLayout {
 
     // Special purpose
     private static int ANIMATOR_BATTERY_METER = 21;
+    private static int ANIMATOR_SNAP_WOBBLE = 22;
 
     private static final int COLOR_ALPHA_MASK = 0xaa000000;
     private static final int COLOR_OPAQUE_MASK = 0xff000000;
@@ -388,6 +389,11 @@ public class PieMenu extends FrameLayout {
         // Special purpose
         mAnimators[ANIMATOR_BATTERY_METER].setDuration((int)(mOverallSpeed * 1.5));
         mAnimators[ANIMATOR_BATTERY_METER].setInterpolator(new DecelerateInterpolator());
+
+        mAnimators[ANIMATOR_SNAP_WOBBLE].setDuration(400);
+        mAnimators[ANIMATOR_SNAP_WOBBLE].setInterpolator(new AccelerateInterpolator());
+        mAnimators[ANIMATOR_SNAP_WOBBLE].setRepeatMode(ValueAnimator.REVERSE);
+        mAnimators[ANIMATOR_SNAP_WOBBLE].setRepeatCount(ValueAnimator.INFINITE);
     }
 
     private void measureClock(String text) {
@@ -500,25 +506,6 @@ public class PieMenu extends FrameLayout {
         getDimensions();
     }
 
-    class customAnimatorUpdateListener implements ValueAnimator.AnimatorUpdateListener {
-        private int mIndex = 0;
-        public customAnimatorUpdateListener(int index) {
-            mIndex = index;
-        }
-
-        @Override
-        public void onAnimationUpdate(ValueAnimator animation) {
-            mAnimatedFraction[mIndex] = (float)animation.getAnimatedFraction();
-
-            // Special purpose animators go here
-            if (mIndex == ANIMATOR_BATTERY_METER) {
-                mBatteryPathJuice = makeSlice(mStartBattery, mStartBattery + (float)animation.getAnimatedFraction() *
-                        (mBatteryLevel * (mEndBattery-mStartBattery) / 100), mInnerBatteryRadius, mOuterBatteryRadius, mCenter);
-            }
-            invalidate();
-        }
-    }
-
     public void init() {
         mStatusPanel = new PieStatusPanel(mContext, mPanel);
         getNotifications();
@@ -622,6 +609,25 @@ public class PieMenu extends FrameLayout {
         return (float) (270 - 180 * angle / Math.PI);
     }
 
+    class customAnimatorUpdateListener implements ValueAnimator.AnimatorUpdateListener {
+        private int mIndex = 0;
+        public customAnimatorUpdateListener(int index) {
+            mIndex = index;
+        }
+
+        @Override
+        public void onAnimationUpdate(ValueAnimator animation) {
+            mAnimatedFraction[mIndex] = (float)animation.getAnimatedFraction();
+
+            // Special purpose animators go here
+            if (mIndex == ANIMATOR_BATTERY_METER) {
+                mBatteryPathJuice = makeSlice(mStartBattery, mStartBattery + (float)animation.getAnimatedFraction() *
+                        (mBatteryLevel * (mEndBattery-mStartBattery) / 100), mInnerBatteryRadius, mOuterBatteryRadius, mCenter);
+            }
+            invalidate();
+        }
+    }
+
     private void animateIn() {
         // Cancel & start all animations
         for (int i = 0; i < mAnimators.length; i++) {
@@ -660,7 +666,17 @@ public class PieMenu extends FrameLayout {
                 for (int i = 0; i < 4; i++) {
                     SnapPoint snap = mSnapPoint[i];
                     mSnapBackground.setAlpha(snap.alpha);
-                    canvas.drawCircle (snap.x, snap.y, snap.radius, mSnapBackground);
+
+                    int wobble = 0;
+                    if (snap.active) {
+                        wobble = (int)(mAnimatedFraction[ANIMATOR_SNAP_WOBBLE] * mSnapRadius / 2);
+                        wobble = mSnapRadius + wobble;
+
+            mAnimators[ANIMATOR_SNAP_WOBBLE].setRepeatCount(0);
+            mAnimators[ANIMATOR_SNAP_WOBBLE].cancel();
+            mAnimatedFraction[ANIMATOR_SNAP_WOBBLE] = 0;
+                    }
+                    canvas.drawCircle (snap.x, snap.y, snap.radius + wobble, mSnapBackground);
                 }
             }
 
@@ -865,10 +881,8 @@ public class PieMenu extends FrameLayout {
                 if (mCenter.x == snap.x && mCenter.y == snap.y) {
                     snap.alpha = 0x00;
                     snap.active = false;
-                    snap.radius = mSnapRadius;
                 } else if (snapDistance < mSnapRadius) {
                     snap.alpha = 50;
-                    snap.radius = (int)(mSnapRadius * 2.25f);
                     if (!snap.active) {
                         if(hapticFeedback) mVibrator.vibrate(2);
                     }
@@ -880,7 +894,6 @@ public class PieMenu extends FrameLayout {
                 } else {
                     snap.alpha = 10;
                     snap.active = false;
-                    snap.radius = mSnapRadius;
                 }
             }
 
