@@ -1115,6 +1115,9 @@ public class TabletStatusBar extends BaseStatusBar implements
         if (!firstTime && (n.notification.flags & Notification.FLAG_ONLY_ALERT_ONCE) != 0) {
             return;
         }
+        // not for you
+        if (!notificationIsForCurrentUser(n)) return;
+
         // Show the ticker if one is requested. Also don't do this
         // until status bar window is attached to the window manager,
         // because...  well, what's the point otherwise?  And trying to
