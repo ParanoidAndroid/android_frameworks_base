@@ -130,10 +130,11 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
         mPieControl.init();
     }
 
-    public void reOrient(int orientation) {
+    public void reorient(int orientation) {
         mOrientation = orientation;
         mWindowManager.removeView(mTrigger);
-        mWindowManager.addView(mTrigger, BaseStatusBar.getPieTriggerLayoutParams(mContext, mOrientation));
+        mWindowManager.addView(mTrigger, BaseStatusBar
+                .getPieTriggerLayoutParams(mContext, mOrientation));
         setCenter();
         show(mShowing);
     }
