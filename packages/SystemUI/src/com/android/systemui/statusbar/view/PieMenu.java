@@ -190,7 +190,7 @@ public class PieMenu extends FrameLayout {
     private float mEndBattery;
     private int mBatteryLevel;
 
-    class SnapPoint {
+    private class SnapPoint {
         public SnapPoint(int snapX, int snapY, int snapRadius, int snapAlpha, int snapGravity) {
             x = snapX;
             y = snapY;
@@ -355,7 +355,7 @@ public class PieMenu extends FrameLayout {
         // Create animators
         for (int i = 0; i < mAnimators.length; i++) {
             ValueAnimator animator = ValueAnimator.ofInt(0, 1);
-            animator.addUpdateListener(new customAnimatorUpdateListener(i));
+            animator.addUpdateListener(new CustomAnimatorUpdateListener(i));
             mAnimators[i] = animator;
             mAnimatedFraction[i] = 0;
         }
@@ -609,9 +609,9 @@ public class PieMenu extends FrameLayout {
         return (float) (270 - 180 * angle / Math.PI);
     }
 
-    class customAnimatorUpdateListener implements ValueAnimator.AnimatorUpdateListener {
+    private class CustomAnimatorUpdateListener implements ValueAnimator.AnimatorUpdateListener {
         private int mIndex = 0;
-        public customAnimatorUpdateListener(int index) {
+        public CustomAnimatorUpdateListener(int index) {
             mIndex = index;
         }
 
@@ -672,9 +672,9 @@ public class PieMenu extends FrameLayout {
                         wobble = (int)(mAnimatedFraction[ANIMATOR_SNAP_WOBBLE] * mSnapRadius / 2);
                         wobble = mSnapRadius + wobble;
 
-            mAnimators[ANIMATOR_SNAP_WOBBLE].setRepeatCount(0);
-            mAnimators[ANIMATOR_SNAP_WOBBLE].cancel();
-            mAnimatedFraction[ANIMATOR_SNAP_WOBBLE] = 0;
+                        mAnimators[ANIMATOR_SNAP_WOBBLE].setRepeatCount(0);
+                        mAnimators[ANIMATOR_SNAP_WOBBLE].cancel();
+                        mAnimatedFraction[ANIMATOR_SNAP_WOBBLE] = 0;
                     }
                     canvas.drawCircle (snap.x, snap.y, snap.radius + wobble, mSnapBackground);
                 }
