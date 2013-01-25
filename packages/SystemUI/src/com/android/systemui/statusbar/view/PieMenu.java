@@ -822,7 +822,7 @@ public class PieMenu extends FrameLayout {
                         if(hapticFeedback) mVibrator.vibrate(2);
                         deselect();
                         animateOut();
-                        mPanel.reOrient(snap.gravity);
+                        mPanel.reorient(snap.gravity);
                         return true;
                     }
                 }
