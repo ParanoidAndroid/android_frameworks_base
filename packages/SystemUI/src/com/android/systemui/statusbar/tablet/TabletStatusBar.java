@@ -930,16 +930,13 @@ public class TabletStatusBar extends BaseStatusBar implements
                 case MSG_OPEN_NOTIFICATION_PANEL:
                     if (DEBUG) Slog.d(TAG, "opening notifications panel");
                     if (!mNotificationPanel.isShowing()) {
-                        showClock(false);
                         mNotificationPanel.show(true, true);
                         mTicker.halt();
                     }
                     break;
                 case MSG_CLOSE_NOTIFICATION_PANEL:
                     if (DEBUG) Slog.d(TAG, "closing notifications panel");
-                    if (mNotificationPanel.isShowing()) {                        
-                        showClock(Settings.System.getInt(mContext.getContentResolver(),
-                                Settings.System.STATUS_BAR_SHOW_CLOCK, 1) == 1);
+                    if (mNotificationPanel.isShowing()) {
                         mNotificationPanel.show(false, true);
                     }
                     break;
