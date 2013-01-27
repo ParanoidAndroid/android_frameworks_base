@@ -391,7 +391,7 @@ public class PieMenu extends FrameLayout {
         mAnimators[ANIMATOR_BATTERY_METER].setInterpolator(new DecelerateInterpolator());
 
         mAnimators[ANIMATOR_SNAP_WOBBLE].setDuration(400);
-        mAnimators[ANIMATOR_SNAP_WOBBLE].setInterpolator(new AccelerateInterpolator());
+        mAnimators[ANIMATOR_SNAP_WOBBLE].setInterpolator(new DecelerateInterpolator());
         mAnimators[ANIMATOR_SNAP_WOBBLE].setRepeatMode(ValueAnimator.REVERSE);
         mAnimators[ANIMATOR_SNAP_WOBBLE].setRepeatCount(ValueAnimator.INFINITE);
     }
