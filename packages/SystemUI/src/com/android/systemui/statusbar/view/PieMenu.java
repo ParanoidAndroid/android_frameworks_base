@@ -672,9 +672,9 @@ public class PieMenu extends FrameLayout {
                         wobble = (int)(mAnimatedFraction[ANIMATOR_SNAP_WOBBLE] * mSnapRadius / 2);
                         wobble = mSnapRadius + wobble;
 
-                        mAnimators[ANIMATOR_SNAP_WOBBLE].setRepeatCount(0);
+                        /*mAnimators[ANIMATOR_SNAP_WOBBLE].setRepeatCount(0);
                         mAnimators[ANIMATOR_SNAP_WOBBLE].cancel();
-                        mAnimatedFraction[ANIMATOR_SNAP_WOBBLE] = 0;
+                        mAnimatedFraction[ANIMATOR_SNAP_WOBBLE] = 0;*/
                     }
                     canvas.drawCircle (snap.x, snap.y, snap.radius + wobble, mSnapBackground);
                 }
