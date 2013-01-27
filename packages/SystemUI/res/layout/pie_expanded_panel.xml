@@ -23,7 +23,7 @@
     android:orientation="vertical">
 
         <ScrollView
-            android:id="@+id/notification_scroll"
+            android:id="@+id/content_scroll"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fadingEdge="none"

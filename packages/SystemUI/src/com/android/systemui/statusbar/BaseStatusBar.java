@@ -484,12 +484,11 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     private void attachPie() {
         if(showPie()) {
-
             if (mContainer == null) {
                 // Add panel window, one to be used by all pies that is
                 LayoutInflater inflater = (LayoutInflater) mContext
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
-                mContainer = inflater.inflate(R.layout.pie_notification_panel, null);
+                mContainer = inflater.inflate(R.layout.pie_expanded_panel, null);
                 mWindowManager.addView(mContainer, PieStatusPanel.getFlipPanelLayoutParams());
             }
 
