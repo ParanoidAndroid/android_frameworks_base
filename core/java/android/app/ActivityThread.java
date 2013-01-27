@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2006 The Android Open Source Project
- * This code has been modified.  Portions copyright (C) 2012, ParanoidAndroid Project.
+ * This code has been modified.  Portions copyright (C) 2013, ParanoidAndroid Project.
  * This code has been modified.  Portions copyright (C) 2010, T-Mobile USA, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,6 +57,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
+import android.hybrid.HybridManager;
 import android.net.IConnectivityManager;
 import android.net.Proxy;
 import android.net.ProxyProperties;
@@ -87,7 +88,6 @@ import android.text.TextUtils;
 import android.util.AndroidRuntimeException;
 import android.util.DisplayMetrics;
 import android.util.EventLog;
-import android.util.ExtendedPropertiesUtils;
 import android.util.Log;
 import android.util.LogPrinter;
 import android.util.PrintWriterPrinter;
@@ -1715,7 +1715,7 @@ public final class ActivityThread {
         //}
 
         AssetManager assets = new AssetManager();
-        assets.overrideHook(resDir, ExtendedPropertiesUtils.OverrideMode.FullNameExclude);
+        assets.overrideHook(resDir, HybridManager.OverrideMode.FULL_NAME_EXCLUDE);
         assets.setThemeSupport(compInfo.isThemeable);
         if (assets.addAssetPath(resDir) == 0) {
             return null;
@@ -1723,7 +1723,7 @@ public final class ActivityThread {
 
         //Slog.i(TAG, "Resource: key=" + key + ", display metrics=" + metrics);
         DisplayMetrics dm = getDisplayMetricsLocked(displayId, null);
-        dm.overrideHook(assets, ExtendedPropertiesUtils.OverrideMode.ExtendedProperties);
+        dm.overrideHook(assets, HybridManager.OverrideMode.HYBRID_MANAGER);
         Configuration config;
         boolean isDefaultDisplay = (displayId == Display.DEFAULT_DISPLAY);
         if (!isDefaultDisplay || key.mOverrideConfiguration != null) {
@@ -4310,7 +4310,7 @@ public final class ActivityThread {
         mBoundApplication = data;
         mConfiguration = new Configuration(data.config);
         mConfiguration.active = true;
-        mConfiguration.overrideHook(data.processName, ExtendedPropertiesUtils.OverrideMode.PackageName);
+        mConfiguration.overrideHook(data.processName, HybridManager.OverrideMode.PACKAGE_NAME);
         mCompatConfiguration = new Configuration(data.config);
 
         mProfiler = new Profiler();

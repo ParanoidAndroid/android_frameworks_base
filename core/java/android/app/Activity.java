@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2006 The Android Open Source Project
- * This code has been modified. Portions copyright (C) 2012, ParanoidAndroid Project.
+ * This code has been modified. Portions copyright (C) 2013, ParanoidAndroid Project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.hybrid.HybridManager;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
@@ -58,7 +59,6 @@ import android.text.method.TextKeyListener;
 import android.util.AttributeSet;
 import android.util.ColorUtils;
 import android.util.EventLog;
-import android.util.ExtendedPropertiesUtils;
 import android.util.Log;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -5175,29 +5175,32 @@ public class Activity extends ContextThemeWrapper
     }
     
     final void performResume() {
-        // Per-App-Extras
-        if (mWindow != null && ExtendedPropertiesUtils.isInitialized() ) {
+        if (mWindow != null && HybridManager.isInitialized() ) {
             try {
                 // Per-App-Expand
-                if (ExtendedPropertiesUtils.mGlobalHook.expand == 1) {
+                if (HybridManager.sGlobalHook.isExpand()) {
                     Settings.System.putInt(this.getContentResolver(),
                             Settings.System.EXPANDED_DESKTOP_STATE, 1);
                 }
                 // Per-App-Color
-                else if (ExtendedPropertiesUtils.mGlobalHook.mancol != 1 && ColorUtils.getPerAppColorState(this)) {
-                    for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
+                else if (!HybridManager.sGlobalHook.isMancol()
+                        && ColorUtils.getPerAppColorState(this)) {
+                    for (int i = 0; i < HybridManager.COLOR_DEF_SIZE; i++) {
                         // Get color settings
-                        String setting = ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i];
-                        ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(this, setting);
+                        String setting = HybridManager.COLOR_SETTINGS[i];
+                        ColorUtils.ColorSettingInfo colorInfo = ColorUtils
+                                .getColorSettingInfo(this, setting);
 
                         // Get appropriate color
-                        String appColor = ExtendedPropertiesUtils.mGlobalHook.colors[i];
+                        String appColor = HybridManager.sGlobalHook.colors[i];
                         String nextColor = (appColor == null || appColor.equals("")) ?
                                 colorInfo.systemColorString : appColor;
 
                         // Change only if colors actually differ
-                        if (!nextColor.toUpperCase().equals(colorInfo.lastColorString.toUpperCase())) {
-                            ColorUtils.setColor(this, setting, colorInfo.systemColorString, nextColor, 1);
+                        if (!nextColor.toUpperCase().equals(colorInfo.lastColorString
+                                .toUpperCase())) {
+                            ColorUtils.setColor(this, setting, colorInfo.systemColorString,
+                                    nextColor, 1);
                         }
                     }
                 }
@@ -5236,15 +5239,14 @@ public class Activity extends ContextThemeWrapper
     }
 
     final void performPause() {
-        // Per-App-Extras
-        if (ExtendedPropertiesUtils.isInitialized() &&
-            mParent == null && mDecor != null && mDecor.getParent() != null &&
-            ExtendedPropertiesUtils.mGlobalHook.expand == 1) {
+        if (HybridManager.isInitialized() &&
+                mParent == null && mDecor != null && mDecor.getParent() != null &&
+                HybridManager.sGlobalHook.isExpand()) {
             try {
                 Settings.System.putInt(this.getContentResolver(),
                     Settings.System.EXPANDED_DESKTOP_STATE, 0);
             } catch (Exception e) {
-                    // Current application is null, or hook is not set
+                // Current application is null, or hook is not set
             }
         }
 

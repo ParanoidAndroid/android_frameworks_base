@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2006 The Android Open Source Project
- * This code has been modified.  Portions copyright (C) 2012, ParanoidAndroid Project.
+ * This code has been modified.  Portions copyright (C) 2013, ParanoidAndroid Project.
  * This code has been modified.  Portions copyright (C) 2010, T-Mobile USA, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -60,6 +60,8 @@ import android.hardware.input.IInputManager;
 import android.hardware.input.InputManager;
 import android.hardware.usb.IUsbManager;
 import android.hardware.usb.UsbManager;
+import android.hybrid.HybridManager;
+import android.hybrid.PropertyContainer;
 import android.location.CountryDetector;
 import android.location.ICountryDetector;
 import android.location.ILocationManager;
@@ -1874,23 +1876,10 @@ class ContextImpl extends Context {
     }
 
     static void init(ActivityThread thread) {
-        if (ExtendedPropertiesUtils.mMainThread == null) {
+        if (HybridManager.mMainThread == null) {
             try {
-                // If hybrid is not enabled, we cannot block the rest of the proccess,
-                // because it may cause a lot of misbehaviours, and avoiding initialization
-                // of vital variables used on ExtendedPropertiesUtils, may lead to crashes.
-                // Then we just set all applications to stock configuration. They will be
-                // still runned under hybrid engine.
-                if (ExtendedPropertiesUtils.getProperty(ExtendedPropertiesUtils.PARANOID_PREFIX
-                        + "hybrid_mode").equals("1")) {
-                    ExtendedPropertiesUtils.sIsHybridModeEnabled = true;
-                }
-
                 // Save current thread into global context
-                ExtendedPropertiesUtils.mMainThread = thread;
-
-                // Load hashmap, in order to get latest properties
-                ExtendedPropertiesUtils.refreshProperties();
+                HybridManager.mMainThread = thread;
   
                 // Try to get the context for the current thread. If something
                 // goes wrong, we throw an exception.
@@ -1901,57 +1890,54 @@ class ContextImpl extends Context {
 
                 // If we sucessfully created the context, bind it to framework
                 LoadedApk info = new LoadedApk(thread, "android", context, null,
-                    CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO);
+                        CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO);
                 if (info == null) {
                     throw new NullPointerException();
                 }
 
                 context.init(info, null, thread);
-                ExtendedPropertiesUtils.mContext = context;
-                
+                HybridManager.mContext = context;
+
                 // Get default display
-                WindowManager wm = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
-                ExtendedPropertiesUtils.mDisplay = wm.getDefaultDisplay();
-                if (ExtendedPropertiesUtils.mDisplay == null) {
+                WindowManager wm = (WindowManager)context
+                        .getSystemService(Context.WINDOW_SERVICE);
+                HybridManager.mDisplay = wm.getDefaultDisplay();
+                if (HybridManager.mDisplay == null) {
                     throw new NullPointerException();
                 }
                                             
                 // Load package manager, so it's accessible system wide
-                ExtendedPropertiesUtils.mPackageManager = 
-                    ExtendedPropertiesUtils.mContext.getPackageManager();
-                if (ExtendedPropertiesUtils.mPackageManager == null) {
+                HybridManager.mPackageManager = 
+                    HybridManager.mContext.getPackageManager();
+                if (HybridManager.mPackageManager == null) {
                     throw new NullPointerException();
                 }
 
                 // Get package list and fetch PID
-                ExtendedPropertiesUtils.mPackageList = 
-                    ExtendedPropertiesUtils.mPackageManager.getInstalledPackages(0);
-                ExtendedPropertiesUtils.mGlobalHook.pid = android.os.Process.myPid();
-                ExtendedPropertiesUtils.mRomLcdDensity = SystemProperties.getInt("qemu.sf.lcd_density",
-                    SystemProperties.getInt("ro.sf.lcd_density", DisplayMetrics.DENSITY_DEFAULT));
+                int pid = android.os.Process.myPid();
+                HybridManager.mPackageList = 
+                        HybridManager.mPackageManager.getInstalledPackages(0);
+                HybridManager.sGlobalHook.setPid(pid);
 
                 // After we have PID, we get app info using it
-                ExtendedPropertiesUtils.mGlobalHook.info = 
-                    ExtendedPropertiesUtils.getAppInfoFromPID(ExtendedPropertiesUtils.mGlobalHook.pid);
-                if (ExtendedPropertiesUtils.mGlobalHook.info != null) {
-                    // If the global hook info isn't null, we load the name, package name
-                    // and path for the global hook
-                    ExtendedPropertiesUtils.mGlobalHook.name = 
-                        ExtendedPropertiesUtils.mGlobalHook.info.packageName;
-                    ExtendedPropertiesUtils.mGlobalHook.path = 
-                        ExtendedPropertiesUtils.mGlobalHook.info.sourceDir.substring(0,
-                        ExtendedPropertiesUtils.mGlobalHook.info.sourceDir.lastIndexOf("/"));
-                    ExtendedPropertiesUtils.setAppConfiguration(ExtendedPropertiesUtils.mGlobalHook);
+                ApplicationInfo appInfo = HybridManager.getAppInfoFromPid(pid);
+                if (appInfo != null) {
+                    // If the app info isn't null, we load global hook data
+                    HybridManager.sGlobalHook.setInfo(appInfo);
+                    HybridManager.sGlobalHook.setPath(
+                            HybridManager.sGlobalHook.getInfo().sourceDir.substring(0,
+                            HybridManager.sGlobalHook.getInfo().sourceDir.lastIndexOf("/")));
+                    HybridManager.sGlobalHook.setId(appInfo.packageName);
                 } else {
                     // We're dealing with "android" package. This is framework itself
-                    ExtendedPropertiesUtils.mGlobalHook.name = "android";
-                    ExtendedPropertiesUtils.mGlobalHook.path = "";
-                    ExtendedPropertiesUtils.setAppConfiguration(ExtendedPropertiesUtils.mGlobalHook);
+                    HybridManager.sGlobalHook.setId("android");
+                    HybridManager.sGlobalHook.setPath("");
                 }
+                HybridManager.setAppConfiguration(HybridManager.sGlobalHook, true);
             } catch (Exception e) { 
                 // We use global exception to catch a lot of possible crashes.
                 // This is not a dirty workaround, but an expected behaviour
-                ExtendedPropertiesUtils.mMainThread = null;
+                HybridManager.mMainThread = null;
             }
         }        
     }

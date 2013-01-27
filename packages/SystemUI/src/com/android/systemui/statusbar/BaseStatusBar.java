@@ -46,6 +46,7 @@ import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.Rect;
+import android.hybrid.HybridManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -58,7 +59,6 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.ColorUtils;
 import android.util.DisplayMetrics;
-import android.util.ExtendedPropertiesUtils;
 import android.util.Log;
 import android.util.Slog;
 import android.view.Display;
@@ -441,7 +441,7 @@ public abstract class BaseStatusBar extends SystemUI implements
             mBarView.setBackground(mTransition);
 
             mLastIconColor = ColorUtils.getColorSettingInfo(mContext, Settings.System.STATUS_ICON_COLOR);
-            mLastBackgroundColor = ColorUtils.getColorSettingInfo(mContext, ExtendedPropertiesUtils.isTablet()
+            mLastBackgroundColor = ColorUtils.getColorSettingInfo(mContext, HybridManager.isTablet()
                     ? Settings.System.NAV_BAR_COLOR : Settings.System.STATUS_BAR_COLOR);
 
             updateIconColor();
@@ -457,7 +457,7 @@ public abstract class BaseStatusBar extends SystemUI implements
 
             // Listen for status bar background color changes
             mContext.getContentResolver().registerContentObserver(
-                Settings.System.getUriFor(ExtendedPropertiesUtils.isTablet() ?
+                Settings.System.getUriFor(HybridManager.isTablet() ?
                         Settings.System.NAV_BAR_COLOR : Settings.System.STATUS_BAR_COLOR),
                         false, new ContentObserver(new Handler()) {
                     @Override
@@ -472,11 +472,11 @@ public abstract class BaseStatusBar extends SystemUI implements
                     @Override
                     public void onChange(boolean selfChange) {
                         if (!ColorUtils.getPerAppColorState(mContext)) {
-                            for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
+                            for (int i = 0; i < HybridManager.COLOR_DEF_SIZE; i++) {
                                 ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
                                         Settings.System.STATUS_ICON_COLOR);
-                                ColorUtils.setColor(mContext, ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i],
-                                        colorInfo.systemColorString, "NULL", 1, 250);
+                                ColorUtils.setColor(mContext, HybridManager.COLOR_SETTINGS[i],
+                                        colorInfo.systemColorString, ColorUtils.NULL_COLOR, 1, 250);
                             }
                         }
                     }});
@@ -501,8 +501,8 @@ public abstract class BaseStatusBar extends SystemUI implements
     private boolean showPie() {
         boolean expanded = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.EXPANDED_DESKTOP_STATE, 0) == 1;
-        boolean navbarZero = Integer.parseInt(ExtendedPropertiesUtils
-                .getProperty("com.android.systemui.navbar.dpi", "100")) == 0;
+        boolean navbarZero = HybridManager.getProperty(mContext.getPackageName()
+                + ".navbar").getDpi() == 0;
 
         return (expanded || navbarZero);
     }
@@ -656,7 +656,7 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     private void updateBackgroundColor() {
         ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
-                ExtendedPropertiesUtils.isTablet() ? Settings.System.NAV_BAR_COLOR :
+                HybridManager.isTablet() ? Settings.System.NAV_BAR_COLOR :
                 Settings.System.STATUS_BAR_COLOR);
         if (!colorInfo.lastColorString.equals(mLastBackgroundColor.lastColorString)) {
             // Only enable crossfade for transparent backdrops

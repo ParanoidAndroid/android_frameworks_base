@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.tablet;
 
 import android.content.Context;
+import android.hybrid.HybridManager;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.AttributeSet;
@@ -25,7 +26,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
 import android.view.View;
 import android.widget.ImageView;
-import android.util.ExtendedPropertiesUtils;
+
 
 import com.android.systemui.R;
 
@@ -115,7 +116,7 @@ public class InputMethodButton extends ImageView {
     }
 
     private boolean needsToShowIMEButton() {
-        if (!mShowButton || mScreenLocked || ExtendedPropertiesUtils.isTablet()) return false;
+        if (!mShowButton || mScreenLocked || HybridManager.isTablet()) return false;
 
         if (mHardKeyboardAvailable) {
             return true;

@@ -45,7 +45,6 @@ import android.os.ServiceManager;
 import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.ColorUtils;
-import android.util.ExtendedPropertiesUtils;
 import android.util.Slog;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
@@ -547,7 +546,7 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         }
         mCurrentView = mRotatedViews[rot];
         mCurrentView.setVisibility(View.VISIBLE);
-        if (NavbarEditor.isDevicePhone()) {
+        if (NavbarEditor.isDevicePhone(mContext)) {
             rot = mDisplay.getRotation();
             mVertical = (rot == Surface.ROTATION_90 || rot == Surface.ROTATION_270);
         } else {

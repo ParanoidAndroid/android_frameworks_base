@@ -10,10 +10,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.database.DataSetObserver;
+import android.hybrid.HybridManager;
+import android.hybrid.PropertyContainer;
 import android.graphics.Color;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
-import android.util.ExtendedPropertiesUtils;
 import android.view.DisplayInfo;
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
@@ -77,7 +78,7 @@ public class NavbarEditor implements OnTouchListener {
      */
     boolean mVertical,mLongPressed;
 
-    private Context mContext;
+    private static Context mContext;
 
     //Available buttons
     public static final String NAVBAR_EMPTY = "empty";
@@ -169,11 +170,10 @@ public class NavbarEditor implements OnTouchListener {
         }
     };
 
-    protected static boolean isDevicePhone() {
-        int deviceLayout = ExtendedPropertiesUtils.getActualProperty(
-                "com.android.systemui.layout");
+    protected static boolean isDevicePhone(Context context) {
+        PropertyContainer prop = HybridManager.getProperty(context.getPackageName());
         if (mIsDevicePhone == null) {
-            mIsDevicePhone = deviceLayout < 600;
+            mIsDevicePhone = prop.getLayout() < 600;
         }
         return mIsDevicePhone;
     }
@@ -342,7 +342,7 @@ public class NavbarEditor implements OnTouchListener {
             }
             cc++;
         }
-        if (isDevicePhone()) {
+        if (isDevicePhone(mContext)) {
             adjustPadding();
         }
     }

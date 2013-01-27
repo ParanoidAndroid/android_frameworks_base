@@ -2607,7 +2607,7 @@ public final class Settings {
          */
         public static final String USER_INTERFACE_STATE = "user_interface_state";
 
-        /**
+        /**	
          * Allows to show the background activity back the lockscreen
          * @hide
          */

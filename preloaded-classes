@@ -527,6 +527,8 @@ android.hardware.input.InputManager$InputDevicesChangedListener
 android.hardware.usb.UsbDevice
 android.hardware.usb.UsbDeviceConnection
 android.hardware.usb.UsbRequest
+android.hybrid.HybridManager
+android.hybrid.PropertyContainer
 android.inputmethodservice.ExtractEditText
 android.location.GpsSatellite
 android.location.GpsStatus
@@ -837,7 +839,6 @@ android.util.ColorUtils
 android.util.DisplayMetrics
 android.util.EventLog
 android.util.EventLog$Event
-android.util.ExtendedPropertiesUtils
 android.util.FinitePool
 android.util.FloatMath
 android.util.FloatProperty

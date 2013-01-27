@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2006 The Android Open Source Project
- * This code has been modified.  Portions copyright (C) 2012, ParanoidAndroid Project.
+ * This code has been modified.  Portions copyright (C) 2013, ParanoidAndroid Project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,11 @@ import android.graphics.Movie;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable.ConstantState;
+import android.hybrid.HybridManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.ExtendedPropertiesUtils;
 import android.util.Log;
 import android.util.Slog;
 import android.util.TypedValue;
@@ -69,7 +69,7 @@ import libcore.icu.NativePluralRules;
  * <p>For more information about using resources, see the documentation about <a
  * href="{@docRoot}guide/topics/resources/index.html">Application Resources</a>.</p>
  */
-public class Resources extends ExtendedPropertiesUtils {
+public class Resources extends HybridManager {
     static final String TAG = "Resources";
     private static final boolean DEBUG_LOAD = false;
     private static final boolean DEBUG_CONFIG = false;
@@ -123,17 +123,17 @@ public class Resources extends ExtendedPropertiesUtils {
      /**
      * Override current object with temp properties stored in enum interface
      */
-    public void paranoidHook() {
-        mConfiguration.active = true;        
-        mConfiguration.overrideHook(this, OverrideMode.ExtendedProperties);
-        mConfiguration.paranoidHook();
+    public void hybridHook() {
+        mConfiguration.active = true;
+        mConfiguration.overrideHook(this, OverrideMode.HYBRID_MANAGER);
+        mConfiguration.layoutHook();
 
-        mTmpConfig.active = true;        
-        mTmpConfig.overrideHook(this, OverrideMode.ExtendedProperties);
-        mTmpConfig.paranoidHook();
+        mTmpConfig.active = true;
+        mTmpConfig.overrideHook(this, OverrideMode.HYBRID_MANAGER);
+        mTmpConfig.layoutHook();
 
-        mMetrics.overrideHook(this, OverrideMode.ExtendedProperties);
-        mMetrics.paranoidHook();
+        mMetrics.overrideHook(this, OverrideMode.HYBRID_MANAGER);
+        mMetrics.dpiHook();
     }
 
     /** @hide */
@@ -202,8 +202,8 @@ public class Resources extends ExtendedPropertiesUtils {
             Configuration config, CompatibilityInfo compInfo) {
         mAssets = assets;
         mMetrics.setToDefaults();
-        overrideHook(assets, OverrideMode.ExtendedProperties);
-        paranoidHook();
+        overrideHook(assets, OverrideMode.HYBRID_MANAGER);
+        hybridHook();
         mCompatibilityInfo = compInfo;
         updateConfiguration(config, metrics);
         assets.ensureStringBlocks();
@@ -1484,7 +1484,7 @@ public class Resources extends ExtendedPropertiesUtils {
             if (mConfiguration.densityDpi != Configuration.DENSITY_DPI_UNDEFINED) {
                 mMetrics.densityDpi = mConfiguration.densityDpi;
                 mMetrics.density = mConfiguration.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
-                mMetrics.paranoidHook();
+                mMetrics.dpiHook();
             }
             mMetrics.scaledDensity = mMetrics.density * mConfiguration.fontScale;
 
