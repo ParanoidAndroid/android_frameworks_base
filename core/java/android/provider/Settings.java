@@ -1830,6 +1830,24 @@ public final class Settings {
             "notifications_use_ring_volume";
 
         /**
+         * Whether the phone ringtone should be played in an increasing manner
+         * @hide
+         */
+        public static final String INCREASING_RING = "increasing_ring";
+
+        /**
+         * Minimum volume index for increasing ring volume
+         * @hide
+         */
+        public static final String INCREASING_RING_MIN_VOLUME = "increasing_ring_min_vol";
+
+        /**
+         * Time (in ms) between ringtone volume increases
+         * @hide
+         */
+        public static final String INCREASING_RING_INTERVAL = "increasing_ring_interval";
+
+        /**
          * Whether silent mode should allow vibration feedback. This is used
          * internally in AudioService and the Sound settings activity to
          * coordinate decoupling of vibrate and silent modes. This setting
@@ -2378,7 +2396,7 @@ public final class Settings {
          */
         public static final String NAV_BAR_TABUI_MENU = "nav_bar_tabui_menu";
 
-         /**
+        /**
          * Ability to change navigation bar color
          * 0 = P.A.C. is off, it will switch everything color related back to stock and ignore calls
          * 1 = P.A.C. is on, it will listen to calls again
@@ -2386,7 +2404,7 @@ public final class Settings {
          */
         public static final String PER_APP_COLOR = "per_app_color";
 
-         /**
+        /**
          * Ability to change navigation bar color
          * Format: AARRGGBB|AARRGGBB|index[|speed]
          * First color is the primary, systemwide color
@@ -2397,7 +2415,7 @@ public final class Settings {
          */
         public static final String NAV_BAR_COLOR = "nav_bar_color";
 
-         /**
+        /**
          * Ability to change navigation button color
          * Format: AARRGGBB|AARRGGBB|index[|speed]
          * First color is the primary, systemwide color
@@ -2408,7 +2426,7 @@ public final class Settings {
          */
         public static final String NAV_BUTTON_COLOR = "nav_button_color";
 
-         /**
+        /**
          * Widget Buttons to Use
          * Ability to change navigation glow color
          * Format: AARRGGBB|AARRGGBB|index[|speed]
@@ -2489,21 +2507,21 @@ public final class Settings {
          */
         public static final String USER_INTERFACE_STATE = "user_interface_state";
 
-        /**	
+        /**
          * Allows to show the background activity back the lockscreen
          * The value is boolean (1 or 0).
          * @hide
          */
         public static final String LOCKSCREEN_SEE_THROUGH = "lockscreen_see_through";
 
-        /**	
+        /**
          * Allows lockscreen to be rotated
          * The value is boolean (1 or 0).
          * @hide
          */
         public static final String LOCKSCREEN_ALLOW_ROTATION = "lockscreen_allow_rotation";
 
-        /**	
+        /**
          * Allows lockscreen to show homescreen widgets
          * The value is boolean (1 or 0).
          * @hide
@@ -2522,7 +2540,55 @@ public final class Settings {
          */
         public static final String VOLBTN_MUSIC_CONTROLS = "volbtn_music_controls";
 
-        /**	
+        /**
+         * Whether national data roaming should be used.
+         * @hide
+         */
+        public static final String MVNO_ROAMING = "mvno_roaming";
+
+        /**
+         * Whether to enable quiet hours.
+         * @hide
+         */
+        public static final String QUIET_HOURS_ENABLED = "quiet_hours_enabled";
+
+        /**
+         * Sets when quiet hours starts. This is stored in minutes from the start of the day.
+         * @hide
+         */
+        public static final String QUIET_HOURS_START = "quiet_hours_start";
+
+        /**
+         * Sets when quiet hours end. This is stored in minutes from the start of the day.
+         * @hide
+         */
+        public static final String QUIET_HOURS_END = "quiet_hours_end";
+
+        /**
+         * Whether to remove the sound from outgoing notifications during quiet hours.
+         * @hide
+         */
+        public static final String QUIET_HOURS_MUTE = "quiet_hours_mute";
+
+        /**
+         * Whether to disable haptic feedback during quiet hours.
+         * @hide
+         */
+        public static final String QUIET_HOURS_HAPTIC = "quiet_hours_haptic";
+
+        /**
+         * Whether to remove the vibration from outgoing notifications during quiet hours.
+         * @hide
+         */
+        public static final String QUIET_HOURS_STILL = "quiet_hours_still";
+
+        /**
+         * Whether to attempt to dim the LED color during quiet hours.
+         * @hide
+         */
+        public static final String QUIET_HOURS_DIM = "quiet_hours_dim";
+
+        /**
          * Defines the shortcuts to be shown on lockscreen
          * Usage is like this: target:icon|target:icon|target:icon
          * if :icon is not set, default application icon will be used
@@ -2555,14 +2621,14 @@ public final class Settings {
          */
         public static final String MAX_NOTIFICATION_ICONS = "max_notification_icons";
 
-        /**	
+        /**
          * Whether to show or not clock on statusbar
          * The value is boolean (1 or 0).
          * @hide
          */
         public static final String STATUS_BAR_SHOW_CLOCK = "status_bar_show_clock";
 
-        /**	
+        /**
          * AM/PM style on statusbar, either normal, small or gone.
          *  0 = Normal
          *  1 = Small
@@ -2602,15 +2668,15 @@ public final class Settings {
         public static final String QS_DYNAMIC_WIFI = "qs_dyanmic_wifi";
 
         /**
-        * Custom Network Mode
-        * @hide
-        */
+         * Custom Network Mode
+         * @hide
+         */
         public static final String EXPANDED_NETWORK_MODE = "expanded_network_mode";
-        
+
         /**
-        * Custom Ring Mode
-        * @hide
-        */
+         * Custom Ring Mode
+         * @hide
+         */
         public static final String EXPANDED_RING_MODE = "expanded_ring_mode";
 
         /**
@@ -2687,6 +2753,12 @@ public final class Settings {
             SIP_CALL_OPTIONS,
             SIP_RECEIVE_CALLS,
             POINTER_SPEED,
+            QUIET_HOURS_ENABLED,
+            QUIET_HOURS_START,
+            QUIET_HOURS_END,
+            QUIET_HOURS_MUTE,
+            QUIET_HOURS_STILL,
+            QUIET_HOURS_DIM,
             VIBRATE_WHEN_RINGING
         };
 
@@ -2969,6 +3041,7 @@ public final class Settings {
             MOVED_TO_LOCK_SETTINGS.add(Secure.LOCK_PATTERN_ENABLED);
             MOVED_TO_LOCK_SETTINGS.add(Secure.LOCK_PATTERN_VISIBLE);
             MOVED_TO_LOCK_SETTINGS.add(Secure.LOCK_PATTERN_TACTILE_FEEDBACK_ENABLED);
+            MOVED_TO_LOCK_SETTINGS.add(Secure.LOCK_SYNC_ENCRYPTION_PASSWORD);
 
             MOVED_TO_GLOBAL = new HashSet<String>();
             MOVED_TO_GLOBAL.add(Settings.Global.ADB_ENABLED);
@@ -3640,6 +3713,13 @@ public final class Settings {
          */
         public static final String LOCK_SCREEN_OWNER_INFO_ENABLED =
             "lock_screen_owner_info_enabled";
+
+        /**
+         * Whether to sync encryption password with lock screen token
+         * @hide
+         */
+        public static final String LOCK_SYNC_ENCRYPTION_PASSWORD =
+            "lock_sync_encryption_password";
 
         /**
          * The Logging ID (a unique 64-bit value) as a hex string.
