@@ -34,6 +34,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -164,6 +165,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
+import java.util.List;
 
 /**
  * WindowManagerPolicy implementation for the Android phone UI.  This
@@ -499,7 +501,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private int mStatusBarDpi = 0;
 
     SettingsObserver mSettingsObserver;
-    UserInterfaceObserver mUserInterfaceObserver;
     ShortcutManager mShortcutManager;
     PowerManager.WakeLock mBroadcastWakeLock;
     boolean mHavePendingMediaKeyRepeatWithWakeLock;
@@ -580,41 +581,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.ACCELEROMETER_ROTATION_ANGLES), false, this);
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.EXPANDED_DESKTOP_STATE), false, this);
             updateSettings();
         }
 
         @Override
         public void onChange(boolean selfChange) {
             update(false);
-        }
-    }
-
-    class UserInterfaceObserver extends ContentObserver {
-        UserInterfaceObserver(Handler handler) {
-            super(handler);
-        }
-
-        void observe() {
-            ContentResolver resolver = mContext.getContentResolver();
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.USER_INTERFACE_STATE), false, this);
-        }
-
-        @Override 
-        public void onChange(boolean selfChange) {
-            // Return for reset triggers
-            if (Settings.System.getInt(mContext.getContentResolver(), 
-                Settings.System.USER_INTERFACE_STATE, 0) == 0) {
-                return;
-            }
-
-            // Update layout
-            update(true);
-            
-            // Reset trigger
-            Settings.System.putInt(mContext.getContentResolver(), Settings.System.USER_INTERFACE_STATE, 0);
         }
     }
     
@@ -980,8 +952,54 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mSettingsObserver = new SettingsObserver(mHandler);
         mSettingsObserver.observe();
 
-        mUserInterfaceObserver = new UserInterfaceObserver(mHandler);
-        mUserInterfaceObserver.observe();
+        // SystemUI reboot
+        mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.USER_INTERFACE_STATE), false, new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange) {
+                // Return for reset triggers
+                if (Settings.System.getInt(mContext.getContentResolver(), 
+                    Settings.System.USER_INTERFACE_STATE, 0) == 0) {
+                    return;
+                }
+
+                // Update layout
+                update(true);
+                
+                // Reset trigger
+                Settings.System.putInt(mContext.getContentResolver(), Settings.System.USER_INTERFACE_STATE, 0);
+            }});
+
+        // Expanded desktop
+        mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.EXPANDED_DESKTOP_STATE),
+                    false, new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange) {
+                updateHybridLayout();
+                update(false);
+
+                // Restart default launcher activity
+                final PackageManager mPm = mContext.getPackageManager();
+                final ActivityManager am = (ActivityManager)mContext
+                        .getSystemService(Context.ACTIVITY_SERVICE);
+                final Intent intent = new Intent(Intent.ACTION_MAIN); 
+                intent.addCategory(Intent.CATEGORY_HOME); 
+                final ResolveInfo res = mPm.resolveActivity(intent, 0);
+
+                // Launcher is running task #1
+                List<ActivityManager.RunningTaskInfo> runningTasks = am.getRunningTasks(1);
+                if (runningTasks != null) {
+                    for (ActivityManager.RunningTaskInfo task : runningTasks) {
+                        String packageName = task.baseActivity.getPackageName();
+                        if (packageName.equals(res.activityInfo.packageName)) {
+                            closeApplication(packageName);
+                            break;
+                        }
+                    }
+                }
+            }
+        });
 
         mShortcutManager = new ShortcutManager(context, mHandler);
         mShortcutManager.observe();
@@ -1136,35 +1154,35 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mHdmiRotationLock = SystemProperties.getBoolean("persist.demo.hdmirotationlock", true);
     }
 
-    private void update(boolean updateUi) {
-        if (updateUi) {
-            updateHybridLayout();
+    private void closeApplication(String packageName) {
+        try {
+            ActivityManagerNative.getDefault().killApplicationProcess(
+                    packageName, AppGlobals.getPackageManager().getPackageUid(
+                    packageName, UserHandle.myUserId()));
+        } catch (RemoteException e) {
+            // Good luck next time!
         }
+    }
+
+    private void update(boolean updateUi) {
+        if (updateUi) updateHybridLayout();
 
         updateSettings();
         updateRotation(false);
 
-        if (updateUi) {
-            // Restart UI if necessary
-            String packageName = "com.android.systemui";
-            try {
-                ActivityManagerNative.getDefault().killApplicationProcess(
-                    packageName, AppGlobals.getPackageManager().getPackageUid(
-                    packageName, UserHandle.myUserId()));
-            } catch (RemoteException e) {
-                // Good luck next time!
-            }
-        }
+        if (updateUi) closeApplication("com.android.systemui");
     }
 
     private int updateHybridLayout() {
+        boolean expDesktop = Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.EXPANDED_DESKTOP_STATE, 0) == 1;
         int oldSystemUiLayout = mSystemUiLayout == 0 ?
             ExtendedPropertiesUtils.getActualProperty("com.android.systemui.layout") : mSystemUiLayout;
         ExtendedPropertiesUtils.refreshProperties();
         mSystemDpi = ExtendedPropertiesUtils.getActualProperty("android.dpi");
         mSystemUiDpi = ExtendedPropertiesUtils.getActualProperty("com.android.systemui.dpi");
         mSystemUiLayout = ExtendedPropertiesUtils.getActualProperty("com.android.systemui.layout");
-        int mNavigationBarPercent = Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.navbar.dpi", "100"));
+        int mNavigationBarPercent = expDesktop ? 0 : Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.navbar.dpi", "100"));
         mNavigationBarDpi = mNavigationBarPercent * mSystemUiDpi / 100;
         int mStatusBarPercent = Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.statusbar.dpi", "100"));
         mStatusBarDpi = mStatusBarPercent * mSystemUiDpi / 100;
@@ -1187,8 +1205,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     Settings.System.VOLUME_WAKE_SCREEN, 0, UserHandle.USER_CURRENT) == 1);
             mVolBtnMusicControls = (Settings.System.getIntForUser(resolver,
                     Settings.System.VOLBTN_MUSIC_CONTROLS, 1, UserHandle.USER_CURRENT) == 1);
-            mHasNavigationBar = Settings.System.getInt(mContext.getContentResolver(), 
-                    Settings.System.EXPANDED_DESKTOP_STATE, 0) != 1 && !mHasSystemNavBar;
+
+            mHasNavigationBar = !mHasSystemNavBar;
 
             getDimensions();
 
@@ -3987,7 +4005,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 // and then updates our own bookkeeping based on the now-
                 // current user.
                 mSettingsObserver.onChange(false);
-                mUserInterfaceObserver.onChange(false);
             }
         }
     };
@@ -4786,8 +4803,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         return diff;
     }
 
-    // Use this instead of checking config_showNavigationBar so that it can be consistently
-    // overridden by qemu.hw.mainkeys in the emulator.
     public boolean hasNavigationBar() {
         return mHasNavigationBar;
     }
