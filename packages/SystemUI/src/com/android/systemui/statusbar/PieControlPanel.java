@@ -51,7 +51,8 @@ import com.android.systemui.statusbar.PieControl.OnNavButtonPressedListener;
 public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNavButtonPressedListener {
 
     private Handler mHandler;
-    boolean mShowing;
+    private boolean mShowing;
+    private boolean mMenuButton;
     private PieControl mPieControl;
     private int mInjectKeycode;
     private long mDownTime;
@@ -78,6 +79,15 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
         mPieControl = new PieControl(context, this);
         mPieControl.setOnNavButtonPressedListener(this);
         mOrientation = Gravity.BOTTOM;
+        mMenuButton = false;
+    }
+
+    public boolean currentAppUsesMenu() {
+        return mMenuButton;
+    }
+
+    public void setMenu(boolean state) {
+        mMenuButton = state;
     }
 
     public int getOrientation() {
