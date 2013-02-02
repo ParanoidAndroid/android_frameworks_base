@@ -85,9 +85,7 @@ public class Clock extends TextView {
         }
 
         @Override public void onChange(boolean selfChange) {
-            // showAlways is only set on expanded statusbar, we must avoid
-            // to hide clock or add AM/PM there
-            if(!mShowAlways) updateParameters();
+            updateParameters();
             updateClock();
         }
     }
@@ -167,7 +165,7 @@ public class Clock extends TextView {
 
     private void updateParameters() {
         setVisibility((Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.STATUS_BAR_SHOW_CLOCK, 1) == 1) ? View.VISIBLE : View.GONE);
+                Settings.System.STATUS_BAR_SHOW_CLOCK, 1) == 1) || mShowAlways ? View.VISIBLE : View.GONE);
         AM_PM_STYLE = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.STATUS_BAR_AM_PM_STYLE, 2);
         mClockFormatString = null;
