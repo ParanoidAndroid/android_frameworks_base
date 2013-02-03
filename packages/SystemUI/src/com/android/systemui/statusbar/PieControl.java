@@ -122,7 +122,7 @@ public class PieControl implements OnClickListener, NavigationCallback {
         mBack = makeItem(R.drawable.ic_sysbar_back, 1, BACK_BUTTON, false);
         mHome = makeItem(R.drawable.ic_sysbar_home, 1, HOME_BUTTON, false);
         mRecent = makeItem(R.drawable.ic_sysbar_recent, 1, RECENT_BUTTON, false);
-        mMenu = makeItem(R.drawable.ic_sysbar_menu, 1, MENU_BUTTON, mIsAssistantAvailable);
+        mMenu = makeItem(R.drawable.ic_sysbar_menu, 1, MENU_BUTTON, true);
         mPie.addItem(mMenu);
 
         if(mIsAssistantAvailable) {
