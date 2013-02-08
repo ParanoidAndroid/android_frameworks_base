@@ -26,12 +26,14 @@ import android.app.ActivityManagerNative;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.UserInfo;
 import android.content.res.TypedArray;
+import android.content.ServiceConnection;
 import android.database.ContentObserver;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
@@ -46,6 +48,9 @@ import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.Vibrator;
+import android.os.IBinder;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.provider.Settings;
 import android.service.dreams.DreamService;
 import android.service.dreams.IDreamManager;
@@ -224,7 +229,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                 }
 
                 public boolean showDuringKeyguard() {
-                    return false;
+                    return true;
                 }
 
                 public boolean showBeforeProvisioning() {
@@ -331,6 +336,22 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
             // next: airplane mode
             mItems.add(mAirplaneModeOn);
 
+            // next: screenshot
+            mItems.add(
+                new SinglePressAction(R.drawable.ic_lock_screenshot, R.string.global_action_screenshot) {
+                    public void onPress() {
+                        takeScreenshot();
+                    }
+
+                    public boolean showDuringKeyguard() {
+                        return true;
+                    }
+
+                    public boolean showBeforeProvisioning() {
+                        return true;
+                    }
+                });
+
             // next: bug report, if enabled
             if (Settings.Secure.getInt(mContext.getContentResolver(),
                     Settings.Secure.BUGREPORT_IN_POWER_MENU, 0) != 0) {
@@ -415,6 +436,84 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
         dialog.setOnDismissListener(this);
 
         return dialog;
+    }
+
+    final Object mScreenshotLock = new Object();
+    ServiceConnection mScreenshotConnection = null;
+
+    final Runnable mScreenshotTimeout = new Runnable() {
+        @Override public void run() {
+            synchronized (mScreenshotLock) {
+                if (mScreenshotConnection != null) {
+                    mContext.unbindService(mScreenshotConnection);
+                    mScreenshotConnection = null;
+                }
+            }
+        }
+    };
+
+    private void takeScreenshot() {
+        synchronized (mScreenshotLock) {
+            if (mScreenshotConnection != null) {
+                return;
+            }
+            ComponentName cn = new ComponentName("com.android.systemui",
+                    "com.android.systemui.screenshot.TakeScreenshotService");
+            Intent intent = new Intent();
+            intent.setComponent(cn);
+            ServiceConnection conn = new ServiceConnection() {
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    synchronized (mScreenshotLock) {
+                        if (mScreenshotConnection != this) {
+                            return;
+                        }
+                        Messenger messenger = new Messenger(service);
+                        Message msg = Message.obtain(null, 1);
+                        final ServiceConnection myConn = this;
+                        Handler h = new Handler(mHandler.getLooper()) {
+                            @Override
+                            public void handleMessage(Message msg) {
+                                synchronized (mScreenshotLock) {
+                                    if (mScreenshotConnection == myConn) {
+                                        mContext.unbindService(mScreenshotConnection);
+                                        mScreenshotConnection = null;
+                                        mHandler.removeCallbacks(mScreenshotTimeout);
+                                    }
+                                }
+                            }
+                        };
+                        msg.replyTo = new Messenger(h);
+                        msg.arg1 = msg.arg2 = 0;
+
+                        /*  remove for the time being
+                        if (mStatusBar != null && mStatusBar.isVisibleLw())
+                            msg.arg1 = 1;
+                        if (mNavigationBar != null && mNavigationBar.isVisibleLw())
+                            msg.arg2 = 1;
+                         */
+
+                        /* wait for the dialog box to close */
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ie) {
+                        }
+
+                        /* take the screenshot */
+                        try {
+                            messenger.send(msg);
+                        } catch (RemoteException e) {
+                        }
+                    }
+                }
+                @Override
+                public void onServiceDisconnected(ComponentName name) {}
+            };
+            if (mContext.bindService(intent, conn, Context.BIND_AUTO_CREATE, UserHandle.USER_CURRENT)) {
+                mScreenshotConnection = conn;
+                mHandler.postDelayed(mScreenshotTimeout, 10000);
+            }
+        }
     }
 
     private void addUsersToMenu(ArrayList<Action> items) {
