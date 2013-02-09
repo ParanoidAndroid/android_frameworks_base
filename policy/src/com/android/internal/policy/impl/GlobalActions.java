@@ -330,12 +330,6 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                 }
             );
 
-            // next: expanded desktop
-            mItems.add(mExpandDesktopModeOn);
-
-            // next: airplane mode
-            mItems.add(mAirplaneModeOn);
-
             // next: screenshot
             mItems.add(
                 new SinglePressAction(R.drawable.ic_lock_screenshot, R.string.global_action_screenshot) {
@@ -351,6 +345,13 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                         return true;
                     }
                 });
+
+
+            // next: expanded desktop
+            mItems.add(mExpandDesktopModeOn);
+
+            // next: airplane mode
+            mItems.add(mAirplaneModeOn);
 
             // next: bug report, if enabled
             if (Settings.Secure.getInt(mContext.getContentResolver(),
@@ -485,13 +486,6 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                         };
                         msg.replyTo = new Messenger(h);
                         msg.arg1 = msg.arg2 = 0;
-
-                        /*  remove for the time being
-                        if (mStatusBar != null && mStatusBar.isVisibleLw())
-                            msg.arg1 = 1;
-                        if (mNavigationBar != null && mNavigationBar.isVisibleLw())
-                            msg.arg2 = 1;
-                         */
 
                         /* wait for the dialog box to close */
                         try {
