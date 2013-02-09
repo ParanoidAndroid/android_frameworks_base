@@ -153,6 +153,7 @@
     <string name="reboot_reboot">Reiniciar</string>
     <string name="reboot_progress">Reiniciando\u2026</string>
     <string name="reboot_confirm">Su dispositivo se reiniciará.</string>
+    <string name="global_action_screenshot">Captura de pantalla</string>
     <string name="global_action_expanded_desktop">Escritorio expandido</string>
     <string name="global_action_expanded_desktop_on">Activado</string>
     <string name="global_action_expanded_desktop_off">Desactivado</string>
