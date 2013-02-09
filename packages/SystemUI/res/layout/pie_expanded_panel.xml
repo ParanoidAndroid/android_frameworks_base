@@ -20,12 +20,15 @@
     android:background="#AA000000"
     android:layout_height="match_parent"
     android:layout_width="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:gravity="center_vertical">
 
         <ScrollView
             android:id="@+id/content_scroll"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="20dip"
+            android:paddingRight="20dip"
             android:fadingEdge="none"
             android:overScrollMode="ifContentScrolls"/>
 

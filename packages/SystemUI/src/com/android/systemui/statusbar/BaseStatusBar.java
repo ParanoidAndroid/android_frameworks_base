@@ -189,6 +189,11 @@ public abstract class BaseStatusBar extends SystemUI implements
     public void collapse() {
     }
 
+    @Override
+    protected void onConfigurationChanged(Configuration newConfig) {
+        if (mPieControlPanel != null) mPieControlPanel.onConfigurationChanged(newConfig);
+    }
+
     public QuickSettingsContainerView getQuickSettingsPanel() {
         // This method should be overriden
         return null;

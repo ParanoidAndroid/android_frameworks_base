@@ -130,6 +130,7 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         show(false);
+        if (mPieControl != null) mPieControl.onConfigurationChanged();
     }
 
     public void init(Handler h, BaseStatusBar statusbar, View trigger, int orientation) {

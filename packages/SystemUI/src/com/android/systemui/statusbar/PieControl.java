@@ -86,6 +86,10 @@ public class PieControl implements OnClickListener, NavigationCallback {
         mPie.init();
     }
 
+    public void onConfigurationChanged() {
+        if (mPie != null) mPie.onConfigurationChanged();
+    }
+
     public void attachToContainer(FrameLayout container) {
         if (mPie == null) {
             mPie = new PieMenu(mContext, mPanel);
