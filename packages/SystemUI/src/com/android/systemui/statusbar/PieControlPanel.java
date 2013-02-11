@@ -127,8 +127,7 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
         super.onAttachedToWindow();
     }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    public void bumpConfiguration() {
         show(false);
         if (mPieControl != null) mPieControl.onConfigurationChanged();
     }
@@ -138,7 +137,6 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
         mStatusBar = (BaseStatusBar) statusbar;
         mTrigger = trigger;
         mOrientation = orientation;
-        setCenter();
         mPieControl.init();
     }
 
@@ -147,7 +145,6 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
         mWindowManager.removeView(mTrigger);
         mWindowManager.addView(mTrigger, BaseStatusBar
                 .getPieTriggerLayoutParams(mContext, mOrientation));
-        setCenter();
         show(mShowing);
 
         int pieGravity = 3;
@@ -165,28 +162,6 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
 
         Settings.System.putInt(mContext.getContentResolver(),
             Settings.System.PIE_GRAVITY, pieGravity);
-    }
-
-    public void setCenter() {
-        Point outSize = new Point(0,0);
-        WindowManager windowManager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
-        windowManager.getDefaultDisplay().getRealSize(outSize);
-        mWidth = outSize.x;
-        mHeight = outSize.y;
-        switch(mOrientation) {
-            case Gravity.LEFT:
-                mPieControl.setCenter(0, mHeight / 2);
-                break;
-            case Gravity.TOP:
-                mPieControl.setCenter(mWidth / 2, 0);
-                break;
-            case Gravity.RIGHT:
-                mPieControl.setCenter(mWidth, mHeight / 2);
-                break;
-            case Gravity.BOTTOM: 
-                mPieControl.setCenter(mWidth / 2, mHeight);
-                break;
-        }
     }
 
     @Override
@@ -211,8 +186,33 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
     public void show(boolean show) {
         mShowing = show;
         setVisibility(show ? View.VISIBLE : View.GONE);
-        setCenter();
         mPieControl.show(show);
+    }
+
+    // verticalPos == -1 -> center PIE
+    public void show(int verticalPos) {
+        mShowing = true;
+        setVisibility(View.VISIBLE);
+        Point outSize = new Point(0,0);
+        WindowManager windowManager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
+        windowManager.getDefaultDisplay().getRealSize(outSize);
+        mWidth = outSize.x;
+        mHeight = outSize.y;
+        switch(mOrientation) {
+            case Gravity.LEFT:
+                mPieControl.setCenter(0, (verticalPos != -1 ? verticalPos : mHeight / 2));
+                break;
+            case Gravity.TOP:
+                mPieControl.setCenter((verticalPos != -1 ? verticalPos : mWidth / 2), 0);
+                break;
+            case Gravity.RIGHT:
+                mPieControl.setCenter(mWidth, (verticalPos != -1 ? verticalPos : mHeight / 2));
+                break;
+            case Gravity.BOTTOM: 
+                mPieControl.setCenter((verticalPos != -1 ? verticalPos : mWidth / 2), mHeight);
+                break;
+        }
+        mPieControl.show(true);
     }
 
     public boolean isInContentArea(int x, int y) {

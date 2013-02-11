@@ -2456,6 +2456,12 @@ public final class Settings {
         public static final String PIE_MENU = "pie_menu";
 
         /**
+         * Center Pie? Should default to 1 (yes, center)
+         * @hide
+         */
+        public static final String PIE_CENTER = "pie_center";
+
+        /**
          * Pie search, should default to 1 (yes, show)
          * @hide
          */
