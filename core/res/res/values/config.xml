@@ -1015,9 +1015,9 @@
      -->
     <integer-array name="config_defaultNotificationVibePattern">
         <item>0</item>
+        <item>350</item>
         <item>250</item>
-        <item>250</item>
-        <item>250</item>
+        <item>350</item>
     </integer-array>
 
     <!-- Vibrator pattern to be used as the default for notifications
@@ -1026,11 +1026,12 @@
      -->
     <integer-array name="config_notificationFallbackVibePattern">
         <item>0</item>
-        <item>250</item>
-        <item>250</item>
-        <item>250</item>
+        <item>100</item>
+        <item>150</item>
+        <item>100</item>
     </integer-array>
 
+<<<<<<< HEAD
     <!-- Path to the library that contains a device specific key handler -->
     <string name="config_deviceKeyHandlerLib" translatable="false"></string>
 
@@ -1048,5 +1049,6 @@
          setting is used to determine, whether lidOpenRotation has to be
          applied. -->
     <bool name="config_hasRemovableLid">false</bool>
-
+    <!-- Flag indicating if the speed up audio on mt call code should be executed -->
+    <bool name="config_speed_up_audio_on_mt_calls">false</bool>
 </resources>

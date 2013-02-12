@@ -32,12 +32,22 @@ import java.util.ArrayList;
 public class QuickSettings {
     private static final String TAG = "QuickSettings";
 
+    public static final boolean LONG_PRESS_TOGGLES = true;
+
     private Context mContext;
     private ViewGroup mContainerView;
     private QuickSettingsController mQSC;
     private PanelBar mBar;
 
-    boolean mTilesSetUp = false;
+    private DisplayManager mDisplayManager;
+    private WifiDisplayStatus mWifiDisplayStatus;
+    private PhoneStatusBar mStatusBarService;
+    private BluetoothState mBluetoothState;
+    private BluetoothAdapter mBluetoothAdapter;
+    private WifiManager mWifiManager;
+
+    private BrightnessController mBrightnessController;
+    private BluetoothController mBluetoothController;
 
     /**
      *  ContentObserver to watch for Quick Settings tiles changes
