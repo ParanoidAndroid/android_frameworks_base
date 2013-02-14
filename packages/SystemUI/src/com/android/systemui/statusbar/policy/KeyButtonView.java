@@ -167,6 +167,7 @@ public class KeyButtonView extends ImageView {
     }
 
     private void updateGlowColor() {
+        if (mGlowBG == null) return;
         ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
                 Settings.System.NAV_GLOW_COLOR);
         if (!colorInfo.lastColorString.equals(mLastGlowColor.lastColorString)) {
