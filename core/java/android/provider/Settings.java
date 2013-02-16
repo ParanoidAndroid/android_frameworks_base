@@ -1896,6 +1896,13 @@ public final class Settings {
          */
         public static final String VIBRATE_ON = "vibrate_on";
 
+	/**
+         * How long to wait between playing notification sounds from a package
+         * Should be in milliseconds. 0 to disable
+         * @hide
+         */
+        public static final String MUTE_ANNOYING_NOTIFICATIONS_THRESHOLD = "mute_annoying_notifications_threshold";
+
        /**
         * NFC polling mode configuration key
         *
