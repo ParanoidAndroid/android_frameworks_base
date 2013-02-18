@@ -1685,6 +1685,7 @@ public class Camera {
         private static final String KEY_SCENE_MODE = "scene-mode";
         private static final String KEY_FLASH_MODE = "flash-mode";
         private static final String KEY_FOCUS_MODE = "focus-mode";
+        private static final String KEY_ISO_MODE = "iso";
         private static final String KEY_FOCUS_AREAS = "focus-areas";
         private static final String KEY_MAX_NUM_FOCUS_AREAS = "max-num-focus-areas";
         private static final String KEY_FOCAL_LENGTH = "focal-length";
@@ -1715,6 +1716,9 @@ public class Camera {
         private static final String KEY_VIDEO_SNAPSHOT_SUPPORTED = "video-snapshot-supported";
         private static final String KEY_VIDEO_STABILIZATION = "video-stabilization";
         private static final String KEY_VIDEO_STABILIZATION_SUPPORTED = "video-stabilization-supported";
+        private static final String KEY_POWER_MODE_SUPPORTED = "power-mode-supported";
+
+        private static final String KEY_POWER_MODE = "power-mode";
 
         // Parameter key suffix for supported values.
         private static final String SUPPORTED_VALUES_SUFFIX = "-values";
@@ -1749,6 +1753,10 @@ public class Camera {
         public static final String ANTIBANDING_60HZ = "60hz";
         public static final String ANTIBANDING_OFF = "off";
 
+        // Values for POWER MODE
+        public static final String LOW_POWER = "Low_Power";
+        public static final String NORMAL_POWER = "Normal_Power";
+
         // Values for flash mode settings.
         /**
          * Flash will not be fired.
@@ -1777,6 +1785,32 @@ public class Camera {
          * This can also be used for video recording.
          */
         public static final String FLASH_MODE_TORCH = "torch";
+
+        //Values for ISO settings
+        /** @hide */
+        public static final String ISO_AUTO = "auto";
+        /** @hide */
+        public static final String ISO_HJR = "ISO_HJR";
+        /** @hide */
+        public static final String ISO_SPORTS = "ISO_SPORTS";
+        /** @hide */
+        public static final String ISO_NIGHT = "ISO_NIGHT";
+        /** @hide */
+        public static final String ISO_MOVIE = "ISO_MOVIE";
+        /** @hide */
+        public static final String ISO_100 = "ISO100";
+        /** @hide */
+        public static final String ISO_200 = "ISO200";
+        /** @hide */
+        public static final String ISO_400 = "ISO400";
+        /** @hide */
+        public static final String ISO_800 = "ISO800";
+        /** @hide */
+        public static final String ISO_1600 = "ISO1600";
+        /** @hide */
+        public static final String ISO_3200 = "ISO3200";
+        /** @hide */
+        public static final String ISO_6400 = "ISO6400";
 
         /**
          * Scene mode is off.
@@ -2944,6 +2978,28 @@ public class Camera {
         }
 
         /**
+         * Sets the Power mode.
+         *
+         * @param value Power mode.
+         * @see #getPowerMode()
+         */
+        public void setPowerMode(String value) {
+            set(KEY_POWER_MODE, value);
+        }
+
+        /**
+         * Gets the current power mode setting.
+         *
+         * @return current power mode. null if power mode setting is not
+         *         supported.
+         * @see #POWER_MODE_LOW
+         * @see #POWER_MODE_NORMAL
+         */
+        public String getPowerMode() {
+            return get(KEY_POWER_MODE);
+        }
+
+        /**
          * Gets the current focus mode setting.
          *
          * @return current focus mode. This method will always return a non-null
@@ -3288,6 +3344,39 @@ public class Camera {
         }
 
         /**
+         * Gets the current ISO setting.
+         *
+         * @return one of ISO_XXX string constant. null if ISO
+         *         setting is not supported.
+         * @hide
+         */
+        public String getISOValue() {
+            return get(KEY_ISO_MODE);
+        }
+
+        /**
+         * Sets the ISO.
+         *
+         * @param iso ISO_XXX string constant.
+         * @hide
+         */
+        public void setISOValue(String iso) {
+            set(KEY_ISO_MODE, iso);
+        }
+
+         /**
+         * Gets the supported ISO values.
+         *
+         * @return a List of ISO_MODE_XXX string constants. null if iso mode
+         *         setting is not supported.
+         * @hide
+         */
+        public List<String> getSupportedIsoValues() {
+            String str = get(KEY_ISO_MODE + SUPPORTED_VALUES_SUFFIX);
+            return split(str);
+        }
+
+        /**
          * <p>Gets the distances from the camera to where an object appears to be
          * in focus. The object is sharpest at the optimal focus distance. The
          * depth of field is the far focus distance minus near focus distance.</p>
@@ -3523,6 +3612,14 @@ public class Camera {
          */
         public boolean isVideoSnapshotSupported() {
             String str = get(KEY_VIDEO_SNAPSHOT_SUPPORTED);
+            return TRUE.equals(str);
+        }
+
+        /**
+         * @return true if full size video snapshot is supported.
+         */
+        public boolean isPowerModeSupported() {
+            String str = get(KEY_POWER_MODE_SUPPORTED);
             return TRUE.equals(str);
         }
 
