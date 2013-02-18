@@ -17,12 +17,9 @@
 package com.android.systemui.statusbar.quicksettings;
 
 import android.content.BroadcastReceiver;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.ContentObserver;
-import android.os.Handler;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.util.Log;
@@ -32,10 +29,12 @@ import android.view.View.OnClickListener;
 
 import com.android.internal.telephony.Phone;
 import com.android.systemui.R;
-import com.android.systemui.statusbar.phone.QuickSettingsController;
 import com.android.systemui.statusbar.phone.QuickSettingsContainerView;
+import com.android.systemui.statusbar.phone.QuickSettingsController;
+import com.android.systemui.statusbar.policy.NetworkController;
+import com.android.systemui.statusbar.policy.NetworkController.NetworkSignalChangedCallback;
 
-public class MobileNetworkModeTile extends QuickSettingsTile {
+public class MobileNetworkModeTile extends QuickSettingsTile implements NetworkSignalChangedCallback {
 
     private static final String TAG = "NetworkModeQuickSettings";
 
@@ -53,17 +52,14 @@ public class MobileNetworkModeTile extends QuickSettingsTile {
     private static final int NO_NETWORK_MODE_YET = -99;
     private static final int NETWORK_MODE_UNKNOWN = -100;
 
-    private static final int MODE_3G2G = 0;
-    private static final int MODE_3GONLY = 1;
-    private static final int MODE_BOTH = 2;
+    private static final int CM_MODE_3G2G = 0;
+    private static final int CM_MODE_3GONLY = 1;
+    private static final int CM_MODE_BOTH = 2;
 
     private int mMode = NO_NETWORK_MODE_YET;
     private int mIntendedMode = NO_NETWORK_MODE_YET;
     private int mInternalState = STATE_INTERMEDIATE;
-
     private int mState;
-    private Handler mHandler;
-    private NetworkTypeChangedObserver mNetworkModesChangedObserver;
 
     public MobileNetworkModeTile(Context context,
             LayoutInflater inflater, QuickSettingsContainerView container,
@@ -72,14 +68,10 @@ public class MobileNetworkModeTile extends QuickSettingsTile {
 
         updateState();
 
-        // Start observing for changes
-        mNetworkModesChangedObserver = new NetworkTypeChangedObserver(mHandler);
-        mNetworkModesChangedObserver.startObserving();
-
         onClick = new OnClickListener() {
             @Override
             public void onClick(View v) {
-                int currentMode = getCurrentNetworkMode();
+                int currentMode = getCurrentCMMode();
 
                 Intent intent = new Intent(ACTION_MODIFY_NETWORK_MODE);
                 switch (mMode) {
@@ -90,7 +82,7 @@ public class MobileNetworkModeTile extends QuickSettingsTile {
                         mIntendedMode = Phone.NT_MODE_GSM_ONLY;
                         break;
                     case Phone.NT_MODE_WCDMA_ONLY:
-                        if (currentMode == MODE_3GONLY) {
+                        if (currentMode == CM_MODE_3GONLY) {
                             intent.putExtra(EXTRA_NETWORK_MODE, Phone.NT_MODE_GSM_ONLY);
                             mInternalState = STATE_TURNING_OFF;
                             mIntendedMode = Phone.NT_MODE_GSM_ONLY;
@@ -101,7 +93,7 @@ public class MobileNetworkModeTile extends QuickSettingsTile {
                         }
                         break;
                     case Phone.NT_MODE_GSM_ONLY:
-                        if (currentMode == MODE_3GONLY || currentMode == MODE_BOTH) {
+                        if (currentMode == CM_MODE_3GONLY || currentMode == CM_MODE_BOTH) {
                             intent.putExtra(EXTRA_NETWORK_MODE, Phone.NT_MODE_WCDMA_ONLY);
                             mInternalState = STATE_TURNING_ON;
                             mIntendedMode = Phone.NT_MODE_WCDMA_ONLY;
@@ -159,6 +151,9 @@ public class MobileNetworkModeTile extends QuickSettingsTile {
         mLabel = mContext.getString(R.string.quick_settings_network_mode);
 
         switch (mState) {
+            case STATE_UNEXPECTED:
+                mDrawable = R.drawable.ic_qs_unexpected_network;
+                break;
             case STATE_2G_ONLY:
                 mDrawable = R.drawable.ic_qs_2g_on;
                 break;
@@ -179,9 +174,6 @@ public class MobileNetworkModeTile extends QuickSettingsTile {
                 } else {
                     mDrawable = R.drawable.ic_qs_2g_on;
                 }
-                break;
-            case STATE_UNEXPECTED:
-                mDrawable = R.drawable.ic_qs_unexpected_network;
                 break;
         }
     }
@@ -213,42 +205,42 @@ public class MobileNetworkModeTile extends QuickSettingsTile {
             case Phone.NT_MODE_CDMA_NO_EVDO:
             case Phone.NT_MODE_EVDO_NO_CDMA:
             case Phone.NT_MODE_GLOBAL:
-                // need to check wtf is going on
+                // need to check what is going on
                 Log.d(TAG, "Unexpected network mode (" + mMode + ")");
                 return STATE_UNEXPECTED;
         }
         return STATE_INTERMEDIATE;
     }
 
-    private int getCurrentNetworkMode() {
+    private int getCurrentCMMode() {
         return Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.EXPANDED_NETWORK_MODE,
-                MODE_3G2G);
+                CM_MODE_3G2G);
     }
 
-    /**
-     *  ContentObserver to watch for Quick Settings tiles changes
-     * @author dvtonder
-     *
-     */
-    private class NetworkTypeChangedObserver extends ContentObserver {
-        public NetworkTypeChangedObserver(Handler handler) {
-            super(handler);
-        }
+    @Override
+    void onPostCreate() {
+        NetworkController controller = new NetworkController(mContext);
+        controller.addNetworkSignalChangedCallback(this);
+        super.onPostCreate();
+    }
 
-        @Override
-        public void onChange(boolean selfChange) {
-            getCurrentNetworkMode();
+    @Override
+    public void onWifiSignalChanged(boolean enabled, int wifiSignalIconId,
+        String wifitSignalContentDescriptionId, String description) {
+            // TODO Auto-generated method stub
+    }
+
+    @Override
+    public void onMobileDataSignalChanged(boolean enabled,
+        int mobileSignalIconId, String mobileSignalContentDescriptionId,
+        int dataTypeIconId, String dataTypeContentDescriptionId,
+        String description) {
             applyNetworkTypeChanges();
-        }
-
-        public void startObserving() {
-            final ContentResolver cr = mContext.getContentResolver();
-            cr.registerContentObserver(
-                    Settings.System.getUriFor(Settings.System.EXPANDED_NETWORK_MODE),
-                    false, this);
-        }
     }
 
+    @Override
+    public void onAirplaneModeChanged(boolean enabled) {
+        // TODO Auto-generated method stub
+    }
 }
-
