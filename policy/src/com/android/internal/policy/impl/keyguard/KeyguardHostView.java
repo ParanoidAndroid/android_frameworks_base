@@ -979,7 +979,7 @@ public class KeyguardHostView extends KeyguardViewBase {
                 Settings.System.LOCKSCREEN_MAXIMIZE_WIDGETS, 0, UserHandle.USER_CURRENT);
 
         if (setting == 1) {
-            mSlidingChallengeLayout.showChallenge(false);
+            mSlidingChallengeLayout.fadeOutChallenge();
         }
     }
 
