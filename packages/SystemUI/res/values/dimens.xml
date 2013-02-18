@@ -208,7 +208,7 @@
     <dimen name="peek_height">84dp</dimen>
 
     <!-- PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE -->
-    <dimen name="pie_trigger_height">12dp</dimen>
+    <dimen name="pie_trigger_height">20dp</dimen>
 
     <dimen name="pie_radius_start">65dp</dimen>
     <dimen name="pie_radius_increment">80dp</dimen>
