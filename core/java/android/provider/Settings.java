@@ -1637,7 +1637,6 @@ public final class Settings {
          */
         @Deprecated
         public static final String WIFI_STATIC_DNS2 = "wifi_static_dns2";
-        
 
         /**
          * Allows automatic retrieval of mms contents
@@ -2651,12 +2650,15 @@ public final class Settings {
         public static final String VOLBTN_MUSIC_CONTROLS = "volbtn_music_controls";
         
         /**
+<<<<<<< HEAD
          * Whether or not to launch default music player when headset is connected
          * @hide
          */
         public static final String HEADSET_CONNECT_PLAYER = "headset_connect_player"; 
         
         /**
+=======
+>>>>>>> e79a15a... Add CM Telephony support
          * Whether national data roaming should be used.
          * @hide
          */
