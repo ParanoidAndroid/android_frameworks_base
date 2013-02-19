@@ -120,6 +120,7 @@ public class PieMenu extends FrameLayout {
     private static final int COLOR_STATUS = 0xffffff;
     private static final int BASE_SPEED = 1000;
     private static final int EMPTY_ANGLE_BASE = 12;
+    private static final int CHEVRON_FRAGMENTS = 16;
     private static final float SIZE_BASE = 1f;
 
     // System
@@ -154,7 +155,7 @@ public class PieMenu extends FrameLayout {
     private float mCenterDistance = 0;
 
     private Path mStatusPath = new Path();
-    private Path mChevronPathLeft;
+    private Path[] mChevronPathLeft  = new Path[CHEVRON_FRAGMENTS+1];
     private Path mChevronPathRight;
     private Path mBatteryPathBackground;
     private Path mBatteryPathJuice;
@@ -319,10 +320,15 @@ public class PieMenu extends FrameLayout {
         mInnerChevronRadius = (int)(mResources.getDimensionPixelSize(R.dimen.pie_chevron_start) * mPieSize);
         mOuterChevronRadius = (int)(mInnerChevronRadius + mResources.getDimensionPixelSize(R.dimen.pie_chevron_increment) * mPieSize);
         mInnerChevronRightRadius = (int)(mResources.getDimensionPixelSize(R.dimen.pie_chevron_start_right) * mPieSize);
-        mOuterChevronRightRadius = (int)(mInnerChevronRightRadius + mResources.getDimensionPixelSize(R.dimen.pie_chevron_increment) * mPieSize);
+        mOuterChevronRightRadius = (int)(mInnerChevronRightRadius + mResources.getDimensionPixelSize(R.dimen.pie_chevron_increment_right) * mPieSize);
 
-        mChevronPathLeft = makeSlice(mPanelDegree, mPanelDegree + (mPanelOrientation != Gravity.TOP ? 80 : 87), mInnerChevronRadius,
-                mOuterChevronRadius, mCenter);
+        // Create slices
+        float fragmentSize = 90 / CHEVRON_FRAGMENTS;
+        for (int i=0; i < CHEVRON_FRAGMENTS + 1; i++) {
+            mChevronPathLeft[i] = makeSlice(mPanelDegree + (i * fragmentSize), mPanelDegree + (i * fragmentSize) + fragmentSize / 2,
+                    mInnerChevronRadius, mOuterChevronRadius, mCenter);
+        }
+
         mChevronPathRight = makeSlice(mPanelDegree + (mPanelOrientation != Gravity.TOP ? -5 : 3), mPanelDegree + 90, mInnerChevronRightRadius,
                 mOuterChevronRightRadius, mCenter);
 
@@ -785,14 +791,17 @@ public class PieMenu extends FrameLayout {
                 mChevronBackgroundLeft.setAlpha((int)(mAnimators[ANIMATOR_DEC_SPEED30].fraction * mGlowOffsetLeft / 2 * (mPanelOrientation == Gravity.TOP ? 0.2 : 1)));
                 mChevronBackgroundRight.setAlpha((int)(mAnimators[ANIMATOR_DEC_SPEED30].fraction * mGlowOffsetRight * (mPanelOrientation == Gravity.TOP ? 0.2 : 1)));
 
-                if (mStatusPanel.getCurrentViewState() != PieStatusPanel.QUICK_SETTINGS_PANEL && mChevronPathLeft != null) {
+                if (mStatusPanel.getCurrentViewState() != PieStatusPanel.QUICK_SETTINGS_PANEL) {
                     state = canvas.save();
                     canvas.rotate(90, mCenter.x, mCenter.y);
-                    canvas.drawPath(mChevronPathLeft, mChevronBackgroundLeft);
+
+                    for (int i=0; i < CHEVRON_FRAGMENTS + 1; i++) {
+                        canvas.drawPath(mChevronPathLeft[i], mChevronBackgroundLeft);
+                    }
                     canvas.restoreToCount(state);
                 }
 
-                if (mStatusPanel.getCurrentViewState() != PieStatusPanel.NOTIFICATIONS_PANEL && mChevronPathRight != null) {
+                if (mStatusPanel.getCurrentViewState() != PieStatusPanel.NOTIFICATIONS_PANEL) {
                     state = canvas.save();
                     canvas.rotate(180, mCenter.x, mCenter.y);
                     canvas.drawPath(mChevronPathRight, mChevronBackgroundRight);
@@ -969,7 +978,7 @@ public class PieMenu extends FrameLayout {
                     if (snap.active) {
                         mAnimators[ANIMATOR_SNAP_GROW].cancel();
                     }
-                    snap.alpha = 20;
+                    snap.alpha = 30;
                     snap.active = false;
                 }
             }

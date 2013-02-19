@@ -216,6 +216,7 @@
     <dimen name="pie_chevron_start">250dp</dimen>
     <dimen name="pie_chevron_start_right">250dp</dimen>
     <dimen name="pie_chevron_increment">2dp</dimen>
+    <dimen name="pie_chevron_increment_right">2dp</dimen>
     <dimen name="pie_battery_start">155dp</dimen>
     <dimen name="pie_battery_increment">10dp</dimen>
     <dimen name="pie_status_start">155dp</dimen>
