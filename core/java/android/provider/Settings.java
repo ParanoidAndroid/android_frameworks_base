@@ -2465,6 +2465,12 @@ public final class Settings {
         public static final String PIE_MENU = "pie_menu";
 
         /**
+         * Pie will not rotate. Should default to 0 (no, rotate)
+         * @hide
+         */
+        public static final String PIE_STICK = "pie_stick";
+
+        /**
          * Center Pie? Should default to 1 (yes, center)
          * @hide
          */
