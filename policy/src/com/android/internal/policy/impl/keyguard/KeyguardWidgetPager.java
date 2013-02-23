@@ -51,6 +51,12 @@ public class KeyguardWidgetPager extends PagedView implements PagedView.PageSwit
     protected static float OVERSCROLL_MAX_ROTATION = 30;
     private static final boolean PERFORM_OVERSCROLL_ROTATION = true;
 
+    private static final String[] CLOCK_WIDGET_PACKAGES = new String[] {
+        "net.nurik.roman.dashclock",
+        "com.cyanogenmod.lockclock",
+        "com.android.deskclock"
+    };
+
     protected KeyguardViewStateManager mViewStateManager;
     private LockPatternUtils mLockPatternUtils;
 
@@ -137,9 +143,15 @@ public class KeyguardWidgetPager extends PagedView implements PagedView.PageSwit
             if (vg.getChildAt(0) instanceof KeyguardStatusView) {
                 showingStatusWidget = true;
             } else if (vg.getChildAt(0) instanceof AppWidgetHostView) {
-                String widgetPackage = ((AppWidgetHostView) vg.getChildAt(0))
-                        .getAppWidgetInfo().provider.getPackageName();
-                showingStatusWidget = widgetPackage.equals("com.cyanogenmod.lockclock");
+                AppWidgetProviderInfo info =
+                        ((AppWidgetHostView) vg.getChildAt(0)).getAppWidgetInfo();
+                String widgetPackage = info.provider.getPackageName();
+                for (String packageName : CLOCK_WIDGET_PACKAGES) {
+                    if (packageName.equals(widgetPackage)) {
+                        showingStatusWidget = true;
+                        break;
+                    }
+                }
             }
         }
 
