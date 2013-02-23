@@ -44,6 +44,8 @@
             android:id="@+id/app_widget_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/status_bar_height"
+            android:layout_marginBottom="@dimen/status_bar_height"
             androidprv:layout_centerWithinArea="0.55"
             androidprv:layout_childType="widget"
             androidprv:layout_maxWidth="480dp"

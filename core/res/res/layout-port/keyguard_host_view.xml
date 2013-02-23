@@ -47,6 +47,8 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/status_bar_height"
+            android:layout_marginBottom="@dimen/status_bar_height"
             androidprv:layout_childType="widgets">
             <include layout="@layout/keyguard_widget_pager"
                 android:id="@+id/app_widget_container"
