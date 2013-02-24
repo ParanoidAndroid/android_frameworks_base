@@ -326,11 +326,11 @@ public class PieMenu extends FrameLayout {
         float fragmentSize = 90 / CHEVRON_FRAGMENTS;
         for (int i=0; i < CHEVRON_FRAGMENTS + 1; i++) {
             mChevronPathLeft[i] = makeSlice(mPanelDegree + (i * fragmentSize), mPanelDegree + (i * fragmentSize) + fragmentSize / 2,
-                    mInnerChevronRadius, mOuterChevronRadius, mCenter);
+                    mInnerChevronRadius, mOuterChevronRadius, mCenter, 0);
         }
 
         mChevronPathRight = makeSlice(mPanelDegree + (mPanelOrientation != Gravity.TOP ? -5 : 3), mPanelDegree + 90, mInnerChevronRightRadius,
-                mOuterChevronRightRadius, mCenter);
+                mOuterChevronRightRadius, mCenter, 0);
 
         // Calculate text circle
         mStatusRadius = (int)(mResources.getDimensionPixelSize(R.dimen.pie_status_start) * mPieSize);
@@ -364,8 +364,8 @@ public class PieMenu extends FrameLayout {
 
         mStartBattery = mPanel.getDegree() + mEmptyAngle + mPieGap;
         mEndBattery = mPanel.getDegree() + (mPieGap <= 2 ? 88 : 90 - mPieGap);
-        mBatteryPathBackground = makeSlice(mStartBattery, mEndBattery, mInnerBatteryRadius, mOuterBatteryRadius, mCenter);
-        mBatteryPathJuice = makeSlice(mStartBattery, mStartBattery, mInnerBatteryRadius, mOuterBatteryRadius, mCenter);
+        mBatteryPathBackground = makeSlice(mStartBattery, mEndBattery, mInnerBatteryRadius, mOuterBatteryRadius, mCenter, 0);
+        mBatteryPathJuice = makeSlice(mStartBattery, mStartBattery, mInnerBatteryRadius, mOuterBatteryRadius, mCenter, 0);
 
         // Colors
         ColorUtils.ColorSettingInfo buttonColorInfo = ColorUtils.getColorSettingInfo(mContext,
@@ -390,7 +390,7 @@ public class PieMenu extends FrameLayout {
 
             mChevronBackgroundLeft.setColor(ColorUtils.extractRGB(buttonColorInfo.lastColor) | COLOR_OPAQUE_MASK);
             mChevronBackgroundRight.setColor(ColorUtils.extractRGB(buttonColorInfo.lastColor) | COLOR_OPAQUE_MASK);
-            mPieOutlines.setColor(buttonColorInfo.lastColor);
+            mPieOutlines.setColor(ColorUtils.extractRGB(buttonColorInfo.lastColor) | COLOR_ALPHA_MASK);
             mBatteryJuice.setColorFilter(buttonColorInfo.isLastColorNull ? null :
                     new PorterDuffColorFilter(ColorUtils.extractRGB(buttonColorInfo.lastColor) | COLOR_OPAQUE_MASK, Mode.SRC_ATOP));
 
@@ -662,7 +662,8 @@ public class PieMenu extends FrameLayout {
 
             sweep = ((float) (Math.PI - 2 * emptyangle) / itemCount) * (item.isLesser() ? 0.65f : 1 + adjustedSweep);
             angle = (emptyangle + sweep / 2 - (float)Math.PI/2);
-            item.setPath(makeSlice(getDegrees(0) - mPieGap, getDegrees(sweep) + mPieGap, outer, inner, mCenter));
+            item.setPath(makeSlice(getDegrees(0) - mPieGap, getDegrees(sweep) + mPieGap, outer, inner, mCenter,
+                    (mPieGap > 0 ? mPieGap + 0.4f : 0)));
             View view = item.getView();
 
             if (view != null) {
@@ -718,7 +719,7 @@ public class PieMenu extends FrameLayout {
             // Special purpose animators go here
             if (mIndex == ANIMATOR_BATTERY_METER) {
                 mBatteryPathJuice = makeSlice(mStartBattery, mStartBattery + (float)animation.getAnimatedFraction() *
-                        (mBatteryLevel * (mEndBattery-mStartBattery) / 100), mInnerBatteryRadius, mOuterBatteryRadius, mCenter);
+                        (mBatteryLevel * (mEndBattery-mStartBattery) / 100), mInnerBatteryRadius, mOuterBatteryRadius, mCenter, 0);
             }
             invalidate();
         }
@@ -903,12 +904,12 @@ public class PieMenu extends FrameLayout {
         }
     }
 
-    private Path makeSlice(float start, float end, int outer, int inner, Point center) {
+    private Path makeSlice(float start, float end, int outer, int inner, Point center, float narrow) {
         RectF bb = new RectF(center.x - outer, center.y - outer, center.x + outer, center.y + outer);
         RectF bbi = new RectF(center.x - inner, center.y - inner, center.x + inner, center.y + inner);
         Path path = new Path();
         path.arcTo(bb, start, end - start, true);
-        path.arcTo(bbi, end, start - end);
+        path.arcTo(bbi, end + narrow, start - end - narrow);
         path.close();
         return path;
     }
