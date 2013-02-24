@@ -352,7 +352,6 @@ public class KeyguardWidgetFrame extends FrameLayout {
     }
 
     public void setMaxChallengeTop(int top) {
-        android.util.Log.d("PARANOID", "setMaxChallengeTop");
         boolean dirty = mMaxChallengeTop != top;
         mMaxChallengeTop = top;
         mSmallWidgetHeight = top - getPaddingTop() - (Settings.System.getInt(mContext.getContentResolver(),
