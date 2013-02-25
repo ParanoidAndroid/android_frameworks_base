@@ -141,7 +141,7 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
 
     public void bumpConfiguration() {
         if (Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.PIE_STICK, 0) == 1) {
+                    Settings.System.PIE_STICK, 1) == 1) {
 
             // Get original offset
             int gravityIndex = findGravityOffset(convertPieGravitytoGravity(
@@ -201,7 +201,7 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
         if (storeSetting) {
             int gravityOffset = mOrientation;
             if (Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.PIE_STICK, 0) == 1) {
+                    Settings.System.PIE_STICK, 1) == 1) {
 
                 gravityOffset = findGravityOffset(mOrientation);
                 switch(mDisplay.getRotation()) {
