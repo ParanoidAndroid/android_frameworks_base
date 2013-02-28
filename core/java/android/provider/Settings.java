@@ -2866,42 +2866,42 @@ public final class Settings {
          * Quick Settings Panel Tiles to Use
          * @hide
          */
-        public static final String QUICK_SETTINGS = "quick_settings";
+        public static final String QUICK_SETTINGS_TILES = "quick_settings";
 
         /**
          * Quick Settings Panel Dynamic Tiles
          *
          * @hide
          */
-        public static final String QS_DYNAMIC_ALARM = "qs_dyanmic_alarm";
+        public static final String QS_DYNAMIC_ALARM = "qs_dynamic_alarm";
 
         /**
          * Quick Settings Panel Dynamic Tiles
          *
          * @hide
          */
-        public static final String QS_DYNAMIC_BUGREPORT = "qs_dyanmic_bugreport";
+        public static final String QS_DYNAMIC_BUGREPORT = "qs_dynamic_bugreport";
 
         /**
          * Quick Settings Panel Dynamic Tiles
          *
          * @hide
          */
-        public static final String QS_DYNAMIC_IME = "qs_dyanmic_ime";
+        public static final String QS_DYNAMIC_IME = "qs_dynamic_ime";
 
         /**
          * Quick Settings Panel Dynamic Tiles
          *
          * @hide
          */
-        public static final String QS_DYNAMIC_USBTETHER = "qs_dyanmic_usbtether";
+        public static final String QS_DYNAMIC_USBTETHER = "qs_dynamic_usbtether";
 
         /**
          * Quick Settings Panel Dynamic Tiles
          *
          * @hide
          */
-        public static final String QS_DYNAMIC_WIFI = "qs_dyanmic_wifi";
+        public static final String QS_DYNAMIC_WIFI = "qs_dynamic_wifi";
 
         /**
          * Quick Settings Quick Pulldown

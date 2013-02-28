@@ -2749,7 +2749,7 @@ protected WindowManager.LayoutParams getRecentsLayoutParams(LayoutParams layoutP
         public void startObserving() {
             final ContentResolver cr = mContext.getContentResolver();
             cr.registerContentObserver(
-                    Settings.System.getUriFor(Settings.System.QUICK_SETTINGS),
+                    Settings.System.getUriFor(Settings.System.QUICK_SETTINGS_TILES),
                     false, this);
 
             cr.registerContentObserver(
