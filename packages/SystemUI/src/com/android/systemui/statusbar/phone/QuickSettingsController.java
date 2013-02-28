@@ -28,6 +28,7 @@ import static com.android.internal.util.cm.QSConstants.TILE_LOCKSCREEN;
 import static com.android.internal.util.cm.QSConstants.TILE_MOBILEDATA;
 import static com.android.internal.util.cm.QSConstants.TILE_NETWORKMODE;
 import static com.android.internal.util.cm.QSConstants.TILE_NFC;
+import static com.android.internal.util.cm.QSConstants.TILE_LTE;
 import static com.android.internal.util.cm.QSConstants.TILE_RINGER;
 import static com.android.internal.util.cm.QSConstants.TILE_SCREENTIMEOUT;
 import static com.android.internal.util.cm.QSConstants.TILE_SETTINGS;
@@ -43,6 +44,7 @@ import static com.android.internal.util.cm.QSConstants.TILE_HYBRID;
 import static com.android.internal.util.cm.QSUtils.deviceSupportsBluetooth;
 import static com.android.internal.util.cm.QSUtils.deviceSupportsMobileData;
 import static com.android.internal.util.cm.QSUtils.deviceSupportsUsbTether;
+import static com.android.internal.util.cm.QSUtils.deviceSupportsLte;
 
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
@@ -67,6 +69,7 @@ import com.android.systemui.quicksettings.BrightnessTile;
 import com.android.systemui.quicksettings.BugReportTile;
 import com.android.systemui.quicksettings.GPSTile;
 import com.android.systemui.quicksettings.InputMethodTile;
+import com.android.systemui.quicksettings.LteTile;
 import com.android.systemui.quicksettings.MobileNetworkTile;
 import com.android.systemui.quicksettings.MobileNetworkTypeTile;
 import com.android.systemui.quicksettings.NfcTile;
@@ -126,6 +129,7 @@ public class QuickSettingsController {
         // Filter items not compatible with device
         boolean bluetoothSupported = deviceSupportsBluetooth();
         boolean mobileDataSupported = deviceSupportsMobileData(mContext);
+        boolean lteSupported = deviceSupportsLte(mContext);
 
         if (!bluetoothSupported) {
             TILES_DEFAULT.remove(TILE_BLUETOOTH);
@@ -137,10 +141,14 @@ public class QuickSettingsController {
             TILES_DEFAULT.remove(TILE_NETWORKMODE);
         }
 
+        if (!lteSupported) {
+            TILES_DEFAULT.remove(TILE_LTE);
+        }
+
         // Read the stored list of tiles
         ContentResolver resolver = mContext.getContentResolver();
         LayoutInflater inflater = LayoutInflater.from(mContext);
-        String tiles = Settings.System.getString(resolver, Settings.System.QUICK_SETTINGS);
+        String tiles = Settings.System.getString(resolver, Settings.System.QUICK_SETTINGS_TILES);
 
         if (tiles == null) {
             Log.i(TAG, "Default tiles being loaded");
@@ -197,6 +205,8 @@ public class QuickSettingsController {
                     qs = new DesktopModeTile(mContext, this, mHandler);
             } else if (tile.equals(TILE_HYBRID)) {
                 qs = new HybridTile(mContext, this, mHandler);
+            } else if (tile.equals(TILE_LTE)) {
+                qs = new LteTile(mContext, this);
             }
             if (qs != null) {
                 qs.setupQuickSettingsTile(inflater, mContainerView);
