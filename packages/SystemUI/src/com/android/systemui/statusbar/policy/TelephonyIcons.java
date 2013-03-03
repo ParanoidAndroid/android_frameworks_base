@@ -111,7 +111,7 @@ class TelephonyIcons {
               R.drawable.stat_sys_data_fully_connected_h }
     };
 
-    //HPSPA+
+    //HSPA+
     static final int[][] DATA_HP = {
             { R.drawable.stat_sys_data_connected_hp,
               R.drawable.stat_sys_data_connected_hp,
