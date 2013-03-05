@@ -104,7 +104,7 @@ public class QuickSettingsTile implements OnClickListener {
         mOnClick.onClick(v);
         ContentResolver resolver = mContext.getContentResolver();
         boolean shouldCollapse = Settings.System.getInt(resolver, Settings.System.QS_COLLAPSE_PANEL, 0) == 1;
-        if (shouldCollapse) {
+        if (shouldCollapse || this instanceof DesktopModeTile) {
             mQsc.mBar.collapseAllPanels(true);
         }
     }
