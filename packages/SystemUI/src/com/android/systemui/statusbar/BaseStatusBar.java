@@ -200,6 +200,10 @@ public abstract class BaseStatusBar extends SystemUI implements
         return null;
     }
 
+    public Handler getHandler() {
+        return mHandler;
+    }
+
     public IStatusBarService getService() {
         return mBarService;
     }

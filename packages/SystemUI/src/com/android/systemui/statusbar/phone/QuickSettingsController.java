@@ -16,184 +16,178 @@
 
 package com.android.systemui.statusbar.phone;
 
-import java.util.ArrayList;
+import static com.android.internal.util.cm.QSConstants.TILES_DEFAULT;
+import static com.android.internal.util.cm.QSConstants.TILE_AIRPLANE;
+import static com.android.internal.util.cm.QSConstants.TILE_AUTOROTATE;
+import static com.android.internal.util.cm.QSConstants.TILE_BATTERY;
+import static com.android.internal.util.cm.QSConstants.TILE_BLUETOOTH;
+import static com.android.internal.util.cm.QSConstants.TILE_BRIGHTNESS;
+import static com.android.internal.util.cm.QSConstants.TILE_DELIMITER;
+import static com.android.internal.util.cm.QSConstants.TILE_GPS;
+import static com.android.internal.util.cm.QSConstants.TILE_LOCKSCREEN;
+import static com.android.internal.util.cm.QSConstants.TILE_MOBILEDATA;
+import static com.android.internal.util.cm.QSConstants.TILE_NETWORKMODE;
+import static com.android.internal.util.cm.QSConstants.TILE_NFC;
+import static com.android.internal.util.cm.QSConstants.TILE_RINGER;
+import static com.android.internal.util.cm.QSConstants.TILE_SCREENTIMEOUT;
+import static com.android.internal.util.cm.QSConstants.TILE_SETTINGS;
+import static com.android.internal.util.cm.QSConstants.TILE_SLEEP;
+import static com.android.internal.util.cm.QSConstants.TILE_SYNC;
+import static com.android.internal.util.cm.QSConstants.TILE_TORCH;
+import static com.android.internal.util.cm.QSConstants.TILE_USER;
+import static com.android.internal.util.cm.QSConstants.TILE_WIFI;
+import static com.android.internal.util.cm.QSConstants.TILE_WIFIAP;
+import static com.android.internal.util.cm.QSUtils.deviceSupportsBluetooth;
+import static com.android.internal.util.cm.QSUtils.deviceSupportsTelephony;
+import static com.android.internal.util.cm.QSUtils.deviceSupportsUsbTether;
 
-import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.pm.PackageManager;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.database.ContentObserver;
+import android.net.Uri;
 import android.os.Handler;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.ViewGroup;
 
 import com.android.systemui.statusbar.BaseStatusBar;
-import com.android.systemui.statusbar.quicksettings.AirplaneModeTile;
-import com.android.systemui.statusbar.quicksettings.AlarmTile;
-import com.android.systemui.statusbar.quicksettings.AutoRotateTile;
-import com.android.systemui.statusbar.quicksettings.BatteryTile;
-import com.android.systemui.statusbar.quicksettings.BluetoothTile;
-import com.android.systemui.statusbar.quicksettings.BrightnessTile;
-import com.android.systemui.statusbar.quicksettings.BugReportTile;
-import com.android.systemui.statusbar.quicksettings.FlashLightTile;
-import com.android.systemui.statusbar.quicksettings.GpsTile;
-import com.android.systemui.statusbar.quicksettings.InputMethodTile;
-import com.android.systemui.statusbar.quicksettings.MobileNetworkTile;
-import com.android.systemui.statusbar.quicksettings.MobileNetworkModeTile;
-import com.android.systemui.statusbar.quicksettings.NfcTile;
-import com.android.systemui.statusbar.quicksettings.PreferencesTile;
-import com.android.systemui.statusbar.quicksettings.QuickSettingsTile;
-import com.android.systemui.statusbar.quicksettings.RingerModeTile;
-import com.android.systemui.statusbar.quicksettings.RingerVibrationModeTile;
-import com.android.systemui.statusbar.quicksettings.SyncTile;
-import com.android.systemui.statusbar.quicksettings.SleepScreenTile;
-import com.android.systemui.statusbar.quicksettings.UserTile;
-import com.android.systemui.statusbar.quicksettings.VibrationModeTile;
-import com.android.systemui.statusbar.quicksettings.WiFiDisplayTile;
-import com.android.systemui.statusbar.quicksettings.WiFiTile;
-import com.android.systemui.statusbar.quicksettings.WifiAPTile;
+import com.android.systemui.quicksettings.AirplaneModeTile;
+import com.android.systemui.quicksettings.AlarmTile;
+import com.android.systemui.quicksettings.AutoRotateTile;
+import com.android.systemui.quicksettings.BatteryTile;
+import com.android.systemui.quicksettings.BluetoothTile;
+import com.android.systemui.quicksettings.BrightnessTile;
+import com.android.systemui.quicksettings.BugReportTile;
+import com.android.systemui.quicksettings.GPSTile;
+import com.android.systemui.quicksettings.InputMethodTile;
+import com.android.systemui.quicksettings.MobileNetworkTile;
+import com.android.systemui.quicksettings.MobileNetworkTypeTile;
+import com.android.systemui.quicksettings.NfcTile;
+import com.android.systemui.quicksettings.PreferencesTile;
+import com.android.systemui.quicksettings.QuickSettingsTile;
+import com.android.systemui.quicksettings.RingerModeTile;
+import com.android.systemui.quicksettings.ScreenTimeoutTile;
+import com.android.systemui.quicksettings.SleepScreenTile;
+import com.android.systemui.quicksettings.SyncTile;
+import com.android.systemui.quicksettings.ToggleLockscreenTile;
+import com.android.systemui.quicksettings.TorchTile;
+import com.android.systemui.quicksettings.UsbTetherTile;
+import com.android.systemui.quicksettings.UserTile;
+import com.android.systemui.quicksettings.WiFiDisplayTile;
+import com.android.systemui.quicksettings.WiFiTile;
+import com.android.systemui.quicksettings.WifiAPTile;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class QuickSettingsController {
     private static String TAG = "QuickSettingsController";
-    private static boolean DEBUG = BaseStatusBar.DEBUG;
 
-    public static final String TILE_USER = "toggleUser";
-    public static final String TILE_BATTERY = "toggleBattery";
-    public static final String TILE_SETTINGS = "toggleSettings";
-    public static final String TILE_WIFI = "toggleWifi";
-    public static final String TILE_GPS = "toggleGPS";
-    public static final String TILE_BLUETOOTH = "toggleBluetooth";
-    public static final String TILE_BRIGHTNESS = "toggleBrightness";
-    public static final String TILE_SOUND = "toggleSound";
-    public static final String TILE_SYNC = "toggleSync";
-    public static final String TILE_WIFIAP = "toggleWifiAp";
-    public static final String TILE_SCREENTIMEOUT = "toggleScreenTimeout";
-    public static final String TILE_MOBILEDATA = "toggleMobileData";
-    public static final String TILE_NETWORKMODE = "toggleNetworkMode";
-    public static final String TILE_AUTOROTATE = "toggleAutoRotate";
-    public static final String TILE_AIRPLANE = "toggleAirplane";
-    public static final String TILE_FLASHLIGHT = "toggleFlashlight";
-    public static final String TILE_SLEEP = "toggleSleepMode";
-    public static final String TILE_LTE = "toggleLte";
-    public static final String TILE_WIMAX = "toggleWimax";
-    public static final String TILE_NFC = "toggleNfc";
-
-    private static final String TILE_DELIMITER = "|";
-    private static final String TILES_DEFAULT = TILE_USER
-            + TILE_DELIMITER + TILE_BRIGHTNESS
-            + TILE_DELIMITER + TILE_SETTINGS
-            + TILE_DELIMITER + TILE_WIFI
-            + TILE_DELIMITER + TILE_MOBILEDATA
-            + TILE_DELIMITER + TILE_BATTERY
-            + TILE_DELIMITER + TILE_AIRPLANE
-            + TILE_DELIMITER + TILE_BLUETOOTH;
+    // Stores the broadcast receivers and content observers
+    // quick tiles register for.
+    public HashMap<String, ArrayList<QuickSettingsTile>> mReceiverMap
+        = new HashMap<String, ArrayList<QuickSettingsTile>>();
+    public HashMap<Uri, ArrayList<QuickSettingsTile>> mObserverMap
+        = new HashMap<Uri, ArrayList<QuickSettingsTile>>();
 
     private final Context mContext;
+    private ArrayList<QuickSettingsTile> mQuickSettingsTiles;
     public PanelBar mBar;
-    private final ViewGroup mContainerView;
+    private final QuickSettingsContainerView mContainerView;
     private final Handler mHandler;
-    private final ArrayList<Integer> mQuickSettings;
+    private BroadcastReceiver mReceiver;
+    private ContentObserver mObserver;
     public BaseStatusBar mStatusBarService;
 
-    // Constants for use in switch statement
-    public static final int WIFI_TILE = 0;
-    public static final int MOBILE_NETWORK_TILE = 1;
-    public static final int AIRPLANE_MODE_TILE = 2;
-    public static final int BLUETOOTH_TILE = 3;
-    public static final int SOUND_TILE = 4;
-    public static final int SYNC_TILE = 5;
-    public static final int VIBRATION_TILE = 6;
-    public static final int SOUND_VIBRATION_TILE = 7;
-    public static final int SLEEP_TILE = 8;
-    public static final int GPS_TILE = 9;
-    public static final int AUTO_ROTATION_TILE = 10;
-    public static final int BRIGHTNESS_TILE = 11;
-    public static final int MOBILE_NETWORK_MODE_TILE = 12;
-    public static final int SETTINGS_TILE = 13;
-    public static final int BATTERY_TILE = 14;
-    public static final int IME_TILE = 15;
-    public static final int ALARM_TILE = 16;
-    public static final int BUG_REPORT_TILE = 17;
-    public static final int WIFI_DISPLAY_TILE = 18;
-    public static final int FLASHLIGHT_TILE = 19;
-    public static final int NFC_TILE = 20;
-    public static final int WIFIAP_TILE = 29;
-    public static final int USER_TILE = 99;
-    private InputMethodTile IMETile;
+    private InputMethodTile mIMETile;
 
     public QuickSettingsController(Context context, QuickSettingsContainerView container, BaseStatusBar statusBarService) {
         mContext = context;
         mContainerView = container;
         mHandler = new Handler();
         mStatusBarService = statusBarService;
-        mQuickSettings = new ArrayList<Integer>();
+        mQuickSettingsTiles = new ArrayList<QuickSettingsTile>();
     }
 
     void loadTiles() {
-        // Read the stored list of tiles
-        ContentResolver resolver = mContext.getContentResolver();
-        String tiles = Settings.System.getString(resolver, Settings.System.QUICK_SETTINGS_TILES);
-        if (tiles == null) {
-            if (DEBUG) Log.i(TAG, "Default tiles being loaded");
-            tiles = TILES_DEFAULT;
+        // Reset reference tiles
+        mIMETile = null;
+
+        // Filter items not compatible with device
+        boolean bluetoothSupported = deviceSupportsBluetooth();
+        boolean telephonySupported = deviceSupportsTelephony(mContext);
+
+        if (!bluetoothSupported) {
+            TILES_DEFAULT.remove(TILE_BLUETOOTH);
         }
 
-        if (DEBUG) Log.i(TAG, "Tiles list: " + tiles);
+        if (!telephonySupported) {
+            TILES_DEFAULT.remove(TILE_WIFIAP);
+            TILES_DEFAULT.remove(TILE_MOBILEDATA);
+            TILES_DEFAULT.remove(TILE_NETWORKMODE);
+        }
 
-        // Clear the list
-        mQuickSettings.clear();
+        // Read the stored list of tiles
+        ContentResolver resolver = mContext.getContentResolver();
+        LayoutInflater inflater = LayoutInflater.from(mContext);
+        String tiles = Settings.System.getString(resolver, Settings.System.QUICK_SETTINGS);
+
+        if (tiles == null) {
+            Log.i(TAG, "Default tiles being loaded");
+            tiles = TextUtils.join(TILE_DELIMITER, TILES_DEFAULT);
+        }
+
+        Log.i(TAG, "Tiles list: " + tiles);
 
         // Split out the tile names and add to the list
         for (String tile : tiles.split("\\|")) {
+            QuickSettingsTile qs = null;
             if (tile.equals(TILE_USER)) {
-                mQuickSettings.add(USER_TILE);
+                qs = new UserTile(mContext, inflater, mContainerView, this);
             } else if (tile.equals(TILE_BATTERY)) {
-                mQuickSettings.add(BATTERY_TILE);
+                qs = new BatteryTile(mContext, inflater, mContainerView, this);
             } else if (tile.equals(TILE_SETTINGS)) {
-                mQuickSettings.add(SETTINGS_TILE);
+                qs = new PreferencesTile(mContext, inflater, mContainerView, this);
             } else if (tile.equals(TILE_WIFI)) {
-                mQuickSettings.add(WIFI_TILE);
+                qs = new WiFiTile(mContext, inflater, mContainerView, this);
             } else if (tile.equals(TILE_GPS)) {
-                mQuickSettings.add(GPS_TILE);
-            } else if (tile.equals(TILE_BLUETOOTH)) {
-                if(deviceSupportsBluetooth()) {
-                    mQuickSettings.add(BLUETOOTH_TILE);
-                }
+                qs = new GPSTile(mContext, inflater, mContainerView, this);
+            } else if (tile.equals(TILE_BLUETOOTH) && bluetoothSupported) {
+                    qs = new BluetoothTile(mContext, inflater, mContainerView, this);
             } else if (tile.equals(TILE_BRIGHTNESS)) {
-                mQuickSettings.add(BRIGHTNESS_TILE);
-            } else if (tile.equals(TILE_SOUND)) {
-                mQuickSettings.add(SOUND_VIBRATION_TILE);
+                qs = new BrightnessTile(mContext, inflater, mContainerView, this, mHandler);
+            } else if (tile.equals(TILE_RINGER)) {
+                qs = new RingerModeTile(mContext, inflater, mContainerView, this);
             } else if (tile.equals(TILE_SYNC)) {
-                mQuickSettings.add(SYNC_TILE);
-            } else if (tile.equals(TILE_WIFIAP)) {
-                if(deviceSupportsTelephony()) {
-                    mQuickSettings.add(WIFIAP_TILE);
-                }
+                qs = new SyncTile(mContext, inflater, mContainerView, this);
+            } else if (tile.equals(TILE_WIFIAP) && telephonySupported) {
+                qs = new WifiAPTile(mContext, inflater, mContainerView, this);
             } else if (tile.equals(TILE_SCREENTIMEOUT)) {
-                // Not available yet
-            } else if (tile.equals(TILE_MOBILEDATA)) {
-                if(deviceSupportsTelephony()) {
-                    mQuickSettings.add(MOBILE_NETWORK_TILE);
-                }
-            } else if (tile.equals(TILE_NETWORKMODE)) {
-                if(deviceSupportsTelephony()) {
-                    mQuickSettings.add(MOBILE_NETWORK_MODE_TILE);
-                }
+                qs = new ScreenTimeoutTile(mContext, inflater, mContainerView, this);
+            } else if (tile.equals(TILE_MOBILEDATA) && telephonySupported) {
+                qs = new MobileNetworkTile(mContext, inflater, mContainerView, this);
+            } else if (tile.equals(TILE_LOCKSCREEN)) {
+                qs = new ToggleLockscreenTile(mContext, inflater, mContainerView, this);
             } else if (tile.equals(TILE_AUTOROTATE)) {
-                mQuickSettings.add(AUTO_ROTATION_TILE);
+                qs = new AutoRotateTile(mContext, inflater, mContainerView, this, mHandler);
             } else if (tile.equals(TILE_AIRPLANE)) {
-                mQuickSettings.add(AIRPLANE_MODE_TILE);
-            } else if (tile.equals(TILE_FLASHLIGHT)) {
-                mQuickSettings.add(FLASHLIGHT_TILE);
+                qs = new AirplaneModeTile(mContext, inflater, mContainerView, this);
+            } else if (tile.equals(TILE_TORCH)) {
+                qs = new TorchTile(mContext, inflater, mContainerView, this, mHandler);
             } else if (tile.equals(TILE_SLEEP)) {
-                mQuickSettings.add(SLEEP_TILE);
-            } else if (tile.equals(TILE_WIMAX)) {
-                // Not available yet
-            } else if (tile.equals(TILE_LTE)) {
-                // Not available yet
-            } else if(tile.equals(TILE_NFC)) {
-                mQuickSettings.add(NFC_TILE);
+                qs = new SleepScreenTile(mContext, inflater, mContainerView, this);
+            } else if (tile.equals(TILE_NFC)) {
+                // User cannot add the NFC tile if the device does not support it
+                // No need to check again here
+                qs = new NfcTile(mContext, inflater, mContainerView, this);
+            }
+            if (qs != null) {
+                qs.setupQuickSettingsTile();
+                mQuickSettingsTiles.add(qs);
             }
         }
 
@@ -201,151 +195,133 @@ public class QuickSettingsController {
         // These toggles must be the last ones added to the view, as they will show
         // only when they are needed
         if (Settings.System.getInt(resolver, Settings.System.QS_DYNAMIC_ALARM, 1) == 1) {
-            mQuickSettings.add(ALARM_TILE);
+            QuickSettingsTile qs = new AlarmTile(mContext, inflater, mContainerView, this, mHandler);
+            qs.setupQuickSettingsTile();
+            mQuickSettingsTiles.add(qs);
         }
         if (Settings.System.getInt(resolver, Settings.System.QS_DYNAMIC_BUGREPORT, 1) == 1) {
-            mQuickSettings.add(BUG_REPORT_TILE);
+            QuickSettingsTile qs = new BugReportTile(mContext, inflater, mContainerView, this, mHandler);
+            qs.setupQuickSettingsTile();
+            mQuickSettingsTiles.add(qs);
         }
         if (Settings.System.getInt(resolver, Settings.System.QS_DYNAMIC_WIFI, 1) == 1) {
-            mQuickSettings.add(WIFI_DISPLAY_TILE);
+            QuickSettingsTile qs = new WiFiDisplayTile(mContext, inflater, mContainerView, this);
+            qs.setupQuickSettingsTile();
+            mQuickSettingsTiles.add(qs);
         }
-        if (Settings.System.getInt(resolver, Settings.System.QS_DYNAMIC_IME, 1) == 1) {
-            mQuickSettings.add(IME_TILE);
+
+        mIMETile = new InputMethodTile(mContext, inflater, mContainerView, this);
+        mIMETile.setupQuickSettingsTile();
+        mQuickSettingsTiles.add(mIMETile);
+
+        if (deviceSupportsUsbTether(mContext) && Settings.System.getInt(resolver, Settings.System.QS_DYNAMIC_USBTETHER, 1) == 1) {
+            QuickSettingsTile qs = new UsbTetherTile(mContext, inflater, mContainerView, this);
+            qs.setupQuickSettingsTile();
+            mQuickSettingsTiles.add(qs);
         }
     }
 
-    void setupQuickSettings() {
-        LayoutInflater inflater = LayoutInflater.from(mContext);
-        addQuickSettings(inflater);
+    public void setupQuickSettings() {
+        mQuickSettingsTiles.clear();
+        mContainerView.removeAllViews();
+        // Clear out old receiver
+        if (mReceiver != null) {
+            mContext.unregisterReceiver(mReceiver);
+        }
+        mReceiver = new QSBroadcastReceiver();
+        mReceiverMap.clear();
+        ContentResolver resolver = mContext.getContentResolver();
+        // Clear out old observer
+        if (mObserver != null) {
+            resolver.unregisterContentObserver(mObserver);
+        }
+        mObserver = new QuickSettingsObserver(mHandler);
+        mObserverMap.clear();
+        loadTiles();
+        setupBroadcastReceiver();
+        setupContentObserver();
     }
 
-    boolean deviceSupportsTelephony() {
-        PackageManager pm = mContext.getPackageManager();
-        return pm.hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
+    void setupContentObserver() {
+        ContentResolver resolver = mContext.getContentResolver();
+        for (Uri uri : mObserverMap.keySet()) {
+            resolver.registerContentObserver(uri, false, mObserver);
+        }
     }
 
-    boolean deviceSupportsBluetooth() {
-        return (BluetoothAdapter.getDefaultAdapter() != null);
+    private class QuickSettingsObserver extends ContentObserver {
+        public QuickSettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            ContentResolver resolver = mContext.getContentResolver();
+            for (QuickSettingsTile tile : mObserverMap.get(uri)) {
+                tile.onChangeUri(resolver, uri);
+            }
+        }
     }
+
+    void setupBroadcastReceiver() {
+        IntentFilter filter = new IntentFilter();
+        for (String action : mReceiverMap.keySet()) {
+            filter.addAction(action);
+        }
+        mContext.registerReceiver(mReceiver, filter);
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private void registerInMap(Object item, QuickSettingsTile tile, HashMap map) {
+        if (map.keySet().contains(item)) {
+            ArrayList list = (ArrayList) map.get(item);
+            if (!list.contains(tile)) {
+                list.add(tile);
+            }
+        } else {
+            ArrayList<QuickSettingsTile> list = new ArrayList<QuickSettingsTile>();
+            list.add(tile);
+            map.put(item, list);
+        }
+    }
+
+    public void registerAction(Object action, QuickSettingsTile tile) {
+        registerInMap(action, tile, mReceiverMap);
+    }
+
+    public void registerObservedContent(Uri uri, QuickSettingsTile tile) {
+        registerInMap(uri, tile, mObserverMap);
+    }
+
+    private class QSBroadcastReceiver extends BroadcastReceiver {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action != null) {
+                for (QuickSettingsTile t : mReceiverMap.get(action)) {
+                    t.onReceive(context, intent);
+                }
+            }
+        }
+    };
 
     public void setBar(PanelBar bar) {
         mBar = bar;
     }
 
-    void addQuickSettings(LayoutInflater inflater){
-        // Load the user configured tiles
-        loadTiles();
-
-        // Now add the actual tiles from the loaded list
-        for (Integer entry: mQuickSettings) {
-            QuickSettingsTile qs = null;
-            switch (entry) {
-            case WIFI_TILE:
-                qs = new WiFiTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this);
-                break;
-            case MOBILE_NETWORK_TILE:
-                qs = new MobileNetworkTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this);
-                break;
-            case AIRPLANE_MODE_TILE:
-                qs = new AirplaneModeTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this);
-                break;
-            case BLUETOOTH_TILE:
-                qs = new BluetoothTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this);
-                break;
-            case SOUND_TILE:
-                qs = new RingerModeTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this);
-                break;
-            case SYNC_TILE:
-                qs = new SyncTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this);
-                break;
-            case VIBRATION_TILE:
-                qs = new VibrationModeTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this);
-                break;
-            case SOUND_VIBRATION_TILE:
-                qs = new RingerVibrationModeTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this);
-                break;
-            case SLEEP_TILE:
-                qs = new SleepScreenTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this);
-                break;
-            case GPS_TILE:
-                qs = new GpsTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this);
-                break;
-            case AUTO_ROTATION_TILE:
-                qs = new AutoRotateTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this, mHandler);
-                break;
-            case BRIGHTNESS_TILE:
-                qs = new BrightnessTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this, mHandler);
-                break;
-            case MOBILE_NETWORK_MODE_TILE:
-                qs = new MobileNetworkModeTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this);
-                break;
-            case ALARM_TILE:
-                qs = new AlarmTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this, mHandler);
-                break;
-            case BUG_REPORT_TILE:
-                qs = new BugReportTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this, mHandler);
-                break;
-            case WIFI_DISPLAY_TILE:
-                qs = new WiFiDisplayTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this);
-                break;
-            case SETTINGS_TILE:
-                qs = new PreferencesTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this);
-                break;
-            case BATTERY_TILE:
-                qs = new BatteryTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this);
-                break;
-            case IME_TILE:
-                IMETile = new InputMethodTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this);
-                qs = IMETile;
-                break;
-            case USER_TILE:
-                qs = new UserTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this);
-                break;
-            case FLASHLIGHT_TILE:
-                qs = new FlashLightTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this, mHandler);
-                break;
-            case WIFIAP_TILE:
-                qs = new WifiAPTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this);
-                break;
-            case NFC_TILE:
-                qs = new NfcTile(mContext, inflater,
-                        (QuickSettingsContainerView) mContainerView, this);
-                break;
-            }
-            if (qs != null) {
-                qs.setupQuickSettingsTile();
-            }
-        }
+    public void setService(BaseStatusBar phoneStatusBar) {
+        mStatusBarService = phoneStatusBar;
     }
 
     public void setImeWindowStatus(boolean visible) {
-        if (IMETile != null) {
-            IMETile.toggleVisibility(visible);
+        if (mIMETile != null) {
+            mIMETile.toggleVisibility(visible);
         }
     }
 
-    public void updateResources() {}
-
+    public void updateResources() {
+        mContainerView.updateResources();
+        for (QuickSettingsTile t : mQuickSettingsTiles) {
+            t.updateResources();
+        }
+    }
 }
