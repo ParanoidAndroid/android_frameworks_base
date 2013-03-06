@@ -1134,12 +1134,13 @@ public final class Settings {
          * or not a valid integer.
          */
         public static boolean getBoolean(ContentResolver cr, String name, boolean def) {
-            String v = getString(cr, name);
+            String resolved = getString(cr, name);
             try {
-                if(v != null)
-                    return "1".equals(v);
-                else
+                if(resolved != null) {
+                    return "1".equals(resolved);
+               } else {
                     return def;
+               }
             } catch (NumberFormatException e) {
                 return def;
             }
