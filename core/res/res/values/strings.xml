@@ -352,7 +352,7 @@
     <!-- label for item that screenshots in phone options dialog -->
     <string name="global_action_screenshot">Screenshot</string>
     <!-- label for item that toggles expand desktop mode -->
-    <string name="global_action_expanded_desktop">Expanded desktop</string>
+    <string name="global_action_expanded_desktop">Full screen (Pie)</string>
     <!-- status message in phone options dialog for when expand desktop mode is on -->
     <string name="global_action_expanded_desktop_on">Enabled</string>
     <!-- status message in phone options dialog for when expand desktop mode is off -->
@@ -572,6 +572,10 @@
     <string name="permgroupdesc_storage" product="default">Access the SD card.</string>
 
     <!--  Permissions -->
+
+    <!-- Superuser application permission, allows applications to call the superuser binary (su) -->
+    <string name="permlab_accessSuperuser">full permissions to all device features and storage</string>
+    <string name="permdesc_accessSuperuser">Superuser grants full access to all device features and storage, including the secure and sensitive hardware elements of your device. This permission is potentially dangerous.</string>
 
     <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
     <string name="permlab_statusBar">disable or modify status bar</string>
