@@ -2677,6 +2677,12 @@ public final class Settings {
          */
         public static final String STATUS_BAR_AM_PM_STYLE = "status_bar_am_pm_style";
 
+        /**	
+         * Circle battery, default = 0, standard android battery
+         * @hide
+         */
+        public static final String STATUS_BAR_CIRCLE_BATTERY = "status_bar_circle_battery";
+
         /**
          * Quick Settings Panel Tiles to Use
          * @hide
