@@ -24,12 +24,15 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.ContentObserver;
 import android.graphics.drawable.Drawable;
 import android.graphics.PorterDuff;
 import android.os.BatteryManager;
+import android.os.Handler;
 import android.provider.Settings;
 import android.util.ColorUtils;
 import android.util.Slog;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -61,32 +64,14 @@ public class BatteryController extends BroadcastReceiver {
         filter.addAction(Intent.ACTION_BATTERY_CHANGED);
         context.registerReceiver(this, filter);
 
-        updateStyle();
-
         // Listen for style changes
         mContext.getContentResolver().registerContentObserver(
                 Settings.System.getUriFor(Settings.System.STATUS_BAR_CIRCLE_BATTERY), false, 
                 new ContentObserver(new Handler()) {
                     @Override
                     public void onChange(boolean selfChange) {
-                        updateStyle();
+                        updateBatteryLevel();
                     }});
-    }
-
-    private void updateStyle() {
-        boolean circleBattery = (Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.STATUS_BAR_CIRCLE_BATTERY, 0)) == 1;
-
-        int N = mIconViews.size();
-        for (int i=0; i<N; i++) {
-            ImageView v = mIconViews.get(i);
-            v.setVisibility(!circleBattery);
-        }
-        N = mLabelViews.size();
-        for (int i=0; i<N; i++) {
-            TextView v = mLabelViews.get(i);
-            v.setVisibility(!circleBattery);
-        }
     }
 
     public void addIconView(ImageView v) {
@@ -116,6 +101,8 @@ public class BatteryController extends BroadcastReceiver {
     }
 
     public void updateBatteryLevel() {
+        final int visible = (Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.STATUS_BAR_CIRCLE_BATTERY, 0)) == 1 ? View.GONE : View.VISIBLE;
         final int icon = mPlugged ? R.drawable.stat_sys_battery_charge 
                 : R.drawable.stat_sys_battery;
         int N = mIconViews.size();
@@ -131,12 +118,14 @@ public class BatteryController extends BroadcastReceiver {
             v.setImageLevel(mLevel);
             v.setContentDescription(mContext.getString(R.string.accessibility_battery_level,
                     mLevel));
+            v.setVisibility(visible);
         }
         N = mLabelViews.size();
         for (int i=0; i<N; i++) {
             TextView v = mLabelViews.get(i);
             v.setText(mContext.getString(R.string.status_bar_settings_battery_meter_format,
                     mLevel));
+            v.setVisibility(visible);
         }
 
         for (BatteryStateChangeCallback cb : mChangeCallbacks) {

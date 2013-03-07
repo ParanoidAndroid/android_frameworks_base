@@ -84,7 +84,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:singleLine="true"
-            android:paddingLeft="6dip"
+            android:paddingLeft="3dip"
             android:layout_marginRight="8dip"
             android:gravity="center_vertical|left"
             />
@@ -141,7 +141,7 @@
                 android:textAppearance="@style/TextAppearance.StatusBar.Battery"
                 android:singleLine="true"
                 android:gravity="bottom"
-                android:paddingLeft="4dip"
+                android:paddingLeft="2dip"
             />
         </LinearLayout>
     </LinearLayout>
