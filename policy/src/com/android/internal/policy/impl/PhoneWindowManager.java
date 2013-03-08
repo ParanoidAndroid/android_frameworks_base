@@ -519,6 +519,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private static final int MSG_DISABLE_POINTER_LOCATION = 2;
     private static final int MSG_DISPATCH_MEDIA_KEY_WITH_WAKE_LOCK = 3;
     private static final int MSG_DISPATCH_MEDIA_KEY_REPEAT_WITH_WAKE_LOCK = 4;
+    private static final int MSG_DISPATCH_VOLKEY_WITH_WAKE_LOCK = 5;
 
     private class PolicyHandler extends Handler {
         @Override
@@ -535,6 +536,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     break;
                 case MSG_DISPATCH_MEDIA_KEY_REPEAT_WITH_WAKE_LOCK:
                     dispatchMediaKeyRepeatWithWakeLock((KeyEvent)msg.obj);
+                    break;
+                case MSG_DISPATCH_VOLKEY_WITH_WAKE_LOCK:
+                    dispatchMediaKeyWithWakeLockToAudioService((KeyEvent)msg.obj);
+                    dispatchMediaKeyWithWakeLockToAudioService(KeyEvent.changeAction((KeyEvent)msg.obj, KeyEvent.ACTION_UP));
                     break;
             }
         }
@@ -717,53 +722,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (mPowerKeyTriggered) {
             mPendingPowerKeyUpCanceled = true;
         }
-    }
-
-    /**
-     * When a volumeup-key longpress expires, skip songs based on key press
-     */
-    Runnable mVolumeUpLongPress = new Runnable() {
-        public void run() {
-            // set the long press flag to true
-            mIsLongPress = true;
-
-            // Shamelessly copied from Kmobs LockScreen controls, works for Pandora, etc...
-            sendMediaButtonEvent(KeyEvent.KEYCODE_MEDIA_NEXT);
-        };
-    };
-
-    /**
-     * When a volumedown-key longpress expires, skip songs based on key press
-     */
-    Runnable mVolumeDownLongPress = new Runnable() {
-        public void run() {
-            // set the long press flag to true
-            mIsLongPress = true;
-
-            // Shamelessly copied from Kmobs LockScreen controls, works for Pandora, etc...
-            sendMediaButtonEvent(KeyEvent.KEYCODE_MEDIA_PREVIOUS);
-        };
-    };
-
-    private void sendMediaButtonEvent(int code) {
-        long eventtime = SystemClock.uptimeMillis();
-        Intent keyIntent = new Intent(Intent.ACTION_MEDIA_BUTTON, null);
-        KeyEvent keyEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, code, 0);
-        keyIntent.putExtra(Intent.EXTRA_KEY_EVENT, keyEvent);
-        mContext.sendOrderedBroadcast(keyIntent, null);
-        keyEvent = KeyEvent.changeAction(keyEvent, KeyEvent.ACTION_UP);
-        keyIntent.putExtra(Intent.EXTRA_KEY_EVENT, keyEvent);
-        mContext.sendOrderedBroadcast(keyIntent, null);
-    }
-
-    void handleVolumeLongPress(int keycode) {
-        mHandler.postDelayed(keycode == KeyEvent.KEYCODE_VOLUME_UP ? mVolumeUpLongPress :
-            mVolumeDownLongPress, ViewConfiguration.getLongPressTimeout());
-    }
-
-    void handleVolumeLongPressAbort() {
-        mHandler.removeCallbacks(mVolumeUpLongPress);
-        mHandler.removeCallbacks(mVolumeDownLongPress);
     }
 
     private void interceptScreenshotChord() {
@@ -971,6 +929,21 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
     }
 
+    private void updateHWOverlays() {
+        final boolean expDesktop = Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.EXPANDED_DESKTOP_STATE, 0) == 1;
+        if (expDesktop || mSystemUiLayout == 1000) {
+            // Before switching to fullscreen safe current HW state, then disable
+            mDisableOverlays = updateFlingerOptions();
+            writeDisableOverlaysOption(1);
+        } 
+        else {
+            // When leaving fullscreen switch back to original HW state
+            int disableOverlays = updateFlingerOptions();
+            if (disableOverlays != mDisableOverlays) writeDisableOverlaysOption(mDisableOverlays);
+        }
+    }
+
     /** {@inheritDoc} */
     public void init(Context context, IWindowManager windowManager,
             WindowManagerFuncs windowManagerFuncs) {
@@ -990,6 +963,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         } catch (RemoteException ex) { }
 
         mDisableOverlays = updateFlingerOptions();
+        updateHWOverlays();
         updateHybridLayout();
 
         mSettingsObserver = new SettingsObserver(mHandler);
@@ -1008,6 +982,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
                 // Update layout
                 update(true);
+                updateHWOverlays();
                 
                 // Reset trigger
                 Settings.System.putInt(mContext.getContentResolver(), Settings.System.USER_INTERFACE_STATE, 0);
@@ -1020,21 +995,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             @Override
             public void onChange(boolean selfChange) {
 
-                boolean expDesktop = Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.EXPANDED_DESKTOP_STATE, 0) == 1;
-
-                if (!expDesktop) {
-                    // When leaving fullscreen switch back to original HW state
-                    int disableOverlays = updateFlingerOptions();
-                    if (disableOverlays != mDisableOverlays) writeDisableOverlaysOption(mDisableOverlays);
-                } else {
-                    // Before switching to fullscreen safe current HW state, then disable
-                    mDisableOverlays = updateFlingerOptions();
-                    writeDisableOverlaysOption(1);
-                }
-
                 updateHybridLayout();
                 update(false);
+                updateHWOverlays();
 
                 if (Settings.System.getInt(mContext.getContentResolver(),
                     Settings.System.EXPANDED_DESKTOP_RESTART_LAUNCHER, 1) == 1) {
@@ -3811,11 +3774,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 if (isMusicActive() && (result & ACTION_PASS_TO_USER) == 0) {
                     if (mVolBtnMusicControls && down && (keyCode != KeyEvent.KEYCODE_VOLUME_MUTE)) {
                         mIsLongPress = false;
-                        handleVolumeLongPress(keyCode);
+                        int newKeyCode = event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_UP ?
+                                KeyEvent.KEYCODE_MEDIA_NEXT : KeyEvent.KEYCODE_MEDIA_PREVIOUS;
+                        Message msg = mHandler.obtainMessage(MSG_DISPATCH_VOLKEY_WITH_WAKE_LOCK,
+                                new KeyEvent(event.getDownTime(), event.getEventTime(), event.getAction(), newKeyCode, 0));
+                        msg.setAsynchronous(true);
+                        mHandler.sendMessageDelayed(msg, ViewConfiguration.getLongPressTimeout());
                         break;
                     } else {
                         if (mVolBtnMusicControls && !down) {
-                            handleVolumeLongPressAbort();
+                            mHandler.removeMessages(MSG_DISPATCH_VOLKEY_WITH_WAKE_LOCK);
                             if (mIsLongPress) {
                                 break;
                             }
