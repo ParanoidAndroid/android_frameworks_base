@@ -7300,6 +7300,7 @@ package android.content.res {
     field public static final int UI_MODE_TYPE_MASK = 15; // 0xf
     field public static final int UI_MODE_TYPE_NORMAL = 1; // 0x1
     field public static final int UI_MODE_TYPE_TELEVISION = 4; // 0x4
+    field public static final int UI_MODE_TYPE_INVERTED = 69; // 0x45
     field public static final int UI_MODE_TYPE_UNDEFINED = 0; // 0x0
     field public int densityDpi;
     field public float fontScale;

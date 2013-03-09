@@ -37,6 +37,7 @@ import android.os.Bundle;
 import android.os.PatternMatcher;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -106,7 +107,12 @@ public class ResolverActivity extends AlertActivity implements AdapterView.OnIte
     protected void onCreate(Bundle savedInstanceState, Intent intent,
             CharSequence title, Intent[] initialIntents, List<ResolveInfo> rList,
             boolean alwaysUseOption) {
-        setTheme(R.style.Theme_DeviceDefault_Light_Dialog_Alert);
+        if (Settings.Secure.getInt(getContentResolver(),
+                Settings.Secure.UI_INVERTED_MODE, 0) == 1) {
+            setTheme(R.style.Theme_DeviceDefault_Dialog_Alert);
+        } else {
+            setTheme(R.style.Theme_DeviceDefault_Light_Dialog_Alert);
+        }
         super.onCreate(savedInstanceState);
         try {
             mLaunchedFromUid = ActivityManagerNative.getDefault().getLaunchedFromUid(

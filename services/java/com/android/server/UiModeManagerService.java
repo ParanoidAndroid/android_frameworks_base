@@ -26,11 +26,13 @@ import android.app.PendingIntent;
 import android.app.StatusBarManager;
 import android.app.UiModeManager;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.database.ContentObserver;
 import android.os.BatteryManager;
 import android.os.Binder;
 import android.os.Handler;
@@ -71,14 +73,15 @@ final class UiModeManagerService extends IUiModeManager.Stub {
     private int mNightMode = UiModeManager.MODE_NIGHT_NO;
     private boolean mCarModeEnabled = false;
     private boolean mCharging = false;
-    private final int mDefaultUiModeType;
-    private final boolean mCarModeKeepsScreenOn;
-    private final boolean mDeskModeKeepsScreenOn;
-    private final boolean mTelevision;
+    private int mDefaultUiModeType;
+    private boolean mCarModeKeepsScreenOn;
+    private boolean mDeskModeKeepsScreenOn;
+    private boolean mTelevision;
 
     private boolean mComputedNightMode;
     private int mCurUiMode = 0;
     private int mSetUiMode = 0;
+    private boolean mInitialVarSet;
 
     private boolean mHoldingConfiguration = false;
     private Configuration mConfiguration = new Configuration();
@@ -89,8 +92,8 @@ final class UiModeManagerService extends IUiModeManager.Stub {
 
     private StatusBarManager mStatusBarManager;
 
-    private final PowerManager mPowerManager;
-    private final PowerManager.WakeLock mWakeLock;
+    private PowerManager mPowerManager;
+    private PowerManager.WakeLock mWakeLock;
 
     static Intent buildHomeIntent(String category) {
         Intent intent = new Intent(Intent.ACTION_MAIN);
@@ -159,7 +162,29 @@ final class UiModeManagerService extends IUiModeManager.Stub {
         }
     };
 
+    private final class SettingsObserver extends ContentObserver {
+        SettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        void observe() {
+            ContentResolver resolver = mContext.getContentResolver();
+            resolver.registerContentObserver(Settings.Secure.getUriFor(
+                    Settings.Secure.UI_INVERTED_MODE),
+                    false, this);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            updateUiMode();
+            mUiContext = null;
+            updateLocked(0, 0);
+            forceUiModeChangeForNonObservingMethods();
+        }
+    }
+
     public UiModeManagerService(Context context, TwilightService twilight) {
+        mInitialVarSet = true;
         mContext = context;
         mTwilightService = twilight;
 
@@ -172,24 +197,47 @@ final class UiModeManagerService extends IUiModeManager.Stub {
 
         ThemeUtils.registerThemeChangeReceiver(mContext, mThemeChangeReceiver);
 
-        mPowerManager = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
+        mTwilightService.registerListener(mTwilightListener, mHandler);
+
+        // Register settings observer and set initial preferences
+        SettingsObserver settingsObserver = new SettingsObserver(new Handler());
+        settingsObserver.observe();
+
+        mPowerManager = (PowerManager)mContext.getSystemService(Context.POWER_SERVICE);
         mWakeLock = mPowerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, TAG);
 
         mConfiguration.setToDefaults();
 
-        mDefaultUiModeType = context.getResources().getInteger(
-                com.android.internal.R.integer.config_defaultUiModeType);
-        mCarModeKeepsScreenOn = (context.getResources().getInteger(
+        updateUiMode();
+
+        mCarModeKeepsScreenOn = (mContext.getResources().getInteger(
                 com.android.internal.R.integer.config_carDockKeepsScreenOn) == 1);
-        mDeskModeKeepsScreenOn = (context.getResources().getInteger(
+        mDeskModeKeepsScreenOn = (mContext.getResources().getInteger(
                 com.android.internal.R.integer.config_deskDockKeepsScreenOn) == 1);
-        mTelevision = context.getPackageManager().hasSystemFeature(
+        mTelevision = mContext.getPackageManager().hasSystemFeature(
                 PackageManager.FEATURE_TELEVISION);
 
         mNightMode = Settings.Secure.getInt(mContext.getContentResolver(),
                 Settings.Secure.UI_NIGHT_MODE, UiModeManager.MODE_NIGHT_AUTO);
 
-        mTwilightService.registerListener(mTwilightListener, mHandler);
+    }
+
+    private void updateUiMode() {
+        if (Settings.Secure.getInt(mContext.getContentResolver(),
+                Settings.Secure.UI_INVERTED_MODE, 0) == 1) {
+            mDefaultUiModeType = mContext.getResources().getInteger(
+                com.android.internal.R.integer.config_alternativeUiModeType);
+        } else {
+            mDefaultUiModeType = mContext.getResources().getInteger(
+                com.android.internal.R.integer.config_defaultUiModeType);
+        }
+
+        if (mInitialVarSet && mDefaultUiModeType != Configuration.UI_MODE_TYPE_NORMAL) {
+            mUiContext = null;
+            updateLocked(0, 0);
+            forceUiModeChangeForNonObservingMethods();
+        }
+        mInitialVarSet = false;
     }
 
     @Override // Binder call
@@ -307,6 +355,15 @@ final class UiModeManagerService extends IUiModeManager.Stub {
             default:
                 return false;
         }
+    }
+
+    private void forceUiModeChangeForNonObservingMethods() {
+        final boolean toggleUiMode = Settings.Secure.getInt(
+                mContext.getContentResolver(),
+                Settings.Secure.UI_MODE_IS_TOGGLED, 0) == 1;
+         Settings.Secure.putInt(mContext.getContentResolver(),
+                Settings.Secure.UI_MODE_IS_TOGGLED,
+                toggleUiMode ? 0 : 1);
     }
 
     private void updateConfigurationLocked() {
