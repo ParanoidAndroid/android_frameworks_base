@@ -1806,6 +1806,8 @@
   <java-symbol type="bool" name="config_sf_slowBlur" />
   <java-symbol type="drawable" name="ic_volume" />
   <java-symbol type="drawable" name="stat_notify_sim_toolkit" />
+  <java-symbol type="bool" name="config_samsung_stk" />
+  <java-symbol type="bool" name="config_smsSamsungCdmaAlternateMessageIDEncoding" />
 
   <!-- From maps library -->
   <java-symbol type="array" name="maps_starting_lat_lng" />
