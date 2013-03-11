@@ -20,6 +20,7 @@ public class DesktopModeTile extends QuickSettingsTile {
             QuickSettingsContainerView container, QuickSettingsController qsc, Handler handler) {
         super(context, inflater, container, qsc);
 
+        mLabel = context.getString(R.string.quick_settings_desktop_mode_label);
         mOnClick = new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -48,10 +49,8 @@ public class DesktopModeTile extends QuickSettingsTile {
     private synchronized void updateTile() {
         if(getExpandedDesktopState()){
             mDrawable = R.drawable.ic_qs_expanded_desktop;
-            mLabel = mContext.getString(R.string.quick_settings_desktop_mode_default);
         }else{
             mDrawable = R.drawable.ic_qs_expanded_desktop_off;
-            mLabel = mContext.getString(R.string.quick_settings_desktop_mode_full);
         }
     }
 
