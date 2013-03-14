@@ -214,9 +214,11 @@ public class QuickSettingsController {
             mQuickSettingsTiles.add(qs);
         }
 
-        mIMETile = new InputMethodTile(mContext, inflater, mContainerView, this);
-        mIMETile.setupQuickSettingsTile();
-        mQuickSettingsTiles.add(mIMETile);
+        if (Settings.System.getInt(resolver, Settings.System.QS_DYNAMIC_IME, 1) == 1) {
+            mIMETile = new InputMethodTile(mContext, inflater, mContainerView, this);
+            mIMETile.setupQuickSettingsTile();
+            mQuickSettingsTiles.add(mIMETile);
+        }
 
         if (deviceSupportsUsbTether(mContext) && Settings.System.getInt(resolver, Settings.System.QS_DYNAMIC_USBTETHER, 1) == 1) {
             QuickSettingsTile qs = new UsbTetherTile(mContext, inflater, mContainerView, this);
