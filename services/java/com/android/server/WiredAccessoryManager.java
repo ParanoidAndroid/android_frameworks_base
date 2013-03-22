@@ -83,8 +83,11 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
     private final InputManagerService mInputManager;
 
     private final boolean mUseDevInputEventForAudioJack;
+    
+    private final Context mContext;
 
     public WiredAccessoryManager(Context context, InputManagerService inputManager) {
+        mContext = context;
         PowerManager pm = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
         mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "WiredAccessoryManager");
         mWakeLock.setReferenceCounted(false);
@@ -103,6 +106,9 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
                     }
                 },
                 new IntentFilter(Intent.ACTION_BOOT_COMPLETED), null, null);
+                
+        // Observe ALSA uevents
+        this.UsbAudioObserver.startObserving("MAJOR=116");
     }
 
     private void bootCompleted() {
@@ -429,4 +435,90 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
             }
         }
     }
+
+    private final UEventObserver UsbAudioObserver = new UEventObserver() {
+        public void onUEvent(UEventObserver.UEvent event) {
+            if(LOG) Slog.v(WiredAccessoryManager.TAG, "USB AUDIO UEVENT: " + event.toString());
+            
+            String action = event.get("ACTION");
+            String devName = event.get("DEVNAME");
+            String devPath = event.get("DEVPATH");
+            String major = event.get("MAJOR");
+            String minor = event.get("MINOR");
+            
+            if(LOG){
+                Slog.v(WiredAccessoryManager.TAG, 
+                    "ACTION = " + action + 
+                    ", DEVNAME=" + devName + 
+                    ", MAJOR = " + major + 
+                    ", MINOR = " + minor + 
+                    ", DEVPATH = " + devPath);
+            }
+            
+            // Is alsa device?
+            if (major.equals("116")) {
+                String devPathLower = devPath.toLowerCase();
+                
+                if ((devPathLower.contains("usb")) && (!devPathLower.contains("gadget")) && (devPathLower.endsWith("p"))) {
+                    // Get state (enabled/disabled)
+                    int state = (action.equals("add") ? 1 : 0);
+                    
+                    // Create data class
+                    UsbAudioData usbAudioData = new UsbAudioData(state, Character.toString(devName.charAt(8)), Character.toString(devName.charAt(10)));
+                    
+                    if(LOG) {
+                        Slog.v(WiredAccessoryManager.TAG, 
+                            "cardNumber = " + usbAudioData.cardNumber +
+                            ", deviceNumber = " + usbAudioData.deviceNumber +
+                            ", channels = " + Integer.toString(usbAudioData.channels));
+                    }
+                    
+                    // Notify applications that the audio output is going to change
+                    Intent noisyIntent = new Intent("android.media.AUDIO_BECOMING_NOISY");
+                    WiredAccessoryManager.this.mContext.sendBroadcast(noisyIntent);
+                    
+                    // Aquire wake lock before route change
+                    WiredAccessoryManager.this.mWakeLock.acquire();
+                    
+                    // Queue the route change
+                    this.mHandler.sendMessageDelayed(this.mHandler.obtainMessage(0, usbAudioData), 500);
+                }
+            }
+        }
+        
+        private final Handler mHandler = new Handler() {
+            public void handleMessage(Message message) {
+                UsbAudioData usbAudioData = (UsbAudioData)message.obj;
+                
+                // Send USB_AUDIO_ACCESSORY_PLUG intent to notify that an USB audio device has been connected.
+                Intent usbAudioIntent = new Intent("android.intent.action.USB_AUDIO_ACCESSORY_PLUG");
+                usbAudioIntent.putExtra("state", usbAudioData.state);
+                usbAudioIntent.putExtra("card", Integer.parseInt(usbAudioData.cardNumber));
+                usbAudioIntent.putExtra("device", Integer.parseInt(usbAudioData.deviceNumber));
+                usbAudioIntent.putExtra("channels", usbAudioData.channels);
+                
+                try {
+                    WiredAccessoryManager.this.mContext.sendStickyBroadcast(usbAudioIntent);
+                } catch(Exception e) {
+                    Slog.e(WiredAccessoryManager.TAG, "Unable to send intent: android.intent.action.USB_AUDIO_ACCESSORY_PLUG");
+                }
+                
+                // Route change complete, release the wake lock
+                WiredAccessoryManager.this.mWakeLock.release();
+            }
+        };
+        
+        final class UsbAudioData {
+            public int state;
+            public String cardNumber;
+            public String deviceNumber;
+            public int channels = 2;
+
+            public UsbAudioData(int state, String cardNumber, String deviceNumber) {
+                this.state = state;
+                this.cardNumber = cardNumber;
+                this.deviceNumber = deviceNumber;
+            }
+        };
+    };
 }

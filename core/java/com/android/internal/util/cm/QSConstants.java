@@ -26,6 +26,7 @@ public class QSConstants {
         public static final String TILE_NFC = "toggleNfc";
         public static final String TILE_USBTETHER = "toggleUsbTether";
         public static final String TILE_DESKTOPMODE = "toggleDesktopMode";
+        public static final String TILE_VOLUME = "toggleVolume";
 
         public static final String TILE_DELIMITER = "|";
         public static ArrayList<String> TILES_DEFAULT = new ArrayList<String>();
