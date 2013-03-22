@@ -556,13 +556,16 @@ public abstract class BaseStatusBar extends SystemUI implements
 
         // Quick navigation bar trigger area
         View pieControlsTrigger = new View(mContext);
-
+        // Create a dummy view to force the screen to redraw
+        View pieDummytrigger = new View(mContext);
         // Store our views for removing / adding
         mPieControlPanel = panel;
         mPieControlsTrigger = pieControlsTrigger;
 
         pieControlsTrigger.setOnTouchListener(new PieControlsTouchListener());
         mWindowManager.addView(pieControlsTrigger, getPieTriggerLayoutParams(mContext, gravity));
+        mWindowManager.addView(pieDummytrigger, getPieTriggerLayoutParams(mContext,
+            gravity==Gravity.BOTTOM ? Gravity.TOP : Gravity.BOTTOM));
 
         panel.init(mHandler, this, pieControlsTrigger, gravity);
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
