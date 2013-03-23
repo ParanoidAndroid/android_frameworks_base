@@ -27,10 +27,13 @@ import com.android.systemui.statusbar.phone.QuickSettingsContainerView;
 
 public class HybridTile extends QuickSettingsTile {
 
+    private static final String PARANOID_PREFERENCES_PKG = "com.paranoid.preferences"
+    private static final String STOCK_COLORS = "NULL|NULL|NULL|NULL|NULL";
+
     private String mPackagename;
     private String mSourceDir;
     private String mStatus;
-    private String mColor = "NULL|NULL|NULL|NULL|NULL";
+    private String mColor = STOCK_COLORS;
 
     public HybridTile(Context context, LayoutInflater inflater,
             QuickSettingsContainerView container, QuickSettingsController qsc, Handler handler) {
@@ -57,7 +60,9 @@ public class HybridTile extends QuickSettingsTile {
         mOnLongClick = new OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                startSettingsActivity(Settings.ACTION_DISPLAY_SETTINGS);
+                Intent intent = mContext.getPackageManager()
+                        .getLaunchIntentForPackage(PARANOID_PREFERENCES_PKG);
+                mContext.startActivity(intent);
                 return true;
             }
         };
@@ -86,10 +91,10 @@ public class HybridTile extends QuickSettingsTile {
             mStatus = String.valueOf(ExtendedPropertiesUtils.getActualProperty(mPackagename +
                     ExtendedPropertiesUtils.PARANOID_DPI_SUFFIX)) + " DPI / " +
                     String.valueOf(ExtendedPropertiesUtils.getActualProperty(mPackagename +
-                    ExtendedPropertiesUtils.PARANOID_LAYOUT_SUFFIX)) + " P";
+                    ExtendedPropertiesUtils.PARANOID_LAYOUT_SUFFIX)) + "p";
 
             mColor = ExtendedPropertiesUtils.getProperty(mPackagename +
-                    ExtendedPropertiesUtils.PARANOID_COLORS_SUFFIX, "NULL|NULL|NULL|NULL|NULL");
+                    ExtendedPropertiesUtils.PARANOID_COLORS_SUFFIX, STOCK_COLORS);
 
         } catch(NameNotFoundException Exception) {}
 
