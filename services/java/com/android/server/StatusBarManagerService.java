@@ -291,7 +291,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub
                                     Settings.System.putString(mContext.getContentResolver(),
                                             Settings.System.FOREGROUND_APP, foregroundTaskPackageName);
                                 }
-                            } catch (RemoteException ex) {
+                            } catch (Exception ex) {
                             }
                         }
                     }
