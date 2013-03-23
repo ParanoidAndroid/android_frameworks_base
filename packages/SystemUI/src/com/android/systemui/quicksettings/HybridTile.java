@@ -27,6 +27,7 @@ import com.android.systemui.statusbar.phone.QuickSettingsContainerView;
 
 public class HybridTile extends QuickSettingsTile {
 
+    private static final String LABEL = "Hybrid";
     private static final String PARANOID_PREFERENCES_PKG = "com.paranoid.preferences";
     private static final String STOCK_COLORS = "NULL|NULL|NULL|NULL|NULL";
 
@@ -39,21 +40,23 @@ public class HybridTile extends QuickSettingsTile {
             QuickSettingsContainerView container, QuickSettingsController qsc, Handler handler) {
         super(context, inflater, container, qsc);
 
-        mLabel = context.getString(R.string.quick_settings_hybrid_label);
+        mLabel = LABEL;
         mTileLayout = R.layout.quick_settings_tile_hybrid;
 
         mOnClick = new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent("android.intent.action.MAIN");
-                intent.putExtra("package", mPackagename);
-                intent.putExtra("appname", mLabel);
-                intent.putExtra("filename", mSourceDir);
-                intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.setComponent(new ComponentName("com.paranoid.preferences", 
-                        "com.paranoid.preferences.hybrid.ViewPagerActivity"));
-                mContext.startActivity(intent);
+                if (!mLabel.equals(LABEL)) {
+                    Intent intent = new Intent("android.intent.action.MAIN");
+                    intent.putExtra("package", mPackagename);
+                    intent.putExtra("appname", mLabel);
+                    intent.putExtra("filename", mSourceDir);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.setComponent(new ComponentName("com.paranoid.preferences", 
+                            "com.paranoid.preferences.hybrid.ViewPagerActivity"));
+                    mContext.startActivity(intent);
+                }
             }
         };
 
