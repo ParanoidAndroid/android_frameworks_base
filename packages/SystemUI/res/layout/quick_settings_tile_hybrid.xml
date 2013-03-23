@@ -13,12 +13,63 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<TextView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    style="@style/TextAppearance.QuickSettings.TileView"
-    android:id="@+id/hybrid_textview"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
     android:gravity="center"
-    />
+    android:orientation="vertical">
+
+    <TextView
+        style="@style/TextAppearance.QuickSettings.TileView"
+        android:id="@+id/hybrid_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"/>
+
+    <LinearLayout
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <View
+            android:id="@+id/hybrid_swatch1"
+            android:layout_width="15dp"
+            android:layout_height="15dp"/>
+        <View
+            android:id="@+id/hybrid_swatch2"
+            android:layout_marginLeft="4dp"
+            android:layout_width="15dp"
+            android:layout_height="15dp"/>
+        <View
+            android:id="@+id/hybrid_swatch3"
+            android:layout_marginLeft="4dp"
+            android:layout_width="15dp"
+            android:layout_height="15dp"/>
+        <View
+            android:id="@+id/hybrid_swatch4"
+            android:layout_marginLeft="4dp"
+            android:layout_width="15dp"
+            android:layout_height="15dp"/>
+        <View
+            android:id="@+id/hybrid_swatch5"
+            android:layout_marginLeft="4dp"
+            android:layout_width="15dp"
+            android:layout_height="15dp"/>
+
+    </LinearLayout>
+
+    <TextView
+        style="@style/TextAppearance.QuickSettings.TileView"
+        android:id="@+id/hybrid_app"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        />
+
+</LinearLayout>
