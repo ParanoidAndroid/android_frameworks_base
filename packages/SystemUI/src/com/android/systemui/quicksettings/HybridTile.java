@@ -27,7 +27,7 @@ import com.android.systemui.statusbar.phone.QuickSettingsContainerView;
 
 public class HybridTile extends QuickSettingsTile {
 
-    private static final String PARANOID_PREFERENCES_PKG = "com.paranoid.preferences"
+    private static final String PARANOID_PREFERENCES_PKG = "com.paranoid.preferences";
     private static final String STOCK_COLORS = "NULL|NULL|NULL|NULL|NULL";
 
     private String mPackagename;
