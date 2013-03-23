@@ -27,11 +27,11 @@ import com.android.systemui.statusbar.phone.QuickSettingsContainerView;
 
 public class HybridTile extends QuickSettingsTile {
 
-    private static final String LABEL = "Hybrid";
     private static final String PARANOID_PREFERENCES_PKG = "com.paranoid.preferences";
     private static final String STOCK_COLORS = "NULL|NULL|NULL|NULL|NULL";
-
-    private String mPackagename;
+    
+    private String mDefaultLabel;
+    private String mPackageName;
     private String mSourceDir;
     private String mStatus;
     private String mColor = STOCK_COLORS;
@@ -40,13 +40,15 @@ public class HybridTile extends QuickSettingsTile {
             QuickSettingsContainerView container, QuickSettingsController qsc, Handler handler) {
         super(context, inflater, container, qsc);
 
-        mLabel = LABEL;
+        mContext = context;
+        mDefaultLabel = context.getString(R.string.quick_settings_hybrid_label);
+        mLabel = mDefaultLabel;
         mTileLayout = R.layout.quick_settings_tile_hybrid;
 
         mOnClick = new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!mLabel.equals(LABEL)) {
+                if(!mLabel.equals(mDefaultLabel)) {
                     Intent intent = new Intent("android.intent.action.MAIN");
                     intent.putExtra("package", mPackagename);
                     intent.putExtra("appname", mLabel);
@@ -75,31 +77,33 @@ public class HybridTile extends QuickSettingsTile {
 
     @Override
     public void updateResources() {
-        mPackagename = Settings.System.getString(mContext.getContentResolver(),
+        mPackageName = Settings.System.getString(mContext.getContentResolver(),
                 Settings.System.FOREGROUND_APP);
 
         PackageManager pm = mContext.getPackageManager();
 
         try {
             PackageInfo foregroundAppPackageInfo = pm.
-                    getPackageInfo(mPackagename, 0);
+                    getPackageInfo(mPackageName, 0);
             mLabel = foregroundAppPackageInfo.applicationInfo.
                     loadLabel(pm).toString();
 
             ExtendedPropertiesUtils.refreshProperties();
             ApplicationInfo appInfo = ExtendedPropertiesUtils.
-                    getAppInfoFromPackageName(mPackagename);
+                    getAppInfoFromPackageName(mPackageName);
             mSourceDir = appInfo.sourceDir;
 
-            mStatus = String.valueOf(ExtendedPropertiesUtils.getActualProperty(mPackagename +
+            mStatus = String.valueOf(ExtendedPropertiesUtils.getActualProperty(mPackageName +
                     ExtendedPropertiesUtils.PARANOID_DPI_SUFFIX)) + " DPI / " +
-                    String.valueOf(ExtendedPropertiesUtils.getActualProperty(mPackagename +
+                    String.valueOf(ExtendedPropertiesUtils.getActualProperty(mPackageName +
                     ExtendedPropertiesUtils.PARANOID_LAYOUT_SUFFIX)) + "P";
 
-            mColor = ExtendedPropertiesUtils.getProperty(mPackagename +
+            mColor = ExtendedPropertiesUtils.getProperty(mPackageName +
                     ExtendedPropertiesUtils.PARANOID_COLORS_SUFFIX, STOCK_COLORS);
 
-        } catch(NameNotFoundException Exception) {}
+        } catch(Exception e) {
+            mLabel = mDefaultLabel; // No app found with package name
+        }
 
         updateQuickSettings();
     }
