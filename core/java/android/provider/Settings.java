@@ -2491,6 +2491,12 @@ public final class Settings {
         public static final String STATUS_ICON_COLOR = "status_icon_color";
 
         /**
+         * Foreground App
+         * @hide
+         */
+        public static final String FOREGROUND_APP = "foreground_app";
+
+        /**
          * Statusbar State
          * @hide
          */
