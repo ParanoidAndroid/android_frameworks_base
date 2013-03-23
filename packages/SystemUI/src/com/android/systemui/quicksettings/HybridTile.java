@@ -91,7 +91,7 @@ public class HybridTile extends QuickSettingsTile {
             mStatus = String.valueOf(ExtendedPropertiesUtils.getActualProperty(mPackagename +
                     ExtendedPropertiesUtils.PARANOID_DPI_SUFFIX)) + " DPI / " +
                     String.valueOf(ExtendedPropertiesUtils.getActualProperty(mPackagename +
-                    ExtendedPropertiesUtils.PARANOID_LAYOUT_SUFFIX)) + "p";
+                    ExtendedPropertiesUtils.PARANOID_LAYOUT_SUFFIX)) + "P";
 
             mColor = ExtendedPropertiesUtils.getProperty(mPackagename +
                     ExtendedPropertiesUtils.PARANOID_COLORS_SUFFIX, STOCK_COLORS);
