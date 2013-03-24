@@ -1790,6 +1790,24 @@ public final class Settings {
          */
         public static final String MODE_RINGER_STREAMS_AFFECTED = "mode_ringer_streams_affected";
 
+        /**
+         * Custom automatic brightness light sensor levels.
+         * The value is a comma separated int array with length N.
+         * Example: "100,300,3000".
+         *
+         * @hide
+         */
+        public static final String AUTO_BRIGHTNESS_LUX = "auto_brightness_lux";
+
+        /**
+         * Custom automatic brightness display backlight brightness values.
+         * The value is a comma separated int array with length N+1.
+         * Example: "10,50,100,255".
+         *
+         * @hide
+         */
+        public static final String AUTO_BRIGHTNESS_BACKLIGHT = "auto_brightness_backlight";
+
          /**
           * Determines which streams are affected by mute. The
           * stream type's bit should be set to 1 if it should be muted when a mute request
