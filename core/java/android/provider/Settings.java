@@ -2467,6 +2467,21 @@ public final class Settings {
          */
         public static final String NAV_BAR_TABUI_MENU = "nav_bar_tabui_menu";
 
+		/**
+         * User configurable background for qs tiles
+         * 0 = random colors
+         * 1 = colorpicker preference
+         * 2 = default background
+         * @hide
+         */
+        public static final String QUICK_SETTINGS_BACKGROUND_STYLE = "quick_settings_background_style";
+
+        /**
+         * User configurable color for text for qs tiles
+         * @hide
+         */
+        public static final String QUICK_SETTINGS_TEXT_COLOR = "quick_settings_text_color";
+
         /**
          * Ability to change navigation bar color
          * 0 = P.A.C. is off, it will switch everything color related back to stock and ignore calls
@@ -6618,3 +6633,4 @@ public final class Settings {
         return "android-" + Long.toHexString(androidId);
     }
 }
+

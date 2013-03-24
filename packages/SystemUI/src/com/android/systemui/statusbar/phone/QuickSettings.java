@@ -918,6 +918,34 @@ public class QuickSettings {
         }
     };
 
+	void updateTileTextSize(int column) {
+        // adjust Tile Text Size based on column count
+        switch (column) {
+            case 7:
+                mTileTextSize = 8;
+                break;
+            case 6:
+                mTileTextSize = 8;
+                break;
+            case 5:
+                mTileTextSize = 9;
+                break;
+            case 4:
+                mTileTextSize = 10;
+                break;
+            case 3:
+            default:
+                mTileTextSize = 12;
+                break;
+            case 2:
+                mTileTextSize = 14;
+                break;
+            case 1:
+                mTileTextSize = 16;
+                break;
+        }
+    }
+
     private final BroadcastReceiver mProfileReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {

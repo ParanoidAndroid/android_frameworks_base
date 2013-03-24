@@ -1,5 +1,6 @@
 package com.android.systemui.quicksettings;
 
+import static com.android.internal.util.cm.QSUtils.getTileTextColor;
 import android.app.ActivityManagerNative;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -73,6 +74,7 @@ public class QuickSettingsTile implements OnClickListener {
         TextView tv = (TextView) mTile.findViewById(R.id.tile_textview);
         tv.setCompoundDrawablesWithIntrinsicBounds(0, mDrawable, 0, 0);
         tv.setText(mLabel);
+		tv.setTextColor(getTileTextColor(mContext));
     }
 
     void startSettingsActivity(String action){
@@ -94,6 +96,34 @@ public class QuickSettingsTile implements OnClickListener {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         mContext.startActivityAsUser(intent, new UserHandle(UserHandle.USER_CURRENT));
         mStatusbarService.collapse();
+    }
+
+	void updateTileTextSize(int column) {
+        // adjust Tile Text Size based on column count
+        switch (column) {
+            case 7:
+                mTileTextSize = 8;
+                break;
+            case 6:
+                mTileTextSize = 8;
+                break;
+            case 5:
+                mTileTextSize = 9;
+                break;
+            case 4:
+                mTileTextSize = 10;
+                break;
+            case 3:
+            default:
+                mTileTextSize = 12;
+                break;
+            case 2:
+                mTileTextSize = 14;
+                break;
+            case 1:
+                mTileTextSize = 16;
+                break;
+        }
     }
 
     @Override

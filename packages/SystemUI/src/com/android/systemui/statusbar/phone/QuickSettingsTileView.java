@@ -16,7 +16,11 @@
 
 package com.android.systemui.statusbar.phone;
 
+import static com.android.internal.util.cm.QSUtils.setBackgroundStyle;
+
 import android.content.Context;
+import android.graphics.Color;
+import android.provider.Settings;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.widget.FrameLayout;
@@ -35,6 +39,8 @@ public class QuickSettingsTileView extends FrameLayout {
 
         mColSpan = 1;
         mRowSpan = 1;
+
+        setBackgroundStyle(context, this);
     }
 
     void setColumnSpan(int span) {
