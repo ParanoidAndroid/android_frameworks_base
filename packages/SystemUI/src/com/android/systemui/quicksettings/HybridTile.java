@@ -36,6 +36,8 @@ public class HybridTile extends QuickSettingsTile {
     private String mStatus;
     private String mColor = STOCK_COLORS;
 
+    private PackageManager mPm;
+
     public HybridTile(Context context, LayoutInflater inflater,
             QuickSettingsContainerView container, QuickSettingsController qsc, Handler handler) {
         super(context, inflater, container, qsc);
@@ -43,6 +45,7 @@ public class HybridTile extends QuickSettingsTile {
         mDefaultLabel = context.getString(R.string.quick_settings_hybrid_label);
         mLabel = mDefaultLabel;
         mTileLayout = R.layout.quick_settings_tile_hybrid;
+        mPm = context.getPackageManager();
 
         mOnClick = new OnClickListener() {
             @Override
@@ -52,10 +55,10 @@ public class HybridTile extends QuickSettingsTile {
                     intent.putExtra("package", mPackageName);
                     intent.putExtra("appname", mLabel);
                     intent.putExtra("filename", mSourceDir);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+                    intent.putExtra("apply", "autoLaunch");
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.setComponent(new ComponentName("com.paranoid.preferences", 
-                            "com.paranoid.preferences.hybrid.ViewPagerActivity"));
+                    intent.setComponent(new ComponentName(PARANOID_PREFERENCES_PKG, 
+                            PARANOID_PREFERENCES_PKG + ".hybrid.ViewPagerActivity"));
                     mContext.startActivity(intent);
                 }
             }
@@ -64,9 +67,11 @@ public class HybridTile extends QuickSettingsTile {
         mOnLongClick = new OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                Intent intent = mContext.getPackageManager()
-                        .getLaunchIntentForPackage(PARANOID_PREFERENCES_PKG);
-                mContext.startActivity(intent);
+                try {
+                    Intent launchIntent = mPm.getLaunchIntentForPackage(
+                            PARANOID_PREFERENCES_PKG); 
+                    mContext.startActivity(launchIntent);
+                } catch(NullPointerException e) { }
                 return true;
             }
         };
@@ -78,14 +83,11 @@ public class HybridTile extends QuickSettingsTile {
     public void updateResources() {
         mPackageName = Settings.System.getString(mContext.getContentResolver(),
                 Settings.System.FOREGROUND_APP);
-
-        PackageManager pm = mContext.getPackageManager();
-
         try {
-            PackageInfo foregroundAppPackageInfo = pm.
+            PackageInfo foregroundAppPackageInfo = mPm.
                     getPackageInfo(mPackageName, 0);
             mLabel = foregroundAppPackageInfo.applicationInfo.
-                    loadLabel(pm).toString();
+                    loadLabel(mPm).toString();
 
             ExtendedPropertiesUtils.refreshProperties();
             ApplicationInfo appInfo = ExtendedPropertiesUtils.
@@ -141,6 +143,7 @@ public class HybridTile extends QuickSettingsTile {
 
     @Override
     void onPostCreate() {
+        updateResources();
         super.onPostCreate();
     }
 
