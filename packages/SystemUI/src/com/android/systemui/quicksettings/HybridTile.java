@@ -40,7 +40,6 @@ public class HybridTile extends QuickSettingsTile {
             QuickSettingsContainerView container, QuickSettingsController qsc, Handler handler) {
         super(context, inflater, container, qsc);
 
-        mContext = context;
         mDefaultLabel = context.getString(R.string.quick_settings_hybrid_label);
         mLabel = mDefaultLabel;
         mTileLayout = R.layout.quick_settings_tile_hybrid;
@@ -50,7 +49,7 @@ public class HybridTile extends QuickSettingsTile {
             public void onClick(View v) {
                 if(!mLabel.equals(mDefaultLabel)) {
                     Intent intent = new Intent("android.intent.action.MAIN");
-                    intent.putExtra("package", mPackagename);
+                    intent.putExtra("package", mPackageName);
                     intent.putExtra("appname", mLabel);
                     intent.putExtra("filename", mSourceDir);
                     intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
