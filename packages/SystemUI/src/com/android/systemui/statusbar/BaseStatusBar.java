@@ -625,6 +625,7 @@ public abstract class BaseStatusBar extends SystemUI implements
         lp.gravity = gravity;
         return lp;
     }
+    
     private void updateIconColor() {
         ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
                 Settings.System.STATUS_ICON_COLOR);
