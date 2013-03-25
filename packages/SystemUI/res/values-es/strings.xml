@@ -47,6 +47,7 @@
     <string name="status_bar_settings_auto_rotation" msgid="3790482541357798421">"Girar pantalla automáticamente"</string>
     <string name="status_bar_settings_mute_label" msgid="554682549917429396">"SILENC"</string>
     <string name="status_bar_settings_auto_brightness_label" msgid="511453614962324674">"AUTO"</string>
+    <string name="quick_settings_hybrid_label">Prop. Híbridas</string>
     <string name="status_bar_settings_notifications" msgid="397146176280905137">"Notificaciones"</string>
     <string name="bluetooth_tethered" msgid="7094101612161133267">"Bluetooth anclado"</string>
     <string name="status_bar_input_method_settings_configure_input_methods" msgid="3504292471512317827">"Configurar métodos de entrada"</string>

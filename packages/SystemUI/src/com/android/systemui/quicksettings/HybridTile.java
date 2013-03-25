@@ -68,10 +68,14 @@ public class HybridTile extends QuickSettingsTile {
             @Override
             public boolean onLongClick(View v) {
                 try {
-                    Intent launchIntent = mPm.getLaunchIntentForPackage(
-                            PARANOID_PREFERENCES_PKG); 
-                    mContext.startActivity(launchIntent);
-                } catch(NullPointerException e) { }
+                    Intent intent = new Intent("android.intent.action.MAIN");
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.setComponent(new ComponentName(PARANOID_PREFERENCES_PKG, 
+                            PARANOID_PREFERENCES_PKG + ".MainActivity"));
+                    mContext.startActivity(intent);
+                } catch(NullPointerException e) {
+                    // No intent found for activity component
+                }
                 return true;
             }
         };
