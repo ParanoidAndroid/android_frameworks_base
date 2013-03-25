@@ -564,8 +564,8 @@ public abstract class BaseStatusBar extends SystemUI implements
         mPieControlsTrigger = new View(mContext);
         mPieControlsTrigger.setOnTouchListener(new PieControlsTouchListener());
         mWindowManager.addView(mPieControlsTrigger, getPieTriggerLayoutParams(mContext, gravity));
-        mWindowManager.addView(mPieDummytrigger, getPieTriggerLayoutParams(mContext,
-            gravity==Gravity.BOTTOM ? Gravity.TOP : Gravity.BOTTOM));
+        mWindowManager.addView(mPieDummytrigger, getDummyTriggerLayoutParams(mContext,
+            gravity==Gravity.LEFT ? Gravity.RIGHT : Gravity.LEFT));
 
         // Init Panel
         mPieControlPanel.init(mHandler, this, mPieControlsTrigger, gravity);
@@ -605,6 +605,26 @@ public abstract class BaseStatusBar extends SystemUI implements
         return lp;
     }
 
+    public static WindowManager.LayoutParams getDummyTriggerLayoutParams(Context context, int gravity) {
+        final Resources res = context.getResources();
+        final float mPieSize = Settings.System.getFloat(context.getContentResolver(),
+                Settings.System.PIE_TRIGGER, 1f);
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
+              (gravity == Gravity.TOP || gravity == Gravity.BOTTOM ?
+                    ViewGroup.LayoutParams.MATCH_PARENT : 1),
+              (gravity == Gravity.LEFT || gravity == Gravity.RIGHT ?
+                    ViewGroup.LayoutParams.MATCH_PARENT : 1),
+              WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
+                      WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                      | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                      | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
+                      | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+              PixelFormat.TRANSLUCENT);
+        lp.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED
+                | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING;
+        lp.gravity = gravity;
+        return lp;
+    }
     private void updateIconColor() {
         ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
                 Settings.System.STATUS_ICON_COLOR);
