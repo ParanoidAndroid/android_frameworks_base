@@ -805,6 +805,7 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
                     if (viewHolder != null) {
                         final TaskDescription ad = viewHolder.taskDescription;
                         ApplicationInfo appInfo = ExtendedPropertiesUtils.getAppInfoFromPackageName(ad.packageName);
+                        dismissAndGoBack();
                         if (appInfo != null) {
                             Intent intent = new Intent("android.intent.action.MAIN");
                             intent.putExtra("package", ad.packageName);
@@ -815,7 +816,6 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
                             intent.setComponent(new ComponentName("com.paranoid.preferences", 
                                     "com.paranoid.preferences.hybrid.ViewPagerActivity"));
                             getContext().startActivity(intent);
-                            dismiss();
                         }
                     }
                 } else {

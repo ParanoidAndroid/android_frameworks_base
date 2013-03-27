@@ -519,6 +519,8 @@
     <string name="quick_settings_brightness_dialog_auto_brightness_label">AUTO</string>
     <!-- QuickSettings: Desktop Mode [CHAR LIMIT=NONE] -->
     <string name="quick_settings_desktop_mode_label">Pie</string>
+    <!-- QuickSettings: Desktop Mode [CHAR LIMIT=NONE] -->
+    <string name="quick_settings_hybrid_label">Hybrid Props</string>
 
     <!-- Title of help text shown when the notification panel is pulled down for the very first time. [CHAR LIMIT=NONE] -->
     <string name="status_bar_help_title">Notifications appear here</string>

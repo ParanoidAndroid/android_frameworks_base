@@ -152,6 +152,7 @@ public abstract class BaseStatusBar extends SystemUI implements
     public PieControlPanel mPieControlPanel;
     public View mPieControlsTrigger;
     public PieExpandPanel mContainer;
+    public View mPieDummytrigger;
     int mIndex;
 
     // Policy
@@ -509,6 +510,7 @@ public abstract class BaseStatusBar extends SystemUI implements
     public void updatePieControls() {
         if (mPieControlsTrigger != null) mWindowManager.removeView(mPieControlsTrigger);
         if (mPieControlPanel != null)  mWindowManager.removeView(mPieControlPanel);
+        if (mPieDummytrigger != null)  mWindowManager.removeView(mPieDummytrigger);
         attachPie();
     }
 
@@ -546,25 +548,27 @@ public abstract class BaseStatusBar extends SystemUI implements
         } else {
             mPieControlsTrigger = null;
             mPieControlPanel = null;
+            mPieDummytrigger = null;
         }
     }
 
-    private void addPieInLocation(int gravity) {
+    private void addPieInLocation(int gravity) {        
+        // Create a dummy view to force the screen to redraw
+        mPieDummytrigger = new View(mContext);
+
         // Quick navigation bar panel
-        PieControlPanel panel = (PieControlPanel) View.inflate(mContext,
+        mPieControlPanel = (PieControlPanel) View.inflate(mContext,
                 R.layout.pie_control_panel, null);
 
         // Quick navigation bar trigger area
-        View pieControlsTrigger = new View(mContext);
+        mPieControlsTrigger = new View(mContext);
+        mPieControlsTrigger.setOnTouchListener(new PieControlsTouchListener());
+        mWindowManager.addView(mPieControlsTrigger, getPieTriggerLayoutParams(mContext, gravity));
+        mWindowManager.addView(mPieDummytrigger, getDummyTriggerLayoutParams(mContext,
+            gravity==Gravity.LEFT ? Gravity.RIGHT : Gravity.LEFT));
 
-        // Store our views for removing / adding
-        mPieControlPanel = panel;
-        mPieControlsTrigger = pieControlsTrigger;
-
-        pieControlsTrigger.setOnTouchListener(new PieControlsTouchListener());
-        mWindowManager.addView(pieControlsTrigger, getPieTriggerLayoutParams(mContext, gravity));
-
-        panel.init(mHandler, this, pieControlsTrigger, gravity);
+        // Init Panel
+        mPieControlPanel.init(mHandler, this, mPieControlsTrigger, gravity);
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -577,7 +581,7 @@ public abstract class BaseStatusBar extends SystemUI implements
         lp.setTitle("PieControlPanel");
         lp.windowAnimations = android.R.style.Animation;
 
-        mWindowManager.addView(panel, lp);
+        mWindowManager.addView(mPieControlPanel, lp);
     }
 
     public static WindowManager.LayoutParams getPieTriggerLayoutParams(Context context, int gravity) {
@@ -601,6 +605,27 @@ public abstract class BaseStatusBar extends SystemUI implements
         return lp;
     }
 
+    public static WindowManager.LayoutParams getDummyTriggerLayoutParams(Context context, int gravity) {
+        final Resources res = context.getResources();
+        final float mPieSize = Settings.System.getFloat(context.getContentResolver(),
+                Settings.System.PIE_TRIGGER, 1f);
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
+              (gravity == Gravity.TOP || gravity == Gravity.BOTTOM ?
+                    ViewGroup.LayoutParams.MATCH_PARENT : 1),
+              (gravity == Gravity.LEFT || gravity == Gravity.RIGHT ?
+                    ViewGroup.LayoutParams.MATCH_PARENT : 1),
+              WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
+                      WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                      | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                      | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
+                      | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+              PixelFormat.TRANSLUCENT);
+        lp.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED
+                | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING;
+        lp.gravity = gravity;
+        return lp;
+    }
+    
     private void updateIconColor() {
         ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
                 Settings.System.STATUS_ICON_COLOR);

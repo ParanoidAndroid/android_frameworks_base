@@ -39,6 +39,7 @@ import static com.android.internal.util.cm.QSConstants.TILE_VOLUME;
 import static com.android.internal.util.cm.QSConstants.TILE_WIFI;
 import static com.android.internal.util.cm.QSConstants.TILE_WIFIAP;
 import static com.android.internal.util.cm.QSConstants.TILE_DESKTOPMODE;
+import static com.android.internal.util.cm.QSConstants.TILE_HYBRID;
 import static com.android.internal.util.cm.QSUtils.deviceSupportsBluetooth;
 import static com.android.internal.util.cm.QSUtils.deviceSupportsTelephony;
 import static com.android.internal.util.cm.QSUtils.deviceSupportsUsbTether;
@@ -84,6 +85,7 @@ import com.android.systemui.quicksettings.WiFiDisplayTile;
 import com.android.systemui.quicksettings.WiFiTile;
 import com.android.systemui.quicksettings.WifiAPTile;
 import com.android.systemui.quicksettings.DesktopModeTile;
+import com.android.systemui.quicksettings.HybridTile;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -190,6 +192,8 @@ public class QuickSettingsController {
                 qs = new NfcTile(mContext, inflater, mContainerView, this);
             } else if (tile.equals(TILE_DESKTOPMODE)) {
                 qs = new DesktopModeTile(mContext, inflater, mContainerView, this, mHandler);
+            } else if (tile.equals(TILE_HYBRID)) {
+                qs = new HybridTile(mContext, inflater, mContainerView, this, mHandler);
             } else if (tile.equals(TILE_VOLUME)) {
                 qs = new VolumeTile(mContext, inflater, mContainerView, this, mHandler);
             }
