@@ -72,6 +72,7 @@ public class HybridTile extends QuickSettingsTile {
                     intent.setComponent(new ComponentName(PARANOID_PREFERENCES_PKG, 
                             PARANOID_PREFERENCES_PKG + ".MainActivity"));
                     mContext.startActivity(intent);
+                    mQsc.mBar.collapseAllPanels(true);
                 } catch(NullPointerException e) {
                     // No intent found for activity component
                 }
