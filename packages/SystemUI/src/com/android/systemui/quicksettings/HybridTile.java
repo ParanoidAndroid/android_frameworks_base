@@ -13,13 +13,12 @@ import android.net.Uri;
 import android.os.Handler;
 import android.provider.Settings;
 import android.util.ExtendedPropertiesUtils;
+import android.util.ColorUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.widget.TextView;
-
-import java.math.BigInteger;
 
 import com.android.systemui.R;
 import com.android.systemui.statusbar.phone.QuickSettingsController;
@@ -139,7 +138,7 @@ public class HybridTile extends QuickSettingsTile {
                         R.drawable.color_picker).mutate());                    
                 swatches[colorIndex].getBackground().setColorFilter(colors[colorIndex]
                         .toUpperCase().equals("NULL") ? ExtendedPropertiesUtils.PARANOID_COLORCODES_DEFAULTS[
-                colorIndex] : new BigInteger(colors[colorIndex], 16).intValue(),
+                colorIndex] : ColorUtils.hexToInt(colors[colorIndex]),
                         PorterDuff.Mode.SRC_ATOP);
             }
         }
