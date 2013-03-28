@@ -1,11 +1,21 @@
 package com.android.systemui.quicksettings;
 
+import java.util.Random;
+
 import static com.android.internal.util.cm.QSUtils.getTileTextColor;
+
+import android.animation.Animator;
+import android.animation.AnimatorInflater;
+import android.animation.AnimatorSet;
+import android.animation.Animator.AnimatorListener;
 import android.app.ActivityManagerNative;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
+import android.os.Handler;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.provider.Settings;
@@ -34,6 +44,8 @@ public class QuickSettingsTile implements OnClickListener {
     protected BaseStatusBar mStatusbarService;
     protected QuickSettingsController mQsc;
 
+    private Handler mHandler = new Handler();
+
     public int mTileTextSize = 12;
 
 
@@ -52,6 +64,7 @@ public class QuickSettingsTile implements OnClickListener {
 
     public void setupQuickSettingsTile(LayoutInflater inflater, QuickSettingsContainerView container) {
         mTile = (QuickSettingsTileView) inflater.inflate(R.layout.quick_settings_tile, container, false);
+        setTileBackground();
         mTile.setContent(mTileLayout, inflater);
         container.addView(mTile);
         onPostCreate();
@@ -88,6 +101,11 @@ public class QuickSettingsTile implements OnClickListener {
         startSettingsActivity(intent, true);
     }
 
+    public boolean isEnabled() {
+        return (Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.QUICK_SETTINGS_TILES_FLIP, 1) == 1);
+    }
+
     private void startSettingsActivity(Intent intent, boolean onlyProvisioned) {
         if (onlyProvisioned && !mStatusbarService.isDeviceProvisioned()) return;
         try {
@@ -98,6 +116,71 @@ public class QuickSettingsTile implements OnClickListener {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         mContext.startActivityAsUser(intent, new UserHandle(UserHandle.USER_CURRENT));
         mStatusbarService.collapse();
+    }
+
+    public void flipTile(int delay){
+        final AnimatorSet anim = (AnimatorSet) AnimatorInflater.loadAnimator(
+                mContext, R.anim.flip_right);
+        anim.setTarget(mTile);
+        anim.setDuration(200);
+        anim.addListener(new AnimatorListener(){
+
+            @Override
+            public void onAnimationEnd(Animator animation) {}
+            @Override
+            public void onAnimationStart(Animator animation) {}
+            @Override
+            public void onAnimationCancel(Animator animation) {}
+            @Override
+            public void onAnimationRepeat(Animator animation) {}
+
+        });
+
+        Runnable doAnimation = new Runnable(){
+            @Override
+            public void run() {
+                anim.start();
+            }
+        };
+
+        mHandler.postDelayed(doAnimation, delay);
+    }
+
+    public void flipOtherTiles(final QuickSettingsTileView view, int delay){
+        final AnimatorSet anim = (AnimatorSet) AnimatorInflater.loadAnimator(
+                mContext, R.anim.flip_left);
+        anim.setTarget(view);
+        anim.setDuration(200);
+        anim.addListener(new AnimatorListener(){
+
+            @Override
+            public void onAnimationEnd(Animator animation) {}
+            @Override
+            public void onAnimationStart(Animator animation) {}
+            @Override
+            public void onAnimationCancel(Animator animation) {}
+            @Override
+            public void onAnimationRepeat(Animator animation) {}
+
+        });
+
+        Runnable doAnimation = new Runnable(){
+            @Override
+            public void run() {
+                anim.start();
+            }
+        };
+
+        mHandler.postDelayed(doAnimation, delay);
+    }
+
+    private void doFlip() {
+        int delay = 0;
+        for (int x = 0; x < mContainerView.getChildCount(); x++) {
+            QuickSettingsTileView tileView = (QuickSettingsTileView)mContainerView.getChildAt(x);
+            delay += 100;
+            flipOtherTiles(tileView, delay);
+        }
     }
 
 	void updateTileTextSize(int column) {
@@ -136,6 +219,44 @@ public class QuickSettingsTile implements OnClickListener {
         if (shouldCollapse || this instanceof DesktopModeTile || this instanceof HybridTile) {
             mQsc.mBar.collapseAllPanels(true);
         }
+        if (isEnabled()) {
+            doFlip();
+        }
     }
 
+    protected void setTileBackground() {
+        ContentResolver mContentResolver = mContext.getContentResolver();
+        int tileBg = Settings.System.getInt(mContentResolver,
+                Settings.System.QUICK_SETTINGS_BACKGROUND_STYLE, 2);
+        int blueDark = Settings.System.getInt(mContentResolver,
+                Settings.System.RANDOM_COLOR_ONE, android.R.color.holo_blue_dark);
+        int greenDark = Settings.System.getInt(mContentResolver,
+                Settings.System.RANDOM_COLOR_TWO, android.R.color.holo_green_dark);
+        int redDark = Settings.System.getInt(mContentResolver,
+                Settings.System.RANDOM_COLOR_THREE, android.R.color.holo_red_dark);
+        int orangeDark = Settings.System.getInt(mContentResolver,
+                Settings.System.RANDOM_COLOR_FOUR, android.R.color.holo_orange_dark);
+        int purple = Settings.System.getInt(mContentResolver,
+                Settings.System.RANDOM_COLOR_FIVE, android.R.color.holo_purple);
+        int blueBright = Settings.System.getInt(mContentResolver,
+                Settings.System.RANDOM_COLOR_SIX, android.R.color.holo_blue_bright);
+        if (tileBg == 1) {
+            int tileBgColor = Settings.System.getInt(mContentResolver,
+                    Settings.System.QUICK_SETTINGS_BACKGROUND_COLOR, 0xFF000000);
+            mTile.setBackgroundColor(tileBgColor);
+        } else if (tileBg == 0) {
+            int[] Colors = new int[] {
+                blueDark,
+                greenDark,
+                redDark,
+                orangeDark,
+                purple,
+                blueBright
+            };
+            Random generator = new Random();
+            mTile.setBackgroundColor(Colors[generator.nextInt(Colors.length)]);
+        } else {
+            mTile.setBackgroundResource(R.drawable.qs_tile_background);
+        }
+    }
 }

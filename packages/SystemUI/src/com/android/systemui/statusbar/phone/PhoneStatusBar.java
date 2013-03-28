@@ -2671,7 +2671,21 @@ public class PhoneStatusBar extends BaseStatusBar {
 		    cr.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.QUICK_SETTINGS_BACKGROUND_STYLE), false, this);
             cr.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.QUICK_SETTINGS_BACKGROUND_COLOR), false, this);
+            cr.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.QUICK_SETTINGS_TEXT_COLOR), false, this);
+            cr.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.RANDOM_COLOR_ONE), false, this);
+            cr.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.RANDOM_COLOR_TWO), false, this);
+            cr.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.RANDOM_COLOR_THREE), false, this);
+            cr.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.RANDOM_COLOR_FOUR), false, this);
+            cr.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.RANDOM_COLOR_FIVE), false, this);
+            cr.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.RANDOM_COLOR_SIX), false, this);
         }
     }
 }

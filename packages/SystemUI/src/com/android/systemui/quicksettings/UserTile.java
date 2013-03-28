@@ -58,6 +58,9 @@ public class UserTile extends QuickSettingsTile {
                             ContactsContract.QuickContact.MODE_LARGE, null);
                     mContext.startActivityAsUser(intent, new UserHandle(UserHandle.USER_CURRENT));
                 }
+                if (isEnabled()) {
+                    flipTile(0);
+                }
             }
         };
         qsc.registerAction(Intent.ACTION_USER_SWITCHED, this);

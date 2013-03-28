@@ -41,6 +41,9 @@ public class InputMethodTile extends QuickSettingsTile {
                     PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0, intent, 0);
                     pendingIntent.send();
                 } catch (Exception e) {}
+                if (isEnabled()) {
+                    flipTile(0);
+                }
             }
         };
 

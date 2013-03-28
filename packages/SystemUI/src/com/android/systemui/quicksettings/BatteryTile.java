@@ -33,6 +33,9 @@ public class BatteryTile extends QuickSettingsTile implements BatteryStateChange
             @Override
             public void onClick(View v) {
                 startSettingsActivity(Intent.ACTION_POWER_USAGE_SUMMARY);
+                if (isEnabled()) {
+                    flipTile(0);
+                }
             }
         };
     }

@@ -40,6 +40,9 @@ public class ToggleLockscreenTile extends QuickSettingsTile {
                 editor.apply();
 
                 updateResources();
+                if (isEnabled()) {
+                    flipTile(0);
+                }
             }
         };
 

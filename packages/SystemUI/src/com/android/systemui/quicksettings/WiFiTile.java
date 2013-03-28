@@ -27,6 +27,9 @@ public class WiFiTile extends QuickSettingsTile implements NetworkSignalChangedC
             public void onClick(View v) {
                 WifiManager wfm = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
                 wfm.setWifiEnabled(!wfm.isWifiEnabled());
+                if (isEnabled()) {
+                    flipTile(0);
+                }
             }
         };
         mOnLongClick = new OnLongClickListener() {
