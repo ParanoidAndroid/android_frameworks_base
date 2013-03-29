@@ -18,6 +18,7 @@ package com.android.systemui.statusbar;
 
 import android.app.Activity;
 import android.app.ActivityOptions;
+import android.app.KeyguardManager;
 import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -64,6 +65,7 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
     private View mTrigger;
     private WindowManager mWindowManager;
     private Display mDisplay;
+    private KeyguardManager mKeyguardManger;
     
     ViewGroup mContentFrame;
     Rect mContentArea = new Rect();
@@ -78,6 +80,7 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
         super(context, attrs);
         mContext = context;
         mWindowManager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
+        mKeyguardManger = (KeyguardManager) mContext.getSystemService(Context.KEYGUARD_SERVICE);
         mDisplay = mWindowManager.getDefaultDisplay();
         mPieControl = new PieControl(context, this);
         mPieControl.setOnNavButtonPressedListener(this);
@@ -335,4 +338,8 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
                     InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
     	}
     };
+
+    public boolean getKeyguardStatus() {
+        return mKeyguardManger.isKeyguardLocked();
+    }
 }
