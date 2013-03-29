@@ -152,7 +152,7 @@ public abstract class BaseStatusBar extends SystemUI implements
     public PieControlPanel mPieControlPanel;
     public View mPieControlsTrigger;
     public PieExpandPanel mContainer;
-    public View[] mPieDummytrigger = {null, null, null, null};
+    public View[] mPieDummyTrigger = new View[4];
     int mIndex;
 
     // Policy
@@ -511,8 +511,9 @@ public abstract class BaseStatusBar extends SystemUI implements
         if (mPieControlsTrigger != null) mWindowManager.removeView(mPieControlsTrigger);
         if (mPieControlPanel != null)  mWindowManager.removeView(mPieControlPanel);
 
-        for (int i = 0; i < 4; i++ )
-            if (mPieDummytrigger[i] != null)  mWindowManager.removeView(mPieDummytrigger[i]);
+        for (int i = 0; i < 4; i++) {
+            if (mPieDummyTrigger[i] != null)  mWindowManager.removeView(mPieDummyTrigger[i]);
+        }
 
         attachPie();
     }
@@ -551,8 +552,9 @@ public abstract class BaseStatusBar extends SystemUI implements
         } else {
             mPieControlsTrigger = null;
             mPieControlPanel = null;
-            for (int i = 0; i < 4; i++ )
-                mPieDummytrigger[i] = null;
+            for (int i = 0; i < 4; i++) {
+                mPieDummyTrigger[i] = null;
+            }
         }
     }
 
@@ -568,9 +570,9 @@ public abstract class BaseStatusBar extends SystemUI implements
 
         // Overload screen with views that literally do nothing, thank you Google
         int dummyGravity[] = {Gravity.LEFT, Gravity.TOP, Gravity.RIGHT, Gravity.BOTTOM};  
-        for (int i = 0; i < 4; i++ ) {
-            mPieDummytrigger[i] = new View(mContext);
-            mWindowManager.addView(mPieDummytrigger[i], getDummyTriggerLayoutParams(mContext, dummyGravity[i]));
+        for (int i = 0; i < 4; i++) {
+            mPieDummyTrigger[i] = new View(mContext);
+            mWindowManager.addView(mPieDummyTrigger[i], getDummyTriggerLayoutParams(mContext, dummyGravity[i]));
         }
 
         // Init Panel
