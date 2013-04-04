@@ -93,13 +93,12 @@ public class ColorUtils {
     }
 
     public static int hexToInt(String hexString) {
-        // Don't even bother with an exception if string is zero        
-        if (hexString == null)
-            return 0;
+        // Don't even bother with an exception if string is null        
+        if (hexString == null) return 0;
 
         try {
             return new BigInteger(hexString, 16).intValue();
-        } catch(Exception e) {
+        } catch(NumberFormatException nfe) {
             // If value is not a valid representation
             return 0;
         }
