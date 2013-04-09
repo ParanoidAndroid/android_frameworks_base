@@ -767,6 +767,14 @@ public class GlowPadView extends View {
         }
     }
 
+    public boolean getMagneticTargets() {
+        return mMagneticTargets;
+    }
+
+    public void setMagneticTargets(boolean enabled) {
+        mMagneticTargets = enabled;
+    }
+
     /**
      * Starts wave animation.
      *
