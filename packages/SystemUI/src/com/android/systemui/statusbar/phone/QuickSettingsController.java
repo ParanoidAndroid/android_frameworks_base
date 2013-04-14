@@ -149,56 +149,55 @@ public class QuickSettingsController {
 
         Log.i(TAG, "Tiles list: " + tiles);
 
-        // Split out the tile names and add to the list
-        for (String tile : tiles.split("\\|")) {
+for (String tile : tiles.split("\\|")) {
             QuickSettingsTile qs = null;
             if (tile.equals(TILE_USER)) {
-                qs = new UserTile(mContext, inflater, mContainerView, this);
+                qs = new UserTile(mContext, this);
             } else if (tile.equals(TILE_BATTERY)) {
-                qs = new BatteryTile(mContext, inflater, mContainerView, this);
+                qs = new BatteryTile(mContext, this);
             } else if (tile.equals(TILE_SETTINGS)) {
-                qs = new PreferencesTile(mContext, inflater, mContainerView, this);
+                qs = new PreferencesTile(mContext, this);
             } else if (tile.equals(TILE_WIFI)) {
-                qs = new WiFiTile(mContext, inflater, mContainerView, this);
+                qs = new WiFiTile(mContext, this);
             } else if (tile.equals(TILE_GPS)) {
-                qs = new GPSTile(mContext, inflater, mContainerView, this);
+                qs = new GPSTile(mContext, this);
             } else if (tile.equals(TILE_BLUETOOTH) && bluetoothSupported) {
-                    qs = new BluetoothTile(mContext, inflater, mContainerView, this);
+                qs = new BluetoothTile(mContext, this);
             } else if (tile.equals(TILE_BRIGHTNESS)) {
-                qs = new BrightnessTile(mContext, inflater, mContainerView, this, mHandler);
+                qs = new BrightnessTile(mContext, this, mHandler);
             } else if (tile.equals(TILE_RINGER)) {
-                qs = new RingerModeTile(mContext, inflater, mContainerView, this);
+                qs = new RingerModeTile(mContext, this);
             } else if (tile.equals(TILE_SYNC)) {
-                qs = new SyncTile(mContext, inflater, mContainerView, this);
+                qs = new SyncTile(mContext, this);
             } else if (tile.equals(TILE_WIFIAP) && telephonySupported) {
-                qs = new WifiAPTile(mContext, inflater, mContainerView, this);
+                qs = new WifiAPTile(mContext, this);
             } else if (tile.equals(TILE_SCREENTIMEOUT)) {
-                qs = new ScreenTimeoutTile(mContext, inflater, mContainerView, this);
+                qs = new ScreenTimeoutTile(mContext, this);
             } else if (tile.equals(TILE_MOBILEDATA) && telephonySupported) {
-                qs = new MobileNetworkTile(mContext, inflater, mContainerView, this);
+                qs = new MobileNetworkTile(mContext, this);
             } else if (tile.equals(TILE_LOCKSCREEN)) {
-                qs = new ToggleLockscreenTile(mContext, inflater, mContainerView, this);
+                qs = new ToggleLockscreenTile(mContext, this);
             } else if (tile.equals(TILE_AUTOROTATE)) {
-                qs = new AutoRotateTile(mContext, inflater, mContainerView, this, mHandler);
+                qs = new AutoRotateTile(mContext, this, mHandler);
             } else if (tile.equals(TILE_AIRPLANE)) {
-                qs = new AirplaneModeTile(mContext, inflater, mContainerView, this);
+                qs = new AirplaneModeTile(mContext, this);
             } else if (tile.equals(TILE_TORCH)) {
-                qs = new TorchTile(mContext, inflater, mContainerView, this, mHandler);
+                qs = new TorchTile(mContext, this, mHandler);
             } else if (tile.equals(TILE_SLEEP)) {
-                qs = new SleepScreenTile(mContext, inflater, mContainerView, this);
+                qs = new SleepScreenTile(mContext, this);
             } else if (tile.equals(TILE_NFC)) {
                 // User cannot add the NFC tile if the device does not support it
                 // No need to check again here
-                qs = new NfcTile(mContext, inflater, mContainerView, this);
-            } else if (tile.equals(TILE_DESKTOPMODE)) {
-                qs = new DesktopModeTile(mContext, inflater, mContainerView, this, mHandler);
-            } else if (tile.equals(TILE_HYBRID)) {
-                qs = new HybridTile(mContext, inflater, mContainerView, this, mHandler);
+                qs = new NfcTile(mContext, this);
             } else if (tile.equals(TILE_VOLUME)) {
-                qs = new VolumeTile(mContext, inflater, mContainerView, this, mHandler);
+                qs = new VolumeTile(mContext, this, mHandler);
+            } else if (tile.equals(TILE_DesktopModeTile)) {
+                    qs = new DesktopModeTile(mContext, this, mHandler);
+            } else if (tile.equals(TILE_HYBRID)) {
+                qs = new HybridTile(mContext, this, mHandler);
             }
             if (qs != null) {
-                qs.setupQuickSettingsTile();
+                qs.setupQuickSettingsTile(inflater, mContainerView);
                 mQuickSettingsTiles.add(qs);
             }
         }
@@ -207,21 +206,20 @@ public class QuickSettingsController {
         // These toggles must be the last ones added to the view, as they will show
         // only when they are needed
         if (Settings.System.getInt(resolver, Settings.System.QS_DYNAMIC_ALARM, 1) == 1) {
-            QuickSettingsTile qs = new AlarmTile(mContext, inflater, mContainerView, this, mHandler);
-            qs.setupQuickSettingsTile();
+            QuickSettingsTile qs = new AlarmTile(mContext, this, mHandler);
+            qs.setupQuickSettingsTile(inflater, mContainerView);
             mQuickSettingsTiles.add(qs);
         }
         if (Settings.System.getInt(resolver, Settings.System.QS_DYNAMIC_BUGREPORT, 1) == 1) {
-            QuickSettingsTile qs = new BugReportTile(mContext, inflater, mContainerView, this, mHandler);
-            qs.setupQuickSettingsTile();
+            QuickSettingsTile qs = new BugReportTile(mContext, this, mHandler);
+            qs.setupQuickSettingsTile(inflater, mContainerView);
             mQuickSettingsTiles.add(qs);
         }
         if (Settings.System.getInt(resolver, Settings.System.QS_DYNAMIC_WIFI, 1) == 1) {
-            QuickSettingsTile qs = new WiFiDisplayTile(mContext, inflater, mContainerView, this);
-            qs.setupQuickSettingsTile();
+            QuickSettingsTile qs = new WiFiDisplayTile(mContext, this);
+            qs.setupQuickSettingsTile(inflater, mContainerView);
             mQuickSettingsTiles.add(qs);
         }
-
         if (Settings.System.getInt(resolver, Settings.System.QS_DYNAMIC_IME, 1) == 1) {
             mIMETile = new InputMethodTile(mContext, inflater, mContainerView, this);
             mIMETile.setupQuickSettingsTile();
@@ -229,13 +227,13 @@ public class QuickSettingsController {
         }
 
         if (deviceSupportsUsbTether(mContext) && Settings.System.getInt(resolver, Settings.System.QS_DYNAMIC_USBTETHER, 1) == 1) {
-            QuickSettingsTile qs = new UsbTetherTile(mContext, inflater, mContainerView, this);
-            qs.setupQuickSettingsTile();
+            QuickSettingsTile qs = new UsbTetherTile(mContext, this);
+            qs.setupQuickSettingsTile(inflater, mContainerView);
             mQuickSettingsTiles.add(qs);
         }
     }
 
-    public void setupQuickSettings() {
+    protected void setupQuickSettings() {
         mQuickSettingsTiles.clear();
         mContainerView.removeAllViews();
         // Clear out old receiver

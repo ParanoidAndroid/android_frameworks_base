@@ -38,9 +38,9 @@ public class HybridTile extends QuickSettingsTile {
     private String[] mColors ;
     private PackageManager mPm;
 
-    public HybridTile(Context context, LayoutInflater inflater,
-            QuickSettingsContainerView container, QuickSettingsController qsc, Handler handler) {
-        super(context, inflater, container, qsc);
+    public HybridTile(Context context, 
+            QuickSettingsController qsc, Handler handler) {
+        super(context, qsc);
 
         mDefaultLabel = context.getString(R.string.quick_settings_hybrid_label);
         mLabel = mDefaultLabel;
