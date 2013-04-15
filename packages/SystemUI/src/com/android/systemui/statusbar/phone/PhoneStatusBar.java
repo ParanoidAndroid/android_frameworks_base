@@ -37,8 +37,11 @@ import android.content.SharedPreferences;
 import android.content.res.CustomTheme;
 import android.content.res.Resources;
 import android.database.ContentObserver;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
@@ -111,6 +114,7 @@ import com.android.systemui.statusbar.policy.NotificationRowLayout;
 import com.android.systemui.statusbar.policy.OnSizeChangedListener;
 import com.android.systemui.statusbar.policy.Prefs;
 
+import java.io.File;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -161,6 +165,8 @@ public class PhoneStatusBar extends BaseStatusBar {
 
     private float mFlingGestureMaxOutputVelocityPx; // how fast can it really go? (should be a little 
                                                     // faster than mSelfCollapseVelocityPx)
+
+    private final String NOTIF_WALLPAPER_IMAGE_PATH = "/data/data/com.android.settings/files/notification_wallpaper.jpg";
 
     PhoneStatusBarPolicy mIconPolicy;
 
@@ -2728,8 +2734,8 @@ protected WindowManager.LayoutParams getRecentsLayoutParams(LayoutParams layoutP
     }
 
     /**
-     *  ContentObserver to watch for Quick Settings tiles changes
-     * @author dvtonder
+     * ContentObserver to watch for Quick Settings tiles changes and notification wallpaper/alpha
+     * @authot kufikugel
      *
      */
     private class TilesChangedObserver extends ContentObserver {
@@ -2746,6 +2752,7 @@ protected WindowManager.LayoutParams getRecentsLayoutParams(LayoutParams layoutP
         public void onChange(boolean selfChange, Uri uri) {
             if (mSettingsContainer != null) {
                 mQS.setupQuickSettings();
+                setNotificationWallpaperHelper();
             }
         }
 
@@ -2774,6 +2781,27 @@ protected WindowManager.LayoutParams getRecentsLayoutParams(LayoutParams layoutP
             cr.registerContentObserver(
                     Settings.System.getUriFor(Settings.System.QS_DYNAMIC_WIFI),
                     false, this);
+
+            cr.registerContentObserver(
+                    Settings.System.getUriFor(Settings.System.NOTIF_WALLPAPER_ALPHA),
+                    false, this);
+            setNotificationWallpaperHelper();
+        }
+    }
+
+    private void setNotificationWallpaperHelper() {
+        float wallpaperAlpha = Settings.System.getFloat(mContext.getContentResolver(), Settings.System.NOTIF_WALLPAPER_ALPHA, 0.1f);
+        String notifiBack = Settings.System.getString(mContext.getContentResolver(), Settings.System.NOTIFICATION_BACKGROUND);
+        File file = new File(NOTIF_WALLPAPER_IMAGE_PATH);
+        mNotificationPanel.setBackgroundResource(0);
+        mNotificationPanel.setBackgroundResource(R.drawable.notification_panel_bg);
+        Drawable background = mNotificationPanel.getBackground();
+        background.setAlpha(0);
+        if (!file.exists()) {
+            if (notifiBack != null && !notifiBack.isEmpty()) {
+                background.setColorFilter(Integer.parseInt(notifiBack), Mode.SRC_ATOP);
+            }
+         background.setAlpha((int) ((1-wallpaperAlpha) * 255));
         }
     }
 }
