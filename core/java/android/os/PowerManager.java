@@ -238,6 +238,12 @@ public final class PowerManager {
     public static final int BRIGHTNESS_ON = 255;
 
     /**
+     * Brightness value for dim backlight.
+     * @hide
+     */
+    public static final int BRIGHTNESS_DIM = 20;
+
+    /**
      * Brightness value for fully off.
      * @hide
      */

@@ -1,4 +1,3 @@
-
 package com.android.systemui.statusbar.powerwidget;
 
 import com.android.server.power.PowerManagerService;
