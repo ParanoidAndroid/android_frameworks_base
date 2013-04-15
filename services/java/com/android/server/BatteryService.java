@@ -19,18 +19,23 @@
 package com.android.server;
 
 import com.android.internal.app.IBatteryStats;
+import com.android.internal.os.DeviceDockBatteryHandler;
+import com.android.internal.os.IDeviceHandler;
 import com.android.server.am.BatteryStatsService;
 
 import android.app.ActivityManagerNative;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.graphics.Color;
 import android.os.BatteryManager;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.FileUtils;
 import android.os.Handler;
 import android.os.IBinder;
@@ -67,7 +72,7 @@ import java.util.Calendar;
  * <p>&quot;present&quot; - boolean, true if the battery is present<br />
  * <p>&quot;icon-small&quot; - int, suggested small icon to use for this state</p>
  * <p>&quot;plugged&quot; - int, 0 if the device is not plugged in; 1 if plugged
- * into an AC power adapter; 2 if plugged in via USB.</p>
+ * into an AC power adapter; 2 if plugged in via USB; 4 if plugged in via Wireless.</p>
  * <p>&quot;voltage&quot; - int, current battery voltage in millivolts</p>
  * <p>&quot;temperature&quot; - int, current battery temperature in tenths of
  * a degree Centigrade</p>
@@ -119,11 +124,8 @@ public final class BatteryService extends Binder {
     private int mBatteryTemperature;
     private String mBatteryTechnology;
     private boolean mBatteryLevelCritical;
+    private int mInvalidCharger;
     /* End native fields. */
-
-    private int mDockBatteryStatus;
-    private int mDockBatteryLevel;
-    private String mDockBatteryPresent;
 
     private int mLastBatteryStatus;
     private int mLastBatteryHealth;
@@ -132,15 +134,15 @@ public final class BatteryService extends Binder {
     private int mLastBatteryVoltage;
     private int mLastBatteryTemperature;
     private boolean mLastBatteryLevelCritical;
-
-    private int mInvalidCharger;
     private int mLastInvalidCharger;
+
+    // Device specific handler for extra dock battery
+    private boolean mHasDockBattery;
+    private DeviceDockBatteryHandler mDeviceDockBattery;
 
     private int mLowBatteryWarningLevel;
     private int mLowBatteryCloseWarningLevel;
     private int mShutdownBatteryTemperature;
-
-    private boolean mHasDockBattery;
 
     private int mPlugType;
     private int mLastPlugType = -1; // Extra state so we can detect first run
@@ -167,7 +169,7 @@ public final class BatteryService extends Binder {
     private int mQuietHoursEnd = 0;
     private boolean mQuietHoursDim = true;
 
-    public BatteryService(Context context, LightsService lights) {
+    public BatteryService(Context context, LightsService lights, IDeviceHandler deviceHandler) {
         mContext = context;
         mHandler = new Handler(true /*async*/);
         mLed = new Led(context, lights);
@@ -182,8 +184,19 @@ public final class BatteryService extends Binder {
         mShutdownBatteryTemperature = mContext.getResources().getInteger(
                 com.android.internal.R.integer.config_shutdownBatteryTemperature);
 
+        // Has Dock battery? and device specific handler?
         mHasDockBattery = mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_hasDockBattery);
+        if (mHasDockBattery) {
+            if (deviceHandler != null) {
+                mDeviceDockBattery = deviceHandler.getDeviceDockBatteryHandler();
+
+                // Force an update of the data when dock state change
+                IntentFilter filter = new IntentFilter();
+                filter.addAction(Intent.ACTION_DOCK_EVENT);
+                context.registerReceiver(mDockReceiver, filter);
+            }
+        }
 
         mPowerSupplyObserver.startObserving("SUBSYSTEM=power_supply");
 
@@ -225,6 +238,7 @@ public final class BatteryService extends Binder {
         if (mBatteryStatus == BatteryManager.BATTERY_STATUS_UNKNOWN) {
             return true;
         }
+        // mAcOnline is used for main ac and dock battery ac
         if ((plugTypeSet & BatteryManager.BATTERY_PLUGGED_AC) != 0 && mAcOnline) {
             return true;
         }
@@ -305,6 +319,9 @@ public final class BatteryService extends Binder {
         if (!mUpdatesStopped) {
             // Update the values of mAcOnline, et. all.
             native_update();
+            if (mDeviceDockBattery != null) {
+                mDeviceDockBattery.update();
+            }
 
             // Process the new values.
             processValuesLocked();
@@ -315,8 +332,14 @@ public final class BatteryService extends Binder {
         boolean logOutlier = false;
         long dischargeDuration = 0;
 
+        // Process the dock battery values
+        if (mDeviceDockBattery != null) {
+            mDeviceDockBattery.process();
+        }
+
         mBatteryLevelCritical = (mBatteryLevel <= mCriticalBatteryLevel);
-        if (mAcOnline) {
+        if (mAcOnline ||
+            (mDeviceDockBattery != null && mDeviceDockBattery.isPlugged())) {
             mPlugType = BatteryManager.BATTERY_PLUGGED_AC;
         } else if (mUsbOnline) {
             mPlugType = BatteryManager.BATTERY_PLUGGED_USB;
@@ -327,6 +350,7 @@ public final class BatteryService extends Binder {
         }
 
         if (DEBUG) {
+            String dockValues = String.valueOf(mDeviceDockBattery);
             Slog.d(TAG, "Processing new values: "
                     + "mAcOnline=" + mAcOnline
                     + ", mUsbOnline=" + mUsbOnline
@@ -339,7 +363,9 @@ public final class BatteryService extends Binder {
                     + ", mBatteryVoltage=" + mBatteryVoltage
                     + ", mBatteryTemperature=" + mBatteryTemperature
                     + ", mBatteryLevelCritical=" + mBatteryLevelCritical
-                    + ", mPlugType=" + mPlugType);
+                    + ", mPlugType=" + mPlugType
+                    + ", mHasDockBattery=" + mHasDockBattery
+                    + ", mDeviceDockBattery=[" + dockValues + "]");
         }
 
         // Let the battery stats keep track of the current level.
@@ -354,6 +380,11 @@ public final class BatteryService extends Binder {
         shutdownIfNoPowerLocked();
         shutdownIfOverTempLocked();
 
+        boolean dockBatteryHasNewData = false;
+        if (mDeviceDockBattery != null) {
+            dockBatteryHasNewData = mDeviceDockBattery.hasNewData();
+        }
+
         if (mBatteryStatus != mLastBatteryStatus ||
                 mBatteryHealth != mLastBatteryHealth ||
                 mBatteryPresent != mLastBatteryPresent ||
@@ -361,7 +392,8 @@ public final class BatteryService extends Binder {
                 mPlugType != mLastPlugType ||
                 mBatteryVoltage != mLastBatteryVoltage ||
                 mBatteryTemperature != mLastBatteryTemperature ||
-                mInvalidCharger != mLastInvalidCharger) {
+                mInvalidCharger != mLastInvalidCharger ||
+                dockBatteryHasNewData) {
 
             if (mPlugType != mLastPlugType) {
                 if (mLastPlugType == BATTERY_PLUGGED_NONE) {
@@ -493,6 +525,11 @@ public final class BatteryService extends Binder {
         intent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY
                 | Intent.FLAG_RECEIVER_REPLACE_PENDING);
 
+        Bundle dockData = new Bundle();
+        if (mDeviceDockBattery != null) {
+            dockData = mDeviceDockBattery.getNotifyData();
+        }
+
         int icon = getIconLocked(mBatteryLevel);
 
         intent.putExtra(BatteryManager.EXTRA_STATUS, mBatteryStatus);
@@ -506,8 +543,13 @@ public final class BatteryService extends Binder {
         intent.putExtra(BatteryManager.EXTRA_TEMPERATURE, mBatteryTemperature);
         intent.putExtra(BatteryManager.EXTRA_TECHNOLOGY, mBatteryTechnology);
         intent.putExtra(BatteryManager.EXTRA_INVALID_CHARGER, mInvalidCharger);
+        intent.putExtras(dockData);
 
         if (DEBUG) {
+            String dockDebug = "";
+            for (String key : dockData.keySet()) {
+                dockDebug += ", " +  key + ": " + String.valueOf(dockData.get(key));
+            }
             Slog.d(TAG, "Sending ACTION_BATTERY_CHANGED.  level:" + mBatteryLevel +
                     ", scale:" + BATTERY_SCALE + ", status:" + mBatteryStatus +
                     ", health:" + mBatteryHealth +  ", present:" + mBatteryPresent +
@@ -516,24 +558,8 @@ public final class BatteryService extends Binder {
                     ", technology: " + mBatteryTechnology +
                     ", AC powered:" + mAcOnline + ", USB powered:" + mUsbOnline +
                     ", Wireless powered:" + mWirelessOnline +
-                    ", icon:" + icon  + ", invalid charger:" + mInvalidCharger);
-        }
-
-        if (mHasDockBattery){
-            intent.putExtra(BatteryManager.EXTRA_DOCK_STATUS, mDockBatteryStatus);
-            intent.putExtra(BatteryManager.EXTRA_DOCK_LEVEL, mDockBatteryLevel);
-            intent.putExtra(BatteryManager.EXTRA_DOCK_AC_ONLINE, false);
-        }
-
-        if (false) {
-            Slog.d(TAG, "level:" + mBatteryLevel +
-                    " scale:" + BATTERY_SCALE + " status:" + mBatteryStatus +
-                    " health:" + mBatteryHealth +  " present:" + mBatteryPresent +
-                    " voltage: " + mBatteryVoltage +
-                    " temperature: " + mBatteryTemperature +
-                    " technology: " + mBatteryTechnology +
-                    " AC powered:" + mAcOnline + " USB powered:" + mUsbOnline +
-                    " icon:" + icon  + " invalid charger:" + mInvalidCharger);
+                    ", icon:" + icon  + ", invalid charger:" + mInvalidCharger +
+                    dockDebug);
         }
 
         mHandler.post(new Runnable() {
@@ -694,6 +720,17 @@ public final class BatteryService extends Binder {
             }
         }
     }
+
+    private final BroadcastReceiver mDockReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Intent.ACTION_DOCK_EVENT.equals(intent.getAction())) {
+                synchronized (mLock) {
+                    updateLocked();
+                }
+            }
+        }
+    };
 
     private final UEventObserver mPowerSupplyObserver = new UEventObserver() {
         @Override

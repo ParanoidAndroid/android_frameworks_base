@@ -242,4 +242,6 @@
     <dimen name="pie_panel_padding">20dp</dimen>
     <!-- PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE -->
 
+    <!-- The padding of the items of the battery cluster -->
+    <dimen name="status_bar_battery_cluster_padding">4dip</dimen>
 </resources>

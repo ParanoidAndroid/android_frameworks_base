@@ -97,16 +97,25 @@
                     android:layout_height="wrap_content"
                     />
                 <ImageView
-                    android:id="@+id/battery"
-                    android:layout_height="wrap_content"
-                    android:layout_width="wrap_content"
-                    android:paddingLeft="4dip"
-                    />
-                <ImageView
                     android:id="@+id/dock_battery"
                     android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
-                    android:paddingLeft="4dip"
+                    android:paddingLeft="@dimen/status_bar_battery_cluster_padding"
+                    />
+                <com.android.systemui.statusbar.policy.CircleDockBattery
+                    android:id="@+id/circle_dock_battery"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.StatusBar.Battery"
+                    android:singleLine="true"
+                    android:gravity="bottom"
+                    android:paddingLeft="@dimen/status_bar_battery_cluster_padding"
+                    />
+                <ImageView
+                    android:id="@+id/battery"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:paddingLeft="@dimen/status_bar_battery_cluster_padding"
                     />
                 <com.android.systemui.statusbar.policy.CircleBattery
                     android:id="@+id/circle_battery"
@@ -115,8 +124,7 @@
                     android:textAppearance="@style/TextAppearance.StatusBar.Battery"
                     android:singleLine="true"
                     android:gravity="bottom"
-                    android:paddingLeft="1dip"
-                    android:paddingRight="4dip"
+                    android:paddingLeft="@dimen/status_bar_battery_cluster_padding"
                     />
             </LinearLayout>
     
