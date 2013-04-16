@@ -228,6 +228,7 @@ public class SignalStrength implements Parcelable {
         mLteRssnr = lteRssnr;
         mLteCqi = lteCqi;
         isGsm = gsm;
+        enforceGsmValues();
         if (DBG) log("initialize: " + toString());
     }
 
@@ -248,6 +249,7 @@ public class SignalStrength implements Parcelable {
         mLteRssnr = s.mLteRssnr;
         mLteCqi = s.mLteCqi;
         isGsm = s.isGsm;
+        enforceGsmValues();
     }
 
     /**
@@ -271,6 +273,7 @@ public class SignalStrength implements Parcelable {
         mLteRssnr = in.readInt();
         mLteCqi = in.readInt();
         isGsm = (in.readInt() != 0);
+        enforceGsmValues();
     }
 
     /**
@@ -342,7 +345,7 @@ public class SignalStrength implements Parcelable {
         mLteSignalStrength = (mLteSignalStrength >= 0) ? mLteSignalStrength : 99;
         mLteRsrp = ((mLteRsrp >= 44) && (mLteRsrp <= 140)) ? -mLteRsrp : SignalStrength.INVALID;
         mLteRsrq = ((mLteRsrq >= 3) && (mLteRsrq <= 20)) ? -mLteRsrq : SignalStrength.INVALID;
-        mLteRssnr = ((mLteRssnr >= -200) && (mLteRssnr <= 300)) ? mLteRssnr
+        mLteRssnr = ((mLteRssnr >= -200) && (mLteRssnr <= 300) && !(mLteRsrq == SignalStrength.INVALID && mLteRssnr == -1)) ? mLteRssnr
                 : SignalStrength.INVALID;
         // Cqi no change
         if (DBG) log("Signal after validate=" + this);
@@ -891,7 +894,25 @@ public class SignalStrength implements Parcelable {
         mLteRssnr = m.getInt("LteRssnr");
         mLteCqi = m.getInt("LteCqi");
         isGsm = m.getBoolean("isGsm");
+        enforceGsmValues();
     }
+
+
+    /* Forecefully correct the values reported from RILC
+    ** this will invalidate all nonGSM values */
+    private void enforceGsmValues() {
+        mCdmaDbm = -1;
+        mCdmaEcio = -1;
+        mEvdoDbm = -1;
+        mEvdoEcio = -1;
+        mEvdoSnr = -1;
+        mLteSignalStrength = 99;
+        mLteRsrp = INVALID;
+        mLteRsrq = INVALID;
+        mLteRssnr = INVALID;
+        mLteCqi = INVALID;
+    }
+
 
     /**
      * Set intent notifier Bundle based on SignalStrength
