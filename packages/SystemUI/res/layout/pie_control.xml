@@ -13,7 +13,7 @@
      limitations under the License.
 -->
 
-<com.android.systemui.statusbar.PieControlPanel
+<com.android.systemui.statusbar.pie.PieControl
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/content_frame"

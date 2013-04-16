@@ -1938,8 +1938,8 @@ public class PhoneStatusBar extends BaseStatusBar {
     }
 
     public void topAppWindowChanged(boolean showMenu) {
-        if (mPieControlPanel != null)
-            mPieControlPanel.setMenu(showMenu);
+        if (mPie != null && mPie.mControl != null)
+            mPie.mControl.setMenu(showMenu);
 
         if (DEBUG) {
             Slog.d(TAG, (showMenu?"showing":"hiding") + " the MENU button");

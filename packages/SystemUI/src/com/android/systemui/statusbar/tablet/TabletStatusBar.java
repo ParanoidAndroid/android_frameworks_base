@@ -97,6 +97,7 @@ import com.android.systemui.statusbar.policy.LocationController;
 import com.android.systemui.statusbar.policy.NetworkController;
 import com.android.systemui.statusbar.policy.NotificationRowLayout;
 import com.android.systemui.statusbar.policy.Prefs;
+import com.android.systemui.statusbar.pie.Pie;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -196,7 +197,6 @@ public class TabletStatusBar extends BaseStatusBar implements
     KeyEvent mSpaceBarKeyEvent = null;
 
     View mCompatibilityHelpDialog = null;
-    public View[] mPieDummyTrigger = new View[4];
 
     // for disabling the status bar
     int mDisabled = 0;
@@ -576,11 +576,7 @@ public class TabletStatusBar extends BaseStatusBar implements
         }
 
         // Overload screen with views that literally do nothing, thank you Google
-        int dummyGravity[] = {Gravity.LEFT, Gravity.TOP, Gravity.RIGHT, Gravity.BOTTOM};  
-        for (int i = 0; i < 4; i++) {
-            mPieDummyTrigger[i] = new View(mContext);
-            mWindowManager.addView(mPieDummyTrigger[i], getDummyTriggerLayoutParams(mContext, dummyGravity[i]));
-        }
+        Pie.addMDPDecorations(mContext);
 
         // set recents activity navigation bar view
         RecentsActivity.addNavigationCallback(this);
@@ -1279,8 +1275,8 @@ public class TabletStatusBar extends BaseStatusBar implements
     }
 
     public void topAppWindowChanged(boolean showMenu) {
-        if (mPieControlPanel != null)
-            mPieControlPanel.setMenu(showMenu);
+        if (mPie != null && mPie.mControl != null)
+            mPie.mControl.setMenu(showMenu);
 
         if (DEBUG) {
             Slog.d(TAG, (showMenu?"showing":"hiding") + " the MENU button");

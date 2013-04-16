@@ -26,7 +26,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import com.android.systemui.statusbar.BaseStatusBar;
-import com.android.systemui.statusbar.PieControlPanel;
+import com.android.systemui.statusbar.pie.PieControl;
 
 public class PanelBar extends FrameLayout {
     public static final boolean DEBUG = false;
@@ -202,7 +202,9 @@ public class PanelBar extends FrameLayout {
             onAllPanelsCollapsed();
         }
 
-        if(mStatusBar.mPieControlPanel != null) mStatusBar.mPieControlPanel.animateCollapsePanels();
+        if(mStatusBar.mPie != null && mStatusBar.mPie.mControl != null) {
+            mStatusBar.mPie.mControl.animateCollapsePanels();
+        }
     }
 
     public void onPanelPeeked() {
