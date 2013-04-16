@@ -39,11 +39,10 @@ public class HybridTile extends QuickSettingsTile {
 
     public HybridTile(Context context, 
             QuickSettingsController qsc, Handler handler) {
-        super(context, qsc);
+        super(context, qsc, R.layout.quick_settings_tile_hybrid);
 
         mDefaultLabel = context.getString(R.string.quick_settings_hybrid_label);
         mLabel = mDefaultLabel;
-        //mTileLayout = R.layout.quick_settings_tile_hybrid;
         mPm = context.getPackageManager();
 
         mOnClick = new OnClickListener() {
