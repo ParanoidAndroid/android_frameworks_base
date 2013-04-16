@@ -149,7 +149,7 @@ public class QuickSettingsController {
 
         Log.i(TAG, "Tiles list: " + tiles);
 
-for (String tile : tiles.split("\\|")) {
+        for (String tile : tiles.split("\\|")) {
             QuickSettingsTile qs = null;
             if (tile.equals(TILE_USER)) {
                 qs = new UserTile(mContext, this);
@@ -193,7 +193,7 @@ for (String tile : tiles.split("\\|")) {
                 qs = new NfcTile(mContext, this);
             } else if (tile.equals(TILE_VOLUME)) {
                 qs = new VolumeTile(mContext, this, mHandler);
-            } else if (tile.equals(TILE_DesktopModeTile)) {
+            } else if (tile.equals(TILE_DESKTOPMODE)) {
                     qs = new DesktopModeTile(mContext, this, mHandler);
             } else if (tile.equals(TILE_HYBRID)) {
                 qs = new HybridTile(mContext, this, mHandler);
@@ -223,8 +223,8 @@ for (String tile : tiles.split("\\|")) {
             mQuickSettingsTiles.add(qs);
         }
         if (Settings.System.getInt(resolver, Settings.System.QS_DYNAMIC_IME, 1) == 1) {
-            mIMETile = new InputMethodTile(mContext, inflater, mContainerView, this);
-            mIMETile.setupQuickSettingsTile();
+            mIMETile = new InputMethodTile(mContext, this);
+            mIMETile.setupQuickSettingsTile(inflater, mContainerView);
             mQuickSettingsTiles.add(mIMETile);
         }
 
@@ -235,7 +235,7 @@ for (String tile : tiles.split("\\|")) {
         }
     }
 
-    protected void setupQuickSettings() {
+    public void setupQuickSettings() {
         mQuickSettingsTiles.clear();
         mContainerView.removeAllViews();
         // Clear out old receiver
