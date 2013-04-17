@@ -16,9 +16,10 @@ import com.android.systemui.statusbar.phone.QuickSettingsContainerView;
 
 public class DesktopModeTile extends QuickSettingsTile {
 
-    public DesktopModeTile(Context context, LayoutInflater inflater,
-            QuickSettingsContainerView container, QuickSettingsController qsc, Handler handler) {
-        super(context, inflater, container, qsc);
+
+    public DesktopModeTile(Context context, 
+            QuickSettingsController qsc, Handler handler) {
+        super(context, qsc);
 
         mLabel = context.getString(R.string.quick_settings_desktop_mode_label);
         mOnClick = new OnClickListener() {
