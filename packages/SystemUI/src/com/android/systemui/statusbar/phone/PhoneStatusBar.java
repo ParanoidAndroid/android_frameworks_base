@@ -109,6 +109,7 @@ import com.android.systemui.statusbar.policy.Prefs;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.List;
 
 public class PhoneStatusBar extends BaseStatusBar {
     static final String TAG = "PhoneStatusBar";
@@ -537,6 +538,12 @@ public class PhoneStatusBar extends BaseStatusBar {
         if (mHasDockBattery) {
             mDockBatteryController = new DockBatteryController(mContext);
             mDockBatteryController.addIconView((ImageView)mStatusBarView.findViewById(R.id.dock_battery));
+        } else {
+            // Remove dock battery icons if device doesn't have dock battery support
+            View v = mStatusBarView.findViewById(R.id.dock_battery);
+            if (v != null) mStatusBarView.removeView(v);
+            v = mStatusBarView.findViewById(R.id.circle_dock_battery);
+            if (v != null) mStatusBarView.removeView(v);
         }
 
         mEmergencyCallLabel = (TextView)mStatusBarWindow.findViewById(R.id.emergency_calls_only);

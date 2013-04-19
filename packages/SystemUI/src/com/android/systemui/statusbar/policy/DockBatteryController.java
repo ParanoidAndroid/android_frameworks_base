@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2010 The Android Open Source Project
- * This code has been modified. Portions copyright (C) 2012, ParanoidAndroid Project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,98 +16,72 @@
 
 package com.android.systemui.statusbar.policy;
 
-import java.util.ArrayList;
-
-import android.bluetooth.BluetoothAdapter.BluetoothStateChangeCallback;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.graphics.drawable.Drawable;
-import android.graphics.PorterDuff;
 import android.os.BatteryManager;
-import android.provider.Settings;
-import android.util.ColorUtils;
-import android.util.Slog;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.android.systemui.R;
 
-public class DockBatteryController extends BroadcastReceiver {
+public class DockBatteryController extends BatteryController {
     private static final String TAG = "StatusBar.DockBatteryController";
 
-    private Context mContext;
-    private ArrayList<ImageView> mIconViews = new ArrayList<ImageView>();
-    private ArrayList<TextView> mLabelViews = new ArrayList<TextView>();
-
-    private static final int BATTERY_ICON_STYLE_NORMAL      = R.drawable.stat_sys_kb_battery;
-    private static final int BATTERY_ICON_STYLE_CHARGE      = R.drawable.stat_sys_kb_battery_charge;
-
-    private int mLevel;
-    private boolean mDockStatus = false;
-    private boolean mDockCharging = false;
-    private ColorUtils.ColorSettingInfo mColorInfo;
+    private int mDockBatteryStatus = BatteryManager.BATTERY_STATUS_UNKNOWN;
+    private boolean mBatteryPlugged = false;
+    private boolean mBatteryPresent = false;
 
     public DockBatteryController(Context context) {
-        mContext = context;
-
-        mColorInfo = ColorUtils.getColorSettingInfo(context, Settings.System.STATUS_ICON_COLOR);
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_BATTERY_CHANGED);
-        context.registerReceiver(this, filter);
+        super(context);
     }
 
-    public void addIconView(ImageView v) {
-        mIconViews.add(v);
-    }
-
-    public void addLabelView(TextView v) {
-        mLabelViews.add(v);
-    }
-
-    public void setColor(ColorUtils.ColorSettingInfo colorInfo) {
-        mColorInfo = colorInfo;
-        updateBatteryLevel();
-    }
-
+    @Override
     public void onReceive(Context context, Intent intent) {
         final String action = intent.getAction();
         if (action.equals(Intent.ACTION_BATTERY_CHANGED)) {
-            mLevel = intent.getIntExtra(BatteryManager.EXTRA_DOCK_LEVEL, 0);
-            mDockCharging = intent.getIntExtra(BatteryManager.EXTRA_DOCK_STATUS, 0) == BatteryManager.DOCK_STATE_CHARGING;
-            mDockStatus = intent.getIntExtra(BatteryManager.EXTRA_DOCK_STATUS, 0) != BatteryManager.DOCK_STATE_UNDOCKED;
-            updateBatteryLevel();
+            final int level = intent.getIntExtra(BatteryManager.EXTRA_DOCK_LEVEL, 0);
+            mDockBatteryStatus = intent.getIntExtra(
+                                        BatteryManager.EXTRA_DOCK_STATUS,
+                                        BatteryManager.BATTERY_STATUS_UNKNOWN);
+            mBatteryPlugged = intent.getIntExtra(BatteryManager.EXTRA_DOCK_PLUGGED, 0) != 0;
+            mBatteryPresent = intent.getBooleanExtra(BatteryManager.EXTRA_DOCK_PRESENT, false);
+            updateViews(level);
+            updateBattery();
         }
     }
 
-    public void updateBatteryLevel() {
-        final int icon = mDockCharging ? BATTERY_ICON_STYLE_CHARGE
-                : BATTERY_ICON_STYLE_NORMAL;
-
-        int mIconVis = mDockStatus ? (View.VISIBLE) : (View.GONE);
-
-        int N = mIconViews.size();
-        for (int i=0; i<N; i++) {
-            ImageView v = mIconViews.get(i);
-            Drawable batteryBitmap = mContext.getResources().getDrawable(icon);
-            if (mColorInfo.isLastColorNull) {
-                batteryBitmap.clearColorFilter();
-            } else {
-                batteryBitmap.setColorFilter(mColorInfo.lastColor, PorterDuff.Mode.SRC_IN);
-            }
-            v.setVisibility(mIconVis);
-            v.setImageDrawable(batteryBitmap);
-            v.setImageLevel(mLevel);
-            v.setContentDescription(mContext.getString(R.string.accessibility_battery_level,
-                    mLevel));
-        }
-        N = mLabelViews.size();
-        for (int i=0; i<N; i++) {
-            TextView v = mLabelViews.get(i);
-            v.setText(mContext.getString(R.string.status_bar_settings_battery_meter_format,
-                    mLevel));
-        }
+    @Override
+    public int getIconStyleUnknown() {
+        return R.drawable.stat_sys_kb_battery_unknown;
     }
+    @Override
+    public int getIconStyleNormal() {
+        return R.drawable.stat_sys_kb_battery;
+    }
+    @Override
+    public int getIconStyleCharge() {
+        return R.drawable.stat_sys_kb_battery_charge;
+    }
+    @Override
+    public int getIconStyleNormalMin() {
+        return R.drawable.stat_sys_kb_battery_min;
+    }
+    @Override
+    public int getIconStyleChargeMin() {
+        return R.drawable.stat_sys_kb_battery_charge_min;
+    }
+
+    @Override
+    protected int getBatteryStatus() {
+        return mDockBatteryStatus;
+    }
+
+    @Override
+    protected boolean isBatteryPlugged() {
+        return mBatteryPlugged;
+    }
+
+    @Override
+    protected boolean isBatteryPresent() {
+        return mBatteryPresent;
+    }
+
 }

@@ -1637,6 +1637,24 @@ public final class Settings {
          */
         @Deprecated
         public static final String WIFI_STATIC_DNS2 = "wifi_static_dns2";
+        
+        /**
+         * Allows automatic retrieval of mms contents
+         * <p>Type: INT</p>
+         * 0 -- false
+         * 1 -- true
+         * @hide
+         */
+        public static final String MMS_AUTO_RETRIEVAL = "mms_auto_retrieval";
+        
+        /**
+         * Allows automatic retrieval of mms contents during roaming
+         * <p>Type: INT</p>
+         * 0 -- false
+         * 1 -- true
+         *ide
+
+        public static final String MMS_AUTO_RETRIEVAL_ON_ROAMING = "mms_auto_on_roaming";
 
         /**
          * Allows automatic retrieval of mms contents
@@ -1654,16 +1672,7 @@ public final class Settings {
          * 1 -- true
          * @hide
          */
-        public static final String MMS_AUTO_RETRIEVAL_ON_ROAMING = "mms_auto_on_roaming";
-
-        /**
-         * Determines whether remote devices may discover and/or connect to
-         * this device.
-         * <P>Type: INT</P>
-         * 2 -- discoverable and connectable
-         * 1 -- connectable but not discoverable
-         * 0 -- neither connectable nor discoverable
-         */
+                 */
         public static final String BLUETOOTH_DISCOVERABILITY =
             "bluetooth_discoverability";
 
@@ -2654,6 +2663,18 @@ public final class Settings {
          * @hide
          */
         public static final String VOLBTN_MUSIC_CONTROLS = "volbtn_music_controls";
+        
+        /**
+         * Whether or not to launch default music player when headset is connected
+         * @hide
+         */
+        public static final String HEADSET_CONNECT_PLAYER = "headset_connect_player"; 
+        
+        /**
+         * Whether national data roaming should be used.
+         * @hide
+         */
+        public static final String MVNO_ROAMING = "mvno_roaming";
 
         /**
          * Whether to enable quiet hours.
