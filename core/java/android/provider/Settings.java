@@ -1652,8 +1652,8 @@ public final class Settings {
          * <p>Type: INT</p>
          * 0 -- false
          * 1 -- true
-         * @hide
-         */
+         *ide
+
         public static final String MMS_AUTO_RETRIEVAL_ON_ROAMING = "mms_auto_on_roaming";
 
         /**
@@ -1672,16 +1672,7 @@ public final class Settings {
          * 1 -- true
          * @hide
          */
-        public static final String MMS_AUTO_RETRIEVAL_ON_ROAMING = "mms_auto_on_roaming";
-
-        /**
-         * Determines whether remote devices may discover and/or connect to
-         * this device.
-         * <P>Type: INT</P>
-         * 2 -- discoverable and connectable
-         * 1 -- connectable but not discoverable
-         * 0 -- neither connectable nor discoverable
-         */
+                 */
         public static final String BLUETOOTH_DISCOVERABILITY =
             "bluetooth_discoverability";
 
