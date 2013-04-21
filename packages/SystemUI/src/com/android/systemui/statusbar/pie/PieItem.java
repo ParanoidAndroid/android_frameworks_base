@@ -43,6 +43,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.view.ViewGroup.LayoutParams;
 import android.graphics.RectF;
+import android.view.SoundEffectConstants;
 
 import com.android.systemui.R;
 
@@ -171,14 +172,15 @@ public class PieItem {
 
     public static void layoutPie(PieControl control) {
         Pie pie = control.mPie;
+        PiePolicy piePolicy = pie.mPolicy;
 
-        float emptyangle = pie.mEmptyAngle * (float)Math.PI / 180;
-        int inner = (int)pie.mInnerPieRadius;
-        int outer = (int)pie.mOuterPieRadius;
+        float emptyangle = piePolicy.mEmptyAngle * (float)Math.PI / 180;
+        int inner = (int)piePolicy.mInnerPieRadius;
+        int outer = (int)piePolicy.mOuterPieRadius;
 
         int itemCount = control.mItems.size();
-        if (!control.mMenuButton && !pie.mUseMenuAlways) itemCount--;
-        if (!pie.mUseSearch) itemCount--;
+        if (!piePolicy.mMenuButton && !piePolicy.mUseMenuAlways) itemCount--;
+        if (!piePolicy.mUseSearch) itemCount--;
 
         int totalCount = 0;
         int lesserSweepCount = 0;
@@ -203,8 +205,8 @@ public class PieItem {
 
             sweep = ((float) (Math.PI - 2 * emptyangle) / itemCount) * (item.mLesser ? 0.65f : 1 + adjustedSweep);
             angle = (emptyangle + sweep / 2 - (float)Math.PI/2);
-            item.mPath = makeSlice(getDegrees(0) - pie.mPieGap, getDegrees(sweep) + pie.mPieGap, outer, inner, control.mCenter,
-                    (pie.mPieGap > 0 ? pie.mPieGap + 0.4f : 0), count != 0);
+            item.mPath = makeSlice(getDegrees(0) - piePolicy.mPieGap, getDegrees(sweep) + piePolicy.mPieGap, outer, inner, control.mCenter,
+                    (piePolicy.mPieGap > 0 ? piePolicy.mPieGap + 0.4f : 0), count != 0);
             View view = item.mView;
 
             if (view != null) {
@@ -318,17 +320,17 @@ public class PieItem {
     }
 
     public static void onEnter(PieItem item) {
-        if (item == null || control.mCurrentItem == item) return;
+        if (item == null || item.mControl.mCurrentItem == item) return;
 
         PieControl control = item.mControl;
-        if (mCurrentItem != null) control.mCurrentItem.mSelected = false;
+        if (item.mControl.mCurrentItem != null) item.mControl.mCurrentItem.mSelected = false;
 
         if (item != null) {
-            playSoundEffect(SoundEffectConstants.CLICK);
+            item.mControl.playSoundEffect(SoundEffectConstants.CLICK);
             item.mSelected = true;
-            control.mCurrentItem = item;
+            item.mControl.mCurrentItem = item;
         } else {
-            control.mCurrentItem = null;
+            item.mControl.mCurrentItem = null;
         }
 
     }

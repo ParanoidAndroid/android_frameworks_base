@@ -33,7 +33,7 @@ import com.android.systemui.R;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class PiePolicy {
+public class PieUtils {
 
     public static int LOW_BATTERY_LEVEL;
     public static int CRITICAL_BATTERY_LEVEL;
@@ -62,7 +62,7 @@ public class PiePolicy {
         public abstract void onChange(String s);
     }
 
-    public PiePolicy(Context context) {
+    public PieUtils(Context context) {
         mContext = context;
         mContext.registerReceiver(mBatteryReceiver, 
                 new IntentFilter(Intent.ACTION_BATTERY_CHANGED));

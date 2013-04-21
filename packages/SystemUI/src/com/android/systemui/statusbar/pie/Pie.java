@@ -45,8 +45,7 @@ import com.android.systemui.statusbar.BaseStatusBar;
 // +----------------------------------------------------------------------------------+
 public class Pie {
 
-    public static final int DECORATIONS = 4;
-    public static final int GRAVITY[] = {Gravity.LEFT, Gravity.TOP, Gravity.RIGHT, Gravity.BOTTOM};  
+    public static final int DECORATIONS = 4;    
 
     protected Context mContext;
     protected Resources mResources;
@@ -119,10 +118,10 @@ public class Pie {
         mTrigger.setBackgroundColor(0x55FF0000);
         mTrigger.setOnTouchListener(new PieTrigger());
         WindowManager.LayoutParams triggerLayout = new WindowManager.LayoutParams(
-              (mGravity == Gravity.TOP || mGravity == Gravity.BOTTOM ?
+              (mPolicy.mGravity == Gravity.TOP || mPolicy.mGravity == Gravity.BOTTOM ?
                     ViewGroup.LayoutParams.MATCH_PARENT : (int)(
                     mResources.getDimensionPixelSize(R.dimen.pie_trigger_height) * mPieSize)),
-              (mGravity == Gravity.LEFT || mGravity == Gravity.RIGHT ?
+              (mPolicy.mGravity == Gravity.LEFT || mPolicy.mGravity == Gravity.RIGHT ?
                     ViewGroup.LayoutParams.MATCH_PARENT : (int)(
                     mResources.getDimensionPixelSize(R.dimen.pie_trigger_height) * mPieSize)),
               WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
@@ -133,7 +132,7 @@ public class Pie {
               PixelFormat.TRANSLUCENT);
         triggerLayout.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED
                 | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING;
-        triggerLayout.gravity = mGravity;
+        triggerLayout.gravity = mPolicy.mGravity;
         mWindowManager.addView(mTrigger, triggerLayout);
 
         // +----------------------------------------------------------------------------------+
@@ -164,9 +163,9 @@ public class Pie {
         for (int i = 0; i < DECORATIONS; i++) {
             mDecorations[i] = new View(context);
             WindowManager.LayoutParams decorLayout = new WindowManager.LayoutParams(
-                  (GRAVITY[i] == Gravity.TOP || GRAVITY[i] == Gravity.BOTTOM ?
+                  (PiePolicy.GRAVITY[i] == Gravity.TOP || PiePolicy.GRAVITY[i] == Gravity.BOTTOM ?
                         ViewGroup.LayoutParams.MATCH_PARENT : 1),
-                  (GRAVITY[i] == Gravity.LEFT || GRAVITY[i] == Gravity.RIGHT ?
+                  (PiePolicy.GRAVITY[i] == Gravity.LEFT || PiePolicy.GRAVITY[i] == Gravity.RIGHT ?
                         ViewGroup.LayoutParams.MATCH_PARENT : 1),
                   WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
                           WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
@@ -177,7 +176,7 @@ public class Pie {
                   PixelFormat.TRANSLUCENT);
             decorLayout.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_STATE_UNCHANGED
                     | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING;
-            decorLayout.gravity = GRAVITY[i];
+            decorLayout.gravity = PiePolicy.GRAVITY[i];
             mWindowManager.addView(mDecorations[i], decorLayout);
         }
     }
@@ -217,12 +216,12 @@ public class Pie {
                         if (actionDown != true) break;
                         float deltaX = Math.abs(event.getX() - initialX);
                         float deltaY = Math.abs(event.getY() - initialY);
-                        float distance = mGravity == Gravity.BOTTOM ||
-                                mGravity == Gravity.TOP ? deltaY : deltaX;
+                        float distance = mPolicy.mGravity == Gravity.BOTTOM ||
+                                mPolicy.mGravity == Gravity.TOP ? deltaY : deltaX;
                         // Swipe up, todo: 10 is not valid - needs actual dp to work right
                         if (distance > 10) {
-                            mControl.show(centerPie ? -1 : (int)(mGravity == Gravity.BOTTOM ||
-                                mGravity == Gravity.TOP ? initialX : initialY));
+                            mControl.show(centerPie ? -1 : (int)(mPolicy.mGravity == Gravity.BOTTOM ||
+                                mPolicy.mGravity == Gravity.TOP ? initialX : initialY));
                             event.setAction(MotionEvent.ACTION_DOWN);
                             mControl.onTouchEvent(event);
                             actionDown = false;

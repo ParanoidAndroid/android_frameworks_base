@@ -60,7 +60,8 @@ import java.lang.Runnable;
 // +----------------------------------------------------------------------------------+
 // | CLASS PieControl                                                                 |
 // +==================================================================================+
-// | Abstracts view construction, click handling and statusbar callbacks              |
+// | Abstracts view construction, click handling and statusbar callbacks.             |
+// | It leaves drawing and property managing to PiePolicy and PieSurface.             |
 // +----------------------------------------------------------------------------------+
 public class PieControl extends FrameLayout implements StatusBarPanel, NavigationCallback {
 
@@ -76,6 +77,7 @@ public class PieControl extends FrameLayout implements StatusBarPanel, Navigatio
     private PieItem mMenu;
     private PieItem mRecent;
     private PieItem mSearch;
+    protected PieItem mCurrentItem;
 
     private int mNavigationIconHints;
     private ViewGroup mContentFrame;

@@ -16,13 +16,49 @@
 
 package com.android.systemui.statusbar.pie;
 
-import com.android.systemui.R;
+import android.provider.Settings;
+import android.database.ContentObserver;
+import android.content.ContentResolver;
+import android.os.Handler;
+import android.graphics.Paint;
+import android.graphics.Paint.Style;
+import android.content.res.Resources;
+import android.graphics.Point;
+import android.graphics.PointF;
+import android.util.ColorUtils;
+import android.view.WindowManager;
+import android.app.Notification;
+import android.animation.Animator;
+import android.animation.Animator.AnimatorListener;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
+import android.animation.ValueAnimator.AnimatorUpdateListener;
+import android.animation.TimeInterpolator;
+import android.os.Vibrator;
+import android.content.Context;
 
+import com.android.systemui.R;
+import com.android.internal.statusbar.StatusBarNotification;
+import com.android.internal.statusbar.StatusBarIcon;
+import com.android.systemui.statusbar.NotificationData;
+import com.android.systemui.statusbar.policy.NotificationRowLayout;
+
+// +----------------------------------------------------------------------------------+
+// | CLASS PiePolicy                                                                  |
+// +==================================================================================+
+// | This class takes care of all parameters and variables that somehow define or     |
+// | shape PIE. It will observe, change, animate and shift them when needed.          |
+// | PieSurface will later reflect these values visually.
+// +----------------------------------------------------------------------------------+
 public class PiePolicy {
 
-    private Pie mPie;
+    protected static final int GRAVITY[] = {Gravity.LEFT, Gravity.TOP, Gravity.RIGHT, Gravity.BOTTOM};  
 
-    protected boolean mPieAllowed
+    private Pie mPie;
+    private PieControl mControl;
+    private PieUtils mUtils; 
+
+    protected boolean mPieAllowed;
     protected boolean mExpanded;
     protected boolean mUseMenuAlways;
     protected boolean mUseSearch;
@@ -33,52 +69,20 @@ public class PiePolicy {
 
     protected float mPieSize;
     protected float mTriggerSize;
-
-    protected float mEmptyAngle;
+    protected float mPieGap;
     protected float mInnerPieRadius;
     protected float mOuterPieRadius;
-    protected float mPieGap;
+
+
 
     public PiePolicy(Pie pie) {
         mPie = pie;
+        mControl = mPie.mControl;
+        mUtils = new PieUtils(mContext);
 
         SettingsObserver settingsObserver = new SettingsObserver(new Handler());
         settingsObserver.observe();
 
-        // Initialize classes
-        mPieBackground.setAntiAlias(true);
-        mPieSelected.setAntiAlias(true);
-        mPieOutlines.setAntiAlias(true);
-        mPieOutlines.setStyle(Style.STROKE);
-        mPieOutlines.setStrokeWidth(mResources.getDimensionPixelSize(R.dimen.pie_outline));
-        mChevronBackgroundLeft.setAntiAlias(true);
-        mChevronBackgroundRight.setAntiAlias(true);
-        mBatteryJuice.setAntiAlias(true);
-        mBatteryBackground.setAntiAlias(true);
-        mSnapBackground.setAntiAlias(true);
-
-        mClockPaint = new Paint();
-        mClockPaint.setAntiAlias(true);     
-        mClockPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
-
-        mAmPmPaint = new Paint();
-        mAmPmPaint.setAntiAlias(true);
-        mAmPmPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
-
-        mStatusPaint = new Paint();
-        mStatusPaint.setAntiAlias(true);
-        mStatusPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
-
-        mNotificationPaint = new Paint();
-        mNotificationPaint.setAntiAlias(true);
-        mNotificationPaint.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
-
-        // Clock observer
-        mPolicy.setOnClockChangedListener(new PiePolicy.OnClockChangedListener() {
-            public void onChange(String s) {
-                measureClock(s);
-            }
-        });
 
         // Get all dimensions
         update();
@@ -128,6 +132,7 @@ public class PiePolicy {
                 break;
         }
 
+/*
         mUseMenuAlways = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.PIE_MENU, 1) == 1;
 
@@ -332,13 +337,14 @@ public class PiePolicy {
                     }
                 }
             }});
-
+*/
 
         // Re-do Pie
         mPie.update();
     }
 
     private void measureClock(String text) {
+/*
         mClockText = text;
 
         mClockTextAmPm = mPolicy.getAmPm();
@@ -353,10 +359,10 @@ public class PiePolicy {
         }
 
         mClockTextRotation = mPanel.getDegree() + (180 - (mClockTextTotalOffset * 360 /
-                (2f * (mStatusRadius+Math.abs(mClockOffset)) * (float)Math.PI))) - 2;
+                (2f * (mStatusRadius+Math.abs(mClockOffset)) * (float)Math.PI))) - 2;*/
     }
 
-    private void getNotifications() {
+    private void getNotifications() {/*
         NotificationData notifData = mPanel.getBar().getNotificationData();
         if (notifData != null) {
 
@@ -394,6 +400,6 @@ public class PiePolicy {
                     mNotificationCount++;
                 }
             }
-        }
+        }*/
     }
 }
