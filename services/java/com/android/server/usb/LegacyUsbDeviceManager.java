@@ -573,10 +573,10 @@ public class LegacyUsbDeviceManager extends UsbDeviceManager {
                     id = com.android.internal.R.string.usb_mtp_notification_title;
                 } else if (containsFunction(mCurrentFunctions, UsbManager.USB_FUNCTION_PTP)) {
                     id = com.android.internal.R.string.usb_ptp_notification_title;
-                } else if (containsFunction(mCurrentFunctions,
+                } /* else if (containsFunction(mCurrentFunctions,
                         UsbManager.USB_FUNCTION_MASS_STORAGE)) {
                     id = com.android.internal.R.string.usb_cd_installer_notification_title;
-                } else if (containsFunction(mCurrentFunctions, UsbManager.USB_FUNCTION_ACCESSORY)) {
+                } */ else if (containsFunction(mCurrentFunctions, UsbManager.USB_FUNCTION_ACCESSORY)) {
                     id = com.android.internal.R.string.usb_accessory_notification_title;
                 } else {
                     // There is a different notification for USB tethering so we don't need one here
