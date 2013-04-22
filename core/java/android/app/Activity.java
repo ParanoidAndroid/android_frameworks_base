@@ -60,12 +60,14 @@ import android.util.ColorUtils;
 import android.util.EventLog;
 import android.util.ExtendedPropertiesUtils;
 import android.util.Log;
+import android.util.TypedValue;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextThemeWrapper;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -5064,7 +5066,35 @@ public class Activity extends ContextThemeWrapper
 
         mFragments.attachActivity(this, mContainer, null);
         
-        mWindow = PolicyManager.makeNewWindow(this);
+        boolean createContextThemeWrapper = false;
+
+        android.util.Log.d("PARANOID:attach", "title="+title);
+        if (title.equals("Chrome") ||
+            title.equals("Talk") ||
+            title.equals("Recent apps.") ||
+            title.equals("Gmail") ||
+            title.equals("Messaging")) createContextThemeWrapper = true;
+
+        if (createContextThemeWrapper) {
+            Context newContext = new ContextThemeWrapper(context, com.android.internal.R.style.Theme_DeviceDefault_Floating);
+            context.getTheme().setTo(newContext.getTheme());
+
+            mWindow = PolicyManager.makeNewWindow(context);
+            mWindow.setGravity(Gravity.CENTER);
+
+            mWindow.requestFeature(Window.FEATURE_ACTION_BAR);
+            mWindow.setFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND,
+                    WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+            WindowManager.LayoutParams params = mWindow.getAttributes(); 
+            params.alpha = 1f;
+            params.dimAmount = 0f;
+            mWindow.setAttributes((android.view.WindowManager.LayoutParams) params);
+
+            mWindow.setLayout(650,900);
+        } else {
+            mWindow = PolicyManager.makeNewWindow(this);
+        }
+
         mWindow.setCallback(this);
         mWindow.getLayoutInflater().setPrivateFactory(this);
         if (info.softInputMode != WindowManager.LayoutParams.SOFT_INPUT_STATE_UNSPECIFIED) {
