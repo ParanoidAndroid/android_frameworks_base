@@ -2482,6 +2482,15 @@ final class ActivityStack {
 
         int err = ActivityManager.START_SUCCESS;
 
+        if (intent != null) {
+            final String intentExtra = intent.getStringExtra("Theme.DeviceDefault.Floating");
+            final boolean floatingDialog = (intentExtra != null ? intentExtra.equals("1") : false);
+            if (floatingDialog) {
+                // Do not allow tasks on home for floating multiwindows!
+                intent.setFlags(intent.getFlags() & ~Intent.FLAG_ACTIVITY_TASK_ON_HOME);
+            }
+        }
+
         ProcessRecord callerApp = null;
         if (caller != null) {
             callerApp = mService.getRecordForAppLocked(caller);

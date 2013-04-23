@@ -5065,18 +5065,16 @@ public class Activity extends ContextThemeWrapper
         attachBaseContext(context);
 
         mFragments.attachActivity(this, mContainer, null);
-        
-        boolean createContextThemeWrapper = false;
 
-        android.util.Log.d("PARANOID:attach", "title="+title);
-        if (title.equals("Chrome") ||
-            title.equals("Talk") ||
-            title.equals("Recent apps.") ||
-            title.equals("Gmail") ||
-            title.equals("Messaging")) createContextThemeWrapper = true;
+        boolean floatingDialog = false;
+        if (intent != null) {            
+            final String intentExtra = intent.getStringExtra("Theme.DeviceDefault.Floating");
+            floatingDialog = (intentExtra != null ? intentExtra.equals("1") : false);
+        }
 
-        if (createContextThemeWrapper) {
-            Context newContext = new ContextThemeWrapper(context, com.android.internal.R.style.Theme_DeviceDefault_Floating);
+        if (floatingDialog) {
+            Context newContext = new ContextThemeWrapper(context,
+                    com.android.internal.R.style.Theme_DeviceDefault_Floating);
             context.getTheme().setTo(newContext.getTheme());
 
             mWindow = PolicyManager.makeNewWindow(context);
@@ -5086,11 +5084,10 @@ public class Activity extends ContextThemeWrapper
             mWindow.setFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND,
                     WindowManager.LayoutParams.FLAG_DIM_BEHIND);
             WindowManager.LayoutParams params = mWindow.getAttributes(); 
-            params.alpha = 1f;
-            params.dimAmount = 0f;
+            params.alpha = 0.9f;
+            params.dimAmount = 0.2f;
             mWindow.setAttributes((android.view.WindowManager.LayoutParams) params);
-
-            mWindow.setLayout(650,900);
+            mWindow.setLayout(650,750);
         } else {
             mWindow = PolicyManager.makeNewWindow(this);
         }

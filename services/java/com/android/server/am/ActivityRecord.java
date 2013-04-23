@@ -406,13 +406,19 @@ final class ActivityRecord {
             
             packageName = aInfo.applicationInfo.packageName;
             launchMode = aInfo.launchMode;
+
+            boolean floatingDialog = false;
+            if (intent != null) {            
+                final String intentExtra = intent.getStringExtra("Theme.DeviceDefault.Floating");
+                floatingDialog = (intentExtra != null ? intentExtra.equals("1") : false);
+            }
             
             AttributeCache.Entry ent = AttributeCache.instance().get(userId, packageName,
                     realTheme, com.android.internal.R.styleable.Window);
             fullscreen = ent != null && !ent.array.getBoolean(
                     com.android.internal.R.styleable.Window_windowIsFloating, false)
                     && !ent.array.getBoolean(
-                    com.android.internal.R.styleable.Window_windowIsTranslucent, false);
+                    com.android.internal.R.styleable.Window_windowIsTranslucent, false) && !floatingDialog;
             noDisplay = ent != null && ent.array.getBoolean(
                     com.android.internal.R.styleable.Window_windowNoDisplay, false);
             
