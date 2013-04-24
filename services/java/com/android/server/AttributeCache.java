@@ -103,6 +103,34 @@ public final class AttributeCache {
         }
     }
 
+    public Context getContext(int userId, String packageName)
+    {
+        synchronized (this) {
+            Context result = null;
+            WeakHashMap<String, Package> packages = mPackages.get(userId);
+            if (packages == null) {
+                packages = new WeakHashMap<String, Package>();
+                mPackages.put(userId, packages);
+            }
+            Package pkg = packages.get(packageName);
+            if (pkg != null) {
+                result = pkg.context;
+            } else {
+                try {
+                    result = mContext.createPackageContextAsUser(packageName, 0,
+                            new UserHandle(userId));
+                } catch (PackageManager.NameNotFoundException e) {
+                    return null;
+                }
+                if (result != null) {
+                    pkg = new Package(result);
+                    packages.put(packageName, pkg);
+                }
+            }            
+            return result;
+        }
+    }
+
     public Entry get(int userId, String packageName, int resId, int[] styleable) {
         synchronized (this) {
             WeakHashMap<String, Package> packages = mPackages.get(userId);

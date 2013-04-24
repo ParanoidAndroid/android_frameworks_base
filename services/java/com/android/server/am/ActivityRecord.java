@@ -23,6 +23,7 @@ import com.android.server.am.ActivityStack.ActivityState;
 import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
@@ -42,6 +43,7 @@ import android.util.EventLog;
 import android.util.Log;
 import android.util.Slog;
 import android.util.TimeUtils;
+import android.view.ContextThemeWrapper;
 import android.view.IApplicationToken;
 import android.view.WindowManager;
 
@@ -407,18 +409,29 @@ final class ActivityRecord {
             packageName = aInfo.applicationInfo.packageName;
             launchMode = aInfo.launchMode;
 
-            boolean floatingDialog = false;
-            if (intent != null) {            
+            // This is where the package gets its first context from the attribute-cache
+            // In order to hook its attributes we set up our check for floating mutil windows here.            
+            if (intent != null) {
+                // Check for floating intent
                 final String intentExtra = intent.getStringExtra("Theme.DeviceDefault.Floating");
-                floatingDialog = (intentExtra != null ? intentExtra.equals("1") : false);
+                if (intentExtra != null && intentExtra.equals("1")) {
+                    // Get first context, if not existent, create one
+                    Context firstContext = AttributeCache.instance().getContext(userId, packageName);
+                    if (firstContext != null) {
+                        // Wrap theme
+                        Context newContext = new ContextThemeWrapper(firstContext,
+                                com.android.internal.R.style.Theme_DeviceDefault_Floating);
+                        firstContext.getTheme().setTo(newContext.getTheme());
+                    }
+                }
             }
-            
+
             AttributeCache.Entry ent = AttributeCache.instance().get(userId, packageName,
                     realTheme, com.android.internal.R.styleable.Window);
             fullscreen = ent != null && !ent.array.getBoolean(
                     com.android.internal.R.styleable.Window_windowIsFloating, false)
                     && !ent.array.getBoolean(
-                    com.android.internal.R.styleable.Window_windowIsTranslucent, false) && !floatingDialog;
+                    com.android.internal.R.styleable.Window_windowIsTranslucent, false);
             noDisplay = ent != null && ent.array.getBoolean(
                     com.android.internal.R.styleable.Window_windowNoDisplay, false);
             
