@@ -34,6 +34,8 @@ public class QuickSettingsTile implements OnClickListener {
     protected BaseStatusBar mStatusbarService;
     protected QuickSettingsController mQsc;
 
+    public int mTileTextSize = 12;
+
 
     public QuickSettingsTile(Context context, QuickSettingsController qsc) {
         this(context, qsc, R.layout.quick_settings_tile_generic);

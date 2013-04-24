@@ -112,6 +112,7 @@ public class QuickSettings {
 
     private LevelListDrawable mBatteryLevels;
     private LevelListDrawable mChargingBatteryLevels;
+    private int mTileTextSize = 12;
 
     boolean mTilesSetUp = false;
 
