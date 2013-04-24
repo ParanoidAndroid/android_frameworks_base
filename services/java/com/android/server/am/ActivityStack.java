@@ -2486,11 +2486,15 @@ final class ActivityStack {
 
         // This is where we hook special purpose flags formultiwindow application
         if (intent != null) {
-            final String intentExtra = intent.getStringExtra("Theme.DeviceDefault.Floating");
-            final boolean floatingDialog = (intentExtra != null ? intentExtra.equals("1") : false);
-            if (floatingDialog) {
-                intent.setFlags(intent.getFlags() & ~Intent.FLAG_ACTIVITY_TASK_ON_HOME);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY|Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+            try {
+                final String intentExtra = intent.getStringExtra("Theme.DeviceDefault.Floating");
+                final boolean floatingDialog = (intentExtra != null ? intentExtra.equals("1") : false);
+                if (floatingDialog) {
+                    intent.setFlags(intent.getFlags() & ~Intent.FLAG_ACTIVITY_TASK_ON_HOME);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY|Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+                }
+            } catch(android.os.BadParcelableException exception) {
+                // Oh my
             }
         }
 

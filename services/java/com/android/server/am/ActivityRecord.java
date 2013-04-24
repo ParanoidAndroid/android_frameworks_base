@@ -410,19 +410,17 @@ final class ActivityRecord {
             launchMode = aInfo.launchMode;
 
             // This is where the package gets its first context from the attribute-cache
-            // In order to hook its attributes we set up our check for floating mutil windows here.            
+            // In order to hook its attributes we set up our check for floating mutil windows here.
             if (intent != null) {
                 // Check for floating intent
-                final String intentExtra = intent.getStringExtra("Theme.DeviceDefault.Floating");
-                if (intentExtra != null && intentExtra.equals("1")) {
-                    // Get first context, if not existent, create one
-                    Context firstContext = AttributeCache.instance().getContext(userId, packageName);
-                    if (firstContext != null) {
-                        // Wrap theme
-                        Context newContext = new ContextThemeWrapper(firstContext,
-                                com.android.internal.R.style.Theme_DeviceDefault_Floating);
-                        firstContext.getTheme().setTo(newContext.getTheme());
+                try {
+                    final String intentExtra = intent.getStringExtra("Theme.DeviceDefault.Floating");
+                    if (intentExtra != null && intentExtra.equals("1")) {
+                        realTheme = com.android.internal.R.style.Theme_DeviceDefault_Floating;
+                        theme = realTheme;
                     }
+                } catch(android.os.BadParcelableException exception) {
+                    // Oh my
                 }
             }
 
@@ -432,6 +430,7 @@ final class ActivityRecord {
                     com.android.internal.R.styleable.Window_windowIsFloating, false)
                     && !ent.array.getBoolean(
                     com.android.internal.R.styleable.Window_windowIsTranslucent, false);
+
             noDisplay = ent != null && ent.array.getBoolean(
                     com.android.internal.R.styleable.Window_windowNoDisplay, false);
             

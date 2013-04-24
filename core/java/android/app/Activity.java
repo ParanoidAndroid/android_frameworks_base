@@ -5068,9 +5068,13 @@ public class Activity extends ContextThemeWrapper
         mFragments.attachActivity(this, mContainer, null);
 
         boolean floatingDialog = false;
-        if (intent != null) {            
-            final String intentExtra = intent.getStringExtra("Theme.DeviceDefault.Floating");
-            floatingDialog = (intentExtra != null ? intentExtra.equals("1") : false);
+        try {
+            if (intent != null) {            
+                final String intentExtra = intent.getStringExtra("Theme.DeviceDefault.Floating");
+                floatingDialog = (intentExtra != null ? intentExtra.equals("1") : false);
+            }
+        } catch(android.os.BadParcelableException exception) {
+            // Oh my
         }
 
         if (floatingDialog) {
@@ -5086,7 +5090,7 @@ public class Activity extends ContextThemeWrapper
                     WindowManager.LayoutParams.FLAG_DIM_BEHIND);
             WindowManager.LayoutParams params = mWindow.getAttributes(); 
             params.alpha = 0.9f;
-            params.dimAmount = 0.2f;
+            params.dimAmount = 0.5f;
             mWindow.setAttributes((android.view.WindowManager.LayoutParams) params);
             mWindow.setLayout(650,750);
         } else {
