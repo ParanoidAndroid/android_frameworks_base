@@ -382,7 +382,14 @@ final class ActivityRecord {
                 labelRes = app.labelRes;
             }
             icon = aInfo.getIconResource();
-            theme = aInfo.getThemeResource();
+
+            // This is where the package gets its first context from the attribute-cache
+            // In order to hook its attributes we set up our check for floating mutil windows here.
+            if (intent != null && (intent.getFlags()&Intent.FLAG_MULTI_WINDOW) == Intent.FLAG_MULTI_WINDOW) {
+                theme = com.android.internal.R.style.Theme_DeviceDefault_Floating;
+            } else {
+                theme = aInfo.getThemeResource();
+            }
             realTheme = theme;
             if (realTheme == 0) {
                 realTheme = aInfo.applicationInfo.targetSdkVersion
@@ -390,6 +397,7 @@ final class ActivityRecord {
                         ? android.R.style.Theme
                         : android.R.style.Theme_Holo;
             }
+
             if ((aInfo.flags&ActivityInfo.FLAG_HARDWARE_ACCELERATED) != 0) {
                 windowFlags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
             }
@@ -408,21 +416,6 @@ final class ActivityRecord {
             
             packageName = aInfo.applicationInfo.packageName;
             launchMode = aInfo.launchMode;
-
-            // This is where the package gets its first context from the attribute-cache
-            // In order to hook its attributes we set up our check for floating mutil windows here.
-            if (intent != null) {
-                // Check for floating intent
-                try {
-                    final String intentExtra = intent.getStringExtra("Theme.DeviceDefault.Floating");
-                    if (intentExtra != null && intentExtra.equals("1")) {
-                        realTheme = com.android.internal.R.style.Theme_DeviceDefault_Floating;
-                        theme = realTheme;
-                    }
-                } catch(android.os.BadParcelableException exception) {
-                    // Oh my
-                }
-            }
 
             AttributeCache.Entry ent = AttributeCache.instance().get(userId, packageName,
                     realTheme, com.android.internal.R.styleable.Window);

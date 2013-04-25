@@ -3103,6 +3103,12 @@ public class Intent implements Parcelable, Cloneable {
     public static final int FLAG_INCLUDE_STOPPED_PACKAGES = 0x00000020;
 
     /**
+     * If set, this intent will always match start up as a floating window
+     * in mutil window scenarios.
+     */
+    public static final int FLAG_MULTI_WINDOW = 0x00000040;
+
+    /**
      * If set, the new activity is not kept in the history stack.  As soon as
      * the user navigates away from it, the activity is finished.  This may also
      * be set with the {@link android.R.styleable#AndroidManifestActivity_noHistory

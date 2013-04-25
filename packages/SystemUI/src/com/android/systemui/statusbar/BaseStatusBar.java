@@ -1265,7 +1265,7 @@ public abstract class BaseStatusBar extends SystemUI implements
                 int[] pos = new int[2];
                 v.getLocationOnScreen(pos);
                 Intent overlay = new Intent();
-                overlay.putExtra("Theme.DeviceDefault.Floating", "1");
+                overlay.addFlags(Intent.FLAG_MULTI_WINDOW);
                 overlay.setSourceBounds(
                         new Rect(pos[0], pos[1], pos[0]+v.getWidth(), pos[1]+v.getHeight()));
                 try {
