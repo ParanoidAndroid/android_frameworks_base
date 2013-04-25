@@ -2476,6 +2476,20 @@ final class ActivityStack {
         return newTop;
     }
 
+    int updateFlags(Intent intent) {
+        pf(intent.toString(), intent.getFlags());
+        if (intent != null && (intent.getFlags() & Intent.FLAG_MULTI_WINDOW) == Intent.FLAG_MULTI_WINDOW) {
+            intent.setFlags(intent.getFlags() & ~Intent.FLAG_ACTIVITY_TASK_ON_HOME);
+            intent.setFlags(intent.getFlags() & ~Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            intent.setFlags(intent.getFlags() & ~Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.addFlags(
+                    Intent.FLAG_ACTIVITY_NO_HISTORY|
+                    Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS|
+                    Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        }
+        return intent.getFlags();
+    }
+
     final int startActivityLocked(IApplicationThread caller,
             Intent intent, String resolvedType, ActivityInfo aInfo, IBinder resultTo,
             String resultWho, int requestCode,
@@ -2483,12 +2497,6 @@ final class ActivityStack {
             boolean componentSpecified, ActivityRecord[] outActivity) {
 
         int err = ActivityManager.START_SUCCESS;
-
-        // This is where we hook special purpose flags formultiwindow application
-        if (intent != null && (intent.getFlags()&Intent.FLAG_MULTI_WINDOW) == Intent.FLAG_MULTI_WINDOW) {
-            intent.setFlags(intent.getFlags() & ~Intent.FLAG_ACTIVITY_TASK_ON_HOME);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY|Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-        }
 
         ProcessRecord callerApp = null;
         if (caller != null) {
@@ -2524,7 +2532,7 @@ final class ActivityStack {
             }
         }
 
-        int launchFlags = intent.getFlags();
+        int launchFlags = updateFlags(intent);
 
         if ((launchFlags&Intent.FLAG_ACTIVITY_FORWARD_RESULT) != 0
                 && sourceRecord != null) {
