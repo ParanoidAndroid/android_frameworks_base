@@ -59,6 +59,7 @@ import android.util.AttributeSet;
 import android.util.ColorUtils;
 import android.util.EventLog;
 import android.util.ExtendedPropertiesUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.util.Slog;
@@ -67,6 +68,7 @@ import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextThemeWrapper;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -5068,10 +5070,6 @@ public class Activity extends ContextThemeWrapper
         mFragments.attachActivity(this, mContainer, null);
 
         if (intent != null && (intent.getFlags()&Intent.FLAG_MULTI_WINDOW) == Intent.FLAG_MULTI_WINDOW) {
-            /*TypedValue outValue = new TypedValue();
-            context.getTheme().resolveAttribute(com.android.internal.R.attr.windowActionBar, outValue, true);
-            android.util.Log.d("PARANOID", "windowActionBar="+outValue.data);*/
-
             Context newContext = new ContextThemeWrapper(context,
                     com.android.internal.R.style.Theme_DeviceDefault_Floating);
             context.getTheme().setTo(newContext.getTheme());
@@ -5080,14 +5078,28 @@ public class Activity extends ContextThemeWrapper
             mWindow.setGravity(Gravity.CENTER);
 
             mWindow.requestFeature(Window.FEATURE_ACTION_BAR);
-            //mWindow.requestFeature(Window.FEATURE_NO_TITLE);
+
+            TypedArray styleArray = context.obtainStyledAttributes(info.theme, com.android.internal.R.styleable.Window);
+            if (styleArray.getBoolean(com.android.internal.R.styleable.Window_windowNoTitle, false)) {
+                mWindow.requestFeature(Window.FEATURE_NO_TITLE);
+            }
             mWindow.setFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND,
                     WindowManager.LayoutParams.FLAG_DIM_BEHIND);
             WindowManager.LayoutParams params = mWindow.getAttributes(); 
-            params.alpha = 0.9f;
+            params.alpha = 1f;
             params.dimAmount = 0.6f;
             mWindow.setAttributes((android.view.WindowManager.LayoutParams) params);
-            mWindow.setLayout(650,750);
+
+            WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+            Display display = wm.getDefaultDisplay();
+            DisplayMetrics metrics = new DisplayMetrics();
+            display.getMetrics(metrics);
+
+            if (metrics.heightPixels > metrics.widthPixels) {
+                mWindow.setLayout((int)(metrics.widthPixels * 0.9f), (int)(metrics.heightPixels * 0.7f));
+            } else {
+                mWindow.setLayout((int)(metrics.widthPixels * 0.7f), (int)(metrics.heightPixels * 0.8f));
+            }
         } else {
             mWindow = PolicyManager.makeNewWindow(this);
         }
