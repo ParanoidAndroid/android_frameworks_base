@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+>
+
+    
+    <ImageButton
+        android:id="@+id/app_icon"
+        android:layout_width="120dp"
+        android:layout_height="120dp" />
+
+    <TextView
+        android:id="@+id/ticker"
+        android:layout_width="120dp"
+        android:layout_height="120dp" />
+
+
+</FrameLayout>
