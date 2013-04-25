@@ -574,7 +574,4 @@
     <string name="pie_hour_format_24">HH:mm</string>
     <string name="pie_am_pm">a</string>
 
-    <string name="powerwidget_screen_timeout_toast">Screen timeout set to: %1$d %2$s</string>
-    <string name="brightness_label">Brightness</string>
-
 </resources>
