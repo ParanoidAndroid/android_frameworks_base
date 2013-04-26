@@ -2786,6 +2786,10 @@ protected WindowManager.LayoutParams getRecentsLayoutParams(LayoutParams layoutP
                     Settings.System.getUriFor(Settings.System.NOTIF_WALLPAPER_ALPHA),
                     false, this);
             setNotificationWallpaperHelper();
+
+            cr.registerContentObserver(
+                    Settings.System.getUriFor(Settings.System.NOTIF_ALPHA),
+                    false, this);
         }
     }
 
@@ -2802,6 +2806,17 @@ protected WindowManager.LayoutParams getRecentsLayoutParams(LayoutParams layoutP
                 background.setColorFilter(Integer.parseInt(notifiBack), Mode.SRC_ATOP);
             }
          background.setAlpha((int) ((1-wallpaperAlpha) * 255));
+        }
+        float notifAlpha = Settings.System.getFloat(mContext.getContentResolver(), Settings.System.NOTIF_ALPHA, 0.0f);
+        if (mPile != null) {
+            int N = mNotificationData.size();
+            for (int i=0; i<N; i++) {
+              Entry ent = mNotificationData.get(N-i-1);
+              View expanded = ent.expanded;
+              if (expanded !=null && expanded.getBackground()!=null) expanded.getBackground().setAlpha((int) ((1-notifAlpha) * 255));
+              View large = ent.getLargeView();
+              if (large != null && large.getBackground()!=null) large.getBackground().setAlpha((int) ((1-notifAlpha) * 255));
+            }
         }
     }
 }
