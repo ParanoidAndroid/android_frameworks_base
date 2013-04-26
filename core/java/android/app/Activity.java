@@ -5079,8 +5079,11 @@ public class Activity extends ContextThemeWrapper
                 context.getTheme().applyStyle(com.android.internal.R.style.Theme_DeviceDefault_MultiWindow, true);
             }
 
+            parent = null;
+
             mWindow = PolicyManager.makeNewWindow(context);
             mWindow.mIsMultiWindow = true;
+            mWindow.setCloseOnTouchOutsideIfNotSet(true);
             mWindow.setGravity(Gravity.CENTER);
             mWindow.requestFeature(Window.FEATURE_ACTION_BAR);
 
