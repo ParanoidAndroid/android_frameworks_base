@@ -125,6 +125,7 @@ final class ActivityRecord {
     boolean frozenBeforeDestroy;// has been frozen but not yet destroyed.
     boolean immersive;      // immersive mode (don't interrupt if possible)
     boolean forceNewConfig; // force re-create with new config next time
+    boolean multiWindow;
 
     String stringName;      // for caching of toString().
     
@@ -383,19 +384,20 @@ final class ActivityRecord {
             }
             icon = aInfo.getIconResource();
 
-            // This is where the package gets its first context from the attribute-cache
-            // In order to hook its attributes we set up our check for floating mutil windows here.
-            if (intent != null && (intent.getFlags()&Intent.FLAG_MULTI_WINDOW) == Intent.FLAG_MULTI_WINDOW) {
-                theme = com.android.internal.R.style.Theme_DeviceDefault_Floating;
-            } else {
-                theme = aInfo.getThemeResource();
-            }
+            theme = aInfo.getThemeResource();
             realTheme = theme;
             if (realTheme == 0) {
                 realTheme = aInfo.applicationInfo.targetSdkVersion
                         < Build.VERSION_CODES.HONEYCOMB
                         ? android.R.style.Theme
                         : android.R.style.Theme_Holo;
+            }
+
+            // This is where the package gets its first context from the attribute-cache
+            // In order to hook its attributes we set up our check for floating mutil windows here.
+            multiWindow = (intent != null && (intent.getFlags()&Intent.FLAG_MULTI_WINDOW) == Intent.FLAG_MULTI_WINDOW);
+            if (multiWindow) {
+                realTheme = com.android.internal.R.style.Theme_DeviceDefault_MultiWindow;
             }
 
             if ((aInfo.flags&ActivityInfo.FLAG_HARDWARE_ACCELERATED) != 0) {
@@ -423,7 +425,6 @@ final class ActivityRecord {
                     com.android.internal.R.styleable.Window_windowIsFloating, false)
                     && !ent.array.getBoolean(
                     com.android.internal.R.styleable.Window_windowIsTranslucent, false);
-
             noDisplay = ent != null && ent.array.getBoolean(
                     com.android.internal.R.styleable.Window_windowNoDisplay, false);
             

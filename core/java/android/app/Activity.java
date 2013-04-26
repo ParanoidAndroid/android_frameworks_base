@@ -5070,16 +5070,20 @@ public class Activity extends ContextThemeWrapper
         mFragments.attachActivity(this, mContainer, null);
 
         if (intent != null && (intent.getFlags()&Intent.FLAG_MULTI_WINDOW) == Intent.FLAG_MULTI_WINDOW) {
-            Context newContext = new ContextThemeWrapper(context,
-                    com.android.internal.R.style.Theme_DeviceDefault_Floating);
-            context.getTheme().setTo(newContext.getTheme());
+            TypedArray styleArray = context.obtainStyledAttributes(info.theme, com.android.internal.R.styleable.Window);
+            TypedValue backgroundValue = styleArray.peekValue(com.android.internal.R.styleable.Window_windowBackground);
+
+            if (backgroundValue.toString().contains("light")) {
+                context.getTheme().applyStyle(com.android.internal.R.style.Theme_DeviceDefault_MultiWindowLight, true);
+            } else {
+                context.getTheme().applyStyle(com.android.internal.R.style.Theme_DeviceDefault_MultiWindow, true);
+            }
 
             mWindow = PolicyManager.makeNewWindow(context);
+            mWindow.mIsMultiWindow = true;
             mWindow.setGravity(Gravity.CENTER);
-
             mWindow.requestFeature(Window.FEATURE_ACTION_BAR);
 
-            TypedArray styleArray = context.obtainStyledAttributes(info.theme, com.android.internal.R.styleable.Window);
             if (styleArray.getBoolean(com.android.internal.R.styleable.Window_windowNoTitle, false)) {
                 mWindow.requestFeature(Window.FEATURE_NO_TITLE);
             }

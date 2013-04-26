@@ -152,6 +152,8 @@ public abstract class Window {
     
     private boolean mDestroyed;
 
+    public boolean mIsMultiWindow = false;
+
     // The current window attributes.
     private final WindowManager.LayoutParams mWindowAttributes =
         new WindowManager.LayoutParams();
