@@ -35,6 +35,7 @@ import com.android.systemui.statusbar.phone.QuickSettingsTileView;
 public class QuickSettingsTile implements OnClickListener {
 
     protected final Context mContext;
+    protected ViewGroup mContainerView;
     protected QuickSettingsTileView mTile;
     protected OnClickListener mOnClick;
     protected OnLongClickListener mOnLongClick;
@@ -64,6 +65,7 @@ public class QuickSettingsTile implements OnClickListener {
 
     public void setupQuickSettingsTile(LayoutInflater inflater, QuickSettingsContainerView container) {
         mTile = (QuickSettingsTileView) inflater.inflate(R.layout.quick_settings_tile, container, false);
+        mContainerView = container;
         setTileBackground();
         mTile.setContent(mTileLayout, inflater);
         container.addView(mTile);
