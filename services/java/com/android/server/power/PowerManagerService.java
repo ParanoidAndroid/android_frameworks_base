@@ -972,10 +972,13 @@ public final class PowerManagerService extends IPowerManager.Stub
             if (mKeyboardVisible != visible) {
                 mKeyboardVisible = visible;
                 if (!visible) {
-                    mKeyboardLight.turnOff();
                     // If hiding keyboard, turn off leds
                     setKeyboardLight(false, 1);
                     setKeyboardLight(false, 2);
+                }
+                synchronized (mLock) {
+                    mDirty |= DIRTY_USER_ACTIVITY;
+                    updatePowerStateLocked();
                 }
             }
         }
