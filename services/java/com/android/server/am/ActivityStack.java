@@ -1436,6 +1436,20 @@ final class ActivityStack {
         final boolean userLeaving = mUserLeaving;
         mUserLeaving = false;
 
+        // Make sure multi-windowed stacks get cleared completely before resuming
+        if (next != null && !next.multiWindow) {
+            // Browse through the history stack to search for multiwindows
+            if (next.stack.mHistory != null && next.stack.mHistory.size() > 0) {
+                for(int i = 0; i < next.stack.mHistory.size(); i++) {
+                    ActivityRecord hr = next.stack.mHistory.get(i);
+                    if (hr.multiWindow) {
+                        requestFinishActivityLocked(hr.appToken, Activity.RESULT_CANCELED, null,
+                                "no-history", false);
+                    }
+                }
+            }
+        }
+
         if (next == null) {
             // There are no more activities!  Let's just start up the
             // Launcher...
@@ -2517,39 +2531,6 @@ final class ActivityStack {
                 if (requestCode >= 0 && !sourceRecord.finishing) {
                     resultRecord = sourceRecord;
                 }
-            }
-        }
-
-        boolean topIntent = true;
-
-        // If the current intent is not a new task we will check its top parent.
-        // Perhaps it started out as a multiwindow in which case we pass the flag on
-        final boolean newTask = (intent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) == Intent.FLAG_ACTIVITY_NEW_TASK;
-        if (!newTask) {
-            ActivityRecord r = mHistory.size() > 0 ? mHistory.get(mHistory.size() -1) : null;
-            if (r != null && (r.intent.getFlags() & Intent.FLAG_MULTI_WINDOW) == Intent.FLAG_MULTI_WINDOW) {
-                intent.addFlags(Intent.FLAG_MULTI_WINDOW);
-                // Flag the activity as a sub-task
-                topIntent = false;
-            }
-        }
-
-        // If this is a multiwindow activity we prevent it from messing up the history stack,
-        // like jumping back home, killing the current activity or polluting recents
-        final boolean multiWindow = (intent.getFlags() & Intent.FLAG_MULTI_WINDOW) == Intent.FLAG_MULTI_WINDOW;
-        if (multiWindow) {
-            intent.setFlags(intent.getFlags() & ~Intent.FLAG_ACTIVITY_TASK_ON_HOME);
-            intent.setFlags(intent.getFlags() & ~Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            intent.setFlags(intent.getFlags() & ~Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION);            
-
-            // If this is the mother-intent we make it volatile
-            if (topIntent) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
             }
         }
 
