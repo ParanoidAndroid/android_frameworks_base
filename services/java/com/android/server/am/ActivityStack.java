@@ -1427,6 +1427,12 @@ final class ActivityStack {
         return resumeTopActivityLocked(prev, null);
     }
 
+    void pa_stacktrace() {
+        RuntimeException here = new RuntimeException("here");
+        here.fillInStackTrace();
+        Slog.i("PARANOID", "Current stack", here);
+    }
+
     final boolean resumeTopActivityLocked(ActivityRecord prev, Bundle options) {
         // Find the first activity that is not finishing.
         ActivityRecord next = topRunningActivityLocked(null);
@@ -1435,20 +1441,6 @@ final class ActivityStack {
         // that the state is reset however we wind up proceeding.
         final boolean userLeaving = mUserLeaving;
         mUserLeaving = false;
-
-        // Make sure multi-windowed stacks get cleared completely before resuming
-        if (next != null && !next.multiWindow) {
-            // Browse through the history stack to search for multiwindows
-            if (next.stack.mHistory != null && next.stack.mHistory.size() > 0) {
-                for(int i = 0; i < next.stack.mHistory.size(); i++) {
-                    ActivityRecord hr = next.stack.mHistory.get(i);
-                    if (hr.multiWindow) {
-                        requestFinishActivityLocked(hr.appToken, Activity.RESULT_CANCELED, null,
-                                "no-history", false);
-                    }
-                }
-            }
-        }
 
         if (next == null) {
             // There are no more activities!  Let's just start up the
@@ -1818,6 +1810,38 @@ final class ActivityStack {
         }
 
         return true;
+    }
+
+    public void pf(String tag, ActivityRecord r) {
+        if (r == null) return;
+        if (r.intent == null) return;
+
+        int f = r.intent.getFlags();
+
+        android.util.Log.d("PARANOID." + tag, r.packageName + "  top=" + r.topIntent);
+        if ((f & Intent.FLAG_MULTI_WINDOW) == Intent.FLAG_MULTI_WINDOW) android.util.Log.d("PARANOID", "  FLAG_MULTI_WINDOW");
+        if ((f & Intent.FLAG_ACTIVITY_TASK_ON_HOME) == Intent.FLAG_ACTIVITY_TASK_ON_HOME) android.util.Log.d("PARANOID", "  FLAG_ACTIVITY_TASK_ON_HOME");
+        if ((f & Intent.FLAG_ACTIVITY_SINGLE_TOP) == Intent.FLAG_ACTIVITY_SINGLE_TOP) android.util.Log.d("PARANOID", "  FLAG_ACTIVITY_SINGLE_TOP");
+        if ((f & Intent.FLAG_ACTIVITY_CLEAR_TOP) == Intent.FLAG_MULTI_WINDOW) android.util.Log.d("PARANOID", "  FLAG_ACTIVITY_CLEAR_TOP");
+        if ((f & Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT) == Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT) android.util.Log.d("PARANOID", "  FLAG_ACTIVITY_BROUGHT_TO_FRONT");
+        if ((f & Intent.FLAG_ACTIVITY_CLEAR_TASK) == Intent.FLAG_ACTIVITY_CLEAR_TASK) android.util.Log.d("PARANOID", "  FLAG_ACTIVITY_CLEAR_TASK");
+        if ((f & Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET) == Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET) android.util.Log.d("PARANOID", "  FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET");
+        if ((f & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) == Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) android.util.Log.d("PARANOID", "  FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY");
+        if ((f & Intent.FLAG_ACTIVITY_NEW_TASK) == Intent.FLAG_ACTIVITY_NEW_TASK) android.util.Log.d("PARANOID", "  FLAG_ACTIVITY_NEW_TASK");
+        if ((f & Intent.FLAG_ACTIVITY_NO_USER_ACTION) == Intent.FLAG_ACTIVITY_NO_USER_ACTION) android.util.Log.d("PARANOID", "  FLAG_ACTIVITY_NO_USER_ACTION");
+        if ((f & Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP) == Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP) android.util.Log.d("PARANOID", "  FLAG_ACTIVITY_PREVIOUS_IS_TOP");
+        if ((f & Intent.FLAG_ACTIVITY_REORDER_TO_FRONT) == Intent.FLAG_ACTIVITY_REORDER_TO_FRONT) android.util.Log.d("PARANOID", "  FLAG_ACTIVITY_REORDER_TO_FRONT");
+        if ((f & Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED) == Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED) android.util.Log.d("PARANOID", "  FLAG_ACTIVITY_RESET_TASK_IF_NEEDED");
+        if ((f & Intent.FLAG_FROM_BACKGROUND) == Intent.FLAG_FROM_BACKGROUND) android.util.Log.d("PARANOID", "  FLAG_FROM_BACKGROUND");
+        if ((f & Intent.FLAG_ACTIVITY_NO_HISTORY) == Intent.FLAG_ACTIVITY_NO_HISTORY) android.util.Log.d("PARANOID", "  FLAG_ACTIVITY_NO_HISTORY");
+
+        if (r.stack == null) return;
+        if (r.stack.mHistory == null) return;
+        if (r.stack.mHistory.size() == 0) return;        
+        for (int i = 0; i < r.stack.mHistory.size(); i++) {
+            ActivityRecord hr = r.stack.mHistory.get(i);
+            android.util.Log.d("PARANOID", "  --- " + i + ": " + hr.packageName + " new="+ hr.newTask + " multi=" + hr.multiWindow + " top=" + hr.topIntent);
+        }
     }
 
     private final void startActivityLocked(ActivityRecord r, boolean newTask,
@@ -2638,6 +2662,8 @@ final class ActivityStack {
         if (outActivity != null) {
             outActivity[0] = r;
         }
+
+        pf(" --- AR:START", r);
 
         if (mMainStack) {
             if (mResumedActivity == null

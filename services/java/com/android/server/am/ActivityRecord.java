@@ -407,7 +407,7 @@ final class ActivityRecord {
                 ActivityRecord r = stack.mHistory.size() > 0 ? stack.mHistory.get(stack.mHistory.size() -1) : null;
                 if (r != null && (r.intent.getFlags() & Intent.FLAG_MULTI_WINDOW) == Intent.FLAG_MULTI_WINDOW) {
                     intent.addFlags(Intent.FLAG_MULTI_WINDOW);
-                    // Flag the activity as a sub-task
+                    // Flag the activity as sub-task
                     topIntent = false;
                 }
             }
@@ -420,7 +420,7 @@ final class ActivityRecord {
                 intent.setFlags(intent.getFlags() & ~Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 intent.setFlags(intent.getFlags() & ~Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION);            
+                intent.addFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION);
 
                 // If this is the mother-intent we make it volatile
                 if (topIntent) {
