@@ -24,9 +24,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.Canvas;
+import android.graphics.Rect;
+import android.graphics.Paint;
 import android.graphics.PixelFormat;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuff.Mode;
+import android.graphics.PorterDuffXfermode;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -34,7 +41,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.LinearLayout;
 
@@ -50,7 +57,7 @@ public class Halo extends LinearLayout implements Ticker.TickerCallback {
     private Context mContext;
 	private LayoutInflater mLayoutInflater;
     private View viewRoot;
-    private ImageButton mIcon;
+    private ImageView mIcon;
     private TextView mTicker;
     private PackageManager mPm ;
     private Handler mHandler;
@@ -80,8 +87,9 @@ public class Halo extends LinearLayout implements Ticker.TickerCallback {
         mBar.mTicker.setUpdateEvent(this);
 
         // App icon
-		mIcon = (ImageButton) findViewById(R.id.app_icon);
+		mIcon = (ImageView) findViewById(R.id.app_icon);
         mTicker = (TextView) findViewById(R.id.ticker);
+        mTicker.setVisibility(View.GONE);
 
 		mIcon.setOnClickListener(new OnClickListener() {
 			@Override
@@ -138,7 +146,24 @@ public class Halo extends LinearLayout implements Ticker.TickerCallback {
         appName = segment.notification.pkg;
 
         if (curNotif.largeIcon != null) {
-            mIcon.setImageDrawable(new BitmapDrawable(mContext.getResources(), curNotif.largeIcon));
+
+            Bitmap input = curNotif.largeIcon;
+            Bitmap output = Bitmap.createBitmap(input.getWidth(),
+                    input.getHeight(), Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(output);
+
+            final int color = 0xff424242;
+            final Paint paint = new Paint();
+            final Rect rect = new Rect(0, 0, input.getWidth(), input.getHeight());
+
+            paint.setAntiAlias(true);
+            canvas.drawARGB(0, 0, 0, 0);
+            paint.setColor(color);
+            canvas.drawCircle(input.getWidth() / 2, input.getHeight() / 2, input.getWidth() / 2, paint);
+            paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
+            canvas.drawBitmap(input, rect, rect, paint);
+
+            mIcon.setImageDrawable(new BitmapDrawable(mContext.getResources(), output));
         } else {
             try {
                 Drawable icon = mPm.getApplicationIcon(appName);
@@ -157,7 +182,7 @@ public class Halo extends LinearLayout implements Ticker.TickerCallback {
     private Runnable TickerHider = new Runnable() {
         public void run() {
             if (mTickerShowing) {
-                mTicker.setVisibility(View.INVISIBLE);
+                mTicker.setVisibility(View.GONE);
                 mTickerShowing = false;
             }
         }

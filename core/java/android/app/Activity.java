@@ -5073,7 +5073,7 @@ public class Activity extends ContextThemeWrapper
             TypedArray styleArray = context.obtainStyledAttributes(info.theme, com.android.internal.R.styleable.Window);
             TypedValue backgroundValue = styleArray.peekValue(com.android.internal.R.styleable.Window_windowBackground);
 
-            if (backgroundValue.toString().contains("light")) {
+            if (backgroundValue != null && backgroundValue.toString().contains("light")) {
                 context.getTheme().applyStyle(com.android.internal.R.style.Theme_DeviceDefault_MultiWindowLight, true);
             } else {
                 context.getTheme().applyStyle(com.android.internal.R.style.Theme_DeviceDefault_MultiWindow, true);
