@@ -5364,6 +5364,10 @@ public class Activity extends ContextThemeWrapper
         }
         mResumed = false;
 
+        // Multiwindow activities should be kept volatile to prevent new activities taking
+        // up front in a minimized space. Every stop call, for instance when pressing home,
+        // will terminate the activity. If the activity is already finishing we might just
+        // as well let it go.
         if (mWindow != null && mWindow.mIsMultiWindow && !isFinishing()) {
             android.util.Log.d("PARANOID.performStop()->finish()", "Pkg="
                     + mActivityInfo.packageName

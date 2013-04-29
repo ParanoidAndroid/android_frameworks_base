@@ -496,15 +496,18 @@ public abstract class BaseStatusBar extends SystemUI implements
 
         attachPie();
 
-        Halo halo = new Halo(mContext,"com.google.android.talk");
+        LayoutInflater inflater = (LayoutInflater) mContext
+                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
+        halo = (Halo)inflater.inflate(R.layout.halo_layout, null);
         WindowManager.LayoutParams params = halo.getWMParams();
-        params.gravity = Gravity.BOTTOM;
+        params.gravity = Gravity.RIGHT;
         params.setTitle("Halo");
         mWindowManager.addView(halo,params);
 
         SettingsObserver settingsObserver = new SettingsObserver(new Handler());
         settingsObserver.observe();
     }
+    Halo halo;
 
     private boolean showPie() {
         boolean expanded = Settings.System.getInt(mContext.getContentResolver(),

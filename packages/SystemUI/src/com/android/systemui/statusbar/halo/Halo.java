@@ -24,6 +24,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.drawable.Drawable;
 import android.graphics.PixelFormat;
 import android.os.Handler;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,10 +32,11 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.LinearLayout;
 
 import com.android.systemui.R;
 
-public class Halo extends FrameLayout {
+public class Halo extends LinearLayout {
 
 	private int id;
     private String appName;
@@ -54,21 +56,29 @@ public class Halo extends FrameLayout {
 	public boolean mExpanded = false;
     public boolean mTickerShowing = false;
 
-    public Halo(Context context, String app) {
-		super(context);
-        mContext = context;
-        appName = app;
+    public Halo(Context context, AttributeSet attrs) {
+        this(context, attrs, 0);
+    }
 
-		mLayoutInflater = LayoutInflater.from(mContext);
+    public Halo(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+        mContext = context;
         mPm = mContext.getPackageManager();
-        viewRoot = mLayoutInflater.inflate(R.layout.halo_layout, null);
+        mHandler = new Handler();
+    }
+
+    @Override
+    public void onFinishInflate() {
+        super.onFinishInflate();
+
+        appName = "com.google.android.talk";
 
         // App icon
-		mIcon = (ImageButton) viewRoot.findViewById(R.id.app_icon);
-        mTicker = (TextView) viewRoot.findViewById(R.id.ticker);
+		mIcon = (ImageButton) findViewById(R.id.app_icon);
+        mTicker = (TextView) findViewById(R.id.ticker);
         id = android.os.Process.getUidForName(appName);
 
-        mTicker.setVisibility(View.GONE);
+        mTicker.setVisibility(View.VISIBLE);
 		mIcon.setImageDrawable(getIconFromPackageName(appName));
 		mIcon.setOnClickListener(new OnClickListener() {
 			@Override
@@ -78,6 +88,7 @@ public class Halo extends FrameLayout {
 			}
 		});
         if (DEBUG) Log.d(TAG,"i am Alive");
+
     }
 
     public void show(boolean expanded){
@@ -86,6 +97,7 @@ public class Halo extends FrameLayout {
         } else {
           Intent appStartIntent = mPm.getLaunchIntentForPackage(appName);
           if (appStartIntent != null) {
+                setTicker("blajlkhsdkjsdh");
                 appStartIntent.addFlags(Intent.FLAG_MULTI_WINDOW);
                 mContext.startActivity(appStartIntent);
             }
