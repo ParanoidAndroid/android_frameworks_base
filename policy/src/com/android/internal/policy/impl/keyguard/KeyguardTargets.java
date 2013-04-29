@@ -57,7 +57,7 @@ public class KeyguardTargets extends LinearLayout {
                     updateTargets();
                 }};
         mContext.getContentResolver().registerContentObserver(
-                Settings.System.getUriFor(Settings.System.LOCKSCREEN_TARGETS),
+                Settings.System.getUriFor(Settings.System.LOCKSCREEN_TARGETS_STRAIGHT),
                 false, mContentObserver);
         mPackageManager = mContext.getPackageManager();
         updateTargets();
@@ -82,7 +82,7 @@ public class KeyguardTargets extends LinearLayout {
 
     private void updateTargets() {
         String apps = Settings.System.getString(mContext.getContentResolver(),
-                Settings.System.LOCKSCREEN_TARGETS);
+                Settings.System.LOCKSCREEN_TARGETS_STRAIGHT);
         if(apps == null || apps.isEmpty()) return;
         final String[] targets = apps.split("\\|");
         Resources res = mContext.getResources();

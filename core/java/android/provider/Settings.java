@@ -2344,6 +2344,12 @@ public final class Settings {
          */
         public static final String LOCKSCREEN_TARGETS = "lockscreen_targets";
 
+ 		/**
+         * Stores values for custom lockscreen targets straight
+         * @hide
+         */
+        public static final String LOCKSCREEN_TARGETS_STRAIGHT = "lockscreen_targets_straight";
+
         /**
          * @deprecated Use {@link android.provider.Settings.Global#LOW_BATTERY_SOUND}
          * instead
@@ -2748,7 +2754,7 @@ public final class Settings {
          * if :icon is not set, default application icon will be used
          * @hide
          */
-        public static final String LOCKSCREEN_TARGETS = "lockscreen_targets";
+//        public static final String LOCKSCREEN_TARGETS = "lockscreen_targets";
 
         /**
          * Allows to define the limit notifcations once per X seconds
