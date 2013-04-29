@@ -17,11 +17,15 @@
 
 package com.android.systemui.statusbar.halo;
 
+import android.app.KeyguardManager;
+import android.app.PendingIntent;
+import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.PixelFormat;
 import android.os.Handler;
 import android.util.AttributeSet;
@@ -35,8 +39,10 @@ import android.widget.TextView;
 import android.widget.LinearLayout;
 
 import com.android.systemui.R;
+import com.android.systemui.statusbar.BaseStatusBar;
+import com.android.systemui.statusbar.phone.Ticker;
 
-public class Halo extends LinearLayout {
+public class Halo extends LinearLayout implements Ticker.TickerCallback {
 
 	private int id;
     private String appName;
@@ -48,10 +54,12 @@ public class Halo extends LinearLayout {
     private TextView mTicker;
     private PackageManager mPm ;
     private Handler mHandler;
+    private BaseStatusBar mBar;
+    private Notification curNotif;
 
     public static final String TAG = "HaloLauncher";
     private static final boolean DEBUG = true;
-    private static final int TICKER_HIDE_TIME = 2000;
+    private static final int TICKER_HIDE_TIME = 5000;
 
 	public boolean mExpanded = false;
     public boolean mTickerShowing = false;
@@ -67,28 +75,32 @@ public class Halo extends LinearLayout {
         mHandler = new Handler();
     }
 
-    @Override
-    public void onFinishInflate() {
-        super.onFinishInflate();
-
-        appName = "com.google.android.talk";
+    public void init(BaseStatusBar bar) {
+        mBar = bar;
+        mBar.mTicker.setUpdateEvent(this);
 
         // App icon
 		mIcon = (ImageButton) findViewById(R.id.app_icon);
         mTicker = (TextView) findViewById(R.id.ticker);
-        id = android.os.Process.getUidForName(appName);
 
-        mTicker.setVisibility(View.VISIBLE);
-		mIcon.setImageDrawable(getIconFromPackageName(appName));
 		mIcon.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-                if (DEBUG) Log.d(TAG,"Click recived");
-				show(mExpanded);
+                if (curNotif != null && curNotif.contentIntent != null) {
+                    Intent overlay = new Intent();
+                    overlay.addFlags(Intent.FLAG_MULTI_WINDOW);
+                    try {
+                        curNotif.contentIntent.send(mContext, 0, overlay);
+                    } catch (PendingIntent.CanceledException e) {
+                        // Doesn't want to ...
+                    }
+
+                    KeyguardManager kgm =
+                            (KeyguardManager) mContext.getSystemService(Context.KEYGUARD_SERVICE);
+                    if (kgm != null) kgm.exitKeyguardSecurely(null);
+                }
 			}
 		});
-        if (DEBUG) Log.d(TAG,"i am Alive");
-
     }
 
     public void show(boolean expanded){
@@ -97,22 +109,10 @@ public class Halo extends LinearLayout {
         } else {
           Intent appStartIntent = mPm.getLaunchIntentForPackage(appName);
           if (appStartIntent != null) {
-                setTicker("blajlkhsdkjsdh");
                 appStartIntent.addFlags(Intent.FLAG_MULTI_WINDOW);
                 mContext.startActivity(appStartIntent);
             }
         }
-    }
-
-    private Drawable getIconFromPackageName(final String packageName) {
-        try {
-            Drawable icon = mPm.getApplicationIcon(packageName);
-            if (DEBUG) Log.d(TAG,"I have an Icon");
-            return icon;
-        } catch (NameNotFoundException e) {
-                //Who am I
-        }
-        return null;
     }
 
     private void moveToTop(){
@@ -132,11 +132,25 @@ public class Halo extends LinearLayout {
                 PixelFormat.TRANSLUCENT);
         return lp;
     }
+    
+    public void updateTicker(Ticker.Segment segment) {
+        curNotif = segment.notification.notification;
+        appName = segment.notification.pkg;
 
-    public void setTicker(String notif) {
+        if (curNotif.largeIcon != null) {
+            mIcon.setImageDrawable(new BitmapDrawable(mContext.getResources(), curNotif.largeIcon));
+        } else {
+            try {
+                Drawable icon = mPm.getApplicationIcon(appName);
+                mIcon.setImageDrawable(icon);
+            } catch (NameNotFoundException e) {
+                //Who am I
+            }
+        }
+
         mTickerShowing = true;
         mTicker.setVisibility(View.VISIBLE);
-        mTicker.setText(notif);
+        mTicker.setText(segment.getText().toString());
         mHandler.postDelayed(TickerHider, TICKER_HIDE_TIME);
     }
 

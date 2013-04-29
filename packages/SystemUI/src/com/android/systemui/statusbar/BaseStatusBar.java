@@ -93,6 +93,7 @@ import com.android.systemui.recent.RecentsActivity;
 import com.android.systemui.recent.TaskDescription;
 import com.android.systemui.statusbar.halo.Halo;
 import com.android.systemui.statusbar.phone.QuickSettingsContainerView;
+import com.android.systemui.statusbar.phone.Ticker;
 import com.android.systemui.statusbar.policy.BatteryController;
 import com.android.systemui.statusbar.policy.Clock;
 import com.android.systemui.statusbar.policy.NetworkController;
@@ -499,6 +500,9 @@ public abstract class BaseStatusBar extends SystemUI implements
         LayoutInflater inflater = (LayoutInflater) mContext
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
         halo = (Halo)inflater.inflate(R.layout.halo_layout, null);
+        halo.init(this);
+
+
         WindowManager.LayoutParams params = halo.getWMParams();
         params.gravity = Gravity.RIGHT;
         params.setTitle("Halo");
@@ -507,7 +511,8 @@ public abstract class BaseStatusBar extends SystemUI implements
         SettingsObserver settingsObserver = new SettingsObserver(new Handler());
         settingsObserver.observe();
     }
-    Halo halo;
+    private Halo halo;
+    public Ticker mTicker;
 
     private boolean showPie() {
         boolean expanded = Settings.System.getInt(mContext.getContentResolver(),
