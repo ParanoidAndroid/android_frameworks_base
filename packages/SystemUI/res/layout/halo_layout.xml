@@ -5,6 +5,11 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
+    <ImageView
+        android:id="@+id/backdrop"
+        android:layout_width="@dimen/halo_icon_size"
+        android:layout_height="@dimen/halo_icon_size"/>
+
     <LinearLayout
         android:id="@+id/content_frame"
         android:layout_width="wrap_content"
@@ -12,10 +17,9 @@
         android:background="#00000000">
         <ImageView
             android:id="@+id/app_icon"
-            android:layout_width="80dp"
-            android:layout_height="80dp" 
-            android:focusable="true"
-            android:scaleType="matrix"/>
+            android:layout_width="@dimen/halo_icon_size"
+            android:layout_height="@dimen/halo_icon_size" 
+            android:focusable="true"/>
 
         <TextView
             android:id="@+id/ticker"
@@ -30,5 +34,9 @@
             android:textColor="#f80"/>
     </LinearLayout>
 
+    <ImageView
+        android:id="@+id/frame"
+        android:layout_width="@dimen/halo_icon_size"
+        android:layout_height="@dimen/halo_icon_size"/>
 
 </com.android.systemui.statusbar.halo.Halo>
