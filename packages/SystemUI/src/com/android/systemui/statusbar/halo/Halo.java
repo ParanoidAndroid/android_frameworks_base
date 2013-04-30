@@ -158,12 +158,12 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
                     @Override
                     public void onAnimationUpdate(ValueAnimator animation) {
-                        mTickerPos.x = (int)(fromX * (1-animation.getAnimatedFraction()));
+                        mTickerPos.x = (int)(fromX + (720-fromX) * animation.getAnimatedFraction());
                         mTickerPos.y = (int)(fromY * (1-animation.getAnimatedFraction()));
                         mWindowManager.updateViewLayout(mRoot, mTickerPos);
                     }
                 });
-                alphAnimation.setDuration(1000);
+                alphAnimation.setDuration(150);
                 alphAnimation.setInterpolator(new DecelerateInterpolator());
                 alphAnimation.start();
 
