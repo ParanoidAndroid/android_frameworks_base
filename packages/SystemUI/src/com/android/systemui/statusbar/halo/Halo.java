@@ -21,6 +21,12 @@ import android.app.ActivityManagerNative;
 import android.app.KeyguardManager;
 import android.app.PendingIntent;
 import android.app.Notification;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
+import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -40,8 +46,14 @@ import android.os.Handler;
 import android.os.RemoteException;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.AlphaAnimation;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Gravity;
+import android.view.ViewGroup;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.view.View.OnTouchListener;
@@ -108,13 +120,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 			@Override
 			public void onClick(View v) {
                 try {
-                    // The intent we are sending is for the application, which
-                    // won't have permission to immediately start an activity after
-                    // the user switches to home.  We know it is safe to do at this
-                    // point, so make sure new activity switches are now allowed.
                     ActivityManagerNative.getDefault().resumeAppSwitches();
-                    // Also, notifications can be launched from the lock screen,
-                    // so dismiss the lock screen when the activity starts.
                     ActivityManagerNative.getDefault().dismissKeyguardOnNextActivity();
                 } catch (RemoteException e) {
                 }
@@ -144,6 +150,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
                 final int action = event.getAction();
+                WindowManager.LayoutParams pos = getWMParams();
 
                 switch(action) {
                     case MotionEvent.ACTION_DOWN:
@@ -162,18 +169,13 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
                         if (!dragEstablished) {
                             float distance = (float)Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
-
-                            if (distance > 80) {
+                            if (distance > mIcon.getWidth() / 2) {
                                 dragEstablished = true;
-                                android.util.Log.d("PARANOID", "est!");
                             }
-
                         } else {
-                            android.util.Log.d("PARANOID", "mX=" + mX + "   mY=" + mY);
-                            WindowManager.LayoutParams params = getWMParams();
-                            params.x = (int)-distanceX;
-                            params.y = (int)-distanceY;
-                            mWindowManager.updateViewLayout(mRoot, params);
+                            pos.x = (int)mX - mIcon.getWidth() / 2;
+                            pos.y = (int)mY - mIcon.getWidth() / 2;
+                            mWindowManager.updateViewLayout(mRoot, pos);
                             return false;
                         }
                         break;
@@ -196,6 +198,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                         | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                         | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.TRANSLUCENT);
+                lp.gravity = Gravity.LEFT|Gravity.TOP;
         return lp;
     }
     
@@ -204,7 +207,6 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         appName = segment.notification.pkg;
 
         if (curNotif.largeIcon != null) {
-
             Bitmap input = curNotif.largeIcon;
             Bitmap output = Bitmap.createBitmap(input.getWidth(),
                     input.getHeight(), Bitmap.Config.ARGB_8888);
@@ -234,14 +236,33 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         mTickerShowing = true;
         mTicker.setVisibility(View.VISIBLE);
         mTicker.setText(segment.getText().toString());
+
+        AlphaAnimation alphaUp = new AlphaAnimation(0, 1);
+        alphaUp.setFillAfter(true);
+        alphaUp.setDuration(1000);
+        mTicker.startAnimation(alphaUp);
+
         mHandler.postDelayed(TickerHider, TICKER_HIDE_TIME);
     }
 
     private Runnable TickerHider = new Runnable() {
         public void run() {
             if (mTickerShowing) {
-                mTicker.setVisibility(View.GONE);
-                mTickerShowing = false;
+                AlphaAnimation alphaUp = new AlphaAnimation(1, 0);
+                alphaUp.setFillAfter(true);
+                alphaUp.setDuration(1000);
+                alphaUp.setAnimationListener(new AnimationListener() {
+                    public void onAnimationStart(Animation anim)
+                    {};
+                    public void onAnimationRepeat(Animation anim)
+                    {};
+                    public void onAnimationEnd(Animation anim)
+                    {
+                        mTicker.setVisibility(View.GONE);
+                        mTickerShowing = false;
+                    };
+                });
+                mTicker.startAnimation(alphaUp);
             }
         }
     };
