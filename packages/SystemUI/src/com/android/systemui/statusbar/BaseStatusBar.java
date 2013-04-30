@@ -504,7 +504,6 @@ public abstract class BaseStatusBar extends SystemUI implements
 
 
         WindowManager.LayoutParams params = halo.getWMParams();
-        params.gravity = Gravity.RIGHT;
         params.setTitle("Halo");
         mWindowManager.addView(halo,params);
 
