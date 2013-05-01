@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2010 The Android Open Source Project
- * This code has been modified. Portions copyright (C) 2012, ParanoidAndroid Project.
+ * Copyright (C) 2013 ParanoidAndroid.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,7 +113,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     public static final String TAG = "HaloLauncher";
     private static final boolean DEBUG = true;
     private static final int TICKER_HIDE_TIME = 5000;
-    private static final int TICKER_MOVE_ASIDE_TIME = 8000;
+    private static final int HALO_ASIDE_TIME = 10000;
 
 	public boolean mExpanded = false;
     public boolean mSnapped = true;
@@ -148,20 +147,16 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         mScreenHeight = mHaloEffect.getHeight();
         mScreenMin = Math.min(mHaloEffect.getWidth(), mHaloEffect.getHeight());
         mScreenMax = Math.max(mHaloEffect.getWidth(), mHaloEffect.getHeight());
-        android.util.Log.d("PARANOIDD", "smin="+mScreenMin+" smax="+mScreenMax);
         updateConstraints();
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfiguration) {
         super.onConfigurationChanged(newConfiguration);
-
         mScreenWidth = newConfiguration.orientation == Configuration.ORIENTATION_PORTRAIT
                 ? mScreenMin : mScreenMax;
         mScreenHeight = newConfiguration.orientation == Configuration.ORIENTATION_PORTRAIT
                 ? mScreenMax : mScreenMin;
-
-        android.util.Log.d("PARANOIDD", "sw="+mScreenWidth+" sh="+mScreenHeight);
         updateConstraints();
     }
 
@@ -275,8 +270,6 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                 @Override
                 public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY)
                 {
-                    android.util.Log.d("PARANOID", 
-                        "distanceX="+velocityX+"  distanceY="+velocityY);
                     return true;
                 }
             });
@@ -294,6 +287,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                         isBeingDragged = false;
                         initialX = event.getRawX();
                         initialY = event.getRawY();
+                        mHandler.removeCallbacks(TickerAside);
                         break;
                     case MotionEvent.ACTION_UP:
                         isBeingDragged = false;                  
@@ -382,7 +376,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         topAnimation.start();
 
         mHandler.removeCallbacks(TickerAside);
-        mHandler.postDelayed(TickerAside, TICKER_MOVE_ASIDE_TIME);
+        mHandler.postDelayed(TickerAside, HALO_ASIDE_TIME);
     }
 
     private Runnable TickerAside = new Runnable() {
