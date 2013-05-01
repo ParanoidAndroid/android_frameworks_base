@@ -480,7 +480,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             rippleAnim.addUpdateListener(new AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
-                    rippleAlpha = (int)(150 * (1-animation.getAnimatedFraction()));
+                    rippleAlpha = (int)(200 * (1-animation.getAnimatedFraction()));
                     rippleRadius = (int)((rippleMaxRadius - rippleMinRadius) *
                             animation.getAnimatedFraction()) + rippleMinRadius;
                     invalidate();
@@ -503,15 +503,15 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             if (mContentAlpha > 0) {
                 state = canvas.save();
 
-                int x = mTickerPos.x + mIconSize;
+                int y = mTickerPos.y - mIconSize / 2;
+                if (y < 0) y = 0;
+
+                int x = mTickerPos.x + (int)(mIconSize * (y == 0 ? 1 : 0.7f));
                 int c = mContentView.getMeasuredWidth();
                 if (x > mScreenWidth - c) {
                     x = mScreenWidth - c;
-                    if (mTickerPos.x > mScreenWidth - (int)(mIconSize * 1.5f) ) x = mTickerPos.x - c;
+                    if (mTickerPos.x > mScreenWidth - (int)(mIconSize * 1.5f) ) x = mTickerPos.x - c + (int)(mIconSize * (y == 0 ? 0 : 0.3f));
                 }
-
-                int y = mTickerPos.y - mIconSize / 2;
-                if (y < 0) y = 0;
 
                 canvas.translate(x, y);
                 mTextView.getBackground().setAlpha(mContentAlpha);
