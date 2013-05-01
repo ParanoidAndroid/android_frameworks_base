@@ -114,6 +114,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     public static final String TAG = "HaloLauncher";
     private static final boolean DEBUG = true;
     private static final int TICKER_HIDE_TIME = 5000;
+    private static final int TICKER_MOVE_ASIDE_TIME = 8000;
 
 	public boolean mExpanded = false;
     public boolean mSnapped = true;
@@ -365,7 +366,6 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
     private void snapToSide() {
         final int fromX = mTickerPos.x;
-        final int fromY = mTickerPos.y;
         final boolean left = fromX < mScreenWidth / 2;
         final int toX = left ? -fromX : mScreenWidth-fromX-mIconSize;
 
@@ -380,11 +380,32 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         topAnimation.setDuration(150);
         topAnimation.setInterpolator(new DecelerateInterpolator());
         topAnimation.start();
+
+        mHandler.removeCallbacks(TickerAside);
+        mHandler.postDelayed(TickerAside, TICKER_MOVE_ASIDE_TIME);
     }
 
+    private Runnable TickerAside = new Runnable() {
+        public void run() {
+            final int fromX = mTickerPos.x;
+            final boolean left = fromX < mScreenWidth / 2;
+            final int toX = left ? -(mIconSize / 2) : mIconSize / 2;
+
+            ValueAnimator topAnimation = ValueAnimator.ofInt(0, 1);
+            topAnimation.addUpdateListener(new AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    mTickerPos.x = (int)(fromX + toX * animation.getAnimatedFraction());
+                    updatePosition();
+                }
+            });
+            topAnimation.setDuration(1000);
+            topAnimation.setInterpolator(new DecelerateInterpolator());
+            topAnimation.start();
+        }
+    };
+
     private void updatePosition() {
-        mHaloEffect.rippleX = mTickerPos.x + mIconSize / 2;
-        mHaloEffect.rippleY = mTickerPos.y + mIconSize / 2;
         mWindowManager.updateViewLayout(mRoot, mTickerPos);
         mHaloEffect.invalidate();
     }
@@ -394,8 +415,6 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         private Paint haloPaint;
         private int rippleAlpha = 0;
         private int rippleRadius = 0;
-        protected int rippleX = 0;
-        protected int rippleY = 0;
         protected int rippleMinRadius = 0;
         protected int rippleMaxRadius = 0;
 
@@ -484,21 +503,22 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
             if (rippleAlpha > 0) {
                 haloPaint.setAlpha(rippleAlpha);
-                canvas.drawCircle(rippleX, rippleY, rippleRadius, haloPaint);
+                canvas.drawCircle(mTickerPos.x + mIconSize / 2, mTickerPos.y + mIconSize / 2, rippleRadius, haloPaint);
             }
 
             if (mContentAlpha > 0) {
-                state = canvas.save();      
-                int x = rippleX;
-                int y = rippleY - mIconSize;
-                if (y < 0) y = 0;
+                state = canvas.save();
+
+                int x = mTickerPos.x + mIconSize;
                 int c = mContentView.getMeasuredWidth();
                 if (x > mScreenWidth - c) {
                     x = mScreenWidth - c;
-                    if (rippleX > mScreenWidth - mIconSize) x = mScreenWidth - mIconSize - c;
-                } else {
-                    x += mIconSize / 2;
+                    if (mTickerPos.x > mScreenWidth - (int)(mIconSize * 1.5f) ) x = mTickerPos.x - c;
                 }
+
+                int y = mTickerPos.y - mIconSize / 2;
+                if (y < 0) y = 0;
+
                 canvas.translate(x, y);
                 mTextView.getBackground().setAlpha(mContentAlpha);
                 mTextView.setTextColor(Color.argb(mContentAlpha, 0xff, 0x80, 0x00));
