@@ -10,31 +10,12 @@
         android:layout_width="@dimen/halo_icon_size"
         android:layout_height="@dimen/halo_icon_size"/>
 
-    <LinearLayout
-        android:id="@+id/content_frame"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="#00000000">
-
-        <ImageView
-            android:id="@+id/app_icon"
-            android:layout_width="@dimen/halo_icon_size"
-            android:layout_height="@dimen/halo_icon_size"
-            android:soundEffectsEnabled="false"
-            android:focusable="true"/>
-
-        <TextView
-            android:id="@+id/ticker"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:background="@drawable/bubble"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:singleLine="false"
-            android:textColor="#f80"/>
-    </LinearLayout>
+    <ImageView
+        android:id="@+id/app_icon"
+        android:layout_width="@dimen/halo_icon_size"
+        android:layout_height="@dimen/halo_icon_size"
+        android:soundEffectsEnabled="false"
+        android:focusable="true"/>
 
     <ImageView
         android:id="@+id/frame"

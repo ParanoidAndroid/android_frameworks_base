@@ -242,6 +242,6 @@
     <dimen name="pie_panel_padding">20dp</dimen>
     <!-- PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE -->
 
-    <dimen name="halo_icon_size">70dp</dimen>
+    <dimen name="halo_icon_size">65dp</dimen>
 
 </resources>
