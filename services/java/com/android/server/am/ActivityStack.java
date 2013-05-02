@@ -1926,7 +1926,7 @@ final class ActivityStack {
             }
             if (DEBUG_TRANSITION) Slog.v(TAG,
                     "Prepare open transition: starting " + r);
-            if ((r.intent.getFlags()&Intent.FLAG_ACTIVITY_NO_ANIMATION) != 0) {
+            if ((r.intent.getFlags()&Intent.FLAG_ACTIVITY_NO_ANIMATION) != 0 || r.multiWindow) {
                 mService.mWindowManager.prepareAppTransition(
                         WindowManagerPolicy.TRANSIT_NONE, keepCurTransition);
                 mNoAnimActivities.add(r);
@@ -3853,7 +3853,7 @@ final class ActivityStack {
                     || (mHistory.get(index-1)).task != r.task;
             if (DEBUG_TRANSITION) Slog.v(TAG,
                     "Prepare close transition: finishing " + r);
-            mService.mWindowManager.prepareAppTransition(endTask
+            mService.mWindowManager.prepareAppTransition(endTask && !r.multiWindow
                     ? WindowManagerPolicy.TRANSIT_TASK_CLOSE
                     : WindowManagerPolicy.TRANSIT_ACTIVITY_CLOSE, false);
     
