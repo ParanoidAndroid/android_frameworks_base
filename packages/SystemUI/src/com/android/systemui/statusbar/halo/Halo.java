@@ -113,7 +113,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     public static final String TAG = "HaloLauncher";
     private static final boolean DEBUG = true;
     private static final int TICKER_HIDE_TIME = 5000;
-    private static final int HALO_ASIDE_TIME = 10000;
+    private static final int HALO_ASIDE_TIME  = 6000;
 
 	public boolean mExpanded = false;
     public boolean mSnapped = true;
@@ -383,7 +383,8 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         public void run() {
             final int fromX = mTickerPos.x;
             final boolean left = fromX < mScreenWidth / 2;
-            final int toX = left ? -(mIconSize / 2) : mIconSize / 2;
+            final int setBack = (int)(mIconSize * 0.3f);
+            final int toX = left ? -setBack : setBack;
 
             ValueAnimator topAnimation = ValueAnimator.ofInt(0, 1);
             topAnimation.addUpdateListener(new AnimatorUpdateListener() {
@@ -541,6 +542,8 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     }
     
     public void updateTicker(Ticker.Segment segment) {
+        if (!isBeingDragged) snapToSide();
+
         curNotif = segment.notification.notification;
         appName = segment.notification.pkg;
 
