@@ -158,6 +158,10 @@ public abstract class BaseStatusBar extends SystemUI implements
     public View[] mPieDummyTrigger = new View[4];
     int mIndex;
 
+    // Halo
+    private Halo mHalo = null;
+    public Ticker mTicker;
+
     // Policy
     public NetworkController mNetworkController;
     public BatteryController mBatteryController;
@@ -497,21 +501,40 @@ public abstract class BaseStatusBar extends SystemUI implements
 
         attachPie();
 
-        LayoutInflater inflater = (LayoutInflater) mContext
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
-        halo = (Halo)inflater.inflate(R.layout.halo_layout, null);
-        halo.init(this);
+        // Listen for HALO state
+        mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.HALO_ACTIVE), false, new ContentObserver(new Handler()) {
+            @Override
+            public void onChange(boolean selfChange) {
+                updateHalo();
+            }});
 
-
-        WindowManager.LayoutParams params = halo.getWMParams();
-        params.setTitle("Halo");
-        mWindowManager.addView(halo,params);
+        updateHalo();
 
         SettingsObserver settingsObserver = new SettingsObserver(new Handler());
         settingsObserver.observe();
     }
-    private Halo halo;
-    public Ticker mTicker;
+
+    private void updateHalo() {
+        final boolean haloActive = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.HALO_ACTIVE, 0) == 1;
+        if (haloActive) {
+            if (mHalo == null) {
+                LayoutInflater inflater = (LayoutInflater) mContext
+                        .getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
+                mHalo = (Halo)inflater.inflate(R.layout.halo_layout, null);
+                mHalo.init(this);
+                WindowManager.LayoutParams params = mHalo.getWMParams();
+                mWindowManager.addView(mHalo,params);
+            }
+        } else {
+            if (mHalo != null) {
+                mHalo.cleanUp();
+                mWindowManager.removeView(mHalo);
+                mHalo = null;
+            }
+        }
+    }
 
     private boolean showPie() {
         boolean expanded = Settings.System.getInt(mContext.getContentResolver(),

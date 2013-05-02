@@ -28,6 +28,7 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.content.Context;
+import android.content.ContentResolver;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.content.Intent;
@@ -110,6 +111,9 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     private LayoutInflater mInflater;
     private HaloEffect mHaloEffect;
 
+    private Paint mPaintHoloBlue = new Paint();
+    private Paint mPaintHoloRed = new Paint();
+
     public static final String TAG = "HaloLauncher";
     private static final boolean DEBUG = true;
     private static final int TICKER_HIDE_TIME = 5000;
@@ -118,11 +122,12 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 	public boolean mExpanded = false;
     public boolean mSnapped = true;
 
-    private int mScreenMin;
-    private int mScreenMax;
-    private int mScreenWidth;
-    private int mScreenHeight;
+    private int mScreenMin, mScreenMax;
+    private int mScreenWidth, mScreenHeight;
     private Rect mPopUpRect;
+
+    private Bitmap mXActive, mXNormal;
+    private int mKillX, mKillY;
 
     public Halo(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
@@ -138,6 +143,10 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                 Settings.System.HAPTIC_FEEDBACK_ENABLED, 1) != 0;
         mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
         mHandler = new Handler();
+    }
+
+    public void cleanUp() {
+        if (mHaloEffect != null) mWindowManager.removeView(mHaloEffect);
     }
 
     @Override
@@ -161,6 +170,9 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     }
 
     private void updateConstraints() {
+        mKillX = mScreenWidth / 2;
+        mKillY = mIconSize / 2;
+
         final int popupWidth;
         final int popupHeight;
         if (mScreenHeight > mScreenWidth) {
@@ -197,10 +209,13 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
         Bitmap frame = Bitmap.createBitmap(mIconSize, mIconSize, Bitmap.Config.ARGB_8888);
         Canvas frameCanvas = new Canvas(frame);
-        Paint haloPaint = new Paint();
-        haloPaint.setAntiAlias(true);
-        haloPaint.setColor(0xff33b5e5);
-        frameCanvas.drawCircle(mIconSize / 2, mIconSize / 2, (int)mIconSize / 2, haloPaint);
+
+        mPaintHoloBlue.setAntiAlias(true);
+        mPaintHoloBlue.setColor(0xff33b5e5);
+        mPaintHoloRed.setAntiAlias(true);
+        mPaintHoloRed.setColor(0xffcc0000);
+
+        frameCanvas.drawCircle(mIconSize / 2, mIconSize / 2, (int)mIconSize / 2, mPaintHoloBlue);
 
         Bitmap hole = Bitmap.createBitmap(mIconSize, mIconSize, Bitmap.Config.ARGB_8888);
         Canvas holeCanvas = new Canvas(hole);
@@ -221,6 +236,12 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         backPaint.setColor(0xAA000000);
         backCanvas.drawCircle(mIconSize / 2, mIconSize / 2, (int)mIconSize / 2, backPaint);
         mBackdrop.setImageDrawable(new BitmapDrawable(mContext.getResources(), backOutput));
+
+        mXActive = BitmapFactory.decodeResource(mContext.getResources(),
+                    R.drawable.ic_launcher_clear_active_holo);
+
+        mXNormal = BitmapFactory.decodeResource(mContext.getResources(),
+                    R.drawable.ic_launcher_clear_normal_holo);
 
 		mIcon = (ImageView) findViewById(R.id.app_icon);
 		mIcon.setOnClickListener(new OnClickListener() {
@@ -276,6 +297,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
             private float initialX = 0;
             private float initialY = 0;
+            private boolean overX = false;
 
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
@@ -285,25 +307,47 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                 switch(action) {
                     case MotionEvent.ACTION_DOWN:
                         isBeingDragged = false;
+                        overX = false;
                         initialX = event.getRawX();
                         initialY = event.getRawY();
                         mHandler.removeCallbacks(TickerAside);
                         break;
                     case MotionEvent.ACTION_UP:
-                        isBeingDragged = false;                  
+                        isBeingDragged = false;
+
+                        // Do we erase ourselves?
+                        if (overX) {
+                            Settings.System.putInt(mContext.getContentResolver(),
+                                    Settings.System.HALO_ACTIVE, 0);
+                            return true;
+                        }
+          
                         snapToSide();
                         break;
                     case MotionEvent.ACTION_MOVE:
                         float mX = event.getRawX();
                         float mY = event.getRawY();
-                        float distanceX = initialX-mX;
-                        float distanceY = initialY-mY;
 
+                        float distanceX = mKillX-mX;
+                        float distanceY = mKillY-mY;
+                        float distance = (float)Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
+                        if (distance < mIconSize) {
+                            if (!overX) {
+                                if (mHapticFeedback) mVibrator.vibrate(25);
+                                mHaloEffect.causeRipple(mPaintHoloRed);
+                                overX = true;
+                            }
+                        } else {
+                            overX = false;
+                        }
+
+                        distanceX = initialX-mX;
+                        distanceY = initialY-mY;
                         if (!isBeingDragged) {
-                            float distance = (float)Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
+                            distance = (float)Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
                             if (distance > mIconSize) {
                                 isBeingDragged = true;
-                                if (mHapticFeedback) mVibrator.vibrate(15);
+                                if (mHapticFeedback) mVibrator.vibrate(25);
                             }
                         } else {
                             mTickerPos.x = (int)mX - mIconSize / 2;
@@ -341,6 +385,9 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     }
 
     private void moveToTop() {
+        // We don't want halo to fly aside here
+        mHandler.removeCallbacks(TickerAside);
+
         ValueAnimator topAnimation = ValueAnimator.ofInt(0, 1);
         topAnimation.addUpdateListener(new AnimatorUpdateListener() {
             final int fromX = mTickerPos.x;
@@ -407,7 +454,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
     class HaloEffect extends FrameLayout {
         private Context mContext;
-        private Paint haloPaint;
+        private Paint mRipplePaint;
         private int rippleAlpha = 0;
         private int rippleRadius = 0;
         protected int rippleMinRadius = 0;
@@ -418,9 +465,6 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         private View mContentView;
         private TextView mTextView;
 
-        private Bitmap xActive;
-        private Bitmap xNormal;
-
         public HaloEffect(Context context) {
             super(context);
 
@@ -428,22 +472,12 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             setWillNotDraw(false);
             setDrawingCacheEnabled(false);
 
-            haloPaint = new Paint();
-            haloPaint.setAntiAlias(true);
-            haloPaint.setColor(0x33b5e5);
-
             LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
             mContentView = inflater.inflate(R.layout.halo_content, null);
             mTextView = (TextView) mContentView.findViewById(R.id.ticker);
-
-            xActive = BitmapFactory.decodeResource(mContext.getResources(),
-                    R.drawable.ic_launcher_clear_active_holo);
-
-            xNormal = BitmapFactory.decodeResource(mContext.getResources(),
-                    R.drawable.ic_launcher_clear_normal_holo);
         }
 
-        public void causeRipple(String tickerText) {
+        public void ticker(String tickerText) {
             mTextView.setText(tickerText);
             mContentView.measure(MeasureSpec.getSize(mContentView.getMeasuredWidth()), MeasureSpec.getSize(mContentView.getMeasuredHeight()));
             mContentView.layout(400, 400, 400, 400);
@@ -476,7 +510,10 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                     alphaDown.start();
                 }
             }, TICKER_HIDE_TIME);
+        }
 
+        public void causeRipple(Paint paint) {
+            mRipplePaint = paint;
             ValueAnimator rippleAnim = ValueAnimator.ofInt(0, 1);
             rippleAnim.addUpdateListener(new AnimatorUpdateListener() {
                 @Override
@@ -497,8 +534,8 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             int state;
 
             if (rippleAlpha > 0) {
-                haloPaint.setAlpha(rippleAlpha);
-                canvas.drawCircle(mTickerPos.x + mIconSize / 2, mTickerPos.y + mIconSize / 2, rippleRadius, haloPaint);
+                mRipplePaint.setAlpha(rippleAlpha);
+                canvas.drawCircle(mTickerPos.x + mIconSize / 2, mTickerPos.y + mIconSize / 2, rippleRadius, mRipplePaint);
             }
 
             if (mContentAlpha > 0) {
@@ -522,7 +559,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             }
 
             if (isBeingDragged) {
-                canvas.drawBitmap(xNormal, mScreenWidth / 2 - xNormal.getWidth() / 2, mIconSize / 2, null);
+                canvas.drawBitmap(mXNormal, mKillX - mXNormal.getWidth() / 2, mKillY, null);
             }
         }
     }
@@ -535,6 +572,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                         | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                         | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+                        | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
                         | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.TRANSLUCENT);
         lp.gravity = Gravity.LEFT|Gravity.TOP;
@@ -575,6 +613,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             }
         }
         mIcon.setImageDrawable(new BitmapDrawable(mContext.getResources(), output));
-        mHaloEffect.causeRipple(segment.getText().toString());
+        mHaloEffect.ticker(segment.getText().toString());
+        mHaloEffect.causeRipple(mPaintHoloBlue);
     }
 }
