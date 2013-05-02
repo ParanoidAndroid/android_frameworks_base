@@ -1301,7 +1301,7 @@ public abstract class BaseStatusBar extends SystemUI implements
             if (mIntent != null) {
                 int[] pos = new int[2];
                 v.getLocationOnScreen(pos);
-                Intent overlay = new Intent();                
+                Intent overlay = new Intent();  
                 overlay.setSourceBounds(
                         new Rect(pos[0], pos[1], pos[0]+v.getWidth(), pos[1]+v.getHeight()));
                 try {
