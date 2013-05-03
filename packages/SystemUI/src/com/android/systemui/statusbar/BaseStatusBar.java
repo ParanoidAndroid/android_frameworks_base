@@ -159,8 +159,11 @@ public abstract class BaseStatusBar extends SystemUI implements
     int mIndex;
 
     // Halo
-    private Halo mHalo = null;
-    public Ticker mTicker;
+    protected Halo mHalo = null;
+    protected Ticker mTicker;
+    protected boolean mHaloActive;
+    protected ImageView mHaloButton;
+    protected boolean mHaloButtonVisible = true;
 
     // Policy
     public NetworkController mNetworkController;
@@ -194,6 +197,10 @@ public abstract class BaseStatusBar extends SystemUI implements
     protected Display mDisplay;
 
     private boolean mDeviceProvisioned = false;
+
+    public Ticker getTicker() {
+        return mTicker;
+    }
 
     public void collapse() {
     }
@@ -515,17 +522,26 @@ public abstract class BaseStatusBar extends SystemUI implements
         settingsObserver.observe();
     }
 
-    private void updateHalo() {
-        final boolean haloActive = Settings.System.getInt(mContext.getContentResolver(),
+    protected void updateHaloButton() {
+        if (mHaloButton != null) {
+            mHaloButton.setVisibility(mHaloButtonVisible && !mHaloActive ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    protected void updateHalo() {
+        mHaloActive = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.HALO_ACTIVE, 0) == 1;
-        if (haloActive) {
+
+        updateHaloButton();
+
+        if (mHaloActive) {
             if (mHalo == null) {
                 LayoutInflater inflater = (LayoutInflater) mContext
                         .getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
                 mHalo = (Halo)inflater.inflate(R.layout.halo_layout, null);
-                mHalo.init(this);
                 WindowManager.LayoutParams params = mHalo.getWMParams();
                 mWindowManager.addView(mHalo,params);
+                mHalo.setStatusBar(this);
             }
         } else {
             if (mHalo != null) {
@@ -1272,17 +1288,22 @@ public abstract class BaseStatusBar extends SystemUI implements
         return new NotificationClicker(intent, pkg, tag, id);
     }
 
-    private class NotificationClicker implements View.OnClickListener {
+    public class NotificationClicker implements View.OnClickListener {
         private PendingIntent mIntent;
         private String mPkg;
         private String mTag;
         private int mId;
+        private boolean mFloat = true;
 
         NotificationClicker(PendingIntent intent, String pkg, String tag, int id) {
             mIntent = intent;
             mPkg = pkg;
             mTag = tag;
             mId = id;
+        }
+
+        public void makeFloating(boolean floating) {
+            mFloat = floating;
         }
 
         public void onClick(View v) {
@@ -1301,11 +1322,13 @@ public abstract class BaseStatusBar extends SystemUI implements
             if (mIntent != null) {
                 int[] pos = new int[2];
                 v.getLocationOnScreen(pos);
-                Intent overlay = new Intent();  
+                Intent overlay = new Intent();
+                if (mFloat) overlay.addFlags(Intent.FLAG_FLOATING_WINDOW);
                 overlay.setSourceBounds(
                         new Rect(pos[0], pos[1], pos[0]+v.getWidth(), pos[1]+v.getHeight()));
                 try {
-                    mIntent.send(mContext, 0, overlay);
+                    android.util.Log.d("PARANOID", "sending intent="+mIntent + " multi="+mFloat);
+                    mIntent.send(mContext, 0, overlay);                    
                 } catch (PendingIntent.CanceledException e) {
                     // the stack trace isn't very helpful here.  Just log the exception message.
                     Slog.w(TAG, "Sending contentIntent failed: " + e);
@@ -1519,9 +1542,10 @@ public abstract class BaseStatusBar extends SystemUI implements
                 && notification.score == oldNotification.score;
                 // score now encompasses/supersedes isOngoing()
 
-        boolean updateTicker = notification.notification.tickerText != null
+        
+        boolean updateTicker = (notification.notification.tickerText != null
                 && !TextUtils.equals(notification.notification.tickerText,
-                        oldEntry.notification.notification.tickerText);
+                        oldEntry.notification.notification.tickerText)) || mHaloActive;
         boolean isTopAnyway = isTopNotification(rowParent, oldEntry);
         if (contentsUnchanged && bigContentsUnchanged && (orderUnchanged || isTopAnyway)) {
             if (DEBUG) Slog.d(TAG, "reusing notification for key: " + key);
@@ -1534,6 +1558,7 @@ public abstract class BaseStatusBar extends SystemUI implements
                 }
                 // update the contentIntent
                 final PendingIntent contentIntent = notification.notification.contentIntent;
+                android.util.Log.d("PARANOID","original="+contentIntent+" update="+updateTicker);
                 if (contentIntent != null) {
                     final View.OnClickListener listener = makeClicker(contentIntent,
                             notification.pkg, notification.tag, notification.id);

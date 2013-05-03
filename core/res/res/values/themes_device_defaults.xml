@@ -487,7 +487,7 @@ easier.
     <style name="Theme.DeviceDefault.Panel" parent="Theme.Holo.Panel" >
     </style>
 
-    <style name="Theme.DeviceDefault.MultiWindow">
+    <style name="Theme.DeviceDefault.FloatingWindow">
         <item name="android:windowIsFloating">false</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowFrame">@null</item>
@@ -499,7 +499,7 @@ easier.
         <item name="android:windowSoftInputMode">stateAlwaysHidden|adjustPan</item>
     </style>
 
-    <style name="Theme.DeviceDefault.MultiWindowLight" parent="Theme.Holo.Light.Dialog">
+    <style name="Theme.DeviceDefault.FloatingWindowLight" parent="Theme.Holo.Light.Dialog">
         <item name="android:windowIsFloating">false</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowFrame">@null</item>

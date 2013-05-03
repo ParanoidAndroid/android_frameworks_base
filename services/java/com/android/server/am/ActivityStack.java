@@ -1537,7 +1537,7 @@ final class ActivityStack {
         
         // We need to start pausing the current activity so the top one
         // can be resumed...
-        if (mResumedActivity != null) {
+        if (mResumedActivity != null && !(next != null && next.floatingWindow)) {
             if (DEBUG_SWITCH) Slog.v(TAG, "Skip resume: need to start pausing");
             // At this point we want to put the upcoming activity's process
             // at the top of the LRU list, since we know we will be needing it
@@ -1818,11 +1818,11 @@ final class ActivityStack {
 
         int f = r.intent.getFlags();
 
-        android.util.Log.d("PARANOID." + tag, r.packageName + "  top=" + r.topIntent);
-        if ((f & Intent.FLAG_MULTI_WINDOW) == Intent.FLAG_MULTI_WINDOW) android.util.Log.d("PARANOID", "  FLAG_MULTI_WINDOW");
+        android.util.Log.d("PARANOID." + tag, r.packageName + "  intent=" + r.intent.toString() + " top=" + r.topIntent);
+        if ((f & Intent.FLAG_FLOATING_WINDOW) == Intent.FLAG_FLOATING_WINDOW) android.util.Log.d("PARANOID", "  FLAG_FLOATING_WINDOW");
         if ((f & Intent.FLAG_ACTIVITY_TASK_ON_HOME) == Intent.FLAG_ACTIVITY_TASK_ON_HOME) android.util.Log.d("PARANOID", "  FLAG_ACTIVITY_TASK_ON_HOME");
         if ((f & Intent.FLAG_ACTIVITY_SINGLE_TOP) == Intent.FLAG_ACTIVITY_SINGLE_TOP) android.util.Log.d("PARANOID", "  FLAG_ACTIVITY_SINGLE_TOP");
-        if ((f & Intent.FLAG_ACTIVITY_CLEAR_TOP) == Intent.FLAG_MULTI_WINDOW) android.util.Log.d("PARANOID", "  FLAG_ACTIVITY_CLEAR_TOP");
+        if ((f & Intent.FLAG_ACTIVITY_CLEAR_TOP) == Intent.FLAG_ACTIVITY_CLEAR_TOP) android.util.Log.d("PARANOID", "  FLAG_ACTIVITY_CLEAR_TOP");
         if ((f & Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT) == Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT) android.util.Log.d("PARANOID", "  FLAG_ACTIVITY_BROUGHT_TO_FRONT");
         if ((f & Intent.FLAG_ACTIVITY_CLEAR_TASK) == Intent.FLAG_ACTIVITY_CLEAR_TASK) android.util.Log.d("PARANOID", "  FLAG_ACTIVITY_CLEAR_TASK");
         if ((f & Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET) == Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET) android.util.Log.d("PARANOID", "  FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET");
@@ -1840,7 +1840,7 @@ final class ActivityStack {
         if (r.stack.mHistory.size() == 0) return;        
         for (int i = 0; i < r.stack.mHistory.size(); i++) {
             ActivityRecord hr = r.stack.mHistory.get(i);
-            android.util.Log.d("PARANOID", "  --- " + i + ": " + hr.packageName + " new="+ hr.newTask + " multi=" + hr.multiWindow + " top=" + hr.topIntent);
+            android.util.Log.d("PARANOID", "  --- " + i + ": " + hr.packageName + " new="+ hr.newTask + " floating=" + hr.floatingWindow + " top=" + hr.topIntent);
         }
     }
 
@@ -1926,7 +1926,7 @@ final class ActivityStack {
             }
             if (DEBUG_TRANSITION) Slog.v(TAG,
                     "Prepare open transition: starting " + r);
-            if ((r.intent.getFlags()&Intent.FLAG_ACTIVITY_NO_ANIMATION) != 0 || r.multiWindow) {
+            if ((r.intent.getFlags()&Intent.FLAG_ACTIVITY_NO_ANIMATION) != 0 || r.floatingWindow) {
                 mService.mWindowManager.prepareAppTransition(
                         WindowManagerPolicy.TRANSIT_NONE, keepCurTransition);
                 mNoAnimActivities.add(r);
@@ -1954,7 +1954,7 @@ final class ActivityStack {
                 }
             }
 
-            if (SHOW_APP_STARTING_PREVIEW && doShow && !r.multiWindow) {
+            if (SHOW_APP_STARTING_PREVIEW && doShow && !r.floatingWindow) {
                 // Figure out if we are transitioning from another activity that is
                 // "has the same starting icon" as the next one.  This allows the
                 // window manager to keep the previous window it had previously
@@ -2521,6 +2521,8 @@ final class ActivityStack {
             String resultWho, int requestCode,
             int callingPid, int callingUid, int startFlags, Bundle options,
             boolean componentSpecified, ActivityRecord[] outActivity) {
+
+        pa_stacktrace();
 
         int err = ActivityManager.START_SUCCESS;
 
@@ -3853,7 +3855,7 @@ final class ActivityStack {
                     || (mHistory.get(index-1)).task != r.task;
             if (DEBUG_TRANSITION) Slog.v(TAG,
                     "Prepare close transition: finishing " + r);
-            mService.mWindowManager.prepareAppTransition(endTask && !r.multiWindow
+            mService.mWindowManager.prepareAppTransition(endTask && !r.floatingWindow
                     ? WindowManagerPolicy.TRANSIT_TASK_CLOSE
                     : WindowManagerPolicy.TRANSIT_ACTIVITY_CLOSE, false);
     

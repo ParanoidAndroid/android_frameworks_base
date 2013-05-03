@@ -5069,20 +5069,20 @@ public class Activity extends ContextThemeWrapper
 
         mFragments.attachActivity(this, mContainer, null);
 
-        if (intent != null && (intent.getFlags()&Intent.FLAG_MULTI_WINDOW) == Intent.FLAG_MULTI_WINDOW) {
+        if (intent != null && (intent.getFlags()&Intent.FLAG_FLOATING_WINDOW) == Intent.FLAG_FLOATING_WINDOW) {
             TypedArray styleArray = context.obtainStyledAttributes(info.theme, com.android.internal.R.styleable.Window);
             TypedValue backgroundValue = styleArray.peekValue(com.android.internal.R.styleable.Window_windowBackground);
 
             if (backgroundValue != null && backgroundValue.toString().contains("light")) {
-                context.getTheme().applyStyle(com.android.internal.R.style.Theme_DeviceDefault_MultiWindowLight, true);
+                context.getTheme().applyStyle(com.android.internal.R.style.Theme_DeviceDefault_FloatingWindowLight, true);
             } else {
-                context.getTheme().applyStyle(com.android.internal.R.style.Theme_DeviceDefault_MultiWindow, true);
+                context.getTheme().applyStyle(com.android.internal.R.style.Theme_DeviceDefault_FloatingWindow, true);
             }
 
             parent = null;
 
             mWindow = PolicyManager.makeNewWindow(this);
-            mWindow.mIsMultiWindow = true;
+            mWindow.mIsFloatingWindow = true;
             mWindow.setCloseOnTouchOutsideIfNotSet(true);
             mWindow.setGravity(Gravity.CENTER);
             mWindow.requestFeature(Window.FEATURE_ACTION_BAR);
@@ -5358,11 +5358,11 @@ public class Activity extends ContextThemeWrapper
         }
         mResumed = false;
 
-        // Multiwindow activities should be kept volatile to prevent new activities taking
+        // Floatingwindows activities should be kept volatile to prevent new activities taking
         // up front in a minimized space. Every stop call, for instance when pressing home,
         // will terminate the activity. If the activity is already finishing we might just
         // as well let it go.
-        if (mWindow != null && mWindow.mIsMultiWindow && !isFinishing()) {
+        if (mWindow != null && mWindow.mIsFloatingWindow && !isFinishing()) {
             finish();
         }
     }

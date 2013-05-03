@@ -128,7 +128,7 @@ final class ActivityRecord {
 
     boolean topIntent;
     boolean newTask;
-    boolean multiWindow;
+    boolean floatingWindow;
 
     String stringName;      // for caching of toString().
     
@@ -405,8 +405,8 @@ final class ActivityRecord {
             newTask = (intent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) == Intent.FLAG_ACTIVITY_NEW_TASK;
             if (!newTask) {
                 ActivityRecord r = stack.mHistory.size() > 0 ? stack.mHistory.get(stack.mHistory.size() -1) : null;
-                if (r != null && (r.intent.getFlags() & Intent.FLAG_MULTI_WINDOW) == Intent.FLAG_MULTI_WINDOW) {
-                    intent.addFlags(Intent.FLAG_MULTI_WINDOW);
+                if (r != null && (r.intent.getFlags() & Intent.FLAG_FLOATING_WINDOW) == Intent.FLAG_FLOATING_WINDOW) {
+                    intent.addFlags(Intent.FLAG_FLOATING_WINDOW);
                     // Flag the activity as sub-task
                     topIntent = false;
                 }
@@ -414,8 +414,8 @@ final class ActivityRecord {
 
             // If this is a multiwindow activity we prevent it from messing up the history stack,
             // like jumping back home, killing the current activity or polluting recents
-            multiWindow = (intent.getFlags() & Intent.FLAG_MULTI_WINDOW) == Intent.FLAG_MULTI_WINDOW;
-            if (multiWindow) {
+            floatingWindow = (intent.getFlags() & Intent.FLAG_FLOATING_WINDOW) == Intent.FLAG_FLOATING_WINDOW;
+            if (floatingWindow) {
                 intent.setFlags(intent.getFlags() & ~Intent.FLAG_ACTIVITY_TASK_ON_HOME);
                 intent.setFlags(intent.getFlags() & ~Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 intent.setFlags(intent.getFlags() & ~Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -430,7 +430,7 @@ final class ActivityRecord {
                 }
 
                 // Change theme
-                realTheme = com.android.internal.R.style.Theme_DeviceDefault_MultiWindow;
+                realTheme = com.android.internal.R.style.Theme_DeviceDefault_FloatingWindow;
             }
 
             if ((aInfo.flags&ActivityInfo.FLAG_HARDWARE_ACCELERATED) != 0) {
