@@ -1293,7 +1293,7 @@ public abstract class BaseStatusBar extends SystemUI implements
         private String mPkg;
         private String mTag;
         private int mId;
-        private boolean mFloat = true;
+        private boolean mFloat;
 
         NotificationClicker(PendingIntent intent, String pkg, String tag, int id) {
             mIntent = intent;
@@ -1327,7 +1327,6 @@ public abstract class BaseStatusBar extends SystemUI implements
                 overlay.setSourceBounds(
                         new Rect(pos[0], pos[1], pos[0]+v.getWidth(), pos[1]+v.getHeight()));
                 try {
-                    android.util.Log.d("PARANOID", "sending intent="+mIntent + " multi="+mFloat);
                     mIntent.send(mContext, 0, overlay);                    
                 } catch (PendingIntent.CanceledException e) {
                     // the stack trace isn't very helpful here.  Just log the exception message.
