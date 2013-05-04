@@ -5,8 +5,13 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
+    <RelativeLayout
+        android:id="@+id/ticker"
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content">
+
         <TextView
-            android:id="@+id/ticker"
+            android:id="@+id/bubble"
             android:layout_width="wrap_content" 
             android:layout_height="wrap_content"
             android:paddingLeft="10dp"
@@ -16,5 +21,27 @@
             android:background="@drawable/bubble"
             android:singleLine="false"
             android:textColor="#f80"/>
+
+        <ImageView
+            android:id="@+id/peakleft"
+            android:layout_marginTop="35dp"
+            android:paddingLeft="30dp"
+            android:layout_alignStart="@+id/bubble"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/bubble_peak_left"
+            android:visibility="gone"/>
+
+        <ImageView
+            android:id="@+id/peakright"
+            android:layout_marginTop="35dp"
+            android:paddingRight="30dp"
+            android:layout_alignEnd="@+id/bubble"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/bubble_peak_right"
+            android:visibility="gone"/>
+
+    </RelativeLayout>
 
 </LinearLayout>

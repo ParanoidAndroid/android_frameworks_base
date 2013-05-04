@@ -27,6 +27,19 @@
             android:layout_width="@dimen/halo_icon_size"
             android:layout_height="@dimen/halo_icon_size"/>
 
+        <TextView
+            android:id="@+id/number"
+            android:layout_width="wrap_content" 
+            android:layout_height="wrap_content"
+            android:paddingLeft="4dp"
+            android:paddingRight="4dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:background="@drawable/ic_notification_overlay_red"
+            android:textColor="#fff"
+            android:textSize="11sp"
+            android:alpha="0.9"/>
+
     </RelativeLayout>
 
 </com.android.systemui.statusbar.halo.Halo>
