@@ -121,13 +121,14 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     public static final String TAG = "HaloLauncher";
     private static final boolean DEBUG = true;
     private static final int TICKER_HIDE_TIME = 2000;
-    private static final int SLEEP_TIME_YAWNING = 6000;
-    private static final int SLEEP_TIME_DAYDREAMING = 12000;
-    private static final int SLEEP_TIME_NAP = 20000;
+    private static final int SLEEP_DELAY_YAWNING = 6000;
+    private static final int SLEEP_DELAY_DAYDREAMING = 6000;
 
 	public boolean mExpanded = false;
     public boolean mSnapped = true;
     public boolean mHidden = false;
+    public boolean mFirstStart = true;
+    private boolean mInitialized = false;
 
     private int mScreenMin, mScreenMax;
     private int mScreenWidth, mScreenHeight;
@@ -136,7 +137,11 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     private Bitmap mXActive, mXNormal;
     private int mKillX, mKillY;
 
-    private boolean mInitialized = false;
+    private ValueAnimator mSleepYawning = ValueAnimator.ofInt(0, 1);
+    private ValueAnimator mSleepDaydreaming = ValueAnimator.ofInt(0, 1);
+    private AlphaAnimation mSleepNap = new AlphaAnimation(1, 0.4f);
+    private int mAnimationFromX;
+    private int mAnimationToX;
 
     public Halo(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
@@ -172,10 +177,57 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         mXNormal = BitmapFactory.decodeResource(mContext.getResources(),
                     R.drawable.ic_launcher_clear_normal_holo);
 
+        // Animations
+        mSleepNap.setInterpolator(new DecelerateInterpolator());
+        mSleepNap.setFillAfter(true);
+        mSleepNap.setDuration(10000);
+
+        mSleepYawning.setStartDelay(SLEEP_DELAY_YAWNING);
+        mSleepYawning.setDuration(2000);
+        mSleepYawning.setInterpolator(new DecelerateInterpolator());
+        mSleepYawning.addUpdateListener(new AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mTickerPos.x = (int)(mAnimationFromX + mAnimationToX * animation.getAnimatedFraction());
+                updatePosition();
+            }});
+        mSleepYawning.addListener(new Animator.AnimatorListener() {
+            @Override public void onAnimationCancel(Animator animation) {}
+            @Override public void onAnimationEnd(Animator animation) {}
+            @Override public void onAnimationRepeat(Animator animation) {}
+            @Override public void onAnimationStart(Animator animation) 
+            {
+                mContent.startAnimation(mSleepNap);
+                mAnimationFromX = mTickerPos.x;
+                final int setBack = (int)(mIconSize * 0.3f);
+                mAnimationToX = (mAnimationFromX < mScreenWidth / 2) ? -setBack : setBack;
+            }
+        });
+
+        mSleepDaydreaming.setStartDelay(SLEEP_DELAY_DAYDREAMING);
+        mSleepDaydreaming.setDuration(2000);
+        mSleepDaydreaming.setInterpolator(new AccelerateInterpolator());
+        mSleepDaydreaming.addUpdateListener(new AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mTickerPos.x = (int)(mAnimationFromX + mAnimationToX * animation.getAnimatedFraction());
+                updatePosition();
+            }});
+        mSleepDaydreaming.addListener(new Animator.AnimatorListener() {
+            @Override public void onAnimationCancel(Animator animation) {}
+            @Override public void onAnimationEnd(Animator animation) { }
+            @Override public void onAnimationRepeat(Animator animation) {}
+            @Override public void onAnimationStart(Animator animation) 
+            {
+                mAnimationFromX = mTickerPos.x;
+                final int setBack = (int)(mIconSize * 0.2f);
+                mAnimationToX = (mAnimationFromX < mScreenWidth / 2) ? -setBack : setBack;
+            }});
+
         // Create effect layer
         mHaloEffect = new HaloEffect(mContext);
-        mHaloEffect.rippleMinRadius = mIconSize / 2;
-        mHaloEffect.rippleMaxRadius = mIconSize * 2;
+        mHaloEffect.pingMinRadius = mIconSize / 2;
+        mHaloEffect.pingMaxRadius = mIconSize * 2;
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
@@ -198,45 +250,55 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         // Get actual screen size
         mScreenWidth = mHaloEffect.getWidth();
         mScreenHeight = mHaloEffect.getHeight();
+
         mScreenMin = Math.min(mHaloEffect.getWidth(), mHaloEffect.getHeight());
         mScreenMax = Math.max(mHaloEffect.getWidth(), mHaloEffect.getHeight());
 
-        // let's put halo in sight
-        mTickerPos.x = mScreenWidth / 2 - mIconSize / 2;
-        mTickerPos.y = mScreenHeight / 2 - mIconSize / 2;
+        if (mFirstStart) {
+            // let's put halo in sight
+            mTickerPos.x = mScreenWidth / 2 - mIconSize / 2;
+            mTickerPos.y = mScreenHeight / 2 - mIconSize / 2;
+
+            // pop a hello ping
+            mHandler.postDelayed(new Runnable() {
+                public void run() {
+                    mHaloEffect.causePing(mPaintHoloRed);
+                }}, 200);
+
+            // and disappear if empty
+            mHandler.postDelayed(new Runnable() {
+                public void run() {
+                    if (curNotif == null) {
+                        AlphaAnimation alphaDown = new AlphaAnimation(1, 0);
+                        alphaDown.setFillAfter(true);
+                        alphaDown.setDuration(1000);
+                        alphaDown.setAnimationListener(new Animation.AnimationListener() {
+                            @Override public void onAnimationEnd(Animation animation)
+                            {
+                                // We hide it at startup, unless the user really wants it.
+                                // This state can only by unlocked by an incomming notification
+                                if (!isBeingDragged) {
+                                    mContent.setVisibility(View.GONE);
+                                    mHidden = true;
+                                }
+                            }
+                            @Override public void onAnimationRepeat(Animation animation) {}
+                            @Override public void onAnimationStart(Animation animation) {}
+                        });
+                        mContent.startAnimation(alphaDown);
+                    }
+                }}, 1000);
+        }
 
         // Update dimensions
         updateConstraints();
 
-        // pop a hello ripple
-        mHandler.postDelayed(new Runnable() {
-            public void run() {
-                mHaloEffect.causeRipple(mPaintHoloRed);
-            }}, 200);
-
-        // and disappear if empty
-        mHandler.postDelayed(new Runnable() {
-            public void run() {
-                if (curNotif == null) {
-                    AlphaAnimation alphaDown = new AlphaAnimation(1, 0);
-                    alphaDown.setFillAfter(true);
-                    alphaDown.setDuration(1000);
-                    alphaDown.setAnimationListener(new Animation.AnimationListener() {
-                        @Override public void onAnimationEnd(Animation animation)
-                        {
-                            // We hide it at startup, unless the user really wants it.
-                            // This state can only by unlocked by an incomming notification
-                            if (!isBeingDragged) {
-                                mContent.setVisibility(View.GONE);
-                                mHidden = true;
-                            }
-                        }
-                        @Override public void onAnimationRepeat(Animation animation) {}
-                        @Override public void onAnimationStart(Animation animation) {}
-                    });
-                    mContent.startAnimation(alphaDown);
-                }
-            }}, 1000);
+        if (!mFirstStart) {
+            snapToSide(true);
+        } else {
+            // Do the startup animations only once
+            mFirstStart = false;
+        }
     }
 
     private void wakeUp(boolean pop) {
@@ -255,89 +317,37 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
         // Then pop
         if (pop) {
-            mHaloEffect.causeRipple(mPaintHoloBlue);
+            mHaloEffect.causePing(mPaintHoloBlue);
         }
     }
 
     private void unscheduleSleep() {
-        mHandler.removeCallbacks(SleepYawning);
-        mHandler.removeCallbacks(SleepDaydreaming);
-        mHandler.removeCallbacks(SleepNap);
+        mSleepYawning.cancel();
+        mSleepDaydreaming.cancel();
+        mSleepNap.cancel();
     }
 
     private void scheduleSleep() {
         unscheduleSleep();
-        // Pop HALO aside just a little
-        mHandler.postDelayed(SleepYawning, SLEEP_TIME_YAWNING);
-        // ...little bit more
-        mHandler.postDelayed(SleepDaydreaming, SLEEP_TIME_DAYDREAMING);
-        // ...now fade
-        mHandler.postDelayed(SleepNap, SLEEP_TIME_NAP);
+
+        AnimatorSet set = new AnimatorSet();
+        set.play(mSleepYawning).before(mSleepDaydreaming);
+        set.start();
     }
-
-    private Runnable SleepYawning = new Runnable() {
-        public void run() {
-            final int fromX = mTickerPos.x;
-            final int setBack = (int)(mIconSize * 0.3f);
-            final int toX = (fromX < mScreenWidth / 2) ? -setBack : setBack;
-            ValueAnimator topAnimation = ValueAnimator.ofInt(0, 1);
-            topAnimation.addUpdateListener(new AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    mTickerPos.x = (int)(fromX + toX * animation.getAnimatedFraction());
-                    updatePosition();
-                }
-            });
-            topAnimation.setDuration(2000);
-            topAnimation.setInterpolator(new DecelerateInterpolator());
-            topAnimation.start();
-        }
-    };
-
-    private Runnable SleepDaydreaming = new Runnable() {
-        public void run() {
-            final int fromX = mTickerPos.x;
-            final int setBack = (int)(mIconSize * 0.3f);
-            final int toX = (fromX < mScreenWidth / 2) ? -setBack : setBack;
-            ValueAnimator topAnimation = ValueAnimator.ofInt(0, 1);
-            topAnimation.addUpdateListener(new AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    mTickerPos.x = (int)(fromX + toX * animation.getAnimatedFraction());
-                    updatePosition();
-                }
-            });
-            topAnimation.setDuration(2000);
-            topAnimation.setInterpolator(new AccelerateInterpolator());
-            topAnimation.start();
-        }
-    };
-
-    private Runnable SleepNap = new Runnable() {
-        public void run() {
-            AlphaAnimation alphaDown = new AlphaAnimation(mContent.getAlpha(), 0.5f);
-            alphaDown.setFillAfter(true);
-            alphaDown.setDuration(2000);
-            mContent.startAnimation(alphaDown);
-        }
-    };
 
     private void moveToTop() {
         // We don't want halo to fly aside here
-        unscheduleSleep();
+        // unscheduleSleep();
 
         ValueAnimator topAnimation = ValueAnimator.ofInt(0, 1);
         topAnimation.addUpdateListener(new AnimatorUpdateListener() {
 
-            final int fromX = mTickerPos.x;
             final int fromY = mTickerPos.y;
-            final int deltaX = mPopUpRect.right - fromX - mIconSize;
-            final int deltaY = mPopUpRect.top - fromY - mIconSize;
+            final int deltaY = mScreenHeight - fromY - mIconSize;
 
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                mTickerPos.x = (int)(fromX + deltaX * animation.getAnimatedFraction());
-                mTickerPos.y = (int)(fromY + deltaY * animation.getAnimatedFraction());
+                mTickerPos.y = (int)(fromY * (1-animation.getAnimatedFraction()));
                 updatePosition();
             }
         });
@@ -420,7 +430,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
     public void setStatusBar(BaseStatusBar bar) {
         mBar = bar;
-        mBar.getTicker().setUpdateEvent(this);
+        if (mBar.getTicker() != null) mBar.getTicker().setUpdateEvent(this);
     }
 
     @Override
@@ -500,6 +510,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                     wakeUp(false);
                     break;
                 case MotionEvent.ACTION_UP:
+                    boolean oldState = isBeingDragged;
                     isBeingDragged = false;
 
                     // Do we erase ourselves?
@@ -509,7 +520,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                         return true;
                     }
                     snapToSide(true);
-                    break;
+                    return oldState;
                 case MotionEvent.ACTION_MOVE:
                     float mX = event.getRawX();
                     float mY = event.getRawY();
@@ -519,7 +530,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                     if (distance < mIconSize) {
                         if (!overX) {
                             if (mHapticFeedback) mVibrator.vibrate(25);
-                            mHaloEffect.causeRipple(mPaintHoloRed);
+                            mHaloEffect.causePing(mPaintHoloRed);
                             overX = true;
                         }
                     } else {
@@ -530,7 +541,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                     distanceY = initialY-mY;
                     if (!isBeingDragged) {
                         distance = (float)Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
-                        if (distance > mIconSize) {
+                        if (distance > mIconSize * 0.7f) {
                             isBeingDragged = true;
                             if (mHapticFeedback) mVibrator.vibrate(25);
                         }
@@ -554,6 +565,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
     public void cleanUp() {
         // Remove pending tasks, if we can
+        unscheduleSleep();
         mHandler.removeCallbacksAndMessages(null);
         // Kill callback
         mBar.getTicker().setUpdateEvent(null);
@@ -563,18 +575,19 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
     class HaloEffect extends FrameLayout {
         private Context mContext;
-        private Paint mRipplePaint;
-        private int rippleAlpha = 0;
-        private int rippleRadius = 0;
-        protected int rippleMinRadius = 0;
-        protected int rippleMaxRadius = 0;
+        private Paint mPingPaint;
+        private int pingAlpha = 0;
+        private int pingRadius = 0;
+        protected int pingMinRadius = 0;
+        protected int pingMaxRadius = 0;
         private int mContentAlpha = 0;
         private View mContentView;
         private TextView mTextView;
-        private boolean mRippleAllowed = true;
+        private boolean mPingAllowed = true;
 
         private ValueAnimator tickerUp = ValueAnimator.ofInt(0, 1);
         private ValueAnimator tickerDown = ValueAnimator.ofInt(0, 1);
+        private ValueAnimator pingAnim = ValueAnimator.ofInt(0, 1);
 
         public HaloEffect(Context context) {
             super(context);
@@ -588,6 +601,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             mTextView = (TextView) mContentView.findViewById(R.id.ticker);
 
             tickerUp.setDuration(1000);
+            tickerUp.setInterpolator(new DecelerateInterpolator());
             tickerUp.addUpdateListener(new AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
@@ -595,10 +609,10 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                     invalidate();
                 }
             });
-            tickerUp.setInterpolator(new DecelerateInterpolator());
 
             tickerDown.setStartDelay(TICKER_HIDE_TIME);
             tickerDown.setDuration(1000);
+            tickerDown.setInterpolator(new DecelerateInterpolator());
             tickerDown.addUpdateListener(new AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
@@ -606,13 +620,29 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                     invalidate();
                 }
             });
-            tickerDown.setInterpolator(new DecelerateInterpolator());
+
+            pingAnim.setDuration(1500);
+            pingAnim.setInterpolator(new DecelerateInterpolator());
+            pingAnim.addUpdateListener(new AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    pingAlpha = (int)(200 * (1-animation.getAnimatedFraction()));
+                    pingRadius = (int)((pingMaxRadius - pingMinRadius) *
+                            animation.getAnimatedFraction()) + pingMinRadius;
+                    invalidate();
+                }
+            });
+        }
+
+        @Override
+        public void onConfigurationChanged(Configuration newConfiguration) {
+            // This will reset the initialization flag
+            mInitialized = false;
         }
 
         @Override
         protected void onLayout (boolean changed, int left, int top, int right, int bottom) {
             super.onLayout (changed, left, top, right, bottom);
-
             // We have our effect-layer, now let's kickstart HALO
             initControl();
         }
@@ -630,30 +660,19 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             set.start();
         }
 
-        public void causeRipple(Paint paint) {
-            if (!mRippleAllowed && paint != mPaintHoloRed) return;
+        public void causePing(Paint paint) {
+            if (!mPingAllowed && paint != mPaintHoloRed) return;
 
-            mRippleAllowed = false;
+            mPingAllowed = false;
 
-            mRipplePaint = paint;
-            ValueAnimator rippleAnim = ValueAnimator.ofInt(0, 1);
-            rippleAnim.addUpdateListener(new AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    rippleAlpha = (int)(200 * (1-animation.getAnimatedFraction()));
-                    rippleRadius = (int)((rippleMaxRadius - rippleMinRadius) *
-                            animation.getAnimatedFraction()) + rippleMinRadius;
-                    invalidate();
-                }
-            });
-            rippleAnim.setDuration(1500);
-            rippleAnim.setInterpolator(new DecelerateInterpolator());
-            rippleAnim.start();
+            mPingPaint = paint;
+            pingAnim.cancel();
+            pingAnim.start();
 
-            // prevent ripple spam            
+            // prevent ping spam            
             mHandler.postDelayed(new Runnable() {
                 public void run() {
-                    mRippleAllowed = true;
+                    mPingAllowed = true;
                 }}, 3000);
         }
 
@@ -661,9 +680,9 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         protected void onDraw(Canvas canvas) {
             int state;
 
-            if (rippleAlpha > 0) {
-                mRipplePaint.setAlpha(rippleAlpha);
-                canvas.drawCircle(mTickerPos.x + mIconSize / 2, mTickerPos.y + mIconSize / 2, rippleRadius, mRipplePaint);
+            if (pingAlpha > 0) {
+                mPingPaint.setAlpha(pingAlpha);
+                canvas.drawCircle(mTickerPos.x + mIconSize / 2, mTickerPos.y + mIconSize / 2, pingRadius, mPingPaint);
             }
 
             if (mContentAlpha > 0) {
