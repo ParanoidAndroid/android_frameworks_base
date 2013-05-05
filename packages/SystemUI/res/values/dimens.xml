@@ -243,5 +243,6 @@
     <!-- PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE -->
 
     <dimen name="halo_icon_size">65dp</dimen>
+    <dimen name="halo_icon_margin">5dp</dimen>
 
 </resources>

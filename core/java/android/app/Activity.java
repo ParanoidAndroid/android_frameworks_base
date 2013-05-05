@@ -5069,7 +5069,8 @@ public class Activity extends ContextThemeWrapper
 
         mFragments.attachActivity(this, mContainer, null);
 
-        if (intent != null && (intent.getFlags()&Intent.FLAG_FLOATING_WINDOW) == Intent.FLAG_FLOATING_WINDOW) {
+        boolean floating = (intent.getFlags()&Intent.FLAG_FLOATING_WINDOW) == Intent.FLAG_FLOATING_WINDOW;
+        if (intent != null && floating) {
             TypedArray styleArray = context.obtainStyledAttributes(info.theme, com.android.internal.R.styleable.Window);
             TypedValue backgroundValue = styleArray.peekValue(com.android.internal.R.styleable.Window_windowBackground);
 
@@ -5081,27 +5082,31 @@ public class Activity extends ContextThemeWrapper
 
             parent = null;
 
+            // Create our new window
             mWindow = PolicyManager.makeNewWindow(this);
             mWindow.mIsFloatingWindow = true;
             mWindow.setCloseOnTouchOutsideIfNotSet(true);
             mWindow.setGravity(Gravity.CENTER);
             mWindow.requestFeature(Window.FEATURE_ACTION_BAR);
 
+            // Apps that have no title don't need no title bar
             if (styleArray.getBoolean(com.android.internal.R.styleable.Window_windowNoTitle, false)) {
                 mWindow.requestFeature(Window.FEATURE_NO_TITLE);
             }
+
+            /* This causes problems for now......
             mWindow.setFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND,
                     WindowManager.LayoutParams.FLAG_DIM_BEHIND);
             WindowManager.LayoutParams params = mWindow.getAttributes(); 
             params.alpha = 1f;
             params.dimAmount = 0.6f;
-            mWindow.setAttributes((android.view.WindowManager.LayoutParams) params);
+            mWindow.setAttributes((android.view.WindowManager.LayoutParams) params);*/
 
+            // Scale it
             WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
             Display display = wm.getDefaultDisplay();
             DisplayMetrics metrics = new DisplayMetrics();
             display.getMetrics(metrics);
-
             if (metrics.heightPixels > metrics.widthPixels) {
                 mWindow.setLayout((int)(metrics.widthPixels * 0.9f), (int)(metrics.heightPixels * 0.7f));
             } else {
