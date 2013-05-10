@@ -82,8 +82,13 @@ import android.widget.ImageView.ScaleType;
 import android.widget.TextView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 
 import com.android.systemui.R;
+import com.android.internal.statusbar.StatusBarNotification;
+import com.android.internal.statusbar.StatusBarIcon;
+import com.android.systemui.statusbar.StatusBarIconView;
+import com.android.systemui.statusbar.NotificationData;
 import com.android.systemui.statusbar.BaseStatusBar;
 import com.android.systemui.statusbar.BaseStatusBar.NotificationClicker;
 import com.android.systemui.statusbar.phone.Ticker;
@@ -115,6 +120,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     private Display mDisplay;
     private View mContent, mHaloContent;
     private NotificationClicker mContentIntent = null;
+    private NotificationData mNotificationData;
 
     private Paint mPaintHoloBlue = new Paint();
     private Paint mPaintHoloRed = new Paint();
@@ -429,6 +435,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     public void setStatusBar(BaseStatusBar bar) {
         mBar = bar;
         if (mBar.getTicker() != null) mBar.getTicker().setUpdateEvent(this);
+        mNotificationData = mBar.getNotificationData();
     }
 
     @Override
@@ -746,6 +753,32 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                 PixelFormat.TRANSLUCENT);
         lp.gravity = Gravity.LEFT|Gravity.TOP;
         return lp;
+    }
+
+    public void updateNotifications() {
+/*
+        if (data == null) return;
+
+        LinearLayout container = null;
+
+        for (int i = 0; i < data.size(); i++) {
+            if (i % 4 == 0) {
+                if (container != null) mHaloTaskContent.addView(container);
+                container = new LinearLayout(mContext);
+            }
+
+            NotificationData.Entry entry = data.get(i);
+
+            View task = (View)mInflater.inflate(R.layout.halo_task, null);
+            ImageView content = (ImageView)task.findViewById(R.id.content);
+            StatusBarNotification n = entry.notification;
+            Drawable icon = StatusBarIconView.getIcon(mContext,
+                    new StatusBarIcon(n.pkg, n.user, n.notification.icon, n.notification.iconLevel, 0,
+                    n.notification.tickerText)); 
+            content.setImageDrawable(icon);
+            container.addView(task);       
+        }
+*/
     }
     
     public void updateTicker(Ticker.Segment segment) {

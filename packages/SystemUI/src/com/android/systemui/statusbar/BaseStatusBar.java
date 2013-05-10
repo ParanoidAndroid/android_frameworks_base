@@ -380,6 +380,9 @@ public abstract class BaseStatusBar extends SystemUI implements
             // If the system process isn't there we're doomed anyway.
         }
 
+        mHaloActive = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.HALO_ACTIVE, 0) == 1;
+
         createAndAddWindows();
 
         disable(switches[0]);
@@ -1396,6 +1399,7 @@ public abstract class BaseStatusBar extends SystemUI implements
         if (rowParent != null) rowParent.removeView(entry.row);
         updateExpansionStates();
         updateNotificationIcons();
+        if (mHalo != null) mHalo.updateNotifications();
 
         return entry.notification;
     }
@@ -1436,6 +1440,7 @@ public abstract class BaseStatusBar extends SystemUI implements
         }
         updateExpansionStates();
         updateNotificationIcons();
+        if (mHalo != null) mHalo.updateNotifications();
 
         return iconView;
     }
@@ -1557,7 +1562,6 @@ public abstract class BaseStatusBar extends SystemUI implements
                 }
                 // update the contentIntent
                 final PendingIntent contentIntent = notification.notification.contentIntent;
-                android.util.Log.d("PARANOID","original="+contentIntent+" update="+updateTicker);
                 if (contentIntent != null) {
                     final View.OnClickListener listener = makeClicker(contentIntent,
                             notification.pkg, notification.tag, notification.id);
