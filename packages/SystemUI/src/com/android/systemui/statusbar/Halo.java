@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.halo;
+package com.android.systemui.statusbar;
 
 import android.app.Activity;
 import android.app.ActivityManagerNative;
@@ -106,8 +106,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     private TextView mNumber;
     private PackageManager mPm ;
     private Handler mHandler;
-    private BaseStatusBar mBar;
-    private Notification curNotif;
+    private BaseStatusBar mBar;    
     private WindowManager mWindowManager;
     private View mRoot;
     private int mIconSize;
@@ -119,8 +118,10 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     private HaloEffect mHaloEffect;
     private Display mDisplay;
     private View mContent, mHaloContent;
-    private NotificationClicker mContentIntent = null;
+    private StatusBarNotification mLastNotification = null;
+    private NotificationClicker mContentIntent;
     private NotificationData mNotificationData;
+    private GestureDetector mGestureDetector;
 
     private Paint mPaintHoloBlue = new Paint();
     private Paint mPaintHoloRed = new Paint();
@@ -166,6 +167,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                 Settings.System.HAPTIC_FEEDBACK_ENABLED, 1) != 0;
         mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
         mDisplay = mWindowManager.getDefaultDisplay();
+        mGestureDetector = new GestureDetector(mContext, new GestureListener());
         mHandler = new Handler();
         mRoot = this;
 
@@ -276,7 +278,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             // and disappear if empty
             mHandler.postDelayed(new Runnable() {
                 public void run() {
-                    if (curNotif == null) {
+                    if (mLastNotification == null) {
                         AlphaAnimation alphaDown = new AlphaAnimation(1, 0);
                         alphaDown.setFillAfter(true);
                         alphaDown.setDuration(1000);
@@ -485,10 +487,31 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     OnClickListener mIconClicker = new OnClickListener() {
         @Override
 		public void onClick(View v) {
+            
+        }
+    };
+
+    private boolean mDoubleTap = false;
+    class GestureListener extends GestureDetector.SimpleOnGestureListener {
+        private static final String DEBUG_TAG = "Gestures"; 
+        
+        @Override
+        public boolean onSingleTapUp (MotionEvent event) { 
+            playSoundEffect(SoundEffectConstants.CLICK);
+            return true;
+        }
+
+        @Override
+        public boolean onFling(MotionEvent event1, MotionEvent event2, 
+                float velocityX, float velocityY) {
+            Log.d(DEBUG_TAG, "onFling: ");
+            return true;
+        }
+
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent event) {
             if (!isBeingDragged) {
                 snapToSide(true, 200, 0);
-                playSoundEffect(SoundEffectConstants.CLICK);
-                if (mHapticFeedback) mVibrator.vibrate(2);
                 try {
                     ActivityManagerNative.getDefault().resumeAppSwitches();
                     ActivityManagerNative.getDefault().dismissKeyguardOnNextActivity();
@@ -500,19 +523,52 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                     mContentIntent.onClick(mRoot);
                 }
             }
+            return true;
         }
-    };
+
+        @Override
+        public boolean onDoubleTap(MotionEvent event) {
+            mDoubleTap = true;
+            return true;
+        }
+
+        @Override
+        public boolean onDoubleTapEvent(MotionEvent event) {
+            Log.d(DEBUG_TAG, "onDoubleTapEvent: ");
+            return true;
+        }
+    }
+
+    void resetIcons() {
+        final float originalAlpha = mContext.getResources().getFraction(R.dimen.status_bar_icon_drawing_alpha, 1, 1);
+        for (int i = 0; i < mNotificationData.size(); i++) {
+            NotificationData.Entry entry = mNotificationData.get(i);            
+            entry.icon.setAlpha(originalAlpha);
+        }
+    }
+
+    void setIcon(int index) {
+        float originalAlpha = mContext.getResources().getFraction(R.dimen.status_bar_icon_drawing_alpha, 1, 1);
+        for (int i = 0; i < mNotificationData.size(); i++) {
+            NotificationData.Entry entry = mNotificationData.get(i);
+            entry.icon.setAlpha(index == i ? 1f : originalAlpha);
+        }
+    }
 
     OnTouchListener mIconTouchListener = new OnTouchListener() {
         private float initialX = 0;
         private float initialY = 0;
         private boolean overX = false;
+        private int oldIconIndex = -1;
 
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
+            mGestureDetector.onTouchEvent(event);
+
             final int action = event.getAction();
             switch(action) {
                 case MotionEvent.ACTION_DOWN:
+                    oldIconIndex = -1;
                     isBeingDragged = false;
                     overX = false;
                     initialX = event.getRawX();
@@ -520,6 +576,11 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                     wakeUp(false);
                     break;
                 case MotionEvent.ACTION_UP:
+                    if (mDoubleTap) {
+                        resetIcons();
+                        mDoubleTap = false;
+                    }
+
                     boolean oldState = isBeingDragged;
                     isBeingDragged = false;
 
@@ -536,38 +597,72 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                     float mY = event.getRawY();
                     float distanceX = mKillX-mX;
                     float distanceY = mKillY-mY;
-                    float distance = (float)Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
-                    if (distance < mIconSize) {
-                        if (!overX) {
-                            if (mHapticFeedback) mVibrator.vibrate(25);
-                            mHaloEffect.causePing(mPaintHoloRed);
-                            overX = true;
+                    float distanceToKill = (float)Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
+                    distanceX = initialX-mX;
+                    distanceY = initialY-mY;                    
+                    float initialDistance = (float)Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
+
+                    if (!mDoubleTap) {
+                        // Check kill radius
+                        if (distanceToKill < mIconSize) {
+                            if (!overX) {
+                                if (mHapticFeedback) mVibrator.vibrate(25);
+                                mHaloEffect.causePing(mPaintHoloRed);
+                                overX = true;
+                            }
+                        } else {
+                                overX = false;
+                        }
+
+                        // Drag
+                        if (!isBeingDragged) {
+                            if (initialDistance > mIconSize * 0.7f) {
+                                isBeingDragged = true;
+                                if (mHapticFeedback) mVibrator.vibrate(25);
+                            }
+                        } else {
+                            mTickerPos.x = (int)mX - mIconSize / 2;
+                            mTickerPos.y = (int)mY - mIconSize / 2;
+                            if (mTickerPos.x < 0) mTickerPos.x = 0;
+                            if (mTickerPos.y < 0) mTickerPos.y = 0;
+                            if (mTickerPos.x > mScreenWidth-mIconSize) mTickerPos.x = mScreenWidth-mIconSize;
+                            if (mTickerPos.y > mScreenHeight-mIconSize) mTickerPos.y = mScreenHeight-mIconSize;
+                            updatePosition();
+                            return false;
                         }
                     } else {
-                            overX = false;
+                        // Switch icons
+                        if (mNotificationData != null) {
+
+                            // This will be the lenght we are going to use
+                            int indexLength = (mScreenWidth - mIconSize) / mNotificationData.size();
+
+                            // This gets us the actual index
+                            int index = mNotificationData.size() - Math.abs((int)(initialDistance / indexLength) - 1);
+
+                            if (initialDistance < mIconSize) index = -1;
+
+                            if (index !=oldIconIndex) {
+                                oldIconIndex = index;
+
+                                if (mHapticFeedback) mVibrator.vibrate(5);
+
+                                try {
+                                    if (index == -1) {
+                                        resetIcons();
+                                        tick(mLastNotification, "");
+                                    } else {
+                                        setIcon(index);
+                                        tick(mNotificationData.get(index).notification, "");
+                                    }
+                                } catch (Exception e) {
+                                    // IndexOutOfBoundsException
+                                }
+                            }
+                        }
                     }
 
-                    distanceX = initialX-mX;
-                    distanceY = initialY-mY;
-                    if (!isBeingDragged) {
-                        distance = (float)Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
-                        if (distance > mIconSize * 0.7f) {
-                            isBeingDragged = true;
-                            if (mHapticFeedback) mVibrator.vibrate(25);
-                        }
-                    } else {
-                        mTickerPos.x = (int)mX - mIconSize / 2;
-                        mTickerPos.y = (int)mY - mIconSize / 2;
-
-                    if (mTickerPos.x < 0) mTickerPos.x = 0;
-                    if (mTickerPos.y < 0) mTickerPos.y = 0;
-                    if (mTickerPos.x > mScreenWidth-mIconSize) mTickerPos.x = mScreenWidth-mIconSize;
-                    if (mTickerPos.y > mScreenHeight-mIconSize) mTickerPos.y = mScreenHeight-mIconSize;
-
-                    updatePosition();
-                    return false;
-                }
-                break;
+                    break;
             }
             return false;
         }
@@ -757,17 +852,17 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
     public void updateNotifications() {
 /*
-        if (data == null) return;
+        if (mNotificationData == null) return;
 
         LinearLayout container = null;
 
-        for (int i = 0; i < data.size(); i++) {
+        for (int i = 0; i < mNotificationData.size(); i++) {
             if (i % 4 == 0) {
-                if (container != null) mHaloTaskContent.addView(container);
-                container = new LinearLayout(mContext);
+                //if (container != null) mHaloTaskContent.addView(container);
+                //container = new LinearLayout(mContext);
             }
 
-            NotificationData.Entry entry = data.get(i);
+            NotificationData.Entry entry = mNotificationData.get(i);
 
             View task = (View)mInflater.inflate(R.layout.halo_task, null);
             ImageView content = (ImageView)task.findViewById(R.id.content);
@@ -776,42 +871,45 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                     new StatusBarIcon(n.pkg, n.user, n.notification.icon, n.notification.iconLevel, 0,
                     n.notification.tickerText)); 
             content.setImageDrawable(icon);
-            container.addView(task);       
-        }
-*/
+            container.addView(task);
+
+            if (i % 3 == 0) {
+                float alpha = 1;
+                entry.icon.setAlpha(alpha);
+            } else {
+                float alpha = mContext.getResources().getFraction(R.dimen.status_bar_icon_drawing_alpha, 1, 1);
+                entry.icon.setAlpha(alpha);
+            }
+        }*/
     }
-    
-    public void updateTicker(Ticker.Segment segment) {
-        mContentIntent = null;
 
-        final PendingIntent contentIntent = segment.notification.notification.contentIntent;
-        if (contentIntent == null) return;
+    void tick(StatusBarNotification notification, String text) {
+        if (notification == null || notification.notification.contentIntent == null) return;
 
-        mContentIntent = mBar.makeClicker(contentIntent,
-                segment.notification.pkg, segment.notification.tag, segment.notification.id);
+        Notification n = notification.notification;
+
+        // Deal with the intent
+        mContentIntent = mBar.makeClicker(n.contentIntent, notification.pkg, notification.tag, notification.id);
         mContentIntent.makeFloating(true);
 
-        curNotif = segment.notification.notification;
-        appName = segment.notification.pkg;
-
+        // Prepare the avatar
         Bitmap output = Bitmap.createBitmap(mIconSize, mIconSize, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(output);
-
-        final Paint paint = new Paint();        
-        paint.setAntiAlias(true);
         canvas.drawARGB(0, 0, 0, 0);
-        Bitmap input = null;
-       
-        if (curNotif.largeIcon != null) {
-            input = curNotif.largeIcon;
+
+        if (n.largeIcon != null) {
+            final Paint paint = new Paint();        
+            paint.setAntiAlias(true);
             canvas.drawCircle(mIconSize / 2, mIconSize / 2, mIconSize / 2.1f, paint);
             paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
-            Rect rect = new Rect(0, 0, mIconSize, mIconSize);
-            canvas.drawBitmap(input, null, rect, paint);
+            canvas.drawBitmap(n.largeIcon, null, new Rect(0, 0, mIconSize, mIconSize), paint);
         } else {
             try {
-                Drawable icon = segment.icon;
-                if (icon == null) icon = mPm.getApplicationIcon(appName);
+                Drawable icon = StatusBarIconView.getIcon(mContext,
+                    new StatusBarIcon(notification.pkg, notification.user, notification.notification.icon,
+                    notification.notification.iconLevel, 0, notification.notification.tickerText)); 
+
+                if (icon == null) icon = mPm.getApplicationIcon(notification.pkg);
                 icon.setBounds((int)(mIconSize * 0.25f), (int)(mIconSize * 0.25f),
                         (int)(mIconSize * 0.75f), (int)(mIconSize * 0.75f));            
                 icon.draw(canvas);
@@ -821,19 +919,30 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         }
         mIcon.setImageDrawable(new BitmapDrawable(mContext.getResources(), output));
 
-        if (curNotif.number > 0) {
+        // Set Number
+        if (n.number > 0) {
             mNumber.setVisibility(View.VISIBLE);
-            mNumber.setText((curNotif.number < 100) ? String.valueOf(curNotif.number) : "99+");
+            mNumber.setText((n.number < 100) ? String.valueOf(n.number) : "99+");
         } else {
             mNumber.setVisibility(View.GONE);
         }
 
+        // Wake up and snap
         mHidden = false;
-        wakeUp(true);
-        if (!isBeingDragged) snapToSide(true);
+        wakeUp(!mDoubleTap);
+        if (!isBeingDragged && !mDoubleTap) snapToSide(true);
 
-        if (segment != null && segment.getText() != null) {
-            mHaloEffect.ticker(segment.getText().toString());
+        // Set text
+        if (text != null && !text.isEmpty()) {
+            mHaloEffect.ticker(text);
+        }
+    }
+
+    // This is the android ticker callback
+    public void updateTicker(Ticker.Segment segment) {
+        if (segment != null) {
+            mLastNotification = segment.notification;
+            tick(segment.notification, segment.getText().toString());
         }
     }
 }
