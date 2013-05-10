@@ -206,6 +206,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             @Override public void onAnimationRepeat(Animator animation) {}
             @Override public void onAnimationStart(Animator animation) 
             {
+                mContent.startAnimation(mSleepNap);
                 mAnimationFromX = mTickerPos.x;
                 final int setBack = mIconSize / 2;
                 mAnimationToX = (mAnimationFromX < mScreenWidth / 2) ? -setBack : setBack;
@@ -281,7 +282,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         updateConstraints();
 
         if (!mFirstStart) {
-            snapToSide(true);
+            snapToSide(true, 0);
         } else {
             // Do the startup animations only once
             mFirstStart = false;
