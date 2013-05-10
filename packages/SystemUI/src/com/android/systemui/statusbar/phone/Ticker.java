@@ -56,7 +56,7 @@ public abstract class Ticker {
 
     public interface TickerCallback  
     {  
-        public void updateTicker(Ticker.Segment segment);  
+        public void updateTicker(StatusBarNotification notification, String text);
     }  
 
     public void setUpdateEvent(TickerCallback event) {
@@ -228,7 +228,9 @@ public abstract class Ticker {
 
         mSegments.add(newSegment);
         if (mEvent != null) {
-            if (newSegment != null) mEvent.updateTicker(newSegment);
+            if (newSegment != null) {
+                mEvent.updateTicker(newSegment.notification, text.toString());
+            }
         }
         
         if (initialCount == 0 && mSegments.size() > 0) {

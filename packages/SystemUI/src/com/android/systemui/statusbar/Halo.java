@@ -129,7 +129,6 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     public static final String TAG = "HaloLauncher";
     private static final boolean DEBUG = true;
     private static final int TICKER_HIDE_TIME = 2000;
-    private static final int SLEEP_DELAY_YAWNING = 6000;
     private static final int SLEEP_DELAY_DAYDREAMING = 6000;
 
 	public boolean mExpanded = false;
@@ -147,7 +146,6 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     private Bitmap mXActive, mXNormal;
     private int mKillX, mKillY;
 
-    private ValueAnimator mSleepYawning = ValueAnimator.ofInt(0, 1);
     private ValueAnimator mSleepDaydreaming = ValueAnimator.ofInt(0, 1);
     private AlphaAnimation mSleepNap = new AlphaAnimation(1, 0.5f);
     private int mAnimationFromX;
@@ -194,28 +192,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         mSleepNap.setFillAfter(true);
         mSleepNap.setDuration(10000);
 
-        mSleepYawning.setDuration(2000);
-        mSleepYawning.setInterpolator(new DecelerateInterpolator());
-        mSleepYawning.addUpdateListener(new AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                mTickerPos.x = (int)(mAnimationFromX + mAnimationToX * animation.getAnimatedFraction());
-                updatePosition();
-            }});
-        mSleepYawning.addListener(new Animator.AnimatorListener() {
-            @Override public void onAnimationCancel(Animator animation) {}
-            @Override public void onAnimationEnd(Animator animation) {}
-            @Override public void onAnimationRepeat(Animator animation) {}
-            @Override public void onAnimationStart(Animator animation) 
-            {
-                mContent.startAnimation(mSleepNap);
-                mAnimationFromX = mTickerPos.x;
-                final int setBack = (int)(mIconSize * 0.3f);
-                mAnimationToX = (mAnimationFromX < mScreenWidth / 2) ? -setBack : setBack;
-            }
-        });
-
-        mSleepDaydreaming.setDuration(2000);
+        mSleepDaydreaming.setDuration(1000);
         mSleepDaydreaming.setInterpolator(new AccelerateInterpolator());
         mSleepDaydreaming.addUpdateListener(new AnimatorUpdateListener() {
             @Override
@@ -230,7 +207,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             @Override public void onAnimationStart(Animator animation) 
             {
                 mAnimationFromX = mTickerPos.x;
-                final int setBack = (int)(mIconSize * 0.2f);
+                final int setBack = mIconSize / 2;
                 mAnimationToX = (mAnimationFromX < mScreenWidth / 2) ? -setBack : setBack;
             }});
 
@@ -332,27 +309,21 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     }
 
     private void unscheduleSleep() {
-        mSleepYawning.cancel();
         mSleepDaydreaming.cancel();
         mSleepNap.cancel();
     }
 
-    private void scheduleSleep(int yawning, int daydreaming) {
+    private void scheduleSleep(int daydreaming) {
         unscheduleSleep();
-
-        mSleepYawning.setStartDelay(yawning);
         mSleepDaydreaming.setStartDelay(daydreaming);
-
-        AnimatorSet set = new AnimatorSet();
-        set.play(mSleepYawning).before(mSleepDaydreaming);
-        set.start();
+        mSleepDaydreaming.start();
     }
 
     private void snapToSide(boolean sleep) {
-        snapToSide(sleep, SLEEP_DELAY_YAWNING, SLEEP_DELAY_DAYDREAMING);
+        snapToSide(sleep, SLEEP_DELAY_DAYDREAMING);
     }
 
-    private void snapToSide(boolean sleep, int yawning, int daydreaming) {
+    private void snapToSide(boolean sleep, int daydreaming) {
         final int fromX = mTickerPos.x;
         final boolean left = fromX < mScreenWidth / 2;
         final int toX = left ? -fromX : mScreenWidth-fromX-mIconSize;
@@ -370,7 +341,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         topAnimation.start();
 
         // Make it fall asleep soon
-        if (sleep) scheduleSleep(yawning, yawning);
+        if (sleep) scheduleSleep(daydreaming);
     }
 
     private void updatePosition() {
@@ -511,7 +482,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         @Override
         public boolean onSingleTapConfirmed(MotionEvent event) {
             if (!isBeingDragged) {
-                snapToSide(true, 200, 0);
+                snapToSide(true, 0);
                 try {
                     ActivityManagerNative.getDefault().resumeAppSwitches();
                     ActivityManagerNative.getDefault().dismissKeyguardOnNextActivity();
@@ -635,22 +606,36 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                         if (mNotificationData != null) {
 
                             // This will be the lenght we are going to use
-                            int indexLength = (mScreenWidth - mIconSize) / mNotificationData.size();
+                            int items = mNotificationData.size();
+
+                            int indexLength = (mScreenWidth - (mIconSize * 2)) / items;
+                            // If we have less than 10 notification let's cut the length a bit
+                            if (items < 10) indexLength = (int)(indexLength * 0.75f);
+
+                            int totalLength = indexLength * items;
 
                             // This gets us the actual index
-                            int index = mNotificationData.size() - Math.abs((int)(initialDistance / indexLength) - 1);
+                            int distance = (int)initialDistance;
+                            distance = initialDistance <= mIconSize ? 0 : (int)(initialDistance - mIconSize);
+                            if (distance > totalLength) distance = totalLength;
 
-                            if (initialDistance < mIconSize) index = -1;
+                            int index = items - distance / indexLength;
+                            if (index > 0) index--;
+                            if (initialDistance <= mIconSize) index = -1;
 
                             if (index !=oldIconIndex) {
                                 oldIconIndex = index;
 
-                                if (mHapticFeedback) mVibrator.vibrate(5);
+                                // Give a small pop
+                                if (mHapticFeedback) mVibrator.vibrate(2);
 
                                 try {
                                     if (index == -1) {
                                         resetIcons();
                                         tick(mLastNotification, "");
+
+                                        // Ping to notify the user we're back where we started
+                                        mHaloEffect.causePing(mPaintHoloBlue);
                                     } else {
                                         setIcon(index);
                                         tick(mNotificationData.get(index).notification, "");
@@ -786,7 +771,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         }
 
         public void causePing(Paint paint) {
-            if (!mPingAllowed && paint != mPaintHoloRed) return;
+            if ((!mPingAllowed && paint != mPaintHoloRed) && !mDoubleTap) return;
 
             mPingAllowed = false;
 
@@ -939,10 +924,11 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     }
 
     // This is the android ticker callback
-    public void updateTicker(Ticker.Segment segment) {
-        if (segment != null) {
-            mLastNotification = segment.notification;
-            tick(segment.notification, segment.getText().toString());
+    public void updateTicker(StatusBarNotification notification, String text) {
+        if (notification != null) {
+            mLastNotification = notification;
+            android.util.Log.d("PARANOID", "newIcon="+text);
+            tick(notification, text);
         }
     }
 }
