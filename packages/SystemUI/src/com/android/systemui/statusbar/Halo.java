@@ -121,6 +121,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     private NotificationData.Entry mLastNotification = null;
     private NotificationClicker mContentIntent;
     private NotificationData mNotificationData;
+    private String mNotificationText = "";
     private GestureDetector mGestureDetector;
 
     private Paint mPaintHoloBlue = new Paint();
@@ -138,6 +139,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     private boolean mInitialized = false;
     private boolean mTickerLeft = true;
     private boolean mNumberLeft = true;
+    private boolean mIsNotificationNew = true;
 
     private int mScreenMin, mScreenMax;
     private int mScreenWidth, mScreenHeight;
@@ -856,6 +858,12 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
         // Set Number
         if (n.number > 0) {
+            // Set number gravity
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams
+                    (RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT );
+            params.addRule(mNumberLeft ? RelativeLayout.ALIGN_RIGHT : RelativeLayout.ALIGN_LEFT, mHaloContent.getId());
+            mNumber.setLayoutParams(params);
+
             mNumber.setVisibility(View.VISIBLE);
             mNumber.setText((n.number < 100) ? String.valueOf(n.number) : "99+");
         } else {
@@ -864,11 +872,11 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
         // Wake up and snap
         mHidden = false;
-        wakeUp(!mDoubleTap);
+        wakeUp(!mDoubleTap && mIsNotificationNew);
         if (!isBeingDragged && !mDoubleTap) snapToSide(true);
 
         // Set text
-        if (text != null && !text.isEmpty()) {
+        if (text != null && !text.isEmpty() && mIsNotificationNew) {
             mHaloEffect.ticker(text);
         }
     }
@@ -878,8 +886,20 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         for (int i = 0; i < mNotificationData.size(); i++) {
             NotificationData.Entry entry = mNotificationData.get(i);
             if (entry.notification == notification) {
-                mLastNotification = entry;
-                tick(entry, text);
+
+                mIsNotificationNew = true;
+                if (mLastNotification != null && notification == mLastNotification.notification) {
+                    // Ok, this is the same notification
+                    // Let's give it a chance though, if the text has changed we permit it
+                    mIsNotificationNew = !mNotificationText.equals(text);
+                }
+                android.util.Log.d("PARANOID", "result = "+mIsNotificationNew);
+
+                if (mIsNotificationNew) {
+                    mNotificationText = text;
+                    mLastNotification = entry;
+                    tick(entry, text);
+                }
                 break;
             }
         }
