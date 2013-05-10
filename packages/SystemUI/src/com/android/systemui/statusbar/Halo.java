@@ -281,10 +281,11 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         }
 
         // Update dimensions
+        unscheduleSleep();
         updateConstraints();
 
         if (!mFirstStart) {
-            snapToSide(true, 0);
+            snapToSide(true, 500);
         } else {
             // Do the startup animations only once
             mFirstStart = false;
@@ -362,19 +363,9 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             mWindowManager.updateViewLayout(mRoot, mTickerPos);
             mHaloEffect.invalidate();
         } catch(Exception e) {
+            android.util.Log.d("PARANOID", "crash?!" + "  "+ e.getMessage());
             // Probably some animation still looking to move stuff around
         }
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfiguration) {
-        super.onConfigurationChanged(newConfiguration);
-        mScreenWidth = newConfiguration.orientation == Configuration.ORIENTATION_PORTRAIT
-                ? mScreenMin : mScreenMax;
-        mScreenHeight = newConfiguration.orientation == Configuration.ORIENTATION_PORTRAIT
-                ? mScreenMax : mScreenMin;
-        updateConstraints();
-        wakeUp(false);
     }
 
     private void updateConstraints() {
@@ -401,10 +392,11 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             mScreenWidth - (mScreenWidth - popupWidth) / 2,
             mScreenHeight - (mScreenHeight - popupHeight) / 2);
 
-        if (mTickerPos.x < 0) mTickerPos.x = 0;
-        if (mTickerPos.y < 0) mTickerPos.y = 0;
-        if (mTickerPos.x > mScreenWidth-mIconSize) mTickerPos.x = mScreenWidth-mIconSize;
-        if (mTickerPos.y > mScreenHeight-mIconSize) mTickerPos.y = mScreenHeight-mIconSize;
+        if (!mFirstStart) {
+            if (mTickerPos.y < 0) mTickerPos.y = 0;
+            if (mTickerPos.y > mScreenHeight-mIconSize) mTickerPos.y = mScreenHeight-mIconSize;
+            mTickerPos.x = mTickerLeft ? 0 : mScreenWidth-mIconSize;
+        }
         mWindowManager.updateViewLayout(mRoot, mTickerPos);
     }
 
