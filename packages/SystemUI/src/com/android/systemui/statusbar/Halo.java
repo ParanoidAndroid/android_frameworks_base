@@ -85,12 +85,12 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 
 import com.android.systemui.R;
+import com.android.systemui.statusbar.BaseStatusBar.NotificationClicker;
 import com.android.internal.statusbar.StatusBarNotification;
 import com.android.internal.statusbar.StatusBarIcon;
 import com.android.systemui.statusbar.StatusBarIconView;
 import com.android.systemui.statusbar.NotificationData;
 import com.android.systemui.statusbar.BaseStatusBar;
-import com.android.systemui.statusbar.BaseStatusBar.NotificationClicker;
 import com.android.systemui.statusbar.phone.Ticker;
 
 public class Halo extends RelativeLayout implements Ticker.TickerCallback {
@@ -118,7 +118,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     private HaloEffect mHaloEffect;
     private Display mDisplay;
     private View mContent, mHaloContent;
-    private StatusBarNotification mLastNotification = null;
+    private NotificationData.Entry mLastNotification = null;
     private NotificationClicker mContentIntent;
     private NotificationData mNotificationData;
     private GestureDetector mGestureDetector;
@@ -604,14 +604,16 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                         }
                     } else {
                         // Switch icons
-                        if (mNotificationData != null) {
+                        if (mNotificationData != null && mNotificationData.size() > 1) {
 
-                            // This will be the lenght we are going to use
                             int items = mNotificationData.size();
 
-                            int indexLength = (mScreenWidth - (mIconSize * 2)) / items;
-                            // If we have less than 10 notification let's cut the length a bit
-                            if (items < 10) indexLength = (int)(indexLength * 0.75f);
+                            // This will be the lenght we are going to use
+                            int indexLength = (mScreenWidth - mIconSize * 2) / items;
+                            // If we have less than 6 notification let's cut it a bit
+                            if (items < 6) indexLength = (int)(indexLength * 0.75f);
+                            // If we have less than 4 notification let's cut it a bit
+                            if (items < 4) indexLength = (int)(indexLength * 0.75f);
 
                             int totalLength = indexLength * items;
 
@@ -620,15 +622,16 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                             distance = initialDistance <= mIconSize ? 0 : (int)(initialDistance - mIconSize);
                             if (distance > totalLength) distance = totalLength;
 
-                            int index = items - distance / indexLength;
+                            // Reverse order depending on which side HALO sits
+                            int index = mTickerLeft ? (items - distance / indexLength) : (distance / indexLength);
                             if (index > 0) index--;
                             if (initialDistance <= mIconSize) index = -1;
 
                             if (index !=oldIconIndex) {
                                 oldIconIndex = index;
 
-                                // Give a small pop
-                                if (mHapticFeedback) mVibrator.vibrate(2);
+                                // Make a tiny pop
+                                if (mHapticFeedback) mVibrator.vibrate(1);
 
                                 try {
                                     if (index == -1) {
@@ -639,7 +642,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                                         mHaloEffect.causePing(mPaintHoloBlue);
                                     } else {
                                         setIcon(index);
-                                        tick(mNotificationData.get(index).notification, "");
+                                        tick(mNotificationData.get(index), "");
                                     }
                                 } catch (Exception e) {
                                     // IndexOutOfBoundsException
@@ -836,74 +839,20 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         return lp;
     }
 
-    public void updateNotifications() {
-/*
-        if (mNotificationData == null) return;
+    void tick(NotificationData.Entry entry, String text) {
+        if (entry == null) return;
 
-        LinearLayout container = null;
-
-        for (int i = 0; i < mNotificationData.size(); i++) {
-            if (i % 4 == 0) {
-                //if (container != null) mHaloTaskContent.addView(container);
-                //container = new LinearLayout(mContext);
-            }
-
-            NotificationData.Entry entry = mNotificationData.get(i);
-
-            View task = (View)mInflater.inflate(R.layout.halo_task, null);
-            ImageView content = (ImageView)task.findViewById(R.id.content);
-            StatusBarNotification n = entry.notification;
-            Drawable icon = StatusBarIconView.getIcon(mContext,
-                    new StatusBarIcon(n.pkg, n.user, n.notification.icon, n.notification.iconLevel, 0,
-                    n.notification.tickerText)); 
-            content.setImageDrawable(icon);
-            container.addView(task);
-
-            if (i % 3 == 0) {
-                float alpha = 1;
-                entry.icon.setAlpha(alpha);
-            } else {
-                float alpha = mContext.getResources().getFraction(R.dimen.status_bar_icon_drawing_alpha, 1, 1);
-                entry.icon.setAlpha(alpha);
-            }
-        }*/
-    }
-
-    void tick(StatusBarNotification notification, String text) {
-        if (notification == null || notification.notification.contentIntent == null) return;
+        StatusBarNotification notification = entry.notification;
+        if (notification == null) return;
 
         Notification n = notification.notification;
+        if (notification.notification.contentIntent == null) return;
 
         // Deal with the intent
-        mContentIntent = mBar.makeClicker(n.contentIntent, notification.pkg, notification.tag, notification.id);
-        mContentIntent.makeFloating(true);
+        mContentIntent = entry.floatingIntent;
 
-        // Prepare the avatar
-        Bitmap output = Bitmap.createBitmap(mIconSize, mIconSize, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(output);
-        canvas.drawARGB(0, 0, 0, 0);
-
-        if (n.largeIcon != null) {
-            final Paint paint = new Paint();        
-            paint.setAntiAlias(true);
-            canvas.drawCircle(mIconSize / 2, mIconSize / 2, mIconSize / 2.1f, paint);
-            paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
-            canvas.drawBitmap(n.largeIcon, null, new Rect(0, 0, mIconSize, mIconSize), paint);
-        } else {
-            try {
-                Drawable icon = StatusBarIconView.getIcon(mContext,
-                    new StatusBarIcon(notification.pkg, notification.user, notification.notification.icon,
-                    notification.notification.iconLevel, 0, notification.notification.tickerText)); 
-
-                if (icon == null) icon = mPm.getApplicationIcon(notification.pkg);
-                icon.setBounds((int)(mIconSize * 0.25f), (int)(mIconSize * 0.25f),
-                        (int)(mIconSize * 0.75f), (int)(mIconSize * 0.75f));            
-                icon.draw(canvas);
-            } catch (Exception e) {
-                // NameNotFoundException
-            }
-        }
-        mIcon.setImageDrawable(new BitmapDrawable(mContext.getResources(), output));
+        // set the avatar
+        mIcon.setImageDrawable(new BitmapDrawable(mContext.getResources(), entry.roundIcon));
 
         // Set Number
         if (n.number > 0) {
@@ -926,10 +875,13 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
     // This is the android ticker callback
     public void updateTicker(StatusBarNotification notification, String text) {
-        if (notification != null) {
-            mLastNotification = notification;
-            android.util.Log.d("PARANOID", "newIcon="+text);
-            tick(notification, text);
+        for (int i = 0; i < mNotificationData.size(); i++) {
+            NotificationData.Entry entry = mNotificationData.get(i);
+            if (entry.notification == notification) {
+                mLastNotification = entry;
+                tick(entry, text);
+                break;
+            }
         }
     }
 }

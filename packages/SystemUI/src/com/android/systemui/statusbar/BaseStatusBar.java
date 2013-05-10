@@ -46,6 +46,7 @@ import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuff.Mode;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
@@ -1399,7 +1400,6 @@ public abstract class BaseStatusBar extends SystemUI implements
         if (rowParent != null) rowParent.removeView(entry.row);
         updateExpansionStates();
         updateNotificationIcons();
-        if (mHalo != null) mHalo.updateNotifications();
 
         return entry.notification;
     }
@@ -1425,8 +1425,46 @@ public abstract class BaseStatusBar extends SystemUI implements
             handleNotificationError(key, notification, "Couldn't create icon: " + ic);
             return null;
         }
+
+        // Construct the round icon
+        int iconSize = mContext.getResources().getDimensionPixelSize(R.dimen.halo_icon_size)
+                + mContext.getResources().getDimensionPixelSize(R.dimen.halo_icon_margin) * 2;
+
+        Bitmap roundIcon = Bitmap.createBitmap(iconSize, iconSize, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(roundIcon);
+        canvas.drawARGB(0, 0, 0, 0);
+
+        if (notification.notification.largeIcon != null) {
+            final Paint paint = new Paint();        
+            paint.setAntiAlias(true);
+            canvas.drawCircle(iconSize / 2, iconSize / 2, iconSize / 2.1f, paint);
+            paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
+            canvas.drawBitmap(notification.notification.largeIcon,
+                    null, new Rect(0, 0, iconSize, iconSize), paint);
+        } else {
+            try {
+                Drawable icon = StatusBarIconView.getIcon(mContext,
+                    new StatusBarIcon(notification.pkg, notification.user, notification.notification.icon,
+                    notification.notification.iconLevel, 0, notification.notification.tickerText)); 
+                if (icon == null) icon = mContext.getPackageManager().getApplicationIcon(notification.pkg);
+                icon.setBounds((int)(iconSize * 0.25f), (int)(iconSize * 0.25f),
+                        (int)(iconSize * 0.75f), (int)(iconSize * 0.75f));            
+                icon.draw(canvas);
+            } catch (Exception e) {
+                // NameNotFoundException
+            }
+        }
+
+        NotificationData.Entry entry = new NotificationData.Entry(key, notification, iconView, roundIcon);
+
+        final PendingIntent contentIntent = notification.notification.contentIntent;
+        if (contentIntent != null) {
+            entry.floatingIntent = makeClicker(contentIntent,
+                    notification.pkg, notification.tag, notification.id);
+            entry.floatingIntent.makeFloating(true);
+        }
+
         // Construct the expanded view.
-        NotificationData.Entry entry = new NotificationData.Entry(key, notification, iconView);
         if (!inflateViews(entry, mPile)) {
             handleNotificationError(key, notification, "Couldn't expand RemoteViews for: "
                     + notification);
@@ -1440,7 +1478,6 @@ public abstract class BaseStatusBar extends SystemUI implements
         }
         updateExpansionStates();
         updateNotificationIcons();
-        if (mHalo != null) mHalo.updateNotifications();
 
         return iconView;
     }
@@ -1560,15 +1597,49 @@ public abstract class BaseStatusBar extends SystemUI implements
                 if (bigContentView != null && oldEntry.getLargeView() != null) {
                     bigContentView.reapply(mContext, oldEntry.getLargeView(), mOnClickHandler);
                 }
-                // update the contentIntent
+                // update contentIntent and floatingIntent
                 final PendingIntent contentIntent = notification.notification.contentIntent;
                 if (contentIntent != null) {
                     final View.OnClickListener listener = makeClicker(contentIntent,
                             notification.pkg, notification.tag, notification.id);
                     oldEntry.content.setOnClickListener(listener);
+                    oldEntry.floatingIntent = makeClicker(contentIntent,
+                            notification.pkg, notification.tag, notification.id);
+                    oldEntry.floatingIntent.makeFloating(true);
                 } else {
                     oldEntry.content.setOnClickListener(null);
+                    oldEntry.floatingIntent = null;
                 }
+                // Update the roundIcon
+                int iconSize = mContext.getResources().getDimensionPixelSize(R.dimen.halo_icon_size)
+                        + mContext.getResources().getDimensionPixelSize(R.dimen.halo_icon_margin) * 2;
+
+                Bitmap roundIcon = Bitmap.createBitmap(iconSize, iconSize, Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(roundIcon);
+                canvas.drawARGB(0, 0, 0, 0);
+
+                if (notification.notification.largeIcon != null) {
+                    final Paint paint = new Paint();        
+                    paint.setAntiAlias(true);
+                    canvas.drawCircle(iconSize / 2, iconSize / 2, iconSize / 2.1f, paint);
+                    paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
+                    canvas.drawBitmap(notification.notification.largeIcon,
+                            null, new Rect(0, 0, iconSize, iconSize), paint);
+                } else {
+                    try {
+                        Drawable icon = StatusBarIconView.getIcon(mContext,
+                            new StatusBarIcon(notification.pkg, notification.user, notification.notification.icon,
+                            notification.notification.iconLevel, 0, notification.notification.tickerText)); 
+                        if (icon == null) icon = mContext.getPackageManager().getApplicationIcon(notification.pkg);
+                        icon.setBounds((int)(iconSize * 0.25f), (int)(iconSize * 0.25f),
+                                (int)(iconSize * 0.75f), (int)(iconSize * 0.75f));            
+                        icon.draw(canvas);
+                    } catch (Exception e) {
+                        // NameNotFoundException
+                    }
+                }
+                oldEntry.roundIcon = roundIcon;
+
                 // Update the icon.
                 final StatusBarIcon ic = new StatusBarIcon(notification.pkg,
                         notification.user,

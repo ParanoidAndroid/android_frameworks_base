@@ -17,10 +17,12 @@
 package com.android.systemui.statusbar;
 
 import android.app.Notification;
+import android.graphics.Bitmap;
 import android.os.IBinder;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.android.systemui.statusbar.BaseStatusBar.NotificationClicker;
 import com.android.internal.statusbar.StatusBarNotification;
 import com.android.systemui.R;
 
@@ -39,12 +41,20 @@ public class NotificationData {
         public View content; // takes the click events and sends the PendingIntent
         public View expanded; // the inflated RemoteViews
         public ImageView largeIcon;
+        protected Bitmap roundIcon;
         protected View expandedLarge;
+        protected NotificationClicker floatingIntent;
         public Entry() {}
         public Entry(IBinder key, StatusBarNotification n, StatusBarIconView ic) {
             this.key = key;
             this.notification = n;
             this.icon = ic;
+        }
+        public Entry(IBinder key, StatusBarNotification n, StatusBarIconView ic, Bitmap ri) {
+            this.key = key;
+            this.notification = n;
+            this.icon = ic;
+            this.roundIcon = ri;
         }
         public void setLargeView(View expandedLarge) {
             this.expandedLarge = expandedLarge;
