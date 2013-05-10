@@ -1044,32 +1044,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     false, new ContentObserver(new Handler()) {
             @Override
             public void onChange(boolean selfChange) {
-
                 updateHybridLayout();
                 update(false);
-
-                if (Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.EXPANDED_DESKTOP_RESTART_LAUNCHER, 1) == 1) {
-                    // Restart default launcher activity
-                    final PackageManager mPm = mContext.getPackageManager();
-                    final ActivityManager am = (ActivityManager)mContext
-                            .getSystemService(Context.ACTIVITY_SERVICE);
-                    final Intent intent = new Intent(Intent.ACTION_MAIN); 
-                    intent.addCategory(Intent.CATEGORY_HOME); 
-                    final ResolveInfo res = mPm.resolveActivity(intent, 0);
-
-                    // Launcher is running task #1
-                    List<ActivityManager.RunningTaskInfo> runningTasks = am.getRunningTasks(1);
-                    if (runningTasks != null) {
-                        for (ActivityManager.RunningTaskInfo task : runningTasks) {
-                            String packageName = task.baseActivity.getPackageName();
-                            if (packageName.equals(res.activityInfo.packageName)) {
-                                closeApplication(packageName);
-                                break;
-                            }
-                        }
-                    }
-                }
             }
         });
 
