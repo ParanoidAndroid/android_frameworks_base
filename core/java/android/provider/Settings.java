@@ -3477,6 +3477,12 @@ public final class Settings {
          */
         public static final String MEDIA_SCANNER_ON_BOOT = "media_scanner_on_boot";
 
+        /**
+         * Override and forcefully disable the fullscreen keyboard
+         * @hide
+         */
+        public static final String DISABLE_FULLSCREEN_KEYBOARD = "disable_fullscreen_keyboard";
+
     }
 
     /**
