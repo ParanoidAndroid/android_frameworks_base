@@ -857,13 +857,8 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     }
 
     void tick(NotificationData.Entry entry, String text) {
-        if (entry == null) return;
-
         StatusBarNotification notification = entry.notification;
-        if (notification == null) return;
-
         Notification n = notification.notification;
-        if (notification.notification.contentIntent == null) return;
 
         // Deal with the intent
         mContentIntent = entry.floatingIntent;
@@ -887,7 +882,6 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
         // Wake up and snap
         mHidden = false;
-
         wakeUp(!mDoubleTap && mIsNotificationNew);
         if (!isBeingDragged && !mDoubleTap) snapToSide(true);
 
@@ -899,17 +893,21 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
     // This is the android ticker callback
     public void updateTicker(StatusBarNotification notification, String text) {
+
         for (int i = 0; i < mNotificationData.size(); i++) {
             NotificationData.Entry entry = mNotificationData.get(i);
+
             if (entry.notification == notification) {
+
+                // No intent, no tick ...
+                if (entry.notification.notification.contentIntent == null) return;
 
                 mIsNotificationNew = true;
                 if (mLastNotification != null && notification == mLastNotification.notification) {
                     // Ok, this is the same notification
-                    // Let's give it a chance though, if the text has changed we permit it
+                    // Let's give it a chance though, if the text has changed we allow it
                     mIsNotificationNew = !mNotificationText.equals(text);
                 }
-                android.util.Log.d("PARANOID", "result = "+mIsNotificationNew);
 
                 if (mIsNotificationNew) {
                     mNotificationText = text;
