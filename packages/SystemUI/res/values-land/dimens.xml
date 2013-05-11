@@ -42,4 +42,5 @@
     <dimen name="quick_settings_cell_height">100dp</dimen>
 
     <dimen name="pie_panel_padding">100dp</dimen>
+    <dimen name="halo_content_max_width">350dp</dimen>
 </resources>

@@ -119,18 +119,19 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     private Display mDisplay;
     private View mContent, mHaloContent;
     private NotificationData.Entry mLastNotification = null;
-    private NotificationClicker mContentIntent;
+    private NotificationClicker mContentIntent, mTaskIntent;
     private NotificationData mNotificationData;
     private String mNotificationText = "";
     private GestureDetector mGestureDetector;
 
     private Paint mPaintHoloBlue = new Paint();
+    private Paint mPaintHoloLightBlue = new Paint();
     private Paint mPaintHoloRed = new Paint();
 
     public static final String TAG = "HaloLauncher";
     private static final boolean DEBUG = true;
     private static final int TICKER_HIDE_TIME = 2000;
-    private static final int SLEEP_DELAY_DAYDREAMING = 6000;
+    private static final int SLEEP_DELAY_DAYDREAMING = 5000;
 
 	public boolean mExpanded = false;
     public boolean mSnapped = true;
@@ -179,6 +180,8 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         // Init colors
         mPaintHoloBlue.setAntiAlias(true);
         mPaintHoloBlue.setColor(0xff33b5e5);
+        mPaintHoloLightBlue.setAntiAlias(true);
+        mPaintHoloLightBlue.setColor(0xff88fafa);
         mPaintHoloRed.setAntiAlias(true);
         mPaintHoloRed.setColor(0xffcc0000);
 
@@ -429,11 +432,17 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         holeCanvas.drawARGB(0, 0, 0, 0);
         Paint holePaint = new Paint();
         holePaint.setAntiAlias(true);        
-        holeCanvas.drawCircle(mIconSize / 2, mIconSize / 2, (int)((mIconSize / 2) * 0.9f), holePaint);
+        holeCanvas.drawCircle(mIconSize / 2, mIconSize / 2, (int)((mIconSize / 2) * 0.95f), holePaint);
         holePaint.setXfermode(new PorterDuffXfermode(Mode.SRC_OUT));
         final Rect rect = new Rect(0, 0, mIconSize, mIconSize);
         holeCanvas.drawBitmap(frame, null, rect, holePaint);
         mFrame.setImageDrawable(new BitmapDrawable(mContext.getResources(), hole));
+
+        // Shadow
+        ImageView mShadow = (ImageView) findViewById(R.id.shadow);
+        BitmapDrawable shadow = new BitmapDrawable(mContext.getResources(), hole);
+        shadow.setColorFilter(0x55000000, PorterDuff.Mode.SRC_IN);
+        mShadow.setImageDrawable(shadow);
 
         // Background
         mBackdrop = (ImageView) findViewById(R.id.backdrop);
@@ -441,7 +450,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         Canvas backCanvas = new Canvas(backOutput);
         final Paint backPaint = new Paint();
         backPaint.setAntiAlias(true);
-        backPaint.setColor(0x88000000);
+        backPaint.setColor(0xdd004080);
         backCanvas.drawCircle(mIconSize / 2, mIconSize / 2, (int)mIconSize / 2.1f, backPaint);
         mBackdrop.setImageDrawable(new BitmapDrawable(mContext.getResources(), backOutput));
 
@@ -457,9 +466,22 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         }
     };
 
+    void launchTask(NotificationClicker intent, boolean snap) {
+        if (snap) snapToSide(true, 0);
+        try {
+            ActivityManagerNative.getDefault().resumeAppSwitches();
+            ActivityManagerNative.getDefault().dismissKeyguardOnNextActivity();
+        } catch (RemoteException e) {
+            // ...
+        }
+
+        if (intent!= null) {
+            intent.onClick(mRoot);
+        }
+    }
+
     private boolean mDoubleTap = false;
     class GestureListener extends GestureDetector.SimpleOnGestureListener {
-        private static final String DEBUG_TAG = "Gestures"; 
         
         @Override
         public boolean onSingleTapUp (MotionEvent event) { 
@@ -470,24 +492,13 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         @Override
         public boolean onFling(MotionEvent event1, MotionEvent event2, 
                 float velocityX, float velocityY) {
-            Log.d(DEBUG_TAG, "onFling: ");
             return true;
         }
 
         @Override
         public boolean onSingleTapConfirmed(MotionEvent event) {
             if (!isBeingDragged) {
-                snapToSide(true, 0);
-                try {
-                    ActivityManagerNative.getDefault().resumeAppSwitches();
-                    ActivityManagerNative.getDefault().dismissKeyguardOnNextActivity();
-                } catch (RemoteException e) {
-                    // ...
-                }
-
-                if (mContentIntent!= null) {
-                    mContentIntent.onClick(mRoot);
-                }
+                launchTask(mContentIntent, true);
             }
             return true;
         }
@@ -495,12 +506,6 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         @Override
         public boolean onDoubleTap(MotionEvent event) {
             mDoubleTap = true;
-            return true;
-        }
-
-        @Override
-        public boolean onDoubleTapEvent(MotionEvent event) {
-            Log.d(DEBUG_TAG, "onDoubleTapEvent: ");
             return true;
         }
     }
@@ -534,6 +539,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             final int action = event.getAction();
             switch(action) {
                 case MotionEvent.ACTION_DOWN:
+                    mTaskIntent = null;
                     oldIconIndex = -1;
                     isBeingDragged = false;
                     overX = false;
@@ -542,7 +548,11 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                     wakeUp(false);
                     break;
                 case MotionEvent.ACTION_UP:
-                    if (mDoubleTap) {
+                    if (mDoubleTap) {                                               
+                        if (mTaskIntent != null) {
+                            playSoundEffect(SoundEffectConstants.CLICK);
+                            launchTask(mTaskIntent, false);                          
+                        }                        
                         resetIcons();
                         mDoubleTap = false;
                     }
@@ -629,14 +639,17 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
                                 try {
                                     if (index == -1) {
+                                        mTaskIntent = null;
                                         resetIcons();
                                         tick(mLastNotification, "");
 
                                         // Ping to notify the user we're back where we started
                                         mHaloEffect.causePing(mPaintHoloBlue);
                                     } else {
+                                        NotificationData.Entry entry = mNotificationData.get(index);
                                         setIcon(index);
-                                        tick(mNotificationData.get(index), "");
+                                        tick(entry, "");
+                                        mTaskIntent = entry.floatingIntent;
                                     }
                                 } catch (Exception e) {
                                     // IndexOutOfBoundsException
@@ -733,6 +746,8 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         public void onConfigurationChanged(Configuration newConfiguration) {
             // This will reset the initialization flag
             mInitialized = false;
+            // Generate a new content bubble
+            createBubble();
         }
 
         @Override
@@ -796,11 +811,11 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             if (mTickerBitmap!= null && mContentAlpha > 0) {
                 state = canvas.save();
 
-                int y = mTickerPos.y - (int)(mIconSize * 0.25);
+                int y = mTickerPos.y - mTickerContent.getMeasuredHeight() + (int)(mIconSize * 0.25);
                 if (y < 0) y = 0;
 
                 int x = mTickerPos.x + (int)(mIconSize * 1.05f);
-                int c = mContentView.getMeasuredWidth();
+                int c = mTickerContent.getMeasuredWidth();
                 if (x > mScreenWidth - c) {
                     x = mScreenWidth - c;
                     if (mTickerPos.x > mScreenWidth - (int)(mIconSize * 1.5f) ) {
@@ -864,6 +879,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
         // Wake up and snap
         mHidden = false;
+
         wakeUp(!mDoubleTap && mIsNotificationNew);
         if (!isBeingDragged && !mDoubleTap) snapToSide(true);
 

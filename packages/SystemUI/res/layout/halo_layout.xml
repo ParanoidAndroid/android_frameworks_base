@@ -15,6 +15,13 @@
             android:padding="@dimen/halo_icon_margin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/shadow"
+                android:layout_marginTop="1.2dp"
+                android:layout_width="@dimen/halo_icon_size"
+                android:layout_height="@dimen/halo_icon_size"/>
+
             <ImageView
                 android:id="@+id/backdrop"
                 android:layout_width="@dimen/halo_icon_size"

@@ -1404,6 +1404,38 @@ public abstract class BaseStatusBar extends SystemUI implements
         return entry.notification;
     }
 
+    private Bitmap createRoundIcon(StatusBarNotification notification) {
+        // Construct the round icon
+        int iconSize = mContext.getResources().getDimensionPixelSize(R.dimen.halo_icon_size)
+                + mContext.getResources().getDimensionPixelSize(R.dimen.halo_icon_margin) * 2;
+
+        Bitmap roundIcon = Bitmap.createBitmap(iconSize, iconSize, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(roundIcon);
+        canvas.drawARGB(0, 0, 0, 0);
+
+        if (notification.notification.largeIcon != null) {
+            final Paint paint = new Paint();        
+            paint.setAntiAlias(true);
+            canvas.drawCircle(iconSize / 2, iconSize / 2, iconSize / 2.1f, paint);
+            paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
+            canvas.drawBitmap(notification.notification.largeIcon,
+                    null, new Rect(0, 0, iconSize, iconSize), paint);
+        } else {
+            try {
+                Drawable icon = StatusBarIconView.getIcon(mContext,
+                    new StatusBarIcon(notification.pkg, notification.user, notification.notification.icon,
+                    notification.notification.iconLevel, 0, notification.notification.tickerText)); 
+                if (icon == null) icon = mContext.getPackageManager().getApplicationIcon(notification.pkg);
+                icon.setBounds((int)(iconSize * 0.3f), (int)(iconSize * 0.3f),
+                        (int)(iconSize * 0.7f), (int)(iconSize * 0.7f));            
+                icon.draw(canvas);
+            } catch (Exception e) {
+                // NameNotFoundException
+            }
+        }
+        return roundIcon;
+    }
+
     protected StatusBarIconView addNotificationViews(IBinder key,
             StatusBarNotification notification) {
         if (DEBUG) {
@@ -1426,36 +1458,8 @@ public abstract class BaseStatusBar extends SystemUI implements
             return null;
         }
 
-        // Construct the round icon
-        int iconSize = mContext.getResources().getDimensionPixelSize(R.dimen.halo_icon_size)
-                + mContext.getResources().getDimensionPixelSize(R.dimen.halo_icon_margin) * 2;
-
-        Bitmap roundIcon = Bitmap.createBitmap(iconSize, iconSize, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(roundIcon);
-        canvas.drawARGB(0, 0, 0, 0);
-
-        if (notification.notification.largeIcon != null) {
-            final Paint paint = new Paint();        
-            paint.setAntiAlias(true);
-            canvas.drawCircle(iconSize / 2, iconSize / 2, iconSize / 2.1f, paint);
-            paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
-            canvas.drawBitmap(notification.notification.largeIcon,
-                    null, new Rect(0, 0, iconSize, iconSize), paint);
-        } else {
-            try {
-                Drawable icon = StatusBarIconView.getIcon(mContext,
-                    new StatusBarIcon(notification.pkg, notification.user, notification.notification.icon,
-                    notification.notification.iconLevel, 0, notification.notification.tickerText)); 
-                if (icon == null) icon = mContext.getPackageManager().getApplicationIcon(notification.pkg);
-                icon.setBounds((int)(iconSize * 0.25f), (int)(iconSize * 0.25f),
-                        (int)(iconSize * 0.75f), (int)(iconSize * 0.75f));            
-                icon.draw(canvas);
-            } catch (Exception e) {
-                // NameNotFoundException
-            }
-        }
-
-        NotificationData.Entry entry = new NotificationData.Entry(key, notification, iconView, roundIcon);
+        NotificationData.Entry entry = new NotificationData.Entry(key, notification, iconView,
+                createRoundIcon(notification));
 
         final PendingIntent contentIntent = notification.notification.contentIntent;
         if (contentIntent != null) {
@@ -1610,34 +1614,7 @@ public abstract class BaseStatusBar extends SystemUI implements
                     oldEntry.floatingIntent = null;
                 }
                 // Update the roundIcon
-                int iconSize = mContext.getResources().getDimensionPixelSize(R.dimen.halo_icon_size)
-                        + mContext.getResources().getDimensionPixelSize(R.dimen.halo_icon_margin) * 2;
-
-                Bitmap roundIcon = Bitmap.createBitmap(iconSize, iconSize, Bitmap.Config.ARGB_8888);
-                Canvas canvas = new Canvas(roundIcon);
-                canvas.drawARGB(0, 0, 0, 0);
-
-                if (notification.notification.largeIcon != null) {
-                    final Paint paint = new Paint();        
-                    paint.setAntiAlias(true);
-                    canvas.drawCircle(iconSize / 2, iconSize / 2, iconSize / 2.1f, paint);
-                    paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
-                    canvas.drawBitmap(notification.notification.largeIcon,
-                            null, new Rect(0, 0, iconSize, iconSize), paint);
-                } else {
-                    try {
-                        Drawable icon = StatusBarIconView.getIcon(mContext,
-                            new StatusBarIcon(notification.pkg, notification.user, notification.notification.icon,
-                            notification.notification.iconLevel, 0, notification.notification.tickerText)); 
-                        if (icon == null) icon = mContext.getPackageManager().getApplicationIcon(notification.pkg);
-                        icon.setBounds((int)(iconSize * 0.25f), (int)(iconSize * 0.25f),
-                                (int)(iconSize * 0.75f), (int)(iconSize * 0.75f));            
-                        icon.draw(canvas);
-                    } catch (Exception e) {
-                        // NameNotFoundException
-                    }
-                }
-                oldEntry.roundIcon = roundIcon;
+                oldEntry.roundIcon = createRoundIcon(notification);
 
                 // Update the icon.
                 final StatusBarIcon ic = new StatusBarIcon(notification.pkg,
