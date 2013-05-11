@@ -506,6 +506,10 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         @Override
         public boolean onDoubleTap(MotionEvent event) {
             mDoubleTap = true;
+
+            // Show all available icons for easier browsing while the tasker is in motion
+            mBar.mHaloTaskerActive = true;
+            mBar.updateNotificationIcons();
             return true;
         }
     }
@@ -548,12 +552,14 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                     wakeUp(false);
                     break;
                 case MotionEvent.ACTION_UP:
-                    if (mDoubleTap) {                                               
+                    if (mDoubleTap) {                               
                         if (mTaskIntent != null) {
                             playSoundEffect(SoundEffectConstants.CLICK);
                             launchTask(mTaskIntent, false);                          
-                        }                        
+                        }            
                         resetIcons();
+                        mBar.mHaloTaskerActive = false;
+                        mBar.updateNotificationIcons();
                         mDoubleTap = false;
                     }
 
@@ -608,7 +614,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                         }
                     } else {
                         // Switch icons
-                        if (mNotificationData != null && mNotificationData.size() > 1) {
+                        if (mNotificationData != null && mNotificationData.size() > 0) {
 
                             int items = mNotificationData.size();
 
@@ -624,11 +630,11 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                             // This gets us the actual index
                             int distance = (int)initialDistance;
                             distance = initialDistance <= mIconSize ? 0 : (int)(initialDistance - mIconSize);
-                            if (distance > totalLength) distance = totalLength;
-
+                            // We must shorten the totalLength a tiny bit to prevent number wrap ups
+                            if (distance >= totalLength) distance = totalLength - 1;
                             // Reverse order depending on which side HALO sits
-                            int index = mTickerLeft ? (items - distance / indexLength) : (distance / indexLength);
-                            if (index > 0) index--;
+                            int index = mTickerLeft ? (items - distance / indexLength) - 1 : (distance / indexLength);
+
                             if (initialDistance <= mIconSize) index = -1;
 
                             if (index !=oldIconIndex) {
@@ -670,6 +676,8 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         mHandler.removeCallbacksAndMessages(null);
         // Kill callback
         mBar.getTicker().setUpdateEvent(null);
+        // Flag tasker
+        mBar.mHaloTaskerActive = false;
         // Kill the effect layer
         if (mHaloEffect != null) mWindowManager.removeView(mHaloEffect);
     }

@@ -163,6 +163,7 @@ public abstract class BaseStatusBar extends SystemUI implements
     protected Halo mHalo = null;
     protected Ticker mTicker;
     protected boolean mHaloActive;
+    protected boolean mHaloTaskerActive = false;
     protected ImageView mHaloButton;
     protected boolean mHaloButtonVisible = true;
 
