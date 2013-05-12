@@ -186,7 +186,10 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             mHapticFeedback = Settings.System.getInt(mContext.getContentResolver(),
                     Settings.System.HAPTIC_FEEDBACK_ENABLED, 1) != 0;
 
-            if (!selfChange) snapToSide(true);
+            if (!selfChange) {
+                wakeUp(true);
+                snapToSide(true);
+            }
         }
     }
 
