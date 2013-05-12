@@ -132,6 +132,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     private static final boolean DEBUG = true;
     private static final int TICKER_HIDE_TIME = 2000;
     private static final int SLEEP_DELAY_DAYDREAMING = 5000;
+    private static final int SLEEP_DELAY_REM = 10000;
 
 	public boolean mExpanded = false;
     public boolean mSnapped = true;
@@ -142,6 +143,9 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     private boolean mNumberLeft = true;
     private boolean mIsNotificationNew = true;
 
+    private boolean mInteractionReversed = true;
+    private boolean mHideTicker = true;
+
     private int mScreenMin, mScreenMax;
     private int mScreenWidth, mScreenHeight;
     private Rect mPopUpRect;
@@ -150,6 +154,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     private int mKillX, mKillY;
 
     private ValueAnimator mSleepDaydreaming = ValueAnimator.ofInt(0, 1);
+    private ValueAnimator mSleepREM = ValueAnimator.ofInt(0, 1);
     private AlphaAnimation mSleepNap = new AlphaAnimation(1, 0.5f);
     private int mAnimationFromX;
     private int mAnimationToX;
@@ -215,6 +220,24 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                 mAnimationFromX = mTickerPos.x;
                 final int setBack = mIconSize / 2;
                 mAnimationToX = (mAnimationFromX < mScreenWidth / 2) ? -setBack : setBack;
+            }});
+
+        mSleepREM.setDuration(1000);
+        mSleepREM.setInterpolator(new AccelerateInterpolator());
+        mSleepREM.addUpdateListener(new AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                mTickerPos.x = (int)(mAnimationFromX + mAnimationToX * animation.getAnimatedFraction());
+                updatePosition();
+            }});
+        mSleepREM.addListener(new Animator.AnimatorListener() {
+            @Override public void onAnimationCancel(Animator animation) {}
+            @Override public void onAnimationEnd(Animator animation) { }
+            @Override public void onAnimationRepeat(Animator animation) {}
+            @Override public void onAnimationStart(Animator animation) 
+            {
+                mAnimationFromX = mTickerPos.x;
+                mAnimationToX = (mAnimationFromX < mScreenWidth / 2) ? -mIconSize : mIconSize;
             }});
 
         // Create effect layer
@@ -316,6 +339,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     }
 
     private void unscheduleSleep() {
+        mSleepREM.cancel();
         mSleepDaydreaming.cancel();
         mSleepNap.cancel();
     }
@@ -324,6 +348,12 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         unscheduleSleep();
         mSleepDaydreaming.setStartDelay(daydreaming);
         mSleepDaydreaming.start();
+
+        // Hide ticker from sight completely if that's what the user wants
+        if (mHideTicker) {
+            mSleepREM.setStartDelay(SLEEP_DELAY_REM);
+            mSleepREM.start();
+        }
     }
 
     private void snapToSide(boolean sleep) {
@@ -505,17 +535,22 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
         @Override
         public void onLongPress(MotionEvent event) {
-            if (mHapticFeedback) mVibrator.vibrate(25);
+            if (mHapticFeedback && !isBeingDragged) mVibrator.vibrate(25);
             onDoubleTap(event);
         }
 
         @Override
         public boolean onDoubleTap(MotionEvent event) {
-            mDoubleTap = true;
 
-            // Show all available icons for easier browsing while the tasker is in motion
-            mBar.mHaloTaskerActive = true;
-            mBar.updateNotificationIcons();
+            if (!mInteractionReversed) {
+                mDoubleTap = true;
+                // Show all available icons for easier browsing while the tasker is in motion
+                mBar.mHaloTaskerActive = true;
+                mBar.updateNotificationIcons();
+            } else {
+                // Move
+                isBeingDragged = true;
+            }
             return true;
         }
     }
@@ -549,14 +584,18 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             final int action = event.getAction();
             switch(action) {
                 case MotionEvent.ACTION_DOWN:
-                    mTaskIntent = null;
-                    oldIconIndex = -1;
-                    isBeingDragged = false;
-                    overX = false;
-                    initialX = event.getRawX();
-                    initialY = event.getRawY();
-                    wakeUp(false);
+                    // Watch out here, in reversed mode we can not overwrite the double-tap action down.
+                    if (!(mInteractionReversed && isBeingDragged)) {
+                        mTaskIntent = null;
+                        oldIconIndex = -1;
+                        isBeingDragged = false;
+                        overX = false;
+                        initialX = event.getRawX();
+                        initialY = event.getRawY();
+                        wakeUp(false);
+                    }
                     break;
+                case MotionEvent.ACTION_CANCEL:
                 case MotionEvent.ACTION_UP:
                     if (mDoubleTap) {                               
                         if (mTaskIntent != null) {
@@ -605,8 +644,17 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                         // Drag
                         if (!isBeingDragged) {
                             if (initialDistance > mIconSize * 0.7f) {
-                                isBeingDragged = true;
-                                if (mHapticFeedback) mVibrator.vibrate(25);
+
+                                if (mInteractionReversed) {
+                                    mDoubleTap = true;
+                                    // Show all available icons for easier browsing while the tasker is in motion
+                                    mBar.mHaloTaskerActive = true;
+                                    mBar.updateNotificationIcons();
+                                } else {
+                                    isBeingDragged = true;
+                                    if (mHapticFeedback) mVibrator.vibrate(25);
+                                }
+                                return false;
                             }
                         } else {
                             mTickerPos.x = (int)mX - mIconSize / 2;
