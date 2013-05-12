@@ -125,7 +125,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     private GestureDetector mGestureDetector;
 
     private Paint mPaintHoloBlue = new Paint();
-    private Paint mPaintHoloLightBlue = new Paint();
+    private Paint mPaintWhite = new Paint();
     private Paint mPaintHoloRed = new Paint();
 
     public static final String TAG = "HaloLauncher";
@@ -180,8 +180,8 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         // Init colors
         mPaintHoloBlue.setAntiAlias(true);
         mPaintHoloBlue.setColor(0xff33b5e5);
-        mPaintHoloLightBlue.setAntiAlias(true);
-        mPaintHoloLightBlue.setColor(0xff88fafa);
+        mPaintWhite.setAntiAlias(true);
+        mPaintWhite.setColor(0xfff0f0f0);
         mPaintHoloRed.setAntiAlias(true);
         mPaintHoloRed.setColor(0xffcc0000);
 
@@ -426,13 +426,13 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         mFrame = (ImageView) findViewById(R.id.frame);
         Bitmap frame = Bitmap.createBitmap(mIconSize, mIconSize, Bitmap.Config.ARGB_8888);
         Canvas frameCanvas = new Canvas(frame);
-        frameCanvas.drawCircle(mIconSize / 2, mIconSize / 2, (int)mIconSize / 2, mPaintHoloBlue);
+        frameCanvas.drawCircle(mIconSize / 2, mIconSize / 2, (int)mIconSize / 2, mPaintWhite);
         Bitmap hole = Bitmap.createBitmap(mIconSize, mIconSize, Bitmap.Config.ARGB_8888);
         Canvas holeCanvas = new Canvas(hole);
         holeCanvas.drawARGB(0, 0, 0, 0);
         Paint holePaint = new Paint();
         holePaint.setAntiAlias(true);        
-        holeCanvas.drawCircle(mIconSize / 2, mIconSize / 2, (int)((mIconSize / 2) * 0.95f), holePaint);
+        holeCanvas.drawCircle(mIconSize / 2, mIconSize / 2, (int)((mIconSize / 2) * 0.94f), holePaint);
         holePaint.setXfermode(new PorterDuffXfermode(Mode.SRC_OUT));
         final Rect rect = new Rect(0, 0, mIconSize, mIconSize);
         holeCanvas.drawBitmap(frame, null, rect, holePaint);
@@ -450,7 +450,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         Canvas backCanvas = new Canvas(backOutput);
         final Paint backPaint = new Paint();
         backPaint.setAntiAlias(true);
-        backPaint.setColor(0xdd004080);
+        backPaint.setColor(0xdd404040);
         backCanvas.drawCircle(mIconSize / 2, mIconSize / 2, (int)mIconSize / 2.1f, backPaint);
         mBackdrop.setImageDrawable(new BitmapDrawable(mContext.getResources(), backOutput));
 
@@ -501,6 +501,12 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                 launchTask(mContentIntent, true);
             }
             return true;
+        }
+
+        @Override
+        public void onLongPress(MotionEvent event) {
+            if (mHapticFeedback) mVibrator.vibrate(25);
+            onDoubleTap(event);
         }
 
         @Override
