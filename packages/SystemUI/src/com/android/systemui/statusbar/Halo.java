@@ -30,15 +30,16 @@ import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.content.Context;
 import android.content.ContentResolver;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.database.ContentObserver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
@@ -144,7 +145,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     private boolean mIsNotificationNew = true;
 
     private boolean mInteractionReversed = true;
-    private boolean mHideTicker = true;
+    private boolean mHideTicker = false;
 
     private int mScreenMin, mScreenMax;
     private int mScreenWidth, mScreenHeight;
@@ -159,6 +160,34 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     private int mAnimationFromX;
     private int mAnimationToX;
 
+    private SettingsObserver mSettingsObserver;
+
+    private final class SettingsObserver extends ContentObserver {
+        SettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        void observe() {
+            ContentResolver resolver = mContext.getContentResolver();
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.HALO_HIDE), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.HALO_REVERSED), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.HAPTIC_FEEDBACK_ENABLED), false, this);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            mInteractionReversed =
+                    Settings.System.getInt(mContext.getContentResolver(), Settings.System.HALO_REVERSED, 1) == 1;
+            mHideTicker =
+                    Settings.System.getInt(mContext.getContentResolver(), Settings.System.HALO_HIDE, 0) == 1;
+            mHapticFeedback = Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.HAPTIC_FEEDBACK_ENABLED, 1) != 0;
+        }
+    }
+
     public Halo(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
@@ -168,14 +197,16 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         mContext = context;
         mPm = mContext.getPackageManager();
         mWindowManager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
-        mInflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
-        mHapticFeedback = Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.HAPTIC_FEEDBACK_ENABLED, 1) != 0;
+        mInflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);         
         mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
         mDisplay = mWindowManager.getDefaultDisplay();
         mGestureDetector = new GestureDetector(mContext, new GestureListener());
         mHandler = new Handler();
         mRoot = this;
+
+        mSettingsObserver = new SettingsObserver(new Handler());
+        mSettingsObserver.observe();
+        mSettingsObserver.onChange(true);
 
         // Init variables
         mIconSize = mContext.getResources().getDimensionPixelSize(R.dimen.halo_icon_size)
@@ -281,7 +312,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                     mHaloEffect.causePing(mPaintHoloRed);
                 }}, 200);
 
-            // and disappear if empty
+            // and disappear if empty, only in hide-ticker mode!
             mHandler.postDelayed(new Runnable() {
                 public void run() {
                     if (mLastNotification == null) {
@@ -291,19 +322,24 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                         alphaDown.setAnimationListener(new Animation.AnimationListener() {
                             @Override public void onAnimationEnd(Animation animation)
                             {
-                                // We hide it at startup, unless the user really wants it.
-                                // This state can only by unlocked by an incomming notification
-                                if (!isBeingDragged) {
-                                    mContent.setVisibility(View.GONE);
-                                    mHidden = true;
+                                if (mHideTicker) {
+                                    // We hide it at startup, unless the user really wants it.
+                                    // This state can only by unlocked by an incomming notification
+                                    if (!isBeingDragged) {
+                                        mContent.setVisibility(View.GONE);
+                                        mHidden = true;
+                                    }
+                                } else {
+                                    wakeUp(false);
+                                    snapToSide(true, 500);
                                 }
                             }
                             @Override public void onAnimationRepeat(Animation animation) {}
                             @Override public void onAnimationStart(Animation animation) {}
                         });
                         mContent.startAnimation(alphaDown);
-                    }
-                }}, 1000);
+                    }}}, 1000);
+
         }
 
         // Update dimensions
@@ -514,7 +550,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     class GestureListener extends GestureDetector.SimpleOnGestureListener {
         
         @Override
-        public boolean onSingleTapUp (MotionEvent event) { 
+        public boolean onSingleTapUp (MotionEvent event) {
             playSoundEffect(SoundEffectConstants.CLICK);
             return true;
         }
@@ -544,6 +580,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
             if (!mInteractionReversed) {
                 mDoubleTap = true;
+                snapToSide(false);
                 // Show all available icons for easier browsing while the tasker is in motion
                 mBar.mHaloTaskerActive = true;
                 mBar.updateNotificationIcons();
@@ -647,6 +684,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
                                 if (mInteractionReversed) {
                                     mDoubleTap = true;
+                                    snapToSide(false);
                                     // Show all available icons for easier browsing while the tasker is in motion
                                     mBar.mHaloTaskerActive = true;
                                     mBar.updateNotificationIcons();
@@ -734,6 +772,8 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         mBar.mHaloTaskerActive = false;
         // Kill the effect layer
         if (mHaloEffect != null) mWindowManager.removeView(mHaloEffect);
+        // Remove resolver
+        mContext.getContentResolver().unregisterContentObserver(mSettingsObserver);
     }
 
     class HaloEffect extends FrameLayout {

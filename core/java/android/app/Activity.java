@@ -5094,13 +5094,12 @@ public class Activity extends ContextThemeWrapper
                 mWindow.requestFeature(Window.FEATURE_NO_TITLE);
             }
 
-            /* This causes problems for now......
             mWindow.setFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND,
                     WindowManager.LayoutParams.FLAG_DIM_BEHIND);
             WindowManager.LayoutParams params = mWindow.getAttributes(); 
             params.alpha = 1f;
-            params.dimAmount = 0.6f;
-            mWindow.setAttributes((android.view.WindowManager.LayoutParams) params);*/
+            params.dimAmount = 0.25f;
+            mWindow.setAttributes((android.view.WindowManager.LayoutParams) params);
 
             // Scale it
             WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
