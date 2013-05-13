@@ -228,6 +228,10 @@ final class DisplayPowerController {
     // a stylish electron beam animation instead.
     private boolean mElectronBeamFadesConfig;
 
+    // Slim settings - override config for ElectronBeam
+    private boolean mElectronBeamOffEnabled;
+    private int mElectronBeamMode;
+
     // The pending power request.
     // Initially null until the first call to requestPowerState.
     // Guarded by mLock.
@@ -351,6 +355,8 @@ final class DisplayPowerController {
     private boolean mTwilightChanged;
     private boolean mAutoBrightnessSettingsChanged;
 
+    private final LightsService.Light mButtonlight;
+    
     /**
      * Creates the display power controller.
      */
@@ -367,6 +373,8 @@ final class DisplayPowerController {
         mCallbackHandler = callbackHandler;
 
         mLights = lights;
+        mButtonlight = mLights.getLight(LightsService.LIGHT_ID_BUTTONS);
+        
         mTwilight = twilight;
         mSensorManager = sensorManager;
         mDisplayManager = displayManager;
@@ -596,7 +604,8 @@ final class DisplayPowerController {
 
     private void initialize() {
         mPowerState = new DisplayPowerState(
-                new ElectronBeam(mDisplayManager), mDisplayBlanker,
+                new ElectronBeam(mDisplayManager, mElectronBeamMode),
+                mDisplayBlanker,
                 mLights.getLight(LightsService.LIGHT_ID_BACKLIGHT));
 
         mElectronBeamOnAnimator = ObjectAnimator.ofFloat(
@@ -664,6 +673,15 @@ final class DisplayPowerController {
             }
 
             mustNotify = !mDisplayReadyLocked;
+        }
+
+        // update crt settings here
+        mElectronBeamOffEnabled = mPowerRequest.electronBeamOffEnabled;
+
+        // update crt mode settings and force initialize if value changed
+        if (mElectronBeamMode != mPowerRequest.electronBeamMode) {
+            mElectronBeamMode = mPowerRequest.electronBeamMode;
+            mustInitialize = true;
         }
 
         // Initialize things the first time the power state is changed.
@@ -785,7 +803,7 @@ final class DisplayPowerController {
                         if (mPowerState.getElectronBeamLevel() == 0.0f) {
                             setScreenOn(false);
                         } else if (mPowerState.prepareElectronBeam(
-                                mElectronBeamFadesConfig ?
+                                !mElectronBeamOffEnabled ?
                                         ElectronBeam.MODE_FADE :
                                                 ElectronBeam.MODE_COOL_DOWN)
                                 && mPowerState.isScreenOn()) {
@@ -797,6 +815,11 @@ final class DisplayPowerController {
                 }
             }
         }
+
+        /* button light */
+        boolean buttonlight_on = wantScreenOn(mPowerRequest.screenState) && (mPowerRequest.screenState != DisplayPowerRequest.SCREEN_STATE_DIM); 
+       
+        mButtonlight.setBrightness(buttonlight_on ? 1 : 0);
 
         // Report whether the display is ready for use.
         // We mostly care about the screen state here, ignoring brightness changes

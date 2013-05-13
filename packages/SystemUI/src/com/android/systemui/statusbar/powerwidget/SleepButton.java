@@ -1,11 +1,13 @@
 package com.android.systemui.statusbar.powerwidget;
 
+import com.android.systemui.R;
+
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.provider.Settings;
 import android.os.PowerManager;
 import android.os.SystemClock;
-
-import com.android.systemui.R;
 
 public class SleepButton extends PowerButton {
     public SleepButton() { mType = BUTTON_SLEEP; }
@@ -20,7 +22,7 @@ public class SleepButton extends PowerButton {
     protected void toggleState(Context context) {
         PowerManager pm = (PowerManager)
                 context.getSystemService(Context.POWER_SERVICE);
-        pm.goToSleep(SystemClock.uptimeMillis());
+        pm.goToSleep(SystemClock.uptimeMillis() + 1);
     }
 
     @Override

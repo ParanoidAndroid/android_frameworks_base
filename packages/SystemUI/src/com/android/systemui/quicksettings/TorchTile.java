@@ -24,6 +24,9 @@ public class TorchTile extends QuickSettingsTile {
             public void onClick(View v) {
                 Intent i = new Intent("net.cactii.flash2.TOGGLE_FLASHLIGHT");
                 mContext.sendBroadcast(i);
+                if (isEnabled()) {
+                    flipTile(0);
+                }
             }
         };
 

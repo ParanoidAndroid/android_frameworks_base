@@ -1,20 +1,28 @@
 package com.android.internal.util.cm;
 
+import java.io.File;
+import java.io.IOException;
+
 import android.bluetooth.BluetoothAdapter;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.WifiDisplayStatus;
 import android.net.ConnectivityManager;
 import android.nfc.NfcAdapter;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
+import android.view.View;
 
 import com.android.internal.telephony.PhoneConstants;
 
 public class QSUtils {
+
         public static boolean deviceSupportsUsbTether(Context ctx) {
             ConnectivityManager cm = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
             return (cm.getTetherableUsbRegexs().length != 0);
@@ -42,4 +50,12 @@ public class QSUtils {
             final TelephonyManager tm = (TelephonyManager) ctx.getSystemService(Context.TELEPHONY_SERVICE);
             return (tm.getLteOnCdmaMode() == PhoneConstants.LTE_ON_CDMA_TRUE) || tm.getLteOnGsmMode() != 0;
         }
+
+    public static int getTileTextColor(Context ctx) {
+        int tileTextColor = Settings.System.getInt(ctx.getContentResolver(),
+                Settings.System.QUICK_SETTINGS_TEXT_COLOR, 0xFFFFFFFF);
+        return tileTextColor;
+    }
+
+
 }

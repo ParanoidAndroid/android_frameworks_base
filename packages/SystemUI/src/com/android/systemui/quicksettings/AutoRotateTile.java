@@ -24,6 +24,9 @@ public class AutoRotateTile extends QuickSettingsTile {
             @Override
             public void onClick(View v) {
                 RotationPolicy.setRotationLock(mContext, getAutoRotation());
+                if (isEnabled()) {
+                    flipTile(0);
+                }
             }
         };
 

@@ -154,6 +154,8 @@ public class BrightnessButton extends PowerButton {
     }
 
     private void updateSettings(ContentResolver resolver) {
+        BACKLIGHTS[1] = MIN_BACKLIGHT;
+
         String[] modes = parseStoredValue(Settings.System.getString(
                 resolver, Settings.System.EXPANDED_BRIGHTNESS_MODE));
         if (modes == null || modes.length == 0) {

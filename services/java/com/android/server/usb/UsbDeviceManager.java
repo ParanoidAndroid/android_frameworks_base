@@ -149,6 +149,13 @@ public class UsbDeviceManager {
         }
     };
 
+    // Dummy constructor to use when extending class
+    public UsbDeviceManager() {
+        mContext = null;
+        mContentResolver = null;
+        mHasUsbAccessory = false;
+    }
+
     public UsbDeviceManager(Context context) {
         mContext = context;
         mContentResolver = context.getContentResolver();
@@ -197,7 +204,13 @@ public class UsbDeviceManager {
         boolean massStorageSupported = false;
         final StorageManager storageManager = StorageManager.from(mContext);
         final StorageVolume primary = storageManager.getPrimaryVolume();
-        massStorageSupported = primary != null && primary.allowMassStorage();
+
+        if (Settings.Secure.getInt(mContentResolver, Settings.Secure.USB_MASS_STORAGE_ENABLED, 0 ) == 1 ) {
+                massStorageSupported = primary != null && primary.allowMassStorage();
+        } else {
+                massStorageSupported = false;
+        }
+
         mUseUsbNotification = !massStorageSupported;
 
         // make sure the ADB_ENABLED setting value matches the current state
