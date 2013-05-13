@@ -41,6 +41,7 @@ public class NotificationData {
         public View content; // takes the click events and sends the PendingIntent
         public View expanded; // the inflated RemoteViews
         public ImageView largeIcon;
+        protected boolean hide = false;
         protected Bitmap roundIcon;
         protected View expandedLarge;
         protected NotificationClicker floatingIntent;

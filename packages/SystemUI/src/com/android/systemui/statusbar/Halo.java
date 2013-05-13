@@ -497,7 +497,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         mFrame = (ImageView) findViewById(R.id.frame);
         Bitmap frame = Bitmap.createBitmap(mIconSize, mIconSize, Bitmap.Config.ARGB_8888);
         Canvas frameCanvas = new Canvas(frame);
-        frameCanvas.drawCircle(mIconSize / 2, mIconSize / 2, (int)mIconSize / 2, mPaintWhite);
+        frameCanvas.drawCircle(mIconSize / 2, mIconSize / 2, (int)mIconSize / 2, mPaintHoloBlue);
         Bitmap hole = Bitmap.createBitmap(mIconSize, mIconSize, Bitmap.Config.ARGB_8888);
         Canvas holeCanvas = new Canvas(hole);
         holeCanvas.drawARGB(0, 0, 0, 0);
@@ -576,7 +576,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
         @Override
         public void onLongPress(MotionEvent event) {
-            if (mHapticFeedback && !isBeingDragged) mVibrator.vibrate(25);
+            if (mHapticFeedback && !isBeingDragged && !mDoubleTap) mVibrator.vibrate(25);
             onDoubleTap(event);
         }
 
@@ -737,21 +737,27 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                             if (index !=oldIconIndex) {
                                 oldIconIndex = index;
 
-                                // Make a tiny pop
-                                if (mHapticFeedback) mVibrator.vibrate(1);
+                                // Make a tiny pop if not so many icons are present
+                                if (mHapticFeedback && items < 8) mVibrator.vibrate(1);
 
                                 try {
                                     if (index == -1) {
                                         mTaskIntent = null;
                                         resetIcons();
-                                        tick(mLastNotification, "");
+                                        tick(mLastNotification, mNotificationText, 250, true);
 
                                         // Ping to notify the user we're back where we started
                                         mHaloEffect.causePing(mPaintHoloBlue);
                                     } else {
-                                        NotificationData.Entry entry = mNotificationData.get(index);
                                         setIcon(index);
-                                        tick(entry, "");
+
+                                        NotificationData.Entry entry = mNotificationData.get(index);
+                                        String text = "";
+                                        if (entry.notification.notification.tickerText != null) {
+                                            text = entry.notification.notification.tickerText.toString();
+                                        }
+                                        tick(entry, text, 250, true);
+
                                         mTaskIntent = entry.floatingIntent;
                                     }
                                 } catch (Exception e) {
@@ -784,15 +790,17 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     class HaloEffect extends FrameLayout {
         private Context mContext;
         private Paint mPingPaint;
-        private int pingAlpha = 0;
+        private int pingAlpha = 0;        
         private int pingRadius = 0;
         protected int pingMinRadius = 0;
         protected int pingMaxRadius = 0;
-        private int mContentAlpha = 0;
+        private float mContentAlpha = 0;
+        private float mCurContentAlpha = 0;
         private View mContentView;
         private RelativeLayout mTickerContent;
         private TextView mTextViewR, mTextViewL;
         private boolean mPingAllowed = true;
+        private boolean mSkipThrough = false;
 
         private Paint mBitmapPaint = new Paint();
         private Bitmap mTickerBitmap;
@@ -814,24 +822,21 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             mTextViewR = (TextView) mTickerContent.findViewById(R.id.bubble_r);
             mTextViewL = (TextView) mTickerContent.findViewById(R.id.bubble_l);
 
-
-            tickerUp.setDuration(1000);
             tickerUp.setInterpolator(new DecelerateInterpolator());
             tickerUp.addUpdateListener(new AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
-                    mContentAlpha = (int)(255 * animation.getAnimatedFraction());
+                    mContentAlpha = mCurContentAlpha + (1 - mCurContentAlpha) * animation.getAnimatedFraction();
                     invalidate();
                 }
             });
 
-            tickerDown.setStartDelay(TICKER_HIDE_TIME);
             tickerDown.setDuration(1000);
             tickerDown.setInterpolator(new DecelerateInterpolator());
             tickerDown.addUpdateListener(new AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
-                    mContentAlpha = (int)(255 * (1-animation.getAnimatedFraction()));
+                    mContentAlpha = 1-animation.getAnimatedFraction();
                     invalidate();
                 }
             });
@@ -870,24 +875,28 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
             mContentView.measure(MeasureSpec.getSize(mContentView.getMeasuredWidth()), MeasureSpec.getSize(mContentView.getMeasuredHeight()));
             mContentView.layout(400, 400, 400, 400);
-
-            mTickerBitmap = Bitmap.createBitmap(mTickerContent.getMeasuredWidth(),
-                    mTickerContent.getMeasuredHeight(), Bitmap.Config.ARGB_8888);               
-            Canvas frameCanvas = new Canvas(mTickerBitmap);
-            mContentView.draw(frameCanvas);
         }
 
-        public void ticker(String tickerText) {
+        public void killTicker() {
+            tickerDown.cancel();
+            tickerUp.cancel();
+            invalidate();
+        }
+
+        public void ticker(String tickerText, int startDuration, boolean skipThrough) {
+            killTicker();
+            mCurContentAlpha = mContentAlpha;
+
+            mSkipThrough = skipThrough;
+
             mTextViewR.setText(tickerText);
             mTextViewL.setText(tickerText);
             createBubble();
 
-            tickerDown.cancel();
-            tickerUp.cancel();
-
-            AnimatorSet set = new AnimatorSet();
-            set.play(tickerUp).before(tickerDown);
-            set.start();
+            tickerUp.setDuration(startDuration);
+            tickerUp.start();
+            tickerDown.setStartDelay(TICKER_HIDE_TIME / 2 + startDuration);
+            tickerDown.start();
         }
 
         public void causePing(Paint paint) {
@@ -910,29 +919,34 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         protected void onDraw(Canvas canvas) {
             int state;
 
-            if (pingAlpha > 0) {
+            if (mPingPaint != null) {
                 mPingPaint.setAlpha(pingAlpha);
                 canvas.drawCircle(mTickerPos.x + mIconSize / 2, mTickerPos.y + mIconSize / 2, pingRadius, mPingPaint);
             }
 
-            if (mTickerBitmap!= null && mContentAlpha > 0) {
-                state = canvas.save();
+            state = canvas.save();
 
-                int y = mTickerPos.y - mTickerContent.getMeasuredHeight() + (int)(mIconSize * 0.25);
-                if (y < 0) y = 0;
+            int y = mTickerPos.y - mTickerContent.getMeasuredHeight() + (int)(mIconSize * 0.15);
 
-                int x = mTickerPos.x + (int)(mIconSize * 1.05f);
-                int c = mTickerContent.getMeasuredWidth();
-                if (x > mScreenWidth - c) {
-                    x = mScreenWidth - c;
-                    if (mTickerPos.x > mScreenWidth - (int)(mIconSize * 1.5f) ) {
-                        x = mTickerPos.x - c - (int)(mIconSize*0.05f);
-                    }
+            if (!mSkipThrough && mNumber.getVisibility() != View.VISIBLE) y += (int)(mIconSize * 0.15);
+
+            if (y < 0) y = 0;
+
+            int x = mTickerPos.x + (int)(mIconSize * 0.85f);
+            int c = mTickerContent.getMeasuredWidth();
+            if (x > mScreenWidth - c) {
+                x = mScreenWidth - c;
+                if (mTickerPos.x > mScreenWidth - (int)(mIconSize * 1.5f) ) {
+                    x = mTickerPos.x - c + (int)(mIconSize * 0.15f);
                 }
-
-                mBitmapPaint.setAlpha(mContentAlpha);
-                canvas.drawBitmap(mTickerBitmap, x, y, mBitmapPaint);
             }
+
+            state = canvas.save();
+            canvas.translate(x, y);
+            mTextViewL.setAlpha(mContentAlpha);
+            mTextViewR.setAlpha(mContentAlpha);
+            mContentView.draw(canvas);
+            canvas.restoreToCount(state);
 
             if (isBeingDragged) {
                 canvas.drawBitmap(mXNormal, mKillX - mXNormal.getWidth() / 2, mKillY, null);
@@ -955,7 +969,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         return lp;
     }
 
-    void tick(NotificationData.Entry entry, String text) {
+    void tick(NotificationData.Entry entry, String text, int duration, boolean skipThrough) {
         StatusBarNotification notification = entry.notification;
         Notification n = notification.notification;
 
@@ -986,7 +1000,9 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
         // Set text
         if (text != null && !text.isEmpty() && mIsNotificationNew) {
-            mHaloEffect.ticker(text);
+            mHaloEffect.ticker(text, duration, skipThrough);
+        } else {
+            mHaloEffect.killTicker();
         }
     }
 
@@ -1011,7 +1027,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                 if (mIsNotificationNew) {
                     mNotificationText = text;
                     mLastNotification = entry;
-                    tick(entry, text);
+                    tick(entry, text, 1000, false);
                 }
                 break;
             }
