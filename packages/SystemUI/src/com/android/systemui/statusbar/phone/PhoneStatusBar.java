@@ -222,6 +222,10 @@ public class PhoneStatusBar extends BaseStatusBar {
     View mClearButton;
     ImageView mSettingsButton, mNotificationButton;
 
+    // drag bar
+    CloseDragHandle mCloseView;
+    private int mCloseViewHeight;
+
     // carrier/wifi label
     private TextView mCarrierLabel;
     private boolean mCarrierLabelVisible = false;
@@ -329,6 +333,7 @@ class SettingsObserver extends ContentObserver {
 
         void observe() {
             ContentResolver resolver = mContext.getContentResolver();
+            resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.NOTIFICATION_SHORTCUTS_TOGGLE), false, this, UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.NOTIFICATION_SHORTCUTS_HIDE_CARRIER), false, this, UserHandle.USER_ALL);
@@ -415,13 +420,13 @@ class SettingsObserver extends ContentObserver {
         mScrollView.setLayoutParams(lpScrollView);
 
         if (!mShowCarrierInPanel) return;
-        lpCarrierLabel.bottomMargin = mNotificationShortcutsToggle ? mShortcutsSpacingHeight : mCloseViewHeight;
-        mCarrierAndWifiView.setLayoutParams(lpCarrierLabel);
+//        lpCarrierLabel.bottomMargin = mNotificationShortcutsToggle ? mShortcutsSpacingHeight : mCloseViewHeight;
+//        mCarrierAndWifiView.setLayoutParams(lpCarrierLabel);
     }
 
     private void toggleCarrierAndWifiLabelVisibility() {
         mShowCarrierInPanel = !mNotificationShortcutsHideCarrier;
-        mCarrierAndWifiView.setVisibility(mShowCarrierInPanel ? View.VISIBLE : View.INVISIBLE);
+//        mCarrierAndWifiView.setVisibility(mShowCarrierInPanel ? View.VISIBLE : View.INVISIBLE);
     }
 
     // ================================================================================
@@ -655,15 +660,14 @@ class SettingsObserver extends ContentObserver {
         mNotificationShortcutsHideCarrier = Settings.System.getIntForUser(mContext.getContentResolver(),
                     Settings.System.NOTIFICATION_SHORTCUTS_HIDE_CARRIER, 0, UserHandle.USER_CURRENT) != 0;
 
-        mCarrierAndWifiView = mStatusBarWindow.findViewById(R.id.carrier_wifi);
-        mWifiView = mStatusBarWindow.findViewById(R.id.wifi_view);
+//        mCarrierAndWifiView = mStatusBarWindow.findViewById(R.id.carrier_wifi);
 
         mCarrierLabel = (TextView)mStatusBarWindow.findViewById(R.id.carrier_label);
         mShowCarrierInPanel = (mCarrierLabel != null);
         if (DEBUG) Slog.v(TAG, "carrierlabel=" + mCarrierLabel + " show=" + mShowCarrierInPanel);
         if (mShowCarrierInPanel) {
-            lpCarrierLabel = (FrameLayout.LayoutParams) mCarrierAndWifiView.getLayoutParams();
-            mCarrierLabel.setVisibility((mCarrierAndWifiViewVisible && !mNotificationShortcutsHideCarrier) ? View.VISIBLE : View.INVISIBLE);
+//            lpCarrierLabel = (FrameLayout.LayoutParams) mCarrierAndWifiView.getLayoutParams();
+//            mCarrierLabel.setVisibility((mCarrierAndWifiViewVisible && !mNotificationShortcutsHideCarrier) ? View.VISIBLE : View.INVISIBLE);
             if (mNotificationShortcutsHideCarrier)
                 mShowCarrierInPanel = false;
             // for mobile devices, we always show mobile connection info here (SPN/PLMN)
@@ -1255,7 +1259,7 @@ class SettingsObserver extends ContentObserver {
         final boolean emergencyCallsShownElsewhere = mEmergencyCallLabel != null;
         final boolean makeVisible =
             !(emergencyCallsShownElsewhere && mNetworkController.isEmergencyOnly())
-            && mPile.getHeight() < (mNotificationPanel.getHeight() - mCarrierAndWifiViewHeight - mNotificationHeaderHeight - calculateCarrierLabelBottomMargin())
+            && mPile.getHeight() < (mNotificationPanel.getHeight() - mNotificationHeaderHeight - calculateCarrierLabelBottomMargin())
             && mScrollView.getVisibility() == View.VISIBLE;
         
         if (force || mCarrierLabelVisible != makeVisible) {
