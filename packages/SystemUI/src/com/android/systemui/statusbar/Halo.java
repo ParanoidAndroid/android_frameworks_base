@@ -877,14 +877,16 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             mContentView.layout(400, 400, 400, 400);
         }
 
-        public void killTicker() {
+        public void ticker(String tickerText, int startDuration, boolean skipThrough) {
             tickerDown.cancel();
             tickerUp.cancel();
-            invalidate();
-        }
 
-        public void ticker(String tickerText, int startDuration, boolean skipThrough) {
-            killTicker();
+            if (tickerText == null || tickerText.isEmpty()) {
+                mCurContentAlpha = mContentAlpha = 0;
+                invalidate();
+                return;
+            }
+
             mCurContentAlpha = mContentAlpha;
 
             mSkipThrough = skipThrough;
@@ -999,11 +1001,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         if (!isBeingDragged && !mDoubleTap) snapToSide(true);
 
         // Set text
-        if (text != null && !text.isEmpty() && mIsNotificationNew) {
-            mHaloEffect.ticker(text, duration, skipThrough);
-        } else {
-            mHaloEffect.killTicker();
-        }
+        mHaloEffect.ticker(text, duration, skipThrough);
     }
 
     // This is the android ticker callback
