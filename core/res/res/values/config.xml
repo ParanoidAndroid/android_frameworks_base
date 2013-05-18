@@ -1039,45 +1039,39 @@
         <item>100</item>
     </integer-array>
 
+    <!-- Path to the library that contains a device specific key handler -->
+    <string name="config_deviceKeyHandlerLib" translatable="false"></string>
+
+    <!-- Name of that key handler class -->
+    <string name="config_deviceKeyHandlerClass" translatable="false"></string>
+
     <!-- Maximum wallpaper width for devices with very high-res screens.
          The wallpaper width suggestion by the launcher may be too large for
          the GPU to handle. -->
     <integer name="config_wallpaperMaxWidth">-1</integer>
 
-    <!-- Name of that dock battery handler class -->
-    <string name="config_deviceDockBatteryHandlerClass" translatable="false"></string>
- 
+    <!-- Asus dock compatibility disabled by default -->
+    <bool name="config_hasDockBattery">false</bool>
     <!-- If a dock provides a lid switch, that lid can be removed. This
          setting is used to determine, whether lidOpenRotation has to be
          applied. -->
     <bool name="config_hasRemovableLid">false</bool>
-
     <!-- Flag indicating if the speed up audio on mt call code should be executed -->
     <bool name="config_speed_up_audio_on_mt_calls">false</bool>
 
-    <!-- Boolean to enable stk functionality on Samsung phones -->
-    <bool name="config_samsung_stk">false</bool> 
-    
-    <!-- If this value is true, we handle Samsung CDMA's message ID method -->
-    <bool name="config_smsSamsungCdmaAlternateMessageIDEncoding">false</bool>
+                        <!--OPPO changes -->
+    <!-- Disable the home key unlock setting -->
+    <bool name="config_disableHomeUnlockSetting">true</bool>
 
-    <!-- Workaround for devices with broken keyboards -->
-    <bool name="config_forceDisableHardwareKeyboard">false</bool>
-
-    <!-- Dock battery compatibility (disabled by default) -->
-    <bool name="config_hasDockBattery">false</bool>
-
-    <!-- The list absolute paths of jar/apk files containing the device specific handlers,
-         delimited by File.pathSeparator, which defaults to ":" on Android -->
-    <string name="config_deviceHandlersLib" translatable="false"></string>
-
-    <!-- Full qualified name of the class that implements
-         com.android.internal.os.DeviceKeyHandler interface. -->
-    <string name="config_deviceKeyHandlerClass" translatable="false"></string>
-
-    <!-- Full qualified name of the class that implements
-         com.android.internal.os.DeviceDockBatteryHandler interface.
-         Requires config_hasDockBattery set to true. -->
-    <string name="config_deviceDockBatteryHandlerLib" translatable="false"></string>
-
+    <!-- Hardware 'face' keys present on the device, stored as a bit field.
+         This integer should equal the sum of the corresponding value for each
+         of the following keys present:
+             1 - Home
+             2 - Back
+             4 - Menu
+             8 - Assistant (search)
+            16 - App switch
+         For example, a device with Home, Back and Menu keys would set this
+         config to 7. -->
+    <integer name="config_deviceHardwareKeys">15</integer>
 </resources>
