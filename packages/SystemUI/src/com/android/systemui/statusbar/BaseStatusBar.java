@@ -1420,8 +1420,7 @@ public abstract class BaseStatusBar extends SystemUI implements
             paint.setAntiAlias(true);
             canvas.drawCircle(iconSize / 2, iconSize / 2, iconSize / 2.1f, paint);
             paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
-            canvas.drawBitmap(notification.notification.largeIcon,
-                    null, new Rect(0, 0, iconSize, iconSize), paint);
+            canvas.drawBitmap(notification.notification.largeIcon, 0, 0, paint);
         } else {
             try {
                 Drawable icon = StatusBarIconView.getIcon(mContext,

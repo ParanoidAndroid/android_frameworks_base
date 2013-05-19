@@ -390,6 +390,9 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
     private void scheduleSleep(int daydreaming) {
         unscheduleSleep();
+
+        if (isBeingDragged) return;
+
         mSleepDaydreaming.setStartDelay(daydreaming);
         mSleepDaydreaming.start();
 
@@ -496,38 +499,6 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         mIcon.setOnClickListener(mIconClicker);
         mIcon.setOnTouchListener(mIconTouchListener);
 
-        // Frame
-        /*mFrame = (ImageView) findViewById(R.id.frame);
-        Bitmap frame = Bitmap.createBitmap(mIconSize, mIconSize, Bitmap.Config.ARGB_8888);
-        Canvas frameCanvas = new Canvas(frame);
-        frameCanvas.drawCircle(mIconSize / 2, mIconSize / 2, (int)mIconSize / 2, mPaintHoloBlue);
-        Bitmap hole = Bitmap.createBitmap(mIconSize, mIconSize, Bitmap.Config.ARGB_8888);
-        Canvas holeCanvas = new Canvas(hole);
-        holeCanvas.drawARGB(0, 0, 0, 0);
-        Paint holePaint = new Paint();
-        holePaint.setAntiAlias(true);        
-        holeCanvas.drawCircle(mIconSize / 2, mIconSize / 2, (int)((mIconSize / 2) * 0.94f), holePaint);
-        holePaint.setXfermode(new PorterDuffXfermode(Mode.SRC_OUT));
-        final Rect rect = new Rect(0, 0, mIconSize, mIconSize);
-        holeCanvas.drawBitmap(frame, null, rect, holePaint);
-        mFrame.setImageDrawable(new BitmapDrawable(mContext.getResources(), hole));*/
-
-        // Shadow
-        /*ImageView mShadow = (ImageView) findViewById(R.id.shadow);
-        BitmapDrawable shadow = new BitmapDrawable(mContext.getResources(), hole);
-        shadow.setColorFilter(0x55000000, PorterDuff.Mode.SRC_IN);
-        mShadow.setImageDrawable(shadow);*/
-
-        // Background
-        /*mBackdrop = (ImageView) findViewById(R.id.backdrop);
-        Bitmap backOutput = Bitmap.createBitmap(mIconSize, mIconSize, Bitmap.Config.ARGB_8888);
-        Canvas backCanvas = new Canvas(backOutput);
-        final Paint backPaint = new Paint();
-        backPaint.setAntiAlias(true);
-        backPaint.setColor(0xdd404040);
-        backCanvas.drawCircle(mIconSize / 2, mIconSize / 2, (int)mIconSize / 2.1f, backPaint);
-        mBackdrop.setImageDrawable(new BitmapDrawable(mContext.getResources(), backOutput));*/
-
         // Number
         mNumber = (TextView) findViewById(R.id.number);
         mNumber.setVisibility(View.GONE);
@@ -573,6 +544,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         public boolean onSingleTapConfirmed(MotionEvent event) {
             if (!isBeingDragged) {
                 launchTask(mContentIntent, true);
+                snapToSide(true);
             }
             return true;
         }
@@ -629,6 +601,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             final int action = event.getAction();
             switch(action) {
                 case MotionEvent.ACTION_DOWN:
+                    wakeUp(false);
                     // Watch out here, in reversed mode we can not overwrite the double-tap action down.
                     if (!(mInteractionReversed && isBeingDragged)) {
                         mTaskIntent = null;
@@ -636,8 +609,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                         isBeingDragged = false;
                         overX = false;
                         initialX = event.getRawX();
-                        initialY = event.getRawY();
-                        wakeUp(false);
+                        initialY = event.getRawY();                        
                     }
                     break;
                 case MotionEvent.ACTION_CANCEL:
@@ -651,7 +623,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                         mBar.mHaloTaskerActive = false;
                         mBar.updateNotificationIcons();
                         mDoubleTap = false;
-                    }
+                    }                    
 
                     boolean oldState = isBeingDragged;
                     isBeingDragged = false;
