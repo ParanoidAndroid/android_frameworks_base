@@ -11,33 +11,35 @@
         android:layout_height="wrap_content">
 
         <RelativeLayout
-            android:id="@+id/halo_content"      
-            android:padding="@dimen/halo_icon_margin"
+            android:id="@+id/halo_content"            
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
             <ImageView
                 android:id="@+id/shadow"
-                android:layout_marginTop="1.2dp"
-                android:layout_width="@dimen/halo_icon_size"
-                android:layout_height="@dimen/halo_icon_size"/>
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/halo_bg"/>
 
             <ImageView
                 android:id="@+id/backdrop"
                 android:layout_width="@dimen/halo_icon_size"
-                android:layout_height="@dimen/halo_icon_size"/>
+                android:layout_height="@dimen/halo_icon_size"/>-->
 
             <ImageView
                 android:id="@+id/app_icon"
                 android:layout_width="@dimen/halo_icon_size"
                 android:layout_height="@dimen/halo_icon_size"
                 android:soundEffectsEnabled="false"
-                android:focusable="true"/>
+                android:focusable="true"
+                android:layout_centerVertical="true"
+                android:layout_centerHorizontal="true"/>
 
             <ImageView
                 android:id="@+id/frame"
-                android:layout_width="@dimen/halo_icon_size"
-                android:layout_height="@dimen/halo_icon_size"/>
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/halo_frame"/>
         </RelativeLayout>
 
         <TextView

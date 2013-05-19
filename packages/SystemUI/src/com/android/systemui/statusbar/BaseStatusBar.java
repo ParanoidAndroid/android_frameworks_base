@@ -544,6 +544,7 @@ public abstract class BaseStatusBar extends SystemUI implements
                 LayoutInflater inflater = (LayoutInflater) mContext
                         .getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
                 mHalo = (Halo)inflater.inflate(R.layout.halo_layout, null);
+                mHalo.setLayerType (View.LAYER_TYPE_HARDWARE, null);
                 WindowManager.LayoutParams params = mHalo.getWMParams();
                 mWindowManager.addView(mHalo,params);
                 mHalo.setStatusBar(this);
@@ -1407,8 +1408,8 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     private Bitmap createRoundIcon(StatusBarNotification notification) {
         // Construct the round icon
-        int iconSize = mContext.getResources().getDimensionPixelSize(R.dimen.halo_icon_size)
-                + mContext.getResources().getDimensionPixelSize(R.dimen.halo_icon_margin) * 2;
+        int iconSize = mContext.getResources().getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
+        int smallIconSize = mContext.getResources().getDimensionPixelSize(R.dimen.status_bar_icon_size);
 
         Bitmap roundIcon = Bitmap.createBitmap(iconSize, iconSize, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(roundIcon);
@@ -1427,8 +1428,8 @@ public abstract class BaseStatusBar extends SystemUI implements
                     new StatusBarIcon(notification.pkg, notification.user, notification.notification.icon,
                     notification.notification.iconLevel, 0, notification.notification.tickerText)); 
                 if (icon == null) icon = mContext.getPackageManager().getApplicationIcon(notification.pkg);
-                icon.setBounds((int)(iconSize * 0.3f), (int)(iconSize * 0.3f),
-                        (int)(iconSize * 0.7f), (int)(iconSize * 0.7f));            
+                int margin = (iconSize - smallIconSize) / 2;
+                icon.setBounds(margin, margin, smallIconSize + margin, smallIconSize + margin);
                 icon.draw(canvas);
             } catch (Exception e) {
                 // NameNotFoundException

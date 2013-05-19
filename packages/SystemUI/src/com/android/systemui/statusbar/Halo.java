@@ -156,7 +156,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
     private ValueAnimator mSleepDaydreaming = ValueAnimator.ofInt(0, 1);
     private ValueAnimator mSleepREM = ValueAnimator.ofInt(0, 1);
-    private AlphaAnimation mSleepNap = new AlphaAnimation(1, 0.5f);
+    private AlphaAnimation mSleepNap = new AlphaAnimation(1, 0.65f);
     private int mAnimationFromX;
     private int mAnimationToX;
 
@@ -214,8 +214,8 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         mSettingsObserver.onChange(true);
 
         // Init variables
-        mIconSize = mContext.getResources().getDimensionPixelSize(R.dimen.halo_icon_size)
-                + mContext.getResources().getDimensionPixelSize(R.dimen.halo_icon_margin) * 2;
+        BitmapDrawable bd = (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.halo_frame);
+        mIconSize=bd.getBitmap().getWidth();
         mTickerPos = getWMParams();
 
         // Init colors
@@ -236,7 +236,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         // Animations
         mSleepNap.setInterpolator(new DecelerateInterpolator());
         mSleepNap.setFillAfter(true);
-        mSleepNap.setDuration(10000);
+        mSleepNap.setDuration(1000);
 
         mSleepDaydreaming.setDuration(1000);
         mSleepDaydreaming.setInterpolator(new AccelerateInterpolator());
@@ -248,11 +248,13 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             }});
         mSleepDaydreaming.addListener(new Animator.AnimatorListener() {
             @Override public void onAnimationCancel(Animator animation) {}
-            @Override public void onAnimationEnd(Animator animation) { }
+            @Override public void onAnimationEnd(Animator animation)
+            {
+                mContent.startAnimation(mSleepNap);
+            }
             @Override public void onAnimationRepeat(Animator animation) {}
             @Override public void onAnimationStart(Animator animation) 
             {
-                mContent.startAnimation(mSleepNap);
                 mAnimationFromX = mTickerPos.x;
                 final int setBack = mIconSize / 2;
                 mAnimationToX = (mAnimationFromX < mScreenWidth / 2) ? -setBack : setBack;
@@ -278,8 +280,9 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
         // Create effect layer
         mHaloEffect = new HaloEffect(mContext);
+        mHaloEffect.setLayerType (View.LAYER_TYPE_HARDWARE, null);
         mHaloEffect.pingMinRadius = mIconSize / 2;
-        mHaloEffect.pingMaxRadius = (int)(mIconSize * 1.5f);
+        mHaloEffect.pingMaxRadius = (int)(mIconSize * 1.2f);
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
@@ -494,7 +497,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         mIcon.setOnTouchListener(mIconTouchListener);
 
         // Frame
-        mFrame = (ImageView) findViewById(R.id.frame);
+        /*mFrame = (ImageView) findViewById(R.id.frame);
         Bitmap frame = Bitmap.createBitmap(mIconSize, mIconSize, Bitmap.Config.ARGB_8888);
         Canvas frameCanvas = new Canvas(frame);
         frameCanvas.drawCircle(mIconSize / 2, mIconSize / 2, (int)mIconSize / 2, mPaintHoloBlue);
@@ -507,23 +510,23 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         holePaint.setXfermode(new PorterDuffXfermode(Mode.SRC_OUT));
         final Rect rect = new Rect(0, 0, mIconSize, mIconSize);
         holeCanvas.drawBitmap(frame, null, rect, holePaint);
-        mFrame.setImageDrawable(new BitmapDrawable(mContext.getResources(), hole));
+        mFrame.setImageDrawable(new BitmapDrawable(mContext.getResources(), hole));*/
 
         // Shadow
-        ImageView mShadow = (ImageView) findViewById(R.id.shadow);
+        /*ImageView mShadow = (ImageView) findViewById(R.id.shadow);
         BitmapDrawable shadow = new BitmapDrawable(mContext.getResources(), hole);
         shadow.setColorFilter(0x55000000, PorterDuff.Mode.SRC_IN);
-        mShadow.setImageDrawable(shadow);
+        mShadow.setImageDrawable(shadow);*/
 
         // Background
-        mBackdrop = (ImageView) findViewById(R.id.backdrop);
+        /*mBackdrop = (ImageView) findViewById(R.id.backdrop);
         Bitmap backOutput = Bitmap.createBitmap(mIconSize, mIconSize, Bitmap.Config.ARGB_8888);
         Canvas backCanvas = new Canvas(backOutput);
         final Paint backPaint = new Paint();
         backPaint.setAntiAlias(true);
         backPaint.setColor(0xdd404040);
         backCanvas.drawCircle(mIconSize / 2, mIconSize / 2, (int)mIconSize / 2.1f, backPaint);
-        mBackdrop.setImageDrawable(new BitmapDrawable(mContext.getResources(), backOutput));
+        mBackdrop.setImageDrawable(new BitmapDrawable(mContext.getResources(), backOutput));*/
 
         // Number
         mNumber = (TextView) findViewById(R.id.number);
@@ -897,7 +900,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
             tickerUp.setDuration(startDuration);
             tickerUp.start();
-            tickerDown.setStartDelay(TICKER_HIDE_TIME / 2 + startDuration);
+            tickerDown.setStartDelay(TICKER_HIDE_TIME + startDuration);
             tickerDown.start();
         }
 
