@@ -5074,6 +5074,10 @@ public class Activity extends ContextThemeWrapper
             TypedArray styleArray = context.obtainStyledAttributes(info.theme, com.android.internal.R.styleable.Window);
             TypedValue backgroundValue = styleArray.peekValue(com.android.internal.R.styleable.Window_windowBackground);
 
+            // Apps that have no title don't need no title bar
+            TypedValue outValue = new TypedValue();
+            boolean result = styleArray.getValue(com.android.internal.R.styleable.Window_windowNoTitle, outValue);
+
             if (backgroundValue != null && backgroundValue.toString().contains("light")) {
                 context.getTheme().applyStyle(com.android.internal.R.style.Theme_DeviceDefault_FloatingWindowLight, true);
             } else {
@@ -5087,12 +5091,6 @@ public class Activity extends ContextThemeWrapper
             mWindow.mIsFloatingWindow = true;
             mWindow.setCloseOnTouchOutsideIfNotSet(true);
             mWindow.setGravity(Gravity.CENTER);
-            mWindow.requestFeature(Window.FEATURE_ACTION_BAR);
-
-            // Apps that have no title don't need no title bar
-            if (styleArray.getBoolean(com.android.internal.R.styleable.Window_windowNoTitle, false)) {
-                mWindow.requestFeature(Window.FEATURE_NO_TITLE);
-            }
 
             mWindow.setFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND,
                     WindowManager.LayoutParams.FLAG_DIM_BEHIND);
