@@ -499,6 +499,9 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         mIcon.setOnClickListener(mIconClicker);
         mIcon.setOnTouchListener(mIconTouchListener);
 
+        // Frame
+		mFrame = (ImageView) findViewById(R.id.frame);
+
         // Number
         mNumber = (TextView) findViewById(R.id.number);
         mNumber.setVisibility(View.GONE);
@@ -649,13 +652,24 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                     if (!mDoubleTap) {
                         // Check kill radius
                         if (distanceToKill < mIconSize) {
+
+                            // Magnetize X
+                            mTickerPos.x = (int)mKillX - mIconSize / 2;
+                            mTickerPos.y = (int)(mKillY - mIconSize * 0.3f);
+                            updatePosition();
+                            
                             if (!overX) {
                                 if (mHapticFeedback) mVibrator.vibrate(25);
-                                mHaloEffect.causePing(mPaintHoloRed);
+                                mHaloEffect.causePing(mPaintHoloRed);                               
                                 overX = true;
+
+                                mFrame.getDrawable().setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
                             }
+
+                            return false;
                         } else {
-                                overX = false;
+                            overX = false;
+                            mFrame.getDrawable().setColorFilter(null);
                         }
 
                         // Drag

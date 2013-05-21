@@ -80,7 +80,7 @@ final class ActivityStack {
     static final boolean DEBUG_PAUSE = ActivityManagerService.DEBUG_PAUSE;
     static final boolean DEBUG_VISBILITY = ActivityManagerService.DEBUG_VISBILITY;
     static final boolean DEBUG_USER_LEAVING = ActivityManagerService.DEBUG_USER_LEAVING;
-    static final boolean DEBUG_TRANSITION = true; //ActivityManagerService.DEBUG_TRANSITION;
+    static final boolean DEBUG_TRANSITION = ActivityManagerService.DEBUG_TRANSITION;
     static final boolean DEBUG_RESULTS = ActivityManagerService.DEBUG_RESULTS;
     static final boolean DEBUG_CONFIGURATION = ActivityManagerService.DEBUG_CONFIGURATION;
     static final boolean DEBUG_TASKS = ActivityManagerService.DEBUG_TASKS;
