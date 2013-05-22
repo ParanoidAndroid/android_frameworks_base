@@ -4436,7 +4436,7 @@ final class ActivityStack {
                 mNoAnimActivities.add(r);
             }
         } else {
-            mService.mWindowManager.prepareAppTransition(            
+            mService.mWindowManager.prepareAppTransition(
                     WindowManagerPolicy.TRANSIT_TASK_TO_BACK, false);
         }
         mService.mWindowManager.moveAppTokensToBottom(moved);

@@ -458,7 +458,6 @@ final class ActivityRecord {
                 
                 // If this is the mother-intent we make it volatile
                 if (topIntent) {
-
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
                 }
