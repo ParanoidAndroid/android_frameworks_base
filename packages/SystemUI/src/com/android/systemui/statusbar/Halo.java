@@ -629,10 +629,9 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                             }
 
                             return false;
-                        } else {
+                        } else {                            
                             overX = false;
-                            mFrame.getDrawable().setColorFilter(null);
-                            mHaloEffect.killPing();
+                            mFrame.getDrawable().setColorFilter(null);                            
                         }
 
                         // Drag
@@ -747,6 +746,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         private Paint mPingPaint;
         private int pingAlpha = 0;        
         private int pingRadius = 0;
+        private int mPingX, mPingY;
         protected int pingMinRadius = 0;
         protected int pingMaxRadius = 0;
         private float mContentAlpha = 0;
@@ -921,6 +921,9 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         public void causePing(Paint paint) {
             if ((!mPingAllowed && paint != mPaintHoloRed) && !mDoubleTap) return;
 
+            mPingX = mTickerPos.x + mIconHalfSize;
+            mPingY = mTickerPos.y + mIconHalfSize;
+
             mPingAllowed = false;
             killPing();
 
@@ -951,17 +954,14 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             if (mPingPaint != null) {
                 mPingPaint.setAlpha(pingAlpha);
 
-                int x = mTickerPos.x + mIconHalfSize;
-                int y = mTickerPos.y + mIconHalfSize;
-
-                canvas.drawCircle(x, y, pingRadius, mPingPaint);
+                canvas.drawCircle(mPingX, mPingY, pingRadius, mPingPaint);
 
                 int w = mPulse1.getWidth() + (int)(mIconSize * mPulseFraction1);
-                Rect r = new Rect(x - w / 2, y - w / 2, x + w / 2, y + w / 2);
+                Rect r = new Rect(mPingX - w / 2, mPingY - w / 2, mPingX + w / 2, mPingY + w / 2);
                 canvas.drawBitmap(mPulse1, null, r, mPulsePaint1);
                 
                 w = mPulse3.getWidth() + (int)(mIconSize * 0.6f * mPulseFraction3);
-                r = new Rect(x - w / 2, y - w / 2, x + w / 2, y + w / 2);
+                r = new Rect(mPingX - w / 2, mPingY - w / 2, mPingX + w / 2, mPingY + w / 2);
                 canvas.drawBitmap(mPulse3, null, r, mPulsePaint3);
             }
 
