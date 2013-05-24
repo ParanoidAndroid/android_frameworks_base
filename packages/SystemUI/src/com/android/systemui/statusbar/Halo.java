@@ -622,7 +622,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
                             // Magnetize X
                             mTickerPos.x = (int)mKillX - mIconHalfSize;
-                            mTickerPos.y = (int)(mKillY - mIconSize * 0.3f);
+                            mTickerPos.y = (int)(mKillY - mIconHalfSize);
                             updatePosition();
                             
                             if (!overX) {
@@ -994,7 +994,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             canvas.restoreToCount(state);
 
             if (isBeingDragged) {
-                canvas.drawBitmap(mXNormal, mKillX - mXNormal.getWidth() / 2, mKillY, null);
+                canvas.drawBitmap(mXNormal, mKillX - mXNormal.getWidth() / 2, mKillY - mXNormal.getWidth() / 2, null);
             }
         }
     }
