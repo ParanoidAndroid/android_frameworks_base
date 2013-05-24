@@ -329,7 +329,11 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
         // Then pop
         if (pop) {
-            mHaloEffect.causePing(mPaintHoloBlue);
+            mHandler.postDelayed(new Runnable() {
+                public void run() {
+                    mHaloEffect.causePing(mPaintHoloBlue);
+                }}, 250);
+            
         }
     }
 
