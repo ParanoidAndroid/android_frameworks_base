@@ -750,7 +750,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         private Paint mPingPaint;
         private int pingAlpha = 0;        
         private int pingRadius = 0;
-        private int mPingX, mPingY;
+        private int mPingX, mPingY, mPingRotate;
         protected int pingMinRadius = 0;
         protected int pingMaxRadius = 0;
         private float mContentAlpha = 0;
@@ -771,6 +771,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         private ValueAnimator tickerUp = ValueAnimator.ofInt(0, 1);
         private ValueAnimator tickerDown = ValueAnimator.ofInt(0, 1);
         private ValueAnimator pingAnim = ValueAnimator.ofInt(0, 1);
+        private ValueAnimator pingRotateAnim = ValueAnimator.ofInt(0, 1);
 
         public HaloEffect(Context context) {
             super(context);
@@ -825,6 +826,16 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                     pingAlpha = (int)(200 * (1-animation.getAnimatedFraction()));
                     pingRadius = (int)((pingMaxRadius - pingMinRadius) *
                             animation.getAnimatedFraction()) + pingMinRadius;
+                    invalidate();
+                }
+            });
+
+            pingRotateAnim.setDuration(PING_TIME * 2);
+            pingRotateAnim.setInterpolator(new DecelerateInterpolator());
+            pingRotateAnim.addUpdateListener(new AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    mPingRotate = (int)(400 * animation.getAnimatedFraction());
                     invalidate();
                 }
             });
@@ -916,8 +927,10 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         public void killPing() {
             mPulseAnim1.cancel();
             mPulseAnim3.cancel();
+            pingRotateAnim.cancel();
             pingAnim.cancel();
             pingAlpha = 0;
+            mPingRotate = 0;
             mPulsePaint1.setAlpha(0);
             mPulsePaint3.setAlpha(0);
         }
@@ -940,6 +953,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             mPulseAnim1.start();
             mPulseAnim3.start();
             pingAnim.start();
+            pingRotateAnim.start();
 
             // prevent ping spam            
             mHandler.postDelayed(new Runnable() {
@@ -962,11 +976,19 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
                 int w = mPulse1.getWidth() + (int)(mIconSize * mPulseFraction1);
                 Rect r = new Rect(mPingX - w / 2, mPingY - w / 2, mPingX + w / 2, mPingY + w / 2);
+
+                state = canvas.save();
+                canvas.rotate(mPingRotate, mPingX, mPingY);
                 canvas.drawBitmap(mPulse1, null, r, mPulsePaint1);
+                canvas.restoreToCount(state);
                 
                 w = mPulse3.getWidth() + (int)(mIconSize * 0.6f * mPulseFraction3);
                 r = new Rect(mPingX - w / 2, mPingY - w / 2, mPingX + w / 2, mPingY + w / 2);
+                
+                state = canvas.save();
+                canvas.rotate(-mPingRotate, mPingX, mPingY);
                 canvas.drawBitmap(mPulse3, null, r, mPulsePaint3);
+                canvas.restoreToCount(state);
             }
 
             state = canvas.save();

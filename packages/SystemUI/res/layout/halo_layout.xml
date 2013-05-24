@@ -24,7 +24,7 @@
             <ImageView
                 android:id="@+id/backdrop"
                 android:layout_width="@dimen/halo_icon_size"
-                android:layout_height="@dimen/halo_icon_size"/>-->
+                android:layout_height="@dimen/halo_icon_size"/>
 
             <ImageView
                 android:id="@+id/app_icon"
