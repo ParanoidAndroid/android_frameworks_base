@@ -496,6 +496,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         
         @Override
         public boolean onSingleTapUp (MotionEvent event) {
+            wakeUp(false);
             playSoundEffect(SoundEffectConstants.CLICK);
             return true;
         }
@@ -522,7 +523,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
         @Override
         public boolean onDoubleTap(MotionEvent event) {
-
+            wakeUp(false);
             if (!mInteractionReversed) {
                 mDoubleTap = true;
                 snapToSide(false, 0);
@@ -566,7 +567,6 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             final int action = event.getAction();
             switch(action) {
                 case MotionEvent.ACTION_DOWN:
-                    wakeUp(false);
                     // Watch out here, in reversed mode we can not overwrite the double-tap action down.
                     if (!(mInteractionReversed && isBeingDragged)) {
                         mTaskIntent = null;
@@ -638,7 +638,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                         // Drag
                         if (!isBeingDragged) {
                             if (initialDistance > mIconSize * 0.7f) {
-
+                                wakeUp(false);
                                 if (mInteractionReversed) {
                                     mDoubleTap = true;
                                     snapToSide(false, 0);
