@@ -724,6 +724,7 @@ public class ServiceState implements Parcelable {
                 || radioTechnology == RIL_RADIO_TECHNOLOGY_HSPA
                 || radioTechnology == RIL_RADIO_TECHNOLOGY_LTE
                 || radioTechnology == RIL_RADIO_TECHNOLOGY_HSPAP
+                || radioTechnology == RIL_RADIO_TECHNOLOGY_DCHSPAP
                 || radioTechnology == RIL_RADIO_TECHNOLOGY_GSM;
     }
 
