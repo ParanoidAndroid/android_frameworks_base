@@ -256,7 +256,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         mHaloEffect = new HaloEffect(mContext);
         mHaloEffect.setLayerType (View.LAYER_TYPE_HARDWARE, null);
         mHaloEffect.pingMinRadius = mIconHalfSize;
-        mHaloEffect.pingMaxRadius = mIconSize;
+        mHaloEffect.pingMaxRadius = (int)(mIconSize * 1.2f);
         WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
@@ -310,6 +310,10 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
     ObjectAnimator mCurrentAnimator;
     private synchronized void wakeUp(boolean pop) {
+        wakeUp(pop, 250);
+    }
+
+    private synchronized void wakeUp(boolean pop, int duration) {
         // If HALO is hidden, do nothing
         if (mHidden) return;
 
@@ -318,13 +322,13 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         mContent.setVisibility(View.VISIBLE);
 
         if (mCurrentAnimator != null) mCurrentAnimator.cancel();
-        mCurrentAnimator = ObjectAnimator.ofFloat(mContent, "translationX", 0).setDuration(250);
+        mCurrentAnimator = ObjectAnimator.ofFloat(mContent, "translationX", 0).setDuration(duration);
         mCurrentAnimator.start();
 
         // First things first, make the bubble visible
         AlphaAnimation alphaUp = new AlphaAnimation(mContent.getAlpha(), 1);
         alphaUp.setFillAfter(true);
-        alphaUp.setDuration(250);
+        alphaUp.setDuration(duration);
         mContent.startAnimation(alphaUp);
 
         // Then pop
@@ -332,7 +336,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             mHandler.postDelayed(new Runnable() {
                 public void run() {
                     mHaloEffect.causePing(mPaintHoloBlue);
-                }}, 250);
+                }}, duration);
             
         }
     }
@@ -466,7 +470,6 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
         // Frame
 		mFrame = (ImageView) findViewById(R.id.frame);
-        mFrame.getDrawable().setColorFilter(null);
         mFrame.setOnClickListener(mIconClicker);
         mFrame.setOnTouchListener(mIconTouchListener);
 
@@ -500,7 +503,6 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         
         @Override
         public boolean onSingleTapUp (MotionEvent event) {
-            wakeUp(false);
             playSoundEffect(SoundEffectConstants.CLICK);
             return true;
         }
@@ -513,6 +515,8 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
         @Override
         public boolean onSingleTapConfirmed(MotionEvent event) {
+            wakeUp(false);
+            snapToSide(true, 0);
             if (!isBeingDragged) {
                 launchTask(mContentIntent);
             }
@@ -530,7 +534,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             wakeUp(false);
             if (!mInteractionReversed) {
                 mDoubleTap = true;
-                snapToSide(false, 0);
+                // snapToSide(false, 0);
                 // Show all available icons for easier browsing while the tasker is in motion
                 mBar.mHaloTaskerActive = true;
                 mBar.updateNotificationIcons();
@@ -583,6 +587,12 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                     break;
                 case MotionEvent.ACTION_CANCEL:
                 case MotionEvent.ACTION_UP:
+
+                    // Snap HALO when it has been dragged or tasked
+                    if (isBeingDragged || mDoubleTap) {
+                        snapToSide(true, 0);
+                    }
+
                     if (mDoubleTap) {                               
                         if (mTaskIntent != null) {
                             playSoundEffect(SoundEffectConstants.CLICK);
@@ -604,7 +614,6 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                                 Settings.System.HALO_ACTIVE, 0);
                         return true;
                     }
-                    snapToSide(true, 0);
                     return oldState;
                 case MotionEvent.ACTION_MOVE:
                     float mX = event.getRawX();
@@ -629,26 +638,25 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                                 if (mHapticFeedback) mVibrator.vibrate(25);
                                 mHaloEffect.causePing(mPaintHoloRed);                               
                                 overX = true;
-                                mFrame.getDrawable().setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
                             }
 
                             return false;
                         } else {                            
                             overX = false;
-                            mFrame.getDrawable().setColorFilter(null);                            
                         }
 
                         // Drag
                         if (!isBeingDragged) {
-                            if (initialDistance > mIconSize * 0.7f) {
-                                wakeUp(false);
-                                if (mInteractionReversed) {
+                            if (initialDistance > mIconSize * 0.7f) {            
+                                if (mInteractionReversed) {                                
                                     mDoubleTap = true;
+                                    wakeUp(false);
                                     snapToSide(false, 0);
                                     // Show all available icons for easier browsing while the tasker is in motion
                                     mBar.mHaloTaskerActive = true;
                                     mBar.updateNotificationIcons();
                                 } else {
+                                    wakeUp(false, 0);
                                     isBeingDragged = true;
                                     if (mHapticFeedback) mVibrator.vibrate(25);
                                 }
@@ -750,7 +758,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         private Paint mPingPaint;
         private int pingAlpha = 0;        
         private int pingRadius = 0;
-        private int mPingX, mPingY, mPingRotate;
+        private int mPingX, mPingY;
         protected int pingMinRadius = 0;
         protected int pingMaxRadius = 0;
         private float mContentAlpha = 0;
@@ -771,7 +779,6 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         private ValueAnimator tickerUp = ValueAnimator.ofInt(0, 1);
         private ValueAnimator tickerDown = ValueAnimator.ofInt(0, 1);
         private ValueAnimator pingAnim = ValueAnimator.ofInt(0, 1);
-        private ValueAnimator pingRotateAnim = ValueAnimator.ofInt(0, 1);
 
         public HaloEffect(Context context) {
             super(context);
@@ -797,7 +804,6 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             mPulsePaint1.setAlpha(0);
             mPulsePaint3.setAntiAlias(true);
             mPulsePaint3.setAlpha(0);
-            //mPulsePaint3.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
 
             tickerUp.setInterpolator(new DecelerateInterpolator());
             tickerUp.addUpdateListener(new AnimatorUpdateListener() {
@@ -830,16 +836,6 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                 }
             });
 
-            pingRotateAnim.setDuration(PING_TIME * 2);
-            pingRotateAnim.setInterpolator(new DecelerateInterpolator());
-            pingRotateAnim.addUpdateListener(new AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    mPingRotate = (int)(400 * animation.getAnimatedFraction());
-                    invalidate();
-                }
-            });
-
             mPulseAnim1.setDuration((int)(PULSE_TIME / 2));
             mPulseAnim1.setRepeatCount(1);
             mPulseAnim1.setRepeatMode(ValueAnimator.REVERSE);
@@ -866,6 +862,11 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                     invalidate();
                 }
             });
+        }
+
+        @Override
+        public void onSizeChanged(int w, int h, int oldw, int oldh) {
+            onConfigurationChanged(null);
         }
 
         @Override
@@ -927,10 +928,8 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         public void killPing() {
             mPulseAnim1.cancel();
             mPulseAnim3.cancel();
-            pingRotateAnim.cancel();
             pingAnim.cancel();
             pingAlpha = 0;
-            mPingRotate = 0;
             mPulsePaint1.setAlpha(0);
             mPulsePaint3.setAlpha(0);
         }
@@ -953,7 +952,6 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             mPulseAnim1.start();
             mPulseAnim3.start();
             pingAnim.start();
-            pingRotateAnim.start();
 
             // prevent ping spam            
             mHandler.postDelayed(new Runnable() {
@@ -976,19 +974,11 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
                 int w = mPulse1.getWidth() + (int)(mIconSize * mPulseFraction1);
                 Rect r = new Rect(mPingX - w / 2, mPingY - w / 2, mPingX + w / 2, mPingY + w / 2);
-
-                state = canvas.save();
-                canvas.rotate(mPingRotate, mPingX, mPingY);
                 canvas.drawBitmap(mPulse1, null, r, mPulsePaint1);
-                canvas.restoreToCount(state);
                 
                 w = mPulse3.getWidth() + (int)(mIconSize * 0.6f * mPulseFraction3);
                 r = new Rect(mPingX - w / 2, mPingY - w / 2, mPingX + w / 2, mPingY + w / 2);
-                
-                state = canvas.save();
-                canvas.rotate(-mPingRotate, mPingX, mPingY);
                 canvas.drawBitmap(mPulse3, null, r, mPulsePaint3);
-                canvas.restoreToCount(state);
             }
 
             state = canvas.save();
