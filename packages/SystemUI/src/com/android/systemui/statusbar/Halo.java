@@ -161,6 +161,8 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     private int mAnimationFromX;
     private int mAnimationToX;
 
+    private float mRawX, mRawY;
+
     private SettingsObserver mSettingsObserver;
 
     private final class SettingsObserver extends ContentObserver {
@@ -293,7 +295,6 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                     wakeUp(false);
                     snapToSide(true, 500);
                 }}, 1500);
-
         }
 
         // Update dimensions
@@ -525,8 +526,10 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
         @Override
         public void onLongPress(MotionEvent event) {
-            if (mHapticFeedback && !isBeingDragged && !mDoubleTap) mVibrator.vibrate(25);
-            onDoubleTap(event);
+            if (!isBeingDragged && !mDoubleTap) {
+                if (mHapticFeedback) mVibrator.vibrate(25);
+                onDoubleTap(event);
+            }
         }
 
         @Override
@@ -541,6 +544,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             } else {
                 // Move
                 isBeingDragged = true;
+                mHaloEffect.intro();
             }
             return true;
         }
@@ -604,9 +608,13 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                         mDoubleTap = false;
                     }
 
+                    if (isBeingDragged) mHaloEffect.outro();
+
                     mHaloEffect.killTicker();
                     boolean oldState = isBeingDragged;
                     isBeingDragged = false;
+
+                    mHaloEffect.invalidate();
 
                     // Do we erase ourselves?
                     if (overX) {
@@ -616,13 +624,13 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                     }
                     return oldState;
                 case MotionEvent.ACTION_MOVE:
-                    float mX = event.getRawX();
-                    float mY = event.getRawY();
-                    float distanceX = mKillX-mX;
-                    float distanceY = mKillY-mY;
+                    mRawX = event.getRawX();
+                    mRawY = event.getRawY();
+                    float distanceX = mKillX-mRawX;
+                    float distanceY = mKillY-mRawY;
                     float distanceToKill = (float)Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
-                    distanceX = initialX-mX;
-                    distanceY = initialY-mY;                    
+                    distanceX = initialX-mRawX;
+                    distanceY = initialY-mRawY;
                     float initialDistance = (float)Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
 
                     if (!mDoubleTap) {
@@ -649,7 +657,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                         if (!isBeingDragged) {
                             if (initialDistance > mIconSize * 0.7f) {            
                                 if (mInteractionReversed) {                                
-                                    mDoubleTap = true;
+                                    mDoubleTap = true;                                    
                                     wakeUp(false);
                                     snapToSide(false, 0);
                                     // Show all available icons for easier browsing while the tasker is in motion
@@ -658,13 +666,14 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                                 } else {
                                     wakeUp(false, 0);
                                     isBeingDragged = true;
+                                    mHaloEffect.intro();
                                     if (mHapticFeedback) mVibrator.vibrate(25);
                                 }
                                 return false;
                             }
                         } else {
-                            mTickerPos.x = (int)mX - mIconHalfSize;
-                            mTickerPos.y = (int)mY - mIconHalfSize;
+                            mTickerPos.x = (int)mRawX - mIconHalfSize;
+                            mTickerPos.y = (int)mRawY - mIconHalfSize;
                             if (mTickerPos.x < 0) mTickerPos.x = 0;
                             if (mTickerPos.y < 0) mTickerPos.y = 0;
                             if (mTickerPos.x > mScreenWidth-mIconSize) mTickerPos.x = mScreenWidth-mIconSize;
@@ -676,26 +685,29 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                         // Switch icons
                         if (mNotificationData != null && mNotificationData.size() > 0) {
 
+                            // Invalidate the effect layer for the markers to show up
+                            mHaloEffect.invalidate();
+
                             int items = mNotificationData.size();
 
                             // This will be the lenght we are going to use
-                            int indexLength = (int)(mScreenWidth - mIconSize * 1.5f) / items;
-                            // If we have less than 6 notification let's cut it a bit
-                            if (items < 6) indexLength = (int)(indexLength * 0.75f);
-                            // If we have less than 4 notification let's cut it a bit
-                            if (items < 4) indexLength = (int)(indexLength * 0.75f);
+                            int indexLength = (mScreenWidth - mIconSize * 2) / items;
 
-                            int totalLength = indexLength * items;
+                            int delta = (int)(mTickerLeft ? mRawX : mScreenWidth - mRawX);
 
-                            // This gets us the actual index
-                            int distance = (int)initialDistance;
-                            distance = initialDistance <= mIconSize ? 0 : (int)(initialDistance - mIconSize);
-                            // We must shorten the totalLength a tiny bit to prevent number wrap ups
-                            if (distance >= totalLength) distance = totalLength - 1;
-                            // Reverse order depending on which side HALO sits
-                            int index = mTickerLeft ? (items - distance / indexLength) - 1 : (distance / indexLength);
+                            int index = -1;
+                            if (delta > (int)(mIconSize * 1.5f)) {
 
-                            if (initialDistance <= mIconSize * 0.85f) index = -1;
+                                // Adjust delta
+                                delta -= mIconSize * 1.5f;
+
+                                // Calculate index
+                                index = mTickerLeft ? (items - delta / indexLength) - 1 : (delta / indexLength);
+
+                                // Watch out for margins!
+                                if (index >= items) index = items - 1;
+                                if (index < 0) index = 0;
+                            }
 
                             if (index !=oldIconIndex) {
                                 oldIconIndex = index;
@@ -769,16 +781,25 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         private boolean mPingAllowed = true;
         private boolean mSkipThrough = false;
 
+        float mPulseFraction1 = 0;
+        float mPulseFraction3 = 0;
+        float mXFraction = 0, mXCurFraction = 0;
+
+        private Bitmap mMarkerL, mMarkerR;        
         private Bitmap mXNormal;
         private Bitmap mPulse1, mPulse3;
         private Paint mPulsePaint1 = new Paint();
         private Paint mPulsePaint3 = new Paint();
+        private Paint mMarkerPaint = new Paint();
         private ValueAnimator mPulseAnim1 = ValueAnimator.ofInt(0, 1);
         private ValueAnimator mPulseAnim3 = ValueAnimator.ofInt(0, 1);
 
         private ValueAnimator tickerUp = ValueAnimator.ofInt(0, 1);
         private ValueAnimator tickerDown = ValueAnimator.ofInt(0, 1);
         private ValueAnimator pingAnim = ValueAnimator.ofInt(0, 1);
+
+        private ValueAnimator introAnim = ValueAnimator.ofInt(0, 1);
+        private ValueAnimator outroAnim = ValueAnimator.ofInt(0, 1);
 
         public HaloEffect(Context context) {
             super(context);
@@ -794,16 +815,22 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             mTextViewL = (TextView) mTickerContent.findViewById(R.id.bubble_l);
 
             mXNormal = BitmapFactory.decodeResource(mContext.getResources(),
-                    R.drawable.ic_launcher_clear_normal_holo);
+                    R.drawable.halo_x);
             mPulse1 = BitmapFactory.decodeResource(mContext.getResources(),
                     R.drawable.halo_pulse1);
             mPulse3 = BitmapFactory.decodeResource(mContext.getResources(),
                     R.drawable.halo_pulse3);
+            mMarkerR = BitmapFactory.decodeResource(mContext.getResources(),
+                    R.drawable.halo_marker_r);
+            mMarkerL = BitmapFactory.decodeResource(mContext.getResources(),
+                    R.drawable.halo_marker_l);
+
 
             mPulsePaint1.setAntiAlias(true);
             mPulsePaint1.setAlpha(0);
             mPulsePaint3.setAntiAlias(true);
-            mPulsePaint3.setAlpha(0);
+            mPulsePaint3.setAlpha(0);            
+            mMarkerPaint.setAntiAlias(true);
 
             tickerUp.setInterpolator(new DecelerateInterpolator());
             tickerUp.addUpdateListener(new AnimatorUpdateListener() {
@@ -859,6 +886,26 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                 public void onAnimationUpdate(ValueAnimator animation) {
                     mPulseFraction3 = animation.getAnimatedFraction();
                     mPulsePaint3.setAlpha((int)(50*animation.getAnimatedFraction()));
+                    invalidate();
+                }
+            });
+
+            introAnim.setDuration(PING_TIME / 3);
+            introAnim.setInterpolator(new DecelerateInterpolator());
+            introAnim.addUpdateListener(new AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    mXFraction = 1 - animation.getAnimatedFraction();
+                    invalidate();
+                }
+            });
+
+            outroAnim.setDuration(PING_TIME / 3);
+            outroAnim.setInterpolator(new DecelerateInterpolator());
+            outroAnim.addUpdateListener(new AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    mXFraction = mXCurFraction + (1-mXCurFraction) * animation.getAnimatedFraction();
                     invalidate();
                 }
             });
@@ -960,8 +1007,19 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                 }}, 3000);
         }
 
-        float mPulseFraction1 = 0;
-        float mPulseFraction3 = 0;
+        public void intro() {
+            introAnim.cancel();
+            outroAnim.cancel();
+            mXCurFraction = mXFraction;
+            introAnim.start();
+        }
+
+        public void outro() {
+            introAnim.cancel();
+            outroAnim.cancel();
+            mXCurFraction = mXFraction;
+            outroAnim.start();
+        }
 
         @Override
         protected void onDraw(Canvas canvas) {
@@ -1005,8 +1063,25 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             mContentView.draw(canvas);
             canvas.restoreToCount(state);
 
-            if (isBeingDragged) {
-                canvas.drawBitmap(mXNormal, mKillX - mXNormal.getWidth() / 2, mKillY - mXNormal.getWidth() / 2, null);
+            if (isBeingDragged || outroAnim.isRunning()) {
+                int killyPos = (int)(mKillY - mXNormal.getWidth() / 2 - mIconSize * mXFraction);
+                mMarkerPaint.setAlpha((int)(255*(1-mXFraction)));
+                canvas.drawBitmap(mXNormal, mKillX - mXNormal.getWidth() / 2, killyPos, mMarkerPaint);
+            }
+
+            if (mDoubleTap && mNotificationData != null && mNotificationData.size() > 0) {
+                int pulseY = mTickerPos.y + mIconHalfSize - mMarkerR.getHeight() / 2;
+
+                int items = mNotificationData.size();
+                int indexLength = (mScreenWidth - mIconSize * 2) / items;
+
+                for (int i = 0; i < items; i++) {
+                    float pulseX = mTickerLeft ? (mIconSize * 1.5f + indexLength * i)
+                            : (mScreenWidth - mIconSize * 1.5f - indexLength * i - mMarkerR.getWidth());
+                    boolean markerState = mTickerLeft ? mRawX > pulseX : mRawX < pulseX;
+                    mMarkerPaint.setAlpha(markerState ? 255 : 100);
+                    canvas.drawBitmap(mTickerLeft ? mMarkerR : mMarkerL, pulseX, pulseY, mMarkerPaint);
+                }
             }
         }
     }
