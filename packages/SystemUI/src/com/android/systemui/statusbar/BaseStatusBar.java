@@ -1408,19 +1408,27 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     private Bitmap createRoundIcon(StatusBarNotification notification) {
         // Construct the round icon
-        int iconSize = mContext.getResources().getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
-        int smallIconSize = mContext.getResources().getDimensionPixelSize(R.dimen.status_bar_icon_size);
+        BitmapDrawable bd = (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.halo_frame);
+        int iconSize = bd.getBitmap().getWidth();
 
+        iconSize -= notification.pkg.equals("com.paranoid.halo") ? mContext.getResources()
+                .getDimensionPixelSize(R.dimen.halo_icon_margin) * 2 : 0;
+
+        int smallIconSize = mContext.getResources().getDimensionPixelSize(R.dimen.status_bar_icon_size);        
         Bitmap roundIcon = Bitmap.createBitmap(iconSize, iconSize, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(roundIcon);
         canvas.drawARGB(0, 0, 0, 0);
 
-        if (notification.notification.largeIcon != null) {
-            final Paint paint = new Paint();        
-            paint.setAntiAlias(true);
-            canvas.drawCircle(iconSize / 2, iconSize / 2, iconSize / 2.1f, paint);
-            paint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
-            canvas.drawBitmap(notification.notification.largeIcon, 0, 0, paint);
+        if (notification.notification.largeIcon != null) {           
+            Paint smoothingPaint = new Paint();
+            smoothingPaint.setAntiAlias(true);
+            smoothingPaint.setFilterBitmap(true);
+            smoothingPaint.setDither(true);
+            canvas.drawCircle(iconSize / 2, iconSize / 2, iconSize / 2.3f, smoothingPaint);
+            smoothingPaint.setXfermode(new PorterDuffXfermode(Mode.SRC_IN));
+            Bitmap scaledBitmap = Bitmap.createScaledBitmap(notification.notification.largeIcon, iconSize, iconSize, true);
+            canvas.drawBitmap(scaledBitmap, null, new Rect(0, 0,
+                    iconSize, iconSize), smoothingPaint);
         } else {
             try {
                 Drawable icon = StatusBarIconView.getIcon(mContext,
@@ -1428,7 +1436,7 @@ public abstract class BaseStatusBar extends SystemUI implements
                     notification.notification.iconLevel, 0, notification.notification.tickerText)); 
                 if (icon == null) icon = mContext.getPackageManager().getApplicationIcon(notification.pkg);
                 int margin = (iconSize - smallIconSize) / 2;
-                icon.setBounds(margin, margin, smallIconSize + margin, smallIconSize + margin);
+                icon.setBounds(margin, margin, iconSize - margin, iconSize - margin);
                 icon.draw(canvas);
             } catch (Exception e) {
                 // NameNotFoundException

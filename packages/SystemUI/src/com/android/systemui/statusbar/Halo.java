@@ -463,12 +463,12 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         
         // Icon
 		mIcon = (ImageView) findViewById(R.id.app_icon);
-        mIcon.setOnClickListener(mIconClicker);
-        mIcon.setOnTouchListener(mIconTouchListener);
 
         // Frame
 		mFrame = (ImageView) findViewById(R.id.frame);
         mFrame.getDrawable().setColorFilter(null);
+        mFrame.setOnClickListener(mIconClicker);
+        mFrame.setOnTouchListener(mIconTouchListener);
 
         // Number
         mNumber = (TextView) findViewById(R.id.number);
