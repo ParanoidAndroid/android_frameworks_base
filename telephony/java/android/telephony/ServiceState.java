@@ -100,6 +100,8 @@ public class ServiceState implements Parcelable {
     public static final int RIL_RADIO_TECHNOLOGY_LTE = 14;
     /** @hide */
     public static final int RIL_RADIO_TECHNOLOGY_HSPAP = 15;
+    /** @hide */
+    public static final int RIL_RADIO_TECHNOLOGY_DCHSPAP = 30;
     /**
      * GSM radio technology only supports voice. It does not support data.
      * @hide
