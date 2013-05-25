@@ -522,7 +522,7 @@ public class AudioService extends IAudioService.Stub implements OnFinished {
         intentFilter.addAction(Intent.ACTION_SCREEN_ON);
         intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
         intentFilter.addAction(Intent.ACTION_USER_SWITCHED);
-	intentFilter.addAction(Intent.ACTION_HEADSET_PLUG);
+        intentFilter.addAction(Intent.ACTION_HEADSET_PLUG);
 
         intentFilter.addAction(Intent.ACTION_CONFIGURATION_CHANGED);
         // Register a configuration change listener only if requested by system properties
@@ -3907,7 +3907,7 @@ public class AudioService extends IAudioService.Stub implements OnFinished {
                         }
                     }
                 }
-	    } else if (action.equals(Intent.ACTION_HEADSET_PLUG)) {
+            } else if (action.equals(Intent.ACTION_HEADSET_PLUG)) {
                 state = intent.getIntExtra("state", 0);
                 if (state == 1) {
                     // Headset plugged in
