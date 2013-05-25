@@ -1040,7 +1040,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                 canvas.drawBitmap(mXNormal, mKillX - mXNormal.getWidth() / 2, killyPos, mMarkerPaint);
             }
 
-            if (mDoubleTap && mNotificationData != null && mNotificationData.size() > 0) {
+            if (y > 0 && mDoubleTap && mNotificationData != null && mNotificationData.size() > 0) {
                 int pulseY = mTickerPos.y + mIconHalfSize - mMarkerR.getHeight() / 2;
 
                 int items = mNotificationData.size();
