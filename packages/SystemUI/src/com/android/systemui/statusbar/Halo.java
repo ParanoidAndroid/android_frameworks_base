@@ -21,6 +21,7 @@ import android.app.ActivityManagerNative;
 import android.app.KeyguardManager;
 import android.app.PendingIntent;
 import android.app.Notification;
+import android.app.INotificationManager;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
@@ -53,6 +54,7 @@ import android.graphics.Matrix;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.os.Vibrator;
+import android.os.ServiceManager;
 import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -1097,6 +1099,15 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     // This is the android ticker callback
     public void updateTicker(StatusBarNotification notification, String text) {
 
+        INotificationManager nm = INotificationManager.Stub.asInterface(
+                ServiceManager.getService(Context.NOTIFICATION_SERVICE));
+        boolean blacklisted = false; // default off
+        try {
+            blacklisted = nm.isPackageHaloBlacklisted(notification.pkg);
+        } catch (android.os.RemoteException ex) {
+            // this does not bode well
+        }
+
         for (int i = 0; i < mNotificationData.size(); i++) {
             NotificationData.Entry entry = mNotificationData.get(i);
 
@@ -1115,12 +1126,15 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                 if (mIsNotificationNew) {
                     mNotificationText = text;
                     mLastNotification = entry;
-                    tick(entry, text, 1000, false);
 
-                    // Wake up and snap
-                    mHidden = false;                    
-                    wakeUp(!mDoubleTap && mIsNotificationNew);
-                    if (!isBeingDragged && !mDoubleTap) snapToSide(true, SLEEP_DELAY_DAYDREAMING);
+                    if (!blacklisted) {
+                        tick(entry, text, 1000, false);
+
+                        // Wake up and snap
+                        mHidden = false;                    
+                        wakeUp(!mDoubleTap && mIsNotificationNew);
+                        if (!isBeingDragged && !mDoubleTap) snapToSide(true, SLEEP_DELAY_DAYDREAMING);
+                    }
                 }
                 break;
             }

@@ -185,8 +185,9 @@ public class NotificationManagerService extends INotificationManager.Stub
     private boolean mQuietHoursDim = true;
 
     // Notification control database. For now just contains disabled packages.
-    private AtomicFile mPolicyFile;
+    private AtomicFile mPolicyFile, mHaloPolicyFile;
     private HashSet<String> mBlockedPackages = new HashSet<String>();
+    private HashSet<String> mHaloBlackList = new HashSet<String>();
 
     private static final int DB_VERSION = 1;
 
@@ -197,17 +198,14 @@ public class NotificationManagerService extends INotificationManager.Stub
     private static final String TAG_PACKAGE = "package";
     private static final String ATTR_NAME = "name";
 
-    private void loadBlockDb() {
-        synchronized(mBlockedPackages) {
-            if (mPolicyFile == null) {
-                File dir = new File("/data/system");
-                mPolicyFile = new AtomicFile(new File(dir, "notification_policy.xml"));
-
-                mBlockedPackages.clear();
+    private void loadBlockDb(HashSet<String> array, AtomicFile file) {
+        synchronized(array) {
+            if (file != null) {
+                array.clear();
 
                 FileInputStream infile = null;
                 try {
-                    infile = mPolicyFile.openRead();
+                    infile = file.openRead();
                     final XmlPullParser parser = Xml.newPullParser();
                     parser.setInput(infile, null);
 
@@ -223,7 +221,7 @@ public class NotificationManagerService extends INotificationManager.Stub
                                 while ((type = parser.next()) != END_DOCUMENT) {
                                     tag = parser.getName();
                                     if (TAG_PACKAGE.equals(tag)) {
-                                        mBlockedPackages.add(parser.getAttributeValue(null, ATTR_NAME));
+                                        array.add(parser.getAttributeValue(null, ATTR_NAME));
                                     } else if (TAG_BLOCKED_PKGS.equals(tag) && type == END_TAG) {
                                         break;
                                     }
@@ -246,11 +244,11 @@ public class NotificationManagerService extends INotificationManager.Stub
         }
     }
 
-    private void writeBlockDb() {
-        synchronized(mBlockedPackages) {
+    private void writeBlockDb(HashSet<String> array, AtomicFile file) {
+        synchronized(array) {
             FileOutputStream outfile = null;
             try {
-                outfile = mPolicyFile.startWrite();
+                outfile = file.startWrite();
 
                 XmlSerializer out = new FastXmlSerializer();
                 out.setOutput(outfile, "utf-8");
@@ -261,7 +259,7 @@ public class NotificationManagerService extends INotificationManager.Stub
                     out.attribute(null, ATTR_VERSION, String.valueOf(DB_VERSION));
                     out.startTag(null, TAG_BLOCKED_PKGS); {
                         // write all known network policies
-                        for (String pkg : mBlockedPackages) {
+                        for (String pkg : array) {
                             out.startTag(null, TAG_PACKAGE); {
                                 out.attribute(null, ATTR_NAME, pkg);
                             } out.endTag(null, TAG_PACKAGE);
@@ -271,13 +269,17 @@ public class NotificationManagerService extends INotificationManager.Stub
 
                 out.endDocument();
 
-                mPolicyFile.finishWrite(outfile);
+                file.finishWrite(outfile);
             } catch (IOException e) {
                 if (outfile != null) {
-                    mPolicyFile.failWrite(outfile);
+                    file.failWrite(outfile);
                 }
             }
         }
+    }
+
+    public boolean isPackageHaloBlacklisted(String pkg) {
+        return mHaloBlackList.contains(pkg);
     }
 
     public boolean areNotificationsEnabledForPackage(String pkg) {
@@ -292,6 +294,14 @@ public class NotificationManagerService extends INotificationManager.Stub
             Slog.v(TAG, "notifications are " + (enabled?"en":"dis") + "abled for " + pkg);
         }
         return enabled;
+    }
+
+    public void setHaloBlacklistStatus(String pkg, boolean blacklisted) {
+        if (!blacklisted) {
+            mHaloBlackList.remove(pkg);
+        } else {
+            mHaloBlackList.add(pkg);
+        }
     }
 
     public void setNotificationsEnabledForPackage(String pkg, boolean enabled) {
@@ -318,7 +328,7 @@ public class NotificationManagerService extends INotificationManager.Stub
             }
             // Don't bother canceling toasts, they'll go away soon enough.
         }
-        writeBlockDb();
+        writeBlockDb(mBlockedPackages, mPolicyFile);
     }
 
     private static String idDebugString(Context baseContext, String packageName, int id) {
@@ -742,7 +752,12 @@ public class NotificationManagerService extends INotificationManager.Stub
         mToastQueue = new ArrayList<ToastRecord>();
         mHandler = new WorkerHandler();
 
-        loadBlockDb();
+        File dir = new File("/data/system");
+        mPolicyFile = new AtomicFile(new File(dir, "notification_policy.xml"));
+        mHaloPolicyFile = new AtomicFile(new File(dir, "halo_blacklist_policy.xml"));
+
+        loadBlockDb(mBlockedPackages, mPolicyFile);
+        loadBlockDb(mHaloBlackList, mHaloPolicyFile);
 
         mStatusBar = statusBar;
         statusBar.setNotificationCallbacks(mNotificationCallbacks);
