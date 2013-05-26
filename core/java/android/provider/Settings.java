@@ -2806,6 +2806,12 @@ public final class Settings {
         public static final String HOME_SCREEN_WIDGETS = "home_screen_widgets";
 
         /**
+         * Whether to wake the screen with the home key, the value is boolean.
+         * @hide
+         */
+        public static final String HOME_WAKE_SCREEN = "home_wake_screen";
+
+        /**
          * Whether to wake the screen with the volume keys, the value is boolean.
          * @hide
          */
