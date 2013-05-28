@@ -34,5 +34,7 @@ interface INotificationManager
 
     void setNotificationsEnabledForPackage(String pkg, boolean enabled);
     boolean areNotificationsEnabledForPackage(String pkg);
+    void setHaloBlacklistStatus(String pkg, boolean blacklisted);
+    boolean isPackageHaloBlacklisted(String pkg);
 }
 

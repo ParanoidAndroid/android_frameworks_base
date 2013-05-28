@@ -1608,7 +1608,7 @@ final class ActivityStack {
             if (prev.finishing) {
                 if (DEBUG_TRANSITION) Slog.v(TAG,
                         "Prepare close transition: prev=" + prev);
-                if (mNoAnimActivities.contains(prev) || prev.floatingWindow) {
+                if (mNoAnimActivities.contains(prev) || next.floatingWindow) {
                     mService.mWindowManager.prepareAppTransition(
                             WindowManagerPolicy.TRANSIT_NONE, false);
                 } else {
@@ -1621,7 +1621,7 @@ final class ActivityStack {
             } else {
                 if (DEBUG_TRANSITION) Slog.v(TAG,
                         "Prepare open transition: prev=" + prev);
-                if (mNoAnimActivities.contains(next) || prev.floatingWindow) {
+                if (mNoAnimActivities.contains(next) || next.floatingWindow) {
                     noAnim = true;
                     mService.mWindowManager.prepareAppTransition(
                             WindowManagerPolicy.TRANSIT_NONE, false);
