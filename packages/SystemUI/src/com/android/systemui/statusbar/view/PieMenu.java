@@ -117,7 +117,7 @@ public class PieMenu extends FrameLayout {
     private static final int COLOR_BATTERY_BACKGROUND = 0xffffff;
     private static final int COLOR_STATUS = 0xffffff;
     private static final int BASE_SPEED = 1000;
-    private static final int EMPTY_ANGLE_BASE = 0;
+    private static final int EMPTY_ANGLE_BASE = 12;
     private static final int CHEVRON_FRAGMENTS = 16;
     private static final float SIZE_BASE = 1f;
 
@@ -289,7 +289,7 @@ public class PieMenu extends FrameLayout {
         mPieSize = Settings.System.getFloat(mContext.getContentResolver(),
                 Settings.System.PIE_SIZE, 0.9f);
         mPieAngle = Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.PIE_ANGLE, 0);
+                Settings.System.PIE_ANGLE, 12);
         mPieGap = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.PIE_GAP, 3);
         mHapticFeedback = Settings.System.getInt(mContext.getContentResolver(),

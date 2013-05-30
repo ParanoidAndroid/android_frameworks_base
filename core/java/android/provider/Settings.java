@@ -2580,7 +2580,7 @@ public final class Settings {
         public static final String PIE_GAP = "pie_gap";
 
         /**
-         * Pie empty angle, should default to 0
+         * Pie empty angle, should default to 12
          * @hide
          */
         public static final String PIE_ANGLE = "pie_angle";
