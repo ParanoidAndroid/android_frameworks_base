@@ -5375,7 +5375,7 @@ public class Activity extends ContextThemeWrapper
         // up front in a minimized space. Every stop call, for instance when pressing home,
         // will terminate the activity. If the activity is already finishing we might just
         // as well let it go.
-        if (mWindow != null && mWindow.mIsFloatingWindow && !isFinishing()) {
+        if (!mChangingConfigurations && mWindow != null && mWindow.mIsFloatingWindow && !isFinishing()) {
             finish();
         }
     }
