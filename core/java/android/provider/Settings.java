@@ -2637,6 +2637,12 @@ public final class Settings {
         public static final String LOCKSCREEN_ALLOW_ROTATION = "lockscreen_allow_rotation";
 
         /**
+         * Allows quick unlock
+         * @hide
+         */
+        public static final String LOCKSCREEN_QUICK_UNLOCK = "lockscreen_quick_unlock";
+
+        /**
          * Allows lockscreen to show homescreen widgets
          * The value is boolean (1 or 0).
          * @hide
