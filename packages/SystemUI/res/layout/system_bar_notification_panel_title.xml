@@ -58,18 +58,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="@style/TextAppearance.SystemBar.Expanded.Date"
-                android:singleLine="true"
-                android:ellipsize="end"/>
-
-            <TextView
-                android:id="@+id/mobile_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:textAppearance="@style/TextAppearance.SystemBar.Expanded.Date"
-                android:singleLine="true"
-                android:ellipsize="end"
-                android:text="@string/status_bar_settings_settings_button"/>
+                android:layout_toRightOf="@id/clock"
+		android:layout_centerVertical="true"/>
 
         </LinearLayout>
 
