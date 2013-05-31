@@ -119,7 +119,7 @@ public class PieMenu extends FrameLayout {
     private static final int BASE_SPEED = 1000;
     // private static final int EMPTY_ANGLE_BASE = 12;
     private static final int CHEVRON_FRAGMENTS = 16;
-    private static final float SIZE_BASE = 1f;
+    private static final float SIZE_BASE = 1.0f;
 
     // System
     private Context mContext;
@@ -148,7 +148,7 @@ public class PieMenu extends FrameLayout {
     private int mOuterBatteryRadius;
     private int mStatusRadius;
     private int mNotificationsRadius;
-    // private int mAngle;
+    private int mAngle;
 
     private Point mCenter = new Point(0, 0);
     private float mCenterDistance = 0;
@@ -287,7 +287,7 @@ public class PieMenu extends FrameLayout {
         mStatusMode = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.PIE_MODE, 2);
         mPieSize = Settings.System.getFloat(mContext.getContentResolver(),
-                Settings.System.PIE_SIZE, 0.9f);
+                Settings.System.PIE_SIZE, 1.0f);
         mPieAngle = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.PIE_ANGLE, 12);
         mPieGap = Settings.System.getInt(mContext.getContentResolver(),
@@ -316,7 +316,7 @@ public class PieMenu extends FrameLayout {
             mSnapPoint[snapIndex++] = new SnapPoint(mWidth / 2, mHeight - mSnapThickness / 2, mSnapRadius, 0x22, Gravity.BOTTOM);
 
         // Create Pie
-        // mAngle = (int)(EMPTY_ANGLE_BASE * mPieSize);
+        mAngle = (int)(mPieAngle * mPieSize); 
         mInnerPieRadius = (int)(mResources.getDimensionPixelSize(R.dimen.pie_radius_start) * mPieSize);
         mOuterPieRadius = (int)(mInnerPieRadius + mResources.getDimensionPixelSize(R.dimen.pie_radius_increment) * mPieSize);
 
@@ -366,7 +366,7 @@ public class PieMenu extends FrameLayout {
             mBatteryJuice.setColor(COLOR_BATTERY_JUICE);
         }
 
-        mStartBattery = mPanel.getDegree() + (mPieAngle * mPieSize) + mPieGap;
+        mStartBattery = mPanel.getDegree() + mAngle + mPieGap;
         mEndBattery = mPanel.getDegree() + (mPieGap <= 2 ? 88 : 90 - mPieGap);
         mBatteryPathBackground = makeSlice(mStartBattery, mEndBattery, mInnerBatteryRadius, mOuterBatteryRadius, mCenter);
         mBatteryPathJuice = makeSlice(mStartBattery, mStartBattery, mInnerBatteryRadius, mOuterBatteryRadius, mCenter);
