@@ -291,7 +291,7 @@ public class PieMenu extends FrameLayout {
         mPieAngle = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.PIE_ANGLE, 12);
         mPieGap = Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.PIE_GAP, 3);
+                Settings.System.PIE_GAP, 2);
         mHapticFeedback = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.HAPTIC_FEEDBACK_ENABLED, 1) != 0;
 
