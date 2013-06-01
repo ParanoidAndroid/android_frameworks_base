@@ -28,6 +28,8 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
+import android.animation.Keyframe;
+import android.animation.PropertyValuesHolder;
 import android.content.Context;
 import android.content.ContentResolver;
 import android.content.res.Configuration;
@@ -67,6 +69,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.TranslateAnimation;
+import android.animation.TimeInterpolator;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -136,7 +139,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
     public static final String TAG = "HaloLauncher";
     private static final boolean DEBUG = true;
-    private static final int TICKER_HIDE_TIME = 2000;
+    private static final int TICKER_HIDE_TIME = 2500;
     private static final int SLEEP_DELAY_DAYDREAMING = 3800;
     private static final int SLEEP_DELAY_REM = 10000;
 
@@ -769,36 +772,48 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
         private Context mContext;
         private Paint mPingPaint;
-        private int pingAlpha = 0;        
         private int pingRadius = 0;
         private int mPingX, mPingY;
         protected int pingMinRadius = 0;
         protected int pingMaxRadius = 0;
-        private float mContentAlpha = 0;
-        private float mCurContentAlphaUp, mCurContentAlphaDown;
         private View mContentView;
         private RelativeLayout mTickerContent;
         private TextView mTextViewR, mTextViewL;
         private boolean mPingAllowed = true;
         private boolean mSkipThrough = false;
 
-        float mPulseFraction1 = 0;
-        float mPulseFraction3 = 0;
-        float mXFraction = 0, mXCurFraction = 0;
-
         private Bitmap mMarkerL, mMarkerR;        
         private Bitmap mXNormal;
-        private Bitmap mPulse1;
-        private Paint mPulsePaint1 = new Paint();
+        private Bitmap mPulse;
+        private Paint mPulsePaint = new Paint();
         private Paint mMarkerPaint = new Paint();
-        private ValueAnimator mPulseAnim1 = ValueAnimator.ofInt(0, 1);
+        private Paint xPaint = new Paint();
 
-        private ValueAnimator tickerUp = ValueAnimator.ofInt(0, 1);
-        private ValueAnimator tickerDown = ValueAnimator.ofInt(0, 1);
-        private ValueAnimator pingAnim = ValueAnimator.ofInt(0, 1);
+        CustomObjectAnimator xAnimator = new CustomObjectAnimator();
+        CustomObjectAnimator tickerAnimator = new CustomObjectAnimator();
 
-        private ValueAnimator introAnim = ValueAnimator.ofInt(0, 1);
-        private ValueAnimator outroAnim = ValueAnimator.ofInt(0, 1);
+        class CustomObjectAnimator {
+            public ObjectAnimator animator;
+            public void animate(ObjectAnimator newInstance, TimeInterpolator interpolator, AnimatorUpdateListener update) {
+                // Terminate old instance, if present
+                if (animator != null) animator.cancel();
+                animator = newInstance;
+
+                // Invalidate
+                if (update == null) {
+                    animator.addUpdateListener(new AnimatorUpdateListener() {
+                        @Override
+                        public void onAnimationUpdate(ValueAnimator animation) {
+                            invalidate();
+                        }
+                    });
+                } else {
+                    animator.addUpdateListener(update);
+                }
+                animator.setInterpolator(interpolator);
+                animator.start();
+            }
+        }
 
         public HaloEffect(Context context) {
             super(context);
@@ -812,84 +827,24 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             mTickerContent = (RelativeLayout) mContentView.findViewById(R.id.ticker);
             mTextViewR = (TextView) mTickerContent.findViewById(R.id.bubble_r);
             mTextViewL = (TextView) mTickerContent.findViewById(R.id.bubble_l);
+            mTextViewL.setAlpha(0);
+            mTextViewR.setAlpha(0);
 
             mXNormal = BitmapFactory.decodeResource(mContext.getResources(),
                     R.drawable.halo_x);
-            mPulse1 = BitmapFactory.decodeResource(mContext.getResources(),
+            mPulse = BitmapFactory.decodeResource(mContext.getResources(),
                     R.drawable.halo_pulse1);
             mMarkerR = BitmapFactory.decodeResource(mContext.getResources(),
                     R.drawable.halo_marker_r);
             mMarkerL = BitmapFactory.decodeResource(mContext.getResources(),
                     R.drawable.halo_marker_l);
 
-
-            mPulsePaint1.setAntiAlias(true);
-            mPulsePaint1.setAlpha(0);   
+            mPulsePaint.setAntiAlias(true);
+            mPulsePaint.setAlpha(0);   
             mMarkerPaint.setAntiAlias(true);
-
-            tickerUp.setInterpolator(new DecelerateInterpolator());
-            tickerUp.addUpdateListener(new AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    mContentAlpha = mCurContentAlphaDown = mCurContentAlphaUp
-                            + (1 - mCurContentAlphaUp) * animation.getAnimatedFraction();
-                    invalidate();
-                }
-            });
-
-            tickerDown.setInterpolator(new DecelerateInterpolator());
-            tickerDown.addUpdateListener(new AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    mContentAlpha = mCurContentAlphaDown * (1-animation.getAnimatedFraction());
-                    invalidate();
-                }
-            });
-
-            pingAnim.setDuration(PING_TIME);
-            pingAnim.setInterpolator(new DecelerateInterpolator());
-            pingAnim.addUpdateListener(new AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    pingAlpha = (int)(200 * (1-animation.getAnimatedFraction()));
-                    pingRadius = (int)((pingMaxRadius - pingMinRadius) *
-                            animation.getAnimatedFraction()) + pingMinRadius;
-                    invalidate();
-                }
-            });
-
-            mPulseAnim1.setDuration((int)(PULSE_TIME / 2));
-            mPulseAnim1.setRepeatCount(1);
-            mPulseAnim1.setRepeatMode(ValueAnimator.REVERSE);
-            mPulseAnim1.setInterpolator(new DecelerateInterpolator());
-            mPulseAnim1.addUpdateListener(new AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    mPulseFraction1 = animation.getAnimatedFraction();
-                    mPulsePaint1.setAlpha((int)(50*animation.getAnimatedFraction()));
-                    invalidate();
-                }
-            });
-
-            introAnim.setDuration(PING_TIME / 3);
-            introAnim.setInterpolator(new DecelerateInterpolator());
-            introAnim.addUpdateListener(new AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    mXFraction = 1 - animation.getAnimatedFraction();
-                    invalidate();
-                }
-            });
-
-            outroAnim.setDuration(PING_TIME / 3);
-            outroAnim.setInterpolator(new DecelerateInterpolator());
-            outroAnim.addUpdateListener(new AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    mXFraction = mXCurFraction + (1-mXCurFraction) * animation.getAnimatedFraction();
-                    invalidate();
-                }
-            });
+            mMarkerPaint.setAlpha(0);
+            xPaint.setAntiAlias(true);
+            xPaint.setAlpha(0);
         }
 
         @Override
@@ -921,12 +876,8 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         }
 
         public void killTicker() {
-            tickerDown.cancel();
-            tickerUp.cancel();
-            mCurContentAlphaDown = mContentAlpha;
-            tickerDown.setDuration(250);
-            tickerDown.setStartDelay(0);
-            tickerDown.start();
+            tickerAnimator.animate(ObjectAnimator.ofFloat(mTextViewL, "alpha", 0f).setDuration(250),
+                    new DecelerateInterpolator(), null);
         }
 
         public void ticker(String tickerText, int startDuration, boolean skipThrough) {
@@ -934,30 +885,20 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                 killTicker();
                 return;
             }
-
-            tickerDown.cancel();
-            tickerUp.cancel();
-
-            mCurContentAlphaUp = mContentAlpha;
-
             mSkipThrough = skipThrough;
 
             mTextViewR.setText(tickerText);
             mTextViewL.setText(tickerText);
             createBubble();
 
-            tickerUp.setDuration(startDuration);
-            tickerUp.start();
-            tickerDown.setDuration(1000);
-            tickerDown.setStartDelay(TICKER_HIDE_TIME + startDuration);
-            tickerDown.start();
-        }
-
-        public void killPing() {
-            mPulseAnim1.cancel();
-            pingAnim.cancel();
-            pingAlpha = 0;
-            mPulsePaint1.setAlpha(0);
+            float total = TICKER_HIDE_TIME + startDuration + 1000;
+            PropertyValuesHolder tickerUpFrames = PropertyValuesHolder.ofKeyframe("alpha",
+                    Keyframe.ofFloat(0f, mTextViewL.getAlpha()),
+                    Keyframe.ofFloat(startDuration / total, 1),
+                    Keyframe.ofFloat((TICKER_HIDE_TIME + startDuration) / total, 1),
+                    Keyframe.ofFloat(1, 0));
+            tickerAnimator.animate(ObjectAnimator.ofPropertyValuesHolder(mTextViewL, tickerUpFrames).setDuration((int)total),
+                    new DecelerateInterpolator(), null);
         }
 
         public void causePing(Paint paint) {
@@ -967,15 +908,25 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             mPingY = mTickerPos.y + mIconHalfSize;
 
             mPingAllowed = false;
-            killPing();
-
             mPingPaint = paint;
 
             int c = Color.argb(0xff, Color.red(paint.getColor()), Color.green(paint.getColor()), Color.blue(paint.getColor()));
-            mPulsePaint1.setColorFilter(new PorterDuffColorFilter(c, PorterDuff.Mode.SRC_IN));
+            mPulsePaint.setColorFilter(new PorterDuffColorFilter(c, PorterDuff.Mode.SRC_IN));            
 
-            mPulseAnim1.start();
-            pingAnim.start();
+            CustomObjectAnimator pingAnimator = new CustomObjectAnimator();
+            pingAnimator.animate(ObjectAnimator.ofInt(mPingPaint, "alpha", 200, 0).setDuration(PING_TIME),
+                    new DecelerateInterpolator(), new AnimatorUpdateListener() {
+                        @Override
+                        public void onAnimationUpdate(ValueAnimator animation) {
+                            pingRadius = (int)((pingMaxRadius - pingMinRadius) *
+                                    animation.getAnimatedFraction()) + pingMinRadius;
+                            invalidate();
+                        }});
+
+            CustomObjectAnimator pulseAnimator = new CustomObjectAnimator();
+            pulseAnimator.animate(ObjectAnimator.ofInt(mPulsePaint, "alpha", 100, 0).setDuration(PULSE_TIME),
+                    new AccelerateInterpolator(), null);
+
 
             // prevent ping spam            
             mHandler.postDelayed(new Runnable() {
@@ -985,39 +936,32 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         }
 
         public void intro() {
-            introAnim.cancel();
-            outroAnim.cancel();
-            mXCurFraction = mXFraction;
-            introAnim.start();
+            xAnimator.animate(ObjectAnimator.ofInt(xPaint, "alpha", 255).setDuration(PING_TIME / 3),
+                    new DecelerateInterpolator(), null);
         }
 
         public void outro() {
-            introAnim.cancel();
-            outroAnim.cancel();
-            mXCurFraction = mXFraction;
-            outroAnim.start();
+            xAnimator.animate(ObjectAnimator.ofInt(xPaint, "alpha", 0).setDuration(PING_TIME / 3),
+                    new AccelerateInterpolator(), null);
         }
 
         @Override
         protected void onDraw(Canvas canvas) {
             int state;
 
+            // Ping
             if (mPingPaint != null) {
-                mPingPaint.setAlpha(pingAlpha);
-
                 canvas.drawCircle(mPingX, mPingY, pingRadius, mPingPaint);
-
-                int w = mPulse1.getWidth() + (int)(mIconSize * mPulseFraction1);
+                int w = mPulse.getWidth() + (int)(mIconSize * 1.2f * mPulsePaint.getAlpha() / 100);
                 Rect r = new Rect(mPingX - w / 2, mPingY - w / 2, mPingX + w / 2, mPingY + w / 2);
-                canvas.drawBitmap(mPulse1, null, r, mPulsePaint1);
+                canvas.drawBitmap(mPulse, null, r, mPulsePaint);
             }
 
+            // Content
             state = canvas.save();
 
             int y = mTickerPos.y - mTickerContent.getMeasuredHeight() + (int)(mIconSize * 0.2);
-
             if (!mSkipThrough && mNumber.getVisibility() != View.VISIBLE) y += (int)(mIconSize * 0.15);
-
             if (y < 0) y = 0;
 
             int x = mTickerPos.x + (int)(mIconSize * 0.92f);
@@ -1031,17 +975,16 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
             state = canvas.save();
             canvas.translate(x, y);
-            mTextViewL.setAlpha(mContentAlpha);
-            mTextViewR.setAlpha(mContentAlpha);
+            mTextViewR.setAlpha(mTextViewL.getAlpha());
             mContentView.draw(canvas);
             canvas.restoreToCount(state);
 
-            if (isBeingDragged || outroAnim.isRunning()) {
-                int killyPos = (int)(mKillY - mXNormal.getWidth() / 2 - mIconSize * mXFraction);
-                mMarkerPaint.setAlpha((int)(255*(1-mXFraction)));
-                canvas.drawBitmap(mXNormal, mKillX - mXNormal.getWidth() / 2, killyPos, mMarkerPaint);
-            }
+            // X
+            float fraction = 1 - ((float)xPaint.getAlpha()) / 255;
+            int killyPos = (int)(mKillY - mXNormal.getWidth() / 2 - mIconSize * fraction);
+            canvas.drawBitmap(mXNormal, mKillX - mXNormal.getWidth() / 2, killyPos, xPaint);
 
+            // Marker
             if (y > 0 && mDoubleTap && mNotificationData != null && mNotificationData.size() > 0) {
                 int pulseY = mTickerPos.y + mIconHalfSize - mMarkerR.getHeight() / 2;
 
