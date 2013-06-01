@@ -21,6 +21,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.CountDownTimer;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
