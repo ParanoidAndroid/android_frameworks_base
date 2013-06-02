@@ -141,7 +141,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
     private static final boolean DEBUG = true;
     private static final int TICKER_HIDE_TIME = 2500;
     private static final int SLEEP_DELAY_DAYDREAMING = 3800;
-    private static final int SLEEP_DELAY_REM = 10000;
+    private static final int SLEEP_DELAY_REM = 8000;
 
 	public boolean mExpanded = false;
     public boolean mSnapped = true;
@@ -253,12 +253,15 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
             }});
         mSleepREM.addListener(new Animator.AnimatorListener() {
             @Override public void onAnimationCancel(Animator animation) {}
-            @Override public void onAnimationEnd(Animator animation) { }
+            @Override public void onAnimationEnd(Animator animation)
+            {
+                mHidden = true;
+            }
             @Override public void onAnimationRepeat(Animator animation) {}
             @Override public void onAnimationStart(Animator animation) 
             {
                 mAnimationFromX = mTickerPos.x;
-                mAnimationToX = (int)((mAnimationFromX < mScreenWidth / 2) ? -mIconSize * 0.9f: mIconSize * 0.9f);
+                mAnimationToX = (int)((mAnimationFromX < mScreenWidth / 2) ? -mIconSize * 0.4f: mIconSize * 0.4f);
             }});
 
         // Create effect layer
@@ -322,11 +325,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
     }
 
     private synchronized void wakeUp(boolean pop, int duration) {
-        // If HALO is hidden, do nothing
-        if (mHidden) return;
-
         unscheduleSleep();
-
 
         mTickerPos.width = mIconSize;
         mWindowManager.updateViewLayout(mRoot, mTickerPos);
@@ -356,6 +355,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
         mHandler.removeCallbacks(Sleep);
         mSleepREM.cancel();
         mSleepNap.cancel();
+        mHidden = false;
     }
 
     Runnable Sleep = new Runnable() {
@@ -527,7 +527,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
         public boolean onSingleTapConfirmed(MotionEvent event) {
             wakeUp(false);
             snapToSide(true, 0);
-            if (!isBeingDragged) {
+            if (!isBeingDragged && !mHidden) {
                 launchTask(mContentIntent);
             }
             return true;
@@ -569,6 +569,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
         private float initialX = 0;
         private float initialY = 0;        
         private int oldIconIndex = -1;
+        private boolean hiddenState = false;
 
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
@@ -577,6 +578,16 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
             final int action = event.getAction();
             switch(action) {
                 case MotionEvent.ACTION_DOWN:
+                   
+                    hiddenState = mHidden;
+
+                    if (mHidden) {
+                        wakeUp(false);
+                        snapToSide(false, 0);
+                        hiddenState = true;
+                        return false;
+                    }
+
                     // Watch out here, in reversed mode we can not overwrite the double-tap action down.
                     if (!(mInteractionReversed && isBeingDragged)) {
                         mTaskIntent = null;
@@ -590,9 +601,9 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                 case MotionEvent.ACTION_CANCEL:
                 case MotionEvent.ACTION_UP:
 
-                    // Snap HALO when it has been dragged or tasked
-                    if (isBeingDragged || mDoubleTap) {
-                        snapToSide(true, 0);
+                    // Snap HALO when it has been dragged or tasked or hidden
+                    if (isBeingDragged || mDoubleTap || hiddenState) {
+                        snapToSide(true, hiddenState ? SLEEP_DELAY_DAYDREAMING : 0);
                     }
 
                     if (mDoubleTap) {                               
@@ -622,6 +633,8 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                     }
                     return oldState;
                 case MotionEvent.ACTION_MOVE:
+                    if (hiddenState) break;
+
                     mRawX = event.getRawX();
                     mRawY = event.getRawY();
                     float distanceX = mKillX-mRawX;
@@ -739,7 +752,6 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                             }
                         }
                     }
-
                     break;
             }
             return false;
@@ -1070,8 +1082,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                     if (!blacklisted) {
                         tick(entry, text, 1000, false);
 
-                        // Wake up and snap
-                        mHidden = false;                    
+                        // Wake up and snap               
                         wakeUp(!mDoubleTap && mIsNotificationNew);
                         if (!isBeingDragged && !mDoubleTap) snapToSide(true, SLEEP_DELAY_DAYDREAMING);
                     }
