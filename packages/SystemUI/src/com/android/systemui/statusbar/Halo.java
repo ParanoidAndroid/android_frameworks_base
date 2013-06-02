@@ -224,7 +224,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
         mSettingsObserver.onChange(true);
 
         // Init variables
-        BitmapDrawable bd = (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.halo_frame);
+        BitmapDrawable bd = (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.halo_bg);
         mIconSize = bd.getBitmap().getWidth();
         mIconHalfSize = mIconSize / 2;
         mTickerPos = getWMParams();
@@ -258,7 +258,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
             @Override public void onAnimationStart(Animator animation) 
             {
                 mAnimationFromX = mTickerPos.x;
-                mAnimationToX = (mAnimationFromX < mScreenWidth / 2) ? -mIconSize : mIconSize;
+                mAnimationToX = (int)((mAnimationFromX < mScreenWidth / 2) ? -mIconSize * 0.9f: mIconSize * 0.9f);
             }});
 
         // Create effect layer

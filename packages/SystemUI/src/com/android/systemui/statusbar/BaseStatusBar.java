@@ -1408,12 +1408,8 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     private Bitmap createRoundIcon(StatusBarNotification notification) {
         // Construct the round icon
-        BitmapDrawable bd = (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.halo_frame);
+        BitmapDrawable bd = (BitmapDrawable) mContext.getResources().getDrawable(R.drawable.halo_bg);
         int iconSize = bd.getBitmap().getWidth();
-
-        iconSize -= notification.pkg.equals("com.paranoid.halo") ? mContext.getResources()
-                .getDimensionPixelSize(R.dimen.halo_icon_margin) * 2 : 0;
-
         int smallIconSize = mContext.getResources().getDimensionPixelSize(R.dimen.status_bar_icon_size);        
         Bitmap roundIcon = Bitmap.createBitmap(iconSize, iconSize, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(roundIcon);
