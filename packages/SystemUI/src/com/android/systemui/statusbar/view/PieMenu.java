@@ -117,7 +117,7 @@ public class PieMenu extends FrameLayout {
     private static final int COLOR_BATTERY_BACKGROUND = 0xffffff;
     private static final int COLOR_STATUS = 0xffffff;
     private static final int BASE_SPEED = 1000;
-    // private static final int EMPTY_ANGLE_BASE = 12;
+    private static final int EMPTY_ANGLE_BASE = 10;
     private static final int CHEVRON_FRAGMENTS = 16;
     private static final float SIZE_BASE = 1.0f;
 
