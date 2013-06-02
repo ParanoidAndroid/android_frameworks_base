@@ -160,6 +160,7 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
     private Rect mPopUpRect;
 
     private int mKillX, mKillY;
+    private int mMarkerIndex;
 
     private ValueAnimator mSleepREM = ValueAnimator.ofInt(0, 1);
     private AlphaAnimation mSleepNap = new AlphaAnimation(1, 0.65f);
@@ -531,14 +532,6 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
         }
 
         @Override
-        public void onLongPress(MotionEvent event) {
-            if (!isBeingDragged && !mDoubleTap) {
-                if (mHapticFeedback) mVibrator.vibrate(25);
-                onDoubleTap(event);
-            }
-        }
-
-        @Override
         public boolean onDoubleTap(MotionEvent event) {
             wakeUp(false);
             if (!mInteractionReversed) {
@@ -699,28 +692,28 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
 
                             int delta = (int)(mTickerLeft ? mRawX : mScreenWidth - mRawX);
 
-                            int index = -1;
+                            mMarkerIndex = -1;
                             if (delta > (int)(mIconSize * 1.5f)) {
 
                                 // Adjust delta
                                 delta -= mIconSize * 1.5f;
 
                                 // Calculate index
-                                index = mTickerLeft ? (items - delta / indexLength) - 1 : (delta / indexLength);
+                                mMarkerIndex = mTickerLeft ? (items - delta / indexLength) - 1 : (delta / indexLength);
 
                                 // Watch out for margins!
-                                if (index >= items) index = items - 1;
-                                if (index < 0) index = 0;
+                                if (mMarkerIndex >= items) mMarkerIndex = items - 1;
+                                if (mMarkerIndex < 0) mMarkerIndex = 0;
                             }
 
-                            if (index !=oldIconIndex) {
-                                oldIconIndex = index;
+                            if (mMarkerIndex != oldIconIndex) {
+                                oldIconIndex = mMarkerIndex;
 
                                 // Make a tiny pop if not so many icons are present
                                 if (mHapticFeedback && items < 10) mVibrator.vibrate(1);
 
                                 try {
-                                    if (index == -1) {
+                                    if (mMarkerIndex == -1) {
                                         mTaskIntent = null;
                                         resetIcons();
                                         tick(mLastNotification, mNotificationText, 250, true);
@@ -728,9 +721,9 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
                                         // Ping to notify the user we're back where we started
                                         mHaloEffect.causePing(mPaintHoloBlue);
                                     } else {
-                                        setIcon(index);
+                                        setIcon(mMarkerIndex);
 
-                                        NotificationData.Entry entry = mNotificationData.get(index);
+                                        NotificationData.Entry entry = mNotificationData.get(mMarkerIndex);
                                         String text = "";
                                         if (entry.notification.notification.tickerText != null) {
                                             text = entry.notification.notification.tickerText.toString();
@@ -987,14 +980,13 @@ public class Halo extends RelativeLayout implements Ticker.TickerCallback {
             // Marker
             if (y > 0 && mDoubleTap && mNotificationData != null && mNotificationData.size() > 0) {
                 int pulseY = mTickerPos.y + mIconHalfSize - mMarkerR.getHeight() / 2;
-
                 int items = mNotificationData.size();
                 int indexLength = (mScreenWidth - mIconSize * 2) / items;
 
                 for (int i = 0; i < items; i++) {
                     float pulseX = mTickerLeft ? (mIconSize * 1.5f + indexLength * i)
                             : (mScreenWidth - mIconSize * 1.5f - indexLength * i - mMarkerR.getWidth());
-                    boolean markerState = mTickerLeft ? mRawX > pulseX : mRawX < pulseX;
+                    boolean markerState = mTickerLeft ? mMarkerIndex >= 0 && i < items-mMarkerIndex : i <= mMarkerIndex;
                     mMarkerPaint.setAlpha(markerState ? 255 : 100);
                     canvas.drawBitmap(mTickerLeft ? mMarkerR : mMarkerL, pulseX, pulseY, mMarkerPaint);
                 }
