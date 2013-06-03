@@ -1295,11 +1295,11 @@ public abstract class BaseStatusBar extends SystemUI implements
     }
 
     public class NotificationClicker implements View.OnClickListener {
-        private PendingIntent mIntent;
-        private String mPkg;
-        private String mTag;
-        private int mId;
-        private boolean mFloat;
+        public PendingIntent mIntent;
+        public String mPkg;
+        public String mTag;
+        public int mId;
+        public boolean mFloat;
 
         NotificationClicker(PendingIntent intent, String pkg, String tag, int id) {
             mIntent = intent;

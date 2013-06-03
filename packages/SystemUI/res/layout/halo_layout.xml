@@ -18,7 +18,7 @@
             android:layout_height="wrap_content">
 
             <ImageView
-                android:id="@+id/shadow"
+                android:id="@+id/halo_bg"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/halo_bg"/>
@@ -29,6 +29,15 @@
                 android:layout_height="wrap_content"                
                 android:layout_centerVertical="true"
                 android:layout_centerHorizontal="true"/>
+
+            <ImageView
+                android:id="@+id/halo_overlay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"                
+                android:layout_centerVertical="true"
+                android:layout_centerHorizontal="true"
+                android:alpha="0"/>
+
         </RelativeLayout>
 
         <TextView
