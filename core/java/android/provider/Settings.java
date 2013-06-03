@@ -1825,6 +1825,17 @@ public final class Settings {
          */
         public static final String AUTO_BRIGHTNESS_BACKLIGHT = "auto_brightness_backlight";
 
+        /**
+         * Correction factor for auto-brightness adjustment light sensor
+         * debounce times.
+         * Smaller factors will make the adjustment more responsive, but might
+         * cause flicker and/or cause higher CPU usage.
+         * Valid range is 0.2 ... 3
+         *
+         * @hide
+         */
+        public static final String AUTO_BRIGHTNESS_RESPONSIVENESS = "auto_brightness_responsiveness";
+
          /**
           * Determines which streams are affected by mute. The
           * stream type's bit should be set to 1 if it should be muted when a mute request
@@ -2574,7 +2585,7 @@ public final class Settings {
         public static final String PIE_SEARCH = "pie_search";
 
         /**
-         * Pie gap angle, should default to 3
+         * Pie gap angle, should default to 2
          * @hide
          */
         public static final String PIE_GAP = "pie_gap";
@@ -2612,7 +2623,7 @@ public final class Settings {
         public static final String PIE_MODE = "pie_mode";
 
         /**
-         * Pie size fraction
+         * Pie size fraction, default is 1.0f (normal)
          * @hide
          */
         public static final String PIE_SIZE = "pie_size";
@@ -2635,6 +2646,12 @@ public final class Settings {
          * @hide
          */
         public static final String LOCKSCREEN_ALLOW_ROTATION = "lockscreen_allow_rotation";
+
+        /**
+         * Allows quick unlock
+         * @hide
+         */
+        public static final String LOCKSCREEN_QUICK_UNLOCK = "lockscreen_quick_unlock";
 
         /**
          * Allows lockscreen to show homescreen widgets
