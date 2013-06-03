@@ -1614,7 +1614,7 @@ public class PhoneStatusBar extends BaseStatusBar {
             mNotificationButton.setAlpha(progress);
         }
         mClearButton.setVisibility(View.GONE);
-        mHaloButton.setVisibility(View.GONE);
+        mHaloButton.setVisibility(View.GONE); // WARNING: Remove this line to avoid compiling errors, it depends on Halo's source.
     }
 
     public void flipToSettings() {
