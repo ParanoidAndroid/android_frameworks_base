@@ -56,6 +56,8 @@ public class LinearColorBar extends LinearLayout {
 
     public void setRatios(float usedMem, float usedCacheMem, float usedActiveAppsMem) {
         mUsedMemRatio = usedMem;
+        if (mUsedMemRatio < 0)
+            mUsedMemRatio = 0;
         mUsedCacheMemRatio = usedCacheMem;
         mUsedActiveAppsMemRatio = usedActiveAppsMem;
         updateModeAndColors();
