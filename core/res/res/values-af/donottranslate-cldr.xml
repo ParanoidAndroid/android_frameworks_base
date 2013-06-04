@@ -56,4 +56,5 @@
     <string name="short_format_month">%b</string>
     <string name="full_wday_month_day_no_year">E MMMM d</string>
     <string name="abbrev_wday_month_day_year">E, y MMM dd</string>
+    <string name="full_wday_month_day_no_year_split">EEEE\nd MMMM</string>
 </resources>
