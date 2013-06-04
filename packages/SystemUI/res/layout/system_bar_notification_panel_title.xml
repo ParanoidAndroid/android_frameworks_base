@@ -58,8 +58,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="@style/TextAppearance.SystemBar.Expanded.Date"
-                android:layout_toRightOf="@id/clock"
-		android:layout_centerVertical="true"/>
+                android:ellipsize="end"
+                android:layout_centerVertical="true"/>
 
         </LinearLayout>
 
