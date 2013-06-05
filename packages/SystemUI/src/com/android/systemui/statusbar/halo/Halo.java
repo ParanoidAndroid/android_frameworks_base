@@ -173,7 +173,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
     private int mScreenWidth, mScreenHeight;
 
     private int mKillX, mKillY;
-    private int mMarkerIndex;
+    private int mMarkerIndex = -1;
 
     private SettingsObserver mSettingsObserver;
 
@@ -396,8 +396,6 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
     private float initialY = 0;        
     private int oldIconIndex = -1;
     private boolean hiddenState = false;
-    private Drawable overlay, oldOverlay;
-    private float mRawX, mRawY;
 
 		@Override
 		public boolean onTouchEvent(MotionEvent event) {
@@ -409,6 +407,8 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                     // Stop HALO from moving around, unschedule sleeping patterns
                     mEffect.stopMovements();
 
+                    mMarkerIndex = -1;
+                    oldIconIndex = -1;
                     hiddenState = mState == State.HIDDEN;
                     if (mState == State.HIDDEN) {
                         mEffect.wake();
@@ -595,7 +595,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                                 if (mMarkerIndex < 0) mMarkerIndex = 0;
                             }
                         } else if (Math.abs(deltaY) > verticalThreshold) {
-                            mMarkerIndex = -1;                            
+                            mMarkerIndex = -1;
 
                             // Up & down gestures
                             int newDeltaY = Math.abs(deltaY) - verticalThreshold;
