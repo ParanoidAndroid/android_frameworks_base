@@ -303,16 +303,15 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
     }
 
     private void loadLastNotification() {
-        try {
-            if (mNotificationData.size() > 0) {
-                mLastNotificationEntry = mNotificationData.get(mNotificationData.size() - 1);
-                if (mLastNotificationEntry.notification.notification.tickerText != null) {
-                    mNotificationText = mLastNotificationEntry.notification.notification.tickerText.toString();
-                }
-                tick(mLastNotificationEntry, "", 0, 0, false);
+        if (mNotificationData.size() > 0) {
+            mLastNotificationEntry = mNotificationData.get(mNotificationData.size() - 1);
+            if (mLastNotificationEntry.notification != null
+                    && mLastNotificationEntry.notification.notification != null
+                    && mLastNotificationEntry.notification.notification.tickerText != null
+                    && mLastNotificationEntry.notification.notification.tickerText != null) {
+                mNotificationText = mLastNotificationEntry.notification.notification.tickerText.toString();
             }
-        } catch(Exception e) {
-            // Notification missing, doesn't matter ...
+            tick(mLastNotificationEntry, "", 0, 0, false);
         }
     }
 
@@ -429,6 +428,8 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                     if (hiddenState) break;
 
                     resetIcons();
+                    mBar.mHaloTaskerActive = false;
+                    mBar.updateNotificationIcons();
                     mEffect.setHaloOverlay(HaloProperties.Overlay.NONE, 0f);
                     updateTriggerPosition(mEffect.getHaloX(), mEffect.getHaloY());
 
@@ -465,27 +466,32 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                             } catch (RemoteException ex) {
                                 // system process is dead if we're here.
                             }
+                        }
 
-                            NotificationData.Entry entry = null;
-                            if (mNotificationData.size() > 0) {
-                                for (int i = mNotificationData.size() - 1; i >= 0; i--) {
-                                    NotificationData.Entry item = mNotificationData.get(i);
-                                    if (item.notification != null && mCurrentNotficationEntry != null &&
-                                            mCurrentNotficationEntry.notification != null &&
-                                            mCurrentNotficationEntry.notification == item.notification) {
-                                        continue;
-                                    }
+                        NotificationData.Entry entry = null;
+                        if (mNotificationData.size() > 0) {
+                            for (int i = mNotificationData.size() - 1; i >= 0; i--) {
+                                NotificationData.Entry item = mNotificationData.get(i);
+                                if (item.notification != null && mCurrentNotficationEntry != null &&
+                                    mCurrentNotficationEntry.notification != null &&
+                                    mCurrentNotficationEntry.notification == item.notification) {
+                                    continue;
+                                }
 
-                                    boolean cancel = (item.notification.notification.flags &
-                                            Notification.FLAG_AUTO_CANCEL) == Notification.FLAG_AUTO_CANCEL;
-                                    if (cancel) {
-                                        entry = item;
-                                        break;
-                                    }
+                                boolean cancel = (item.notification.notification.flags &
+                                        Notification.FLAG_AUTO_CANCEL) == Notification.FLAG_AUTO_CANCEL;
+                                if (cancel) {
+                                    entry = item;
+                                    break;
                                 }
                             }
-                            loadLastNotification();
                         }
+                        if (entry == null) {
+                            loadLastNotification();
+                        } else {
+                            tick(entry, "", 0, 0, false);
+                        }
+
                         mEffect.nap(1500);
                         if (mHideTicker) mEffect.sleep(HaloEffect.NAP_TIME + 3000, HaloEffect.SLEEP_TIME);
                     } else {
