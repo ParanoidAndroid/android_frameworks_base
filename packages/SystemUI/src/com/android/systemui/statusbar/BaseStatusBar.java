@@ -543,7 +543,7 @@ public abstract class BaseStatusBar extends SystemUI implements
             if (mHalo == null) {
                 LayoutInflater inflater = (LayoutInflater) mContext
                         .getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
-                mHalo = (Halo)inflater.inflate(R.layout.halo_layout, null);
+                mHalo = (Halo)inflater.inflate(R.layout.halo_trigger, null);
                 mHalo.setLayerType (View.LAYER_TYPE_HARDWARE, null);
                 WindowManager.LayoutParams params = mHalo.getWMParams();
                 mWindowManager.addView(mHalo,params);
