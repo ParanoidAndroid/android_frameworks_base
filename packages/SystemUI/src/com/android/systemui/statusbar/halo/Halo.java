@@ -164,7 +164,6 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
     public boolean mFirstStart = true;
     private boolean mInitialized = false;
     private boolean mTickerLeft = true;
-    private boolean mNumberLeft = true;
     private boolean mIsNotificationNew = true;
     private boolean mOverX = false;
 
@@ -311,7 +310,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                     && mLastNotificationEntry.notification.notification.tickerText != null) {
                 mNotificationText = mLastNotificationEntry.notification.notification.tickerText.toString();
             }
-            tick(mLastNotificationEntry, "", 0, 0, false);
+            tick(mLastNotificationEntry, "", 0, 0);
         }
     }
 
@@ -489,7 +488,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                         if (entry == null) {
                             loadLastNotification();
                         } else {
-                            tick(entry, "", 0, 0, false);
+                            tick(entry, "", 0, 0);
                         }
 
                         mEffect.nap(1500);
@@ -639,7 +638,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                                 if (mMarkerIndex == -1) {
                                     mTaskIntent = null;
                                     resetIcons();
-                                    tick(mLastNotificationEntry, mNotificationText, 0, 250, true);
+                                    tick(mLastNotificationEntry, mNotificationText, 0, 250);
 
                                     // Ping to notify the user we're back where we started
                                     mEffect.ping(mPaintHoloBlue, 0);
@@ -651,7 +650,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                                     if (entry.notification.notification.tickerText != null) {
                                         text = entry.notification.notification.tickerText.toString();
                                     }
-                                    tick(entry, text, 0, 250, true);
+                                    tick(entry, text, 0, 250);
                                     mTaskIntent = entry.floatingIntent;
                                 }
                             } catch (Exception e) {
@@ -701,7 +700,6 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
         protected int pingMaxRadius = 0;
         
         private boolean mPingAllowed = true;
-        private boolean mSkipThrough = false;
 
         private Bitmap mMarkerL, mMarkerT, mMarkerR, mMarkerB;
         private Bitmap mBigRed;
@@ -768,12 +766,11 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                     new DecelerateInterpolator(), null);
         }
 
-        public void ticker(String tickerText, int delay, int startDuration, boolean skipThrough) {
+        public void ticker(String tickerText, int delay, int startDuration) {
             if (tickerText == null || tickerText.isEmpty()) {
                 killTicker();
                 return;
             }
-            mSkipThrough = skipThrough;
 
             mHaloTextViewL.setVisibility(mTickerLeft ? View.VISIBLE : View.GONE);
             mHaloTextViewR.setVisibility(mTickerLeft ? View.GONE : View.VISIBLE);
@@ -897,7 +894,6 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
             state = canvas.save();
 
             int y = mHaloY - mHaloTickerContent.getMeasuredHeight() + (int)(mIconSize * 0.2);
-            //if (!mSkipThrough && mNumber.getVisibility() != View.VISIBLE) y += (int)(mIconSize * 0.15);
             if (y < 0) y = 0;
 
             int x = mHaloX + (int)(mIconSize * 0.92f);
@@ -953,6 +949,14 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
             canvas.translate(mHaloX, mHaloY);
             mHaloBubble.draw(canvas);
             canvas.restoreToCount(state);
+
+            // Number
+            if (mState == State.IDLE || mState == State.GESTURES && !(mGesture == Gesture.UP || mGesture == Gesture.DOWN)) {
+                state = canvas.save();
+                canvas.translate(mTickerLeft ? mHaloX + mIconSize - mHaloNumber.getMeasuredWidth() : mHaloX, mHaloY);
+                mHaloNumberView.draw(canvas);
+                canvas.restoreToCount(state);
+            }
         }
     }
 
@@ -971,10 +975,10 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
         return lp;
     }
 
-    void tick(NotificationData.Entry entry, String text, int delay, int duration, boolean skipThrough) {
+    void tick(NotificationData.Entry entry, String text, int delay, int duration) {
         if (entry == null) {
             mEffect.mHaloIcon.setImageDrawable(null);
-            //mNumber.setVisibility(View.GONE);
+            mEffect.mHaloNumber.setAlpha(0f);
             mContentIntent = null;
             mCurrentNotficationEntry = null;
             mEffect.killTicker();
@@ -992,15 +996,15 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
         mEffect.mHaloIcon.setImageDrawable(new BitmapDrawable(mContext.getResources(), entry.roundIcon));
 
         // Set Number
-        /*if (n.number > 0) {
-            mNumber.setVisibility(View.VISIBLE);
-            mNumber.setText((n.number < 100) ? String.valueOf(n.number) : "99+");
+        if (n.number > 0) {            
+            mEffect.mHaloNumber.setText((n.number < 100) ? String.valueOf(n.number) : "99+");
+            mEffect.mHaloNumber.setAlpha(1f);
         } else {
-            mNumber.setVisibility(View.GONE);
-        }*/
+            mEffect.mHaloNumber.setAlpha(0f);
+        }
 
         // Set text
-        mEffect.ticker(text, delay, duration, skipThrough);
+        mEffect.ticker(text, delay, duration);
 
         mEffect.updateResources();
         mEffect.invalidate();
@@ -1038,7 +1042,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                     mLastNotificationEntry = entry;
 
                     if (!blacklisted) {
-                        tick(entry, text, HaloEffect.WAKE_TIME, 1000, false);
+                        tick(entry, text, HaloEffect.WAKE_TIME, 1000);
 
                         // Pop while not tasking, only if notification is certified fresh
                         if (mGesture != Gesture.TASK) mEffect.ping(mPaintHoloBlue, HaloEffect.WAKE_TIME);

@@ -48,10 +48,13 @@ public class HaloProperties extends FrameLayout {
     private Drawable mHaloCurrentOverlay;
 
     protected View mHaloBubble;
-    protected ImageView mHaloIcon, mHaloOverlay, mHaloNumber;
+    protected ImageView mHaloIcon, mHaloOverlay;
 
     protected View mHaloContentView, mHaloTickerContent;
     protected TextView mHaloTextViewR, mHaloTextViewL;
+
+    protected View mHaloNumberView;
+    protected TextView mHaloNumber;
 
     public HaloProperties(Context context) {
         super(context);
@@ -73,6 +76,10 @@ public class HaloProperties extends FrameLayout {
         mHaloTextViewL = (TextView) mHaloTickerContent.findViewById(R.id.bubble_l);
         mHaloTextViewL.setAlpha(0f);
         mHaloTextViewR.setAlpha(0f);
+
+        mHaloNumberView = mInflater.inflate(R.layout.halo_number, null);
+        mHaloNumber = (TextView) mHaloNumberView.findViewById(R.id.number);
+        mHaloNumber.setAlpha(0f);
     }        
 
     public void setHaloX(int value) {
@@ -140,5 +147,9 @@ public class HaloProperties extends FrameLayout {
         mHaloBubble.measure(MeasureSpec.getSize(mHaloBubble.getMeasuredWidth()),
                 MeasureSpec.getSize(mHaloBubble.getMeasuredHeight()));
         mHaloBubble.layout(0, 0, 0, 0);
+
+        mHaloNumberView.measure(MeasureSpec.getSize(mHaloNumberView.getMeasuredWidth()),
+                MeasureSpec.getSize(mHaloNumberView.getMeasuredHeight()));
+        mHaloNumberView.layout(0, 0, 0, 0);
     }
 }
