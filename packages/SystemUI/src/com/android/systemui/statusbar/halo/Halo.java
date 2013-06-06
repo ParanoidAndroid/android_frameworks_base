@@ -1047,6 +1047,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                         // Pop while not tasking, only if notification is certified fresh
                         if (mGesture != Gesture.TASK) mEffect.ping(mPaintHoloBlue, HaloEffect.WAKE_TIME);
                         if (mState == State.IDLE || mState == State.HIDDEN) {
+                            mEffect.stopMovements();
                             mEffect.wake();
                             mEffect.nap(HaloEffect.NAP_DELAY);
                             if (mHideTicker) mEffect.sleep(HaloEffect.SLEEP_DELAY, HaloEffect.SLEEP_TIME);
