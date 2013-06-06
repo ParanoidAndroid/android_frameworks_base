@@ -302,6 +302,7 @@ public class NotificationManagerService extends INotificationManager.Stub
         } else {
             mHaloBlackList.add(pkg);
         }
+        writeBlockDb(mHaloBlackList, mHaloPolicyFile);
     }
 
     public void setNotificationsEnabledForPackage(String pkg, boolean enabled) {
@@ -752,9 +753,8 @@ public class NotificationManagerService extends INotificationManager.Stub
         mToastQueue = new ArrayList<ToastRecord>();
         mHandler = new WorkerHandler();
 
-        File dir = new File("/data/system");
-        mPolicyFile = new AtomicFile(new File(dir, "notification_policy.xml"));
-        mHaloPolicyFile = new AtomicFile(new File(dir, "halo_blacklist_policy.xml"));
+        mPolicyFile = new AtomicFile(new File("/data/system", "notification_policy.xml"));
+        mHaloPolicyFile = new AtomicFile(new File("/data/system", "halo_blacklist_policy.xml"));
 
         loadBlockDb(mBlockedPackages, mPolicyFile);
         loadBlockDb(mHaloBlackList, mHaloPolicyFile);
