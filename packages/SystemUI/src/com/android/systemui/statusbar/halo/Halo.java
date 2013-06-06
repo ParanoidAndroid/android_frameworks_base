@@ -373,6 +373,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
         public boolean onDoubleTap(MotionEvent event) {
             if (!mInteractionReversed) {
                 mState = State.GESTURES;
+                mEffect.wake();
                 mBar.mHaloTaskerActive = true;
                 mBar.updateNotificationIcons();
             } else {
@@ -412,8 +413,9 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
             final int action = event.getAction();
             switch(action) {
                 case MotionEvent.ACTION_DOWN:
+
                     // Stop HALO from moving around, unschedule sleeping patterns
-                    mEffect.unscheduleSleep();
+                    if (mState != State.GESTURES) mEffect.unscheduleSleep();
 
                     mMarkerIndex = -1;
                     oldIconIndex = -1;
