@@ -134,6 +134,8 @@ public class NotificationPanelView extends PanelView {
                     }
                     if (mTrackingSwipe && deltaX > deltaY && deltaX > minDeltaX) {
 
+                      mSwipeDirection = event.getX(0) - mGestureStartX; 
+
                         // The value below can be used to adjust deltaX to always increase,
                         // if the user keeps swiping in the same direction as she started the
                         // gesture. If she, however, moves her finger the other way, deltaX will
@@ -204,13 +206,6 @@ public class NotificationPanelView extends PanelView {
                     original.getPressure(0), original.getSize(0), original.getMetaState(),
                     original.getXPrecision(), original.getYPrecision(), original.getDeviceId(),
                     original.getEdgeFlags());
-
-                // The following two lines looks better than the chunk of code above, but,
-                // nevertheless, doesn't work. The view is not pinned down, and may close,
-                // just after the gesture is finished.
-                //
-                // event = MotionEvent.obtainNoHistory(original);
-                // event.setLocation(getWidth()/2, getHeight());
                 shouldRecycleEvent = true;
             }
         }
