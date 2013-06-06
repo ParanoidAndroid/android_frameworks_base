@@ -417,6 +417,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
 
                     mMarkerIndex = -1;
                     oldIconIndex = -1;
+                    mGesture = Gesture.NONE;
                     hiddenState = mState == State.HIDDEN;
                     if (mState == State.HIDDEN) {
                         mEffect.wake();
@@ -539,7 +540,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
 
                             return false;
                         } else {
-                            mEffect.setHaloOverlay(HaloProperties.Overlay.NONE, 0f);
+                            if (mOverX) mEffect.setHaloOverlay(HaloProperties.Overlay.NONE, 0f);
                             mOverX = false;
                         }
 
@@ -585,7 +586,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
 
                         // Switch icons
                         if (deltaX > horizontalThreshold) {
-                            mEffect.setHaloOverlay(HaloProperties.Overlay.NONE, 0f);
+                            if (mGesture != Gesture.TASK) mEffect.setHaloOverlay(HaloProperties.Overlay.NONE, 0f);
 
                             mGesture = Gesture.TASK;
 
@@ -633,8 +634,8 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
 
                         } else {
                             mMarkerIndex = -1;
-                            mGesture = Gesture.NONE;
-                            mEffect.setHaloOverlay(HaloProperties.Overlay.NONE, 0f);
+                            if (mGesture != Gesture.NONE) mEffect.setHaloOverlay(HaloProperties.Overlay.NONE, 0f);
+                            mGesture = Gesture.NONE;                            
                         }
 
                         // If the marker index changed, tick

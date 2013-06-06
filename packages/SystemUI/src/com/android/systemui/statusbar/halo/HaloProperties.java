@@ -23,6 +23,8 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.animation.ObjectAnimator;
+import android.view.animation.DecelerateInterpolator;
 
 import com.android.systemui.R;
 
@@ -56,6 +58,8 @@ public class HaloProperties extends FrameLayout {
     protected View mHaloNumberView;
     protected TextView mHaloNumber;
 
+    CustomObjectAnimator mHaloOverlayAnimator;
+
     public HaloProperties(Context context) {
         super(context);
 
@@ -80,6 +84,8 @@ public class HaloProperties extends FrameLayout {
         mHaloNumberView = mInflater.inflate(R.layout.halo_number, null);
         mHaloNumber = (TextView) mHaloNumberView.findViewById(R.id.number);
         mHaloNumber.setAlpha(0f);
+
+        mHaloOverlayAnimator = new CustomObjectAnimator(this);
     }        
 
     public void setHaloX(int value) {
@@ -112,7 +118,7 @@ public class HaloProperties extends FrameLayout {
         setHaloOverlay(overlay, mHaloOverlay.getAlpha());
     }
 
-    public void setHaloOverlay(Overlay overlay, float alpha) {
+    public void setHaloOverlay(Overlay overlay, float overlayAlpha) {
 
         Drawable d = null;
 
@@ -135,7 +141,10 @@ public class HaloProperties extends FrameLayout {
             mHaloOverlay.setImageDrawable(d);
             mHaloCurrentOverlay = d;
         }
-        mHaloOverlay.setAlpha(alpha);
+
+        mHaloOverlayAnimator.animate(ObjectAnimator.ofFloat(mHaloOverlay, "alpha", overlayAlpha).setDuration(250),
+                new DecelerateInterpolator(), null);
+
         updateResources();
     }
 
