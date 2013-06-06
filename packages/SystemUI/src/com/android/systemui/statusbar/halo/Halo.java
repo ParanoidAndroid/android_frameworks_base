@@ -301,15 +301,24 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
         }
     }
 
-    private void loadLastNotification() {
+    private void loadLastNotification(boolean includeCurrentNonStatic) {
         if (mNotificationData.size() > 0) {
             mLastNotificationEntry = mNotificationData.get(mNotificationData.size() - 1);
+
+            if (!includeCurrentNonStatic && mNotificationData.size() > 1 && mLastNotificationEntry != null &&
+                    mLastNotificationEntry.notification == mCurrentNotficationEntry.notification) {
+                boolean cancel = (mLastNotificationEntry.notification.notification.flags &
+                        Notification.FLAG_AUTO_CANCEL) == Notification.FLAG_AUTO_CANCEL;
+                if (cancel) mLastNotificationEntry = mNotificationData.get(mNotificationData.size() - 2);
+            }
+
             if (mLastNotificationEntry.notification != null
                     && mLastNotificationEntry.notification.notification != null
                     && mLastNotificationEntry.notification.notification.tickerText != null
                     && mLastNotificationEntry.notification.notification.tickerText != null) {
                 mNotificationText = mLastNotificationEntry.notification.notification.tickerText.toString();
             }
+
             tick(mLastNotificationEntry, "", 0, 0);
         }
     }
@@ -318,7 +327,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
         mBar = bar;
         if (mBar.getTicker() != null) mBar.getTicker().setUpdateEvent(this);
         mNotificationData = mBar.getNotificationData();
-        loadLastNotification();
+        loadLastNotification(true);
     }
 
     void launchTask(NotificationClicker intent) {
@@ -404,7 +413,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
             switch(action) {
                 case MotionEvent.ACTION_DOWN:
                     // Stop HALO from moving around, unschedule sleeping patterns
-                    mEffect.stopMovements();
+                    mEffect.unscheduleSleep();
 
                     mMarkerIndex = -1;
                     oldIconIndex = -1;
@@ -434,7 +443,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
 
                     mEffect.outro();
                     mEffect.killTicker();
-                    mEffect.snap(0);
+                    mEffect.unscheduleSleep();
 
                     // Do we erase ourselves?
                     if (mOverX) {
@@ -471,9 +480,8 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                         if (mNotificationData.size() > 0) {
                             for (int i = mNotificationData.size() - 1; i >= 0; i--) {
                                 NotificationData.Entry item = mNotificationData.get(i);
-                                if (item.notification != null && mCurrentNotficationEntry != null &&
-                                    mCurrentNotficationEntry.notification != null &&
-                                    mCurrentNotficationEntry.notification == item.notification) {
+                                if (mCurrentNotficationEntry != null
+                                        && mCurrentNotficationEntry.notification == item.notification) {
                                     continue;
                                 }
 
@@ -486,7 +494,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                             }
                         }
                         if (entry == null) {
-                            loadLastNotification();
+                            loadLastNotification(false);
                         } else {
                             tick(entry, "", 0, 0);
                         }
@@ -494,6 +502,8 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                         mEffect.nap(1500);
                         if (mHideTicker) mEffect.sleep(HaloEffect.NAP_TIME + 3000, HaloEffect.SLEEP_TIME);
                     } else {
+                        // No gesture, just snap HALO
+                        mEffect.snap(0);
                         mEffect.nap(HaloEffect.SNAP_TIME + 1000);
                         if (mHideTicker) mEffect.sleep(HaloEffect.SNAP_TIME + HaloEffect.NAP_TIME + 2500, HaloEffect.SLEEP_TIME);
                     }
@@ -667,7 +677,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
 
     public void cleanUp() {
         // Remove pending tasks, if we can
-        //unscheduleSleep();
+        mEffect.unscheduleSleep();
         mHandler.removeCallbacksAndMessages(null);
         // Kill callback
         mBar.getTicker().setUpdateEvent(null);
@@ -841,6 +851,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
         CustomObjectAnimator snapAnimator = new CustomObjectAnimator(this);
 
         public void wake() {
+            unscheduleSleep();
             if (mState == State.HIDDEN) mState = State.IDLE;
             int newPos = mTickerLeft ? 0 : mScreenWidth - mIconSize;
             updateTriggerPosition(newPos, mHaloY);
@@ -874,7 +885,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                         }});
         }
 
-        public void stopMovements() {
+        public void unscheduleSleep() {
             snapAnimator.cancel(true);
         }
 
@@ -1047,7 +1058,6 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                         // Pop while not tasking, only if notification is certified fresh
                         if (mGesture != Gesture.TASK) mEffect.ping(mPaintHoloBlue, HaloEffect.WAKE_TIME);
                         if (mState == State.IDLE || mState == State.HIDDEN) {
-                            mEffect.stopMovements();
                             mEffect.wake();
                             mEffect.nap(HaloEffect.NAP_DELAY);
                             if (mHideTicker) mEffect.sleep(HaloEffect.SLEEP_DELAY, HaloEffect.SLEEP_TIME);
