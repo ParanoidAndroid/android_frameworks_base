@@ -64,6 +64,12 @@ public class NotificationData {
         public View getLargeView() {
             return expandedLarge;
         }
+        public NotificationClicker getFloatingIntent() {
+            return floatingIntent;
+        }
+        public Bitmap getRoundIcon() {
+            return roundIcon;
+        }
         /**
          * Return whether the entry can be expanded.
          */

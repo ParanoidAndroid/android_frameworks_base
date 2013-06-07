@@ -92,7 +92,7 @@ import com.android.systemui.SystemUI;
 import com.android.systemui.recent.RecentTasksLoader;
 import com.android.systemui.recent.RecentsActivity;
 import com.android.systemui.recent.TaskDescription;
-import com.android.systemui.statusbar.Halo;
+import com.android.systemui.statusbar.halo.Halo;
 import com.android.systemui.statusbar.phone.QuickSettingsContainerView;
 import com.android.systemui.statusbar.phone.Ticker;
 import com.android.systemui.statusbar.policy.BatteryController;
@@ -525,6 +525,13 @@ public abstract class BaseStatusBar extends SystemUI implements
 
         SettingsObserver settingsObserver = new SettingsObserver(new Handler());
         settingsObserver.observe();
+    }
+
+    public void setHaloTaskerActive(boolean haloTaskerActive, boolean updateNotificationIcons) {
+        mHaloTaskerActive = haloTaskerActive;
+        if (updateNotificationIcons) {
+            updateNotificationIcons();
+        }
     }
 
     protected void updateHaloButton() {

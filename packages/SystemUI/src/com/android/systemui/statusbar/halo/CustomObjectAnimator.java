@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar;
+package com.android.systemui.statusbar.halo;
 
 import android.os.Handler;
 import android.animation.ObjectAnimator;

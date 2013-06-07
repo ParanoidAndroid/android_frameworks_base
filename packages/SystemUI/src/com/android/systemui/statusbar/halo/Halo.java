@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar;
+package com.android.systemui.statusbar.halo;
 
 import android.app.Activity;
 import android.app.ActivityManagerNative;
@@ -374,8 +374,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
             if (!mInteractionReversed) {
                 mState = State.GESTURES;
                 mEffect.wake();
-                mBar.mHaloTaskerActive = true;
-                mBar.updateNotificationIcons();
+                mBar.setHaloTaskerActive(true, true);
             } else {
                 // Move
                 mState = State.DRAG;
@@ -439,8 +438,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                     if (hiddenState) break;
 
                     resetIcons();
-                    mBar.mHaloTaskerActive = false;
-                    mBar.updateNotificationIcons();
+                    mBar.setHaloTaskerActive(false, true);
                     mEffect.setHaloOverlay(HaloProperties.Overlay.NONE, 0f);
                     updateTriggerPosition(mEffect.getHaloX(), mEffect.getHaloY());
 
@@ -552,8 +550,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                                 if (mInteractionReversed) {                                
                                     mState = State.GESTURES;
                                     mEffect.wake();           
-                                    mBar.mHaloTaskerActive = true;
-                                    mBar.updateNotificationIcons();
+                                    mBar.setHaloTaskerActive(true, true);
                                 } else {
                                     mState = State.DRAG;
                                     mEffect.intro();
@@ -664,7 +661,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                                         text = entry.notification.notification.tickerText.toString();
                                     }
                                     tick(entry, text, 0, 250);
-                                    mTaskIntent = entry.floatingIntent;
+                                    mTaskIntent = entry.getFloatingIntent();
                                 }
                             } catch (Exception e) {
                                 // IndexOutOfBoundsException
@@ -685,7 +682,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
         // Kill callback
         mBar.getTicker().setUpdateEvent(null);
         // Flag tasker
-        mBar.mHaloTaskerActive = false;
+        mBar.setHaloTaskerActive(false, false);
         // Kill the effect layer
         if (mEffect != null) mWindowManager.removeView(mEffect);
         // Remove resolver
@@ -1003,11 +1000,11 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
         Notification n = notification.notification;
 
         // Deal with the intent
-        mContentIntent = entry.floatingIntent;
+        mContentIntent = entry.getFloatingIntent();
         mCurrentNotficationEntry = entry;
 
         // set the avatar
-        mEffect.mHaloIcon.setImageDrawable(new BitmapDrawable(mContext.getResources(), entry.roundIcon));
+        mEffect.mHaloIcon.setImageDrawable(new BitmapDrawable(mContext.getResources(), entry.getRoundIcon()));
 
         // Set Number
         if (n.number > 0) {            
