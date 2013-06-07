@@ -1468,15 +1468,7 @@ public class Activity extends ContextThemeWrapper
             // Pass the configuration changed event to the window
             mWindow.onConfigurationChanged(newConfig);
             if (mWindow.mIsFloatingWindow) {
-                WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
-                Display display = wm.getDefaultDisplay();
-                DisplayMetrics metrics = new DisplayMetrics();
-                display.getMetrics(metrics);
-                if (metrics.heightPixels > metrics.widthPixels) {
-                    mWindow.setLayout((int)(metrics.widthPixels * 0.9f), (int)(metrics.heightPixels * 0.7f));
-                } else {
-                    mWindow.setLayout((int)(metrics.widthPixels * 0.7f), (int)(metrics.heightPixels * 0.8f));
-                }
+                scaleFloatingWindow(null);
             }
         }
 
@@ -5111,15 +5103,7 @@ public class Activity extends ContextThemeWrapper
             mWindow.setAttributes((android.view.WindowManager.LayoutParams) params);
 
             // Scale it
-            WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-            Display display = wm.getDefaultDisplay();
-            DisplayMetrics metrics = new DisplayMetrics();
-            display.getMetrics(metrics);
-            if (metrics.heightPixels > metrics.widthPixels) {
-                mWindow.setLayout((int)(metrics.widthPixels * 0.9f), (int)(metrics.heightPixels * 0.7f));
-            } else {
-                mWindow.setLayout((int)(metrics.widthPixels * 0.7f), (int)(metrics.heightPixels * 0.8f));
-            }
+            scaleFloatingWindow(context);
         } else {
             mWindow = PolicyManager.makeNewWindow(this);
         }
@@ -5156,6 +5140,26 @@ public class Activity extends ContextThemeWrapper
         }
         mWindowManager = mWindow.getWindowManager();
         mCurrentConfig = config;
+    }
+
+    private void scaleFloatingWindow(Context context) {
+        if (!mWindow.mIsFloatingWindow) {
+            return;
+        }
+        WindowManager wm = null;
+        if (context != null) {
+            wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        } else {
+            wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        }
+        Display display = wm.getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+        if (metrics.heightPixels > metrics.widthPixels) {
+            mWindow.setLayout((int)(metrics.widthPixels * 0.9f), (int)(metrics.heightPixels * 0.7f));
+        } else {
+            mWindow.setLayout((int)(metrics.widthPixels * 0.7f), (int)(metrics.heightPixels * 0.8f));
+        }
     }
 
     /** @hide */
