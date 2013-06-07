@@ -43,7 +43,8 @@ public class DateView extends TextView {
             final String action = intent.getAction();
             if (Intent.ACTION_TIME_TICK.equals(action)
                     || Intent.ACTION_TIME_CHANGED.equals(action)
-                    || Intent.ACTION_TIMEZONE_CHANGED.equals(action)) {
+                    || Intent.ACTION_TIMEZONE_CHANGED.equals(action)
+                    || Intent.ACTION_LOCALE_CHANGED.equals(action)) {
                 updateClock();
             }
         }
@@ -87,7 +88,7 @@ public class DateView extends TextView {
     }
 
     protected void updateClock() {
-        final String dateFormat = getContext().getString(R.string.abbrev_wday_month_day_no_year);
+        final String dateFormat = getContext().getString(R.string.full_wday_month_day_no_year_split);
         setText(DateFormat.format(dateFormat, new Date()));
     }
 
@@ -116,6 +117,7 @@ public class DateView extends TextView {
                 filter.addAction(Intent.ACTION_TIME_TICK);
                 filter.addAction(Intent.ACTION_TIME_CHANGED);
                 filter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
+                filter.addAction(Intent.ACTION_LOCALE_CHANGED);
                 mContext.registerReceiver(mIntentReceiver, filter, null, null);
                 updateClock();
             } else {
