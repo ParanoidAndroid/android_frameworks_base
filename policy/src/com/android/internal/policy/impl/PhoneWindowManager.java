@@ -562,9 +562,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private static final int MSG_DISPATCH_MEDIA_KEY_REPEAT_WITH_WAKE_LOCK = 4;
     private static final int MSG_DISPATCH_VOLKEY_WITH_WAKE_LOCK = 5;
 
-    public PhoneWindowManager(IDeviceHandler device) {
+/*    public PhoneWindowManager(IDeviceHandler device) {
         mDeviceKeyHandler = (device != null) ? device.getDeviceKeyHandler() : null;
-    }
+    }*/
 
     private class PolicyHandler extends Handler {
         @Override
