@@ -1505,11 +1505,6 @@ public class PhoneStatusBar extends BaseStatusBar {
         final boolean halfWayDone = mScrollView.getVisibility() == View.VISIBLE;
         final int zeroOutDelays = halfWayDone ? 0 : 1;
 
-        if (!halfWayDone) {
-            mScrollView.setScaleX(0f);
-            mFlipSettingsView.setScaleX(1f);
-        }
-
         mScrollView.setVisibility(View.VISIBLE);
         mScrollViewAnim = start(
             startDelay(FLIP_DURATION_OUT * zeroOutDelays,
@@ -1580,10 +1575,7 @@ public class PhoneStatusBar extends BaseStatusBar {
     }
 
     public boolean isShowingSettings() {
-        if (mFlipSettingsView != null) {
-               return mHasFlipSettings && mFlipSettingsView.getVisibility() == View.VISIBLE;
-        }
-        return false;
+        return mHasFlipSettings && mFlipSettingsView.getVisibility() == View.VISIBLE;
     }
 
     public void completePartialFlip() {
@@ -1612,7 +1604,6 @@ public class PhoneStatusBar extends BaseStatusBar {
             mScrollView.setVisibility(View.VISIBLE);
             mScrollView.setScaleX(-progress);
             mNotificationButton.setVisibility(View.GONE);
-            updateCarrierLabelVisibility(true);
         } else { // settings side
             mFlipSettingsView.setScaleX(progress);
             mFlipSettingsView.setVisibility(View.VISIBLE);
@@ -1621,7 +1612,6 @@ public class PhoneStatusBar extends BaseStatusBar {
             mScrollView.setScaleX(0f);
             mNotificationButton.setVisibility(View.VISIBLE);
             mNotificationButton.setAlpha(progress);
-            updateCarrierLabelVisibility(false);
         }
         mClearButton.setVisibility(View.GONE);
         mHaloButton.setVisibility(View.GONE); // WARNING: Remove this line to avoid compiling errors, it depends on Halo's source.
@@ -1631,55 +1621,48 @@ public class PhoneStatusBar extends BaseStatusBar {
         // Settings are not available in setup
         if (!mUserSetup) return;
 
-        if (mHasFlipSettings) {
-            if (mFlipSettingsViewAnim != null) mFlipSettingsViewAnim.cancel();
-            if (mScrollViewAnim != null) mScrollViewAnim.cancel();
-            if (mSettingsButtonAnim != null) mSettingsButtonAnim.cancel();
-            if (mNotificationButtonAnim != null) mNotificationButtonAnim.cancel();
-            if (mClearButtonAnim != null) mClearButtonAnim.cancel();
+        if (mFlipSettingsViewAnim != null) mFlipSettingsViewAnim.cancel();
+        if (mScrollViewAnim != null) mScrollViewAnim.cancel();
+        if (mSettingsButtonAnim != null) mSettingsButtonAnim.cancel();
+        if (mNotificationButtonAnim != null) mNotificationButtonAnim.cancel();
+        if (mClearButtonAnim != null) mClearButtonAnim.cancel();
 
-            final boolean halfWayDone = mFlipSettingsView.getVisibility() == View.VISIBLE;
-            final int zeroOutDelays = halfWayDone ? 0 : 1;
+        final boolean halfWayDone = mFlipSettingsView.getVisibility() == View.VISIBLE;
+        final int zeroOutDelays = halfWayDone ? 0 : 1;
 
-            if (!halfWayDone) {
-                    mFlipSettingsView.setScaleX(0f);
-                    mScrollView.setScaleX(1f);
-            }
-
-            mFlipSettingsView.setVisibility(View.VISIBLE);
-            mFlipSettingsViewAnim = start(
-                startDelay(FLIP_DURATION_OUT * zeroOutDelays,
-                    interpolator(mDecelerateInterpolator,
-                        ObjectAnimator.ofFloat(mFlipSettingsView, View.SCALE_X, 1f)
-                            .setDuration(FLIP_DURATION_IN)
-                        )));
-            mScrollViewAnim = start(
-                setVisibilityWhenDone(
-                    interpolator(mAccelerateInterpolator,
-                            ObjectAnimator.ofFloat(mScrollView, View.SCALE_X, 0f)
-                            )
-                        .setDuration(FLIP_DURATION_OUT), 
-                    mScrollView, View.INVISIBLE));
-            mSettingsButtonAnim = start(
-                setVisibilityWhenDone(
-                    ObjectAnimator.ofFloat(mSettingsButton, View.ALPHA, 0f)
-                        .setDuration(FLIP_DURATION),
-                        mScrollView, View.INVISIBLE));
-            mNotificationButton.setVisibility(View.VISIBLE);
-            mNotificationButtonAnim = start(
-                ObjectAnimator.ofFloat(mNotificationButton, View.ALPHA, 1f)
-                    .setDuration(FLIP_DURATION));
-            mClearButtonAnim = start(
-                setVisibilityWhenDone(
-                    ObjectAnimator.ofFloat(mClearButton, View.ALPHA, 0f)
+        mFlipSettingsView.setVisibility(View.VISIBLE);
+        mFlipSettingsViewAnim = start(
+            startDelay(FLIP_DURATION_OUT * zeroOutDelays,
+                interpolator(mDecelerateInterpolator,
+                    ObjectAnimator.ofFloat(mFlipSettingsView, View.SCALE_X, 1f)
+                        .setDuration(FLIP_DURATION_IN)
+                    )));
+        mScrollViewAnim = start(
+            setVisibilityWhenDone(
+                interpolator(mAccelerateInterpolator,
+                        ObjectAnimator.ofFloat(mScrollView, View.SCALE_X, 0f)
+                        )
+                    .setDuration(FLIP_DURATION_OUT), 
+                mScrollView, View.INVISIBLE));
+        mSettingsButtonAnim = start(
+            setVisibilityWhenDone(
+                ObjectAnimator.ofFloat(mSettingsButton, View.ALPHA, 0f)
                     .setDuration(FLIP_DURATION),
-                    mClearButton, View.INVISIBLE));
-            mNotificationPanel.postDelayed(new Runnable() {
-                public void run() {
-                    updateCarrierLabelVisibility(false);
-                }
-            }, FLIP_DURATION - 150);
-        }
+                    mScrollView, View.INVISIBLE));
+        mNotificationButton.setVisibility(View.VISIBLE);
+        mNotificationButtonAnim = start(
+            ObjectAnimator.ofFloat(mNotificationButton, View.ALPHA, 1f)
+                .setDuration(FLIP_DURATION));
+        mClearButtonAnim = start(
+            setVisibilityWhenDone(
+                ObjectAnimator.ofFloat(mClearButton, View.ALPHA, 0f)
+                .setDuration(FLIP_DURATION),
+                mClearButton, View.INVISIBLE));
+        mNotificationPanel.postDelayed(new Runnable() {
+            public void run() {
+                updateCarrierLabelVisibility(false);
+            }
+        }, FLIP_DURATION - 150);
     }
 
     public void flipPanels() {
