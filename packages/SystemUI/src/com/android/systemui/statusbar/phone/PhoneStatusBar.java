@@ -1581,6 +1581,54 @@ public class PhoneStatusBar extends BaseStatusBar {
         mClearButton.setVisibility(View.GONE);
     }
 
+    public boolean isShowingSettings() {
+        if (mFlipSettingsView != null) {
+               return mHasFlipSettings && mFlipSettingsView.getVisibility() == View.VISIBLE;
+        }
+        return false;
+    }
+
+    public void completePartialFlip() {
+        if (mHasFlipSettings) {
+            if (mFlipSettingsView.getVisibility() == View.VISIBLE) {
+                flipToSettings();
+            } else {
+                flipToNotifications();
+            }
+        }
+    }
+
+    public void partialFlip(float progress) {
+        if (mFlipSettingsViewAnim != null) mFlipSettingsViewAnim.cancel();
+        if (mScrollViewAnim != null) mScrollViewAnim.cancel();
+        if (mSettingsButtonAnim != null) mSettingsButtonAnim.cancel();
+        if (mNotificationButtonAnim != null) mNotificationButtonAnim.cancel();
+        if (mClearButtonAnim != null) mClearButtonAnim.cancel();
+
+        progress = Math.min(Math.max(progress, -1f), 1f);
+        if (progress < 0f) { // notifications side
+            mFlipSettingsView.setScaleX(0f);
+            mFlipSettingsView.setVisibility(View.GONE);
+            mSettingsButton.setVisibility(View.VISIBLE);
+            mSettingsButton.setAlpha(-progress);
+            mScrollView.setVisibility(View.VISIBLE);
+            mScrollView.setScaleX(-progress);
+            mNotificationButton.setVisibility(View.GONE);
+            updateCarrierLabelVisibility(true);
+        } else { // settings side
+            mFlipSettingsView.setScaleX(progress);
+            mFlipSettingsView.setVisibility(View.VISIBLE);
+            mSettingsButton.setVisibility(View.GONE);
+            mScrollView.setVisibility(View.GONE);
+            mScrollView.setScaleX(0f);
+            mNotificationButton.setVisibility(View.VISIBLE);
+            mNotificationButton.setAlpha(progress);
+            updateCarrierLabelVisibility(false);
+        }
+        mClearButton.setVisibility(View.GONE);
+        mHaloButton.setVisibility(View.GONE); // WARNING: Remove this line to avoid compiling errors, it depends on Halo's source.
+    }
+
     public void flipToSettings() {
         // Settings are not available in setup
         if (!mUserSetup) return;
