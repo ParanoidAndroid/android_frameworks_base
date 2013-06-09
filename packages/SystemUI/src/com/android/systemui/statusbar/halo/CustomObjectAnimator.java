@@ -27,7 +27,7 @@ import android.view.View;
 public class CustomObjectAnimator {
 
     private View rootView;
-    private Handler handler = new Handler();     
+    private Handler handler = new Handler();
     private ObjectAnimator animator;
 
     public CustomObjectAnimator(View root) {

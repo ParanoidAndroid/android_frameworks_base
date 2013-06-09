@@ -68,7 +68,7 @@ public class HaloProperties extends FrameLayout {
         mHaloBackR = mContext.getResources().getDrawable(R.drawable.halo_back_right);
         mHaloBlackX = mContext.getResources().getDrawable(R.drawable.halo_black_x);
 
-        mInflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);    
+        mInflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         mHaloBubble = mInflater.inflate(R.layout.halo_bubble, null);
         mHaloIcon = (ImageView) mHaloBubble.findViewById(R.id.app_icon);
