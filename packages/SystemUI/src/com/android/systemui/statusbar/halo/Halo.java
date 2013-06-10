@@ -127,7 +127,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
     private WindowManager.LayoutParams mTriggerPos;
     private HaloEffect mEffect;
     private boolean mHideTicker;
-
+    private INotificationManager mNotificationManager;
 
 	private int id;
     private String appName;
@@ -220,6 +220,8 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
         mWindowManager = (WindowManager)mContext.getSystemService(Context.WINDOW_SERVICE);
         mInflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+        mNotificationManager = INotificationManager.Stub.asInterface(
+                ServiceManager.getService(Context.NOTIFICATION_SERVICE));
         mDisplay = mWindowManager.getDefaultDisplay();
         mGestureDetector = new GestureDetector(mContext, new GestureListener());
         mHandler = new Handler();
@@ -1044,13 +1046,12 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
 
     // This is the android ticker callback
     public void updateTicker(StatusBarNotification notification, String text) {
-        INotificationManager nm = INotificationManager.Stub.asInterface(
-                ServiceManager.getService(Context.NOTIFICATION_SERVICE));
-        boolean blacklisted = false; // default off
+
+        boolean allowed = false; // default off
         try {
-            blacklisted = nm.isPackageHaloBlacklisted(notification.pkg);
+            allowed = mNotificationManager.isPackageAllowedForHalo(notification.pkg);
         } catch (android.os.RemoteException ex) {
-            // this does not bode well
+            // System is dead
         }
 
         for (int i = 0; i < mNotificationData.size(); i++) {
@@ -1072,7 +1073,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                     mNotificationText = text;
                     mLastNotificationEntry = entry;
 
-                    if (!blacklisted) {
+                    if (allowed) {
                         tick(entry, text, HaloEffect.WAKE_TIME, 1000);
 
                         // Pop while not tasking, only if notification is certified fresh

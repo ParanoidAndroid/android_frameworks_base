@@ -187,68 +187,90 @@ public class NotificationManagerService extends INotificationManager.Stub
     // Notification control database. For now just contains disabled packages.
     private AtomicFile mPolicyFile, mHaloPolicyFile;
     private HashSet<String> mBlockedPackages = new HashSet<String>();
-    private HashSet<String> mHaloBlackList = new HashSet<String>();
+    private HashSet<String> mHaloBlacklist = new HashSet<String>();
+    private HashSet<String> mHaloWhitelist = new HashSet<String>();
+    private boolean mHaloPolicyisBlack = true;
 
     private static final int DB_VERSION = 1;
 
     private static final String TAG_BODY = "notification-policy";
     private static final String ATTR_VERSION = "version";
+    private static final String ATTR_HALO_POLICY_IS_BLACK = "policy_is_black";
 
+    private static final String TAG_ALLOWED_PKGS = "allowed-packages";
     private static final String TAG_BLOCKED_PKGS = "blocked-packages";
     private static final String TAG_PACKAGE = "package";
     private static final String ATTR_NAME = "name";
 
-    private void loadBlockDb(HashSet<String> array, AtomicFile file) {
-        synchronized(array) {
-            if (file != null) {
-                array.clear();
+    private int readPolicy(AtomicFile file, String lookUpTag, HashSet<String> db) {
+        return readPolicy(file, lookUpTag, db, null, 0);
+    }
 
-                FileInputStream infile = null;
-                try {
-                    infile = file.openRead();
-                    final XmlPullParser parser = Xml.newPullParser();
-                    parser.setInput(infile, null);
+    private int readPolicy(AtomicFile file, String lookUpTag, HashSet<String> db, String resultTag, int defaultResult) {
+        int result = defaultResult;
+        FileInputStream infile = null;
+        try {
+            infile = file.openRead();
+            final XmlPullParser parser = Xml.newPullParser();
+            parser.setInput(infile, null);
 
-                    int type;
-                    String tag;
-                    int version = DB_VERSION;
-                    while ((type = parser.next()) != END_DOCUMENT) {
-                        tag = parser.getName();
-                        if (type == START_TAG) {
-                            if (TAG_BODY.equals(tag)) {
-                                version = Integer.parseInt(parser.getAttributeValue(null, ATTR_VERSION));
-                            } else if (TAG_BLOCKED_PKGS.equals(tag)) {
-                                while ((type = parser.next()) != END_DOCUMENT) {
-                                    tag = parser.getName();
-                                    if (TAG_PACKAGE.equals(tag)) {
-                                        array.add(parser.getAttributeValue(null, ATTR_NAME));
-                                    } else if (TAG_BLOCKED_PKGS.equals(tag) && type == END_TAG) {
-                                        break;
-                                    }
-                                }
+            int type;
+            String tag;
+            int version = DB_VERSION;
+            while ((type = parser.next()) != END_DOCUMENT) {
+                tag = parser.getName();
+                if (type == START_TAG) {
+                    if (TAG_BODY.equals(tag)) {
+                        version = Integer.parseInt(parser.getAttributeValue(null, ATTR_VERSION));
+                        if (resultTag != null) {
+                            String attribValue = parser.getAttributeValue(null, resultTag);
+                            result = Integer.parseInt((attribValue != null ? attribValue : "0"));
+                        }
+                    } else if (lookUpTag.equals(tag)) {
+                        while ((type = parser.next()) != END_DOCUMENT) {
+                            tag = parser.getName();
+                            if (TAG_PACKAGE.equals(tag)) {
+                                db.add(parser.getAttributeValue(null, ATTR_NAME));
+                            } else if (lookUpTag.equals(tag) && type == END_TAG) {
+                                break;
                             }
                         }
                     }
-                } catch (FileNotFoundException e) {
-                    // No data yet
-                } catch (IOException e) {
-                    Log.wtf(TAG, "Unable to read blocked notifications database", e);
-                } catch (NumberFormatException e) {
-                    Log.wtf(TAG, "Unable to parse blocked notifications database", e);
-                } catch (XmlPullParserException e) {
-                    Log.wtf(TAG, "Unable to parse blocked notifications database", e);
-                } finally {
-                    IoUtils.closeQuietly(infile);
                 }
+            }
+        } catch (Exception e) {
+            // Unable to read
+        } finally {
+            IoUtils.closeQuietly(infile);
+        }
+        return result;
+    }
+
+    private void loadBlockDb() {
+        synchronized(mBlockedPackages) {
+            if (mPolicyFile == null) {
+                mPolicyFile = new AtomicFile(new File("/data/system", "notification_policy.xml"));
+                mBlockedPackages.clear();
+                readPolicy(mPolicyFile, TAG_BLOCKED_PKGS, mBlockedPackages);
             }
         }
     }
 
-    private void writeBlockDb(HashSet<String> array, AtomicFile file) {
-        synchronized(array) {
+    private synchronized void loadHaloBlockDb() {
+        if (mHaloPolicyFile == null) {
+            mHaloPolicyFile = new AtomicFile(new File("/data/system", "halo_policy.xml"));
+            mHaloBlacklist.clear();
+            mHaloPolicyisBlack = readPolicy(mHaloPolicyFile, TAG_BLOCKED_PKGS, mHaloBlacklist, ATTR_HALO_POLICY_IS_BLACK, 1) == 1;
+            mHaloWhitelist.clear();
+            readPolicy(mHaloPolicyFile, TAG_ALLOWED_PKGS, mHaloWhitelist);
+        }
+    }
+
+    private void writeBlockDb() {
+        synchronized(mBlockedPackages) {
             FileOutputStream outfile = null;
             try {
-                outfile = file.startWrite();
+                outfile = mPolicyFile.startWrite();
 
                 XmlSerializer out = new FastXmlSerializer();
                 out.setOutput(outfile, "utf-8");
@@ -259,7 +281,7 @@ public class NotificationManagerService extends INotificationManager.Stub
                     out.attribute(null, ATTR_VERSION, String.valueOf(DB_VERSION));
                     out.startTag(null, TAG_BLOCKED_PKGS); {
                         // write all known network policies
-                        for (String pkg : array) {
+                        for (String pkg : mBlockedPackages) {
                             out.startTag(null, TAG_PACKAGE); {
                                 out.attribute(null, ATTR_NAME, pkg);
                             } out.endTag(null, TAG_PACKAGE);
@@ -269,17 +291,98 @@ public class NotificationManagerService extends INotificationManager.Stub
 
                 out.endDocument();
 
-                file.finishWrite(outfile);
+                mPolicyFile.finishWrite(outfile);
             } catch (IOException e) {
                 if (outfile != null) {
-                    file.failWrite(outfile);
+                    mPolicyFile.failWrite(outfile);
                 }
             }
         }
     }
 
-    public boolean isPackageHaloBlacklisted(String pkg) {
-        return mHaloBlackList.contains(pkg);
+    private synchronized void writeHaloBlockDb() {
+        FileOutputStream outfile = null;
+        try {
+            outfile = mHaloPolicyFile.startWrite();
+
+            XmlSerializer out = new FastXmlSerializer();
+            out.setOutput(outfile, "utf-8");
+
+            out.startDocument(null, true);
+
+            out.startTag(null, TAG_BODY); {
+                out.attribute(null, ATTR_VERSION, String.valueOf(DB_VERSION));
+                out.attribute(null, ATTR_HALO_POLICY_IS_BLACK, (mHaloPolicyisBlack ? "1" : "0"));
+
+                    out.startTag(null, TAG_BLOCKED_PKGS); {
+                        for (String blockedPkg : mHaloBlacklist) {
+                            out.startTag(null, TAG_PACKAGE); {
+                                out.attribute(null, ATTR_NAME, blockedPkg);
+                            } out.endTag(null, TAG_PACKAGE);
+                        }
+                    } out.endTag(null, TAG_BLOCKED_PKGS);
+                    
+                    out.startTag(null, TAG_ALLOWED_PKGS); {
+                        for (String allowedPkg : mHaloWhitelist) {
+                            out.startTag(null, TAG_PACKAGE); {
+                                out.attribute(null, ATTR_NAME, allowedPkg);
+                            } out.endTag(null, TAG_PACKAGE);
+                        }
+                    } out.endTag(null, TAG_ALLOWED_PKGS);
+
+            } out.endTag(null, TAG_BODY);
+
+            out.endDocument();
+
+            mHaloPolicyFile.finishWrite(outfile);
+        } catch (IOException e) {
+            if (outfile != null) {
+                mHaloPolicyFile.failWrite(outfile);
+            }
+        }
+    }
+
+    public void setHaloPolicyBlack(boolean state) {
+        mHaloPolicyisBlack = state;
+        writeHaloBlockDb();
+    }
+
+    public void setHaloStatus(String pkg, boolean status) {
+        if (mHaloPolicyisBlack) {
+            setHaloBlacklistStatus(pkg, status);
+        } else {
+            setHaloWhitelistStatus(pkg, status);
+        }
+    }
+
+    public void setHaloBlacklistStatus(String pkg, boolean status) {
+        if (status) {
+            mHaloBlacklist.add(pkg);            
+        } else {
+            mHaloBlacklist.remove(pkg);
+        }
+        writeHaloBlockDb();
+    }
+
+    public void setHaloWhitelistStatus(String pkg, boolean status) {
+        if (status) {
+            mHaloWhitelist.add(pkg);            
+        } else {
+            mHaloWhitelist.remove(pkg);
+        }
+        writeHaloBlockDb();
+    }
+
+    public boolean isHaloPolicyBlack() {
+        return mHaloPolicyisBlack;
+    }
+
+    public boolean isPackageAllowedForHalo(String pkg) {
+        if (mHaloPolicyisBlack) {
+            return !mHaloBlacklist.contains(pkg);
+        } else {
+            return mHaloWhitelist.contains(pkg);
+        }
     }
 
     public boolean areNotificationsEnabledForPackage(String pkg) {
@@ -294,15 +397,6 @@ public class NotificationManagerService extends INotificationManager.Stub
             Slog.v(TAG, "notifications are " + (enabled?"en":"dis") + "abled for " + pkg);
         }
         return enabled;
-    }
-
-    public void setHaloBlacklistStatus(String pkg, boolean blacklisted) {
-        if (!blacklisted) {
-            mHaloBlackList.remove(pkg);
-        } else {
-            mHaloBlackList.add(pkg);
-        }
-        writeBlockDb(mHaloBlackList, mHaloPolicyFile);
     }
 
     public void setNotificationsEnabledForPackage(String pkg, boolean enabled) {
@@ -329,7 +423,7 @@ public class NotificationManagerService extends INotificationManager.Stub
             }
             // Don't bother canceling toasts, they'll go away soon enough.
         }
-        writeBlockDb(mBlockedPackages, mPolicyFile);
+        writeBlockDb();
     }
 
     private static String idDebugString(Context baseContext, String packageName, int id) {
@@ -753,11 +847,8 @@ public class NotificationManagerService extends INotificationManager.Stub
         mToastQueue = new ArrayList<ToastRecord>();
         mHandler = new WorkerHandler();
 
-        mPolicyFile = new AtomicFile(new File("/data/system", "notification_policy.xml"));
-        mHaloPolicyFile = new AtomicFile(new File("/data/system", "halo_blacklist_policy.xml"));
-
-        loadBlockDb(mBlockedPackages, mPolicyFile);
-        loadBlockDb(mHaloBlackList, mHaloPolicyFile);
+        loadBlockDb();
+        loadHaloBlockDb();
 
         mStatusBar = statusBar;
         statusBar.setNotificationCallbacks(mNotificationCallbacks);
