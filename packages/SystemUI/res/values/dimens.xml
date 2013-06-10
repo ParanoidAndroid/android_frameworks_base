@@ -214,7 +214,7 @@
     <dimen name="peek_height">84dp</dimen>
 
     <!-- PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE PIE -->
-    <dimen name="pie_trigger_height">20dp</dimen>
+    <dimen name="pie_trigger_height">12dp</dimen>
 
     <dimen name="pie_radius_start">65dp</dimen>
     <dimen name="pie_radius_increment">80dp</dimen>
@@ -251,9 +251,10 @@
     <!-- The padding of the items of the battery cluster -->
     <dimen name="status_bar_battery_cluster_padding">4dip</dimen>
 
+    <dimen name="halo_content_max_width">250dp</dimen>
+
 <!-- Notification Shortcuts -->
     <dimen name="notification_shortcuts_close_handle_height">26dp</dimen>
     <dimen name="notification_shortcuts_spacing_height">88dp</dimen>
     <dimen name="notification_shortcuts_drawer_margin">88dp</dimen>
 </resources>
-
