@@ -301,15 +301,27 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
         }
     }
 
-    private void loadLastNotification(boolean includeCurrentNonStatic) {
+    private void loadLastNotification(boolean includeCurrentDismissable) {
         if (mNotificationData.size() > 0) {
+            //oldEntry = mLastNotificationEntry;
             mLastNotificationEntry = mNotificationData.get(mNotificationData.size() - 1);
 
-            if (!includeCurrentNonStatic && mNotificationData.size() > 1 && mLastNotificationEntry != null &&
-                    mLastNotificationEntry.notification == mCurrentNotficationEntry.notification) {
-                boolean cancel = (mLastNotificationEntry.notification.notification.flags &
-                        Notification.FLAG_AUTO_CANCEL) == Notification.FLAG_AUTO_CANCEL;
-                if (cancel) mLastNotificationEntry = mNotificationData.get(mNotificationData.size() - 2);
+            // If the current notification is dismissable we might want to skip it if so desired
+            if (!includeCurrentDismissable) {
+                if (mNotificationData.size() > 1 && mLastNotificationEntry != null &&
+                        mLastNotificationEntry.notification == mCurrentNotficationEntry.notification) {
+                    boolean cancel = (mLastNotificationEntry.notification.notification.flags &
+                            Notification.FLAG_AUTO_CANCEL) == Notification.FLAG_AUTO_CANCEL;
+                    if (cancel) mLastNotificationEntry = mNotificationData.get(mNotificationData.size() - 2);
+                } else if (mNotificationData.size() == 1) {
+                    boolean cancel = (mLastNotificationEntry.notification.notification.flags &
+                            Notification.FLAG_AUTO_CANCEL) == Notification.FLAG_AUTO_CANCEL;
+                    if (cancel) {
+                        // We have one notification left and it is dismissable, clear it...
+                        clearTicker();
+                        return;
+                    }
+                }
             }
 
             if (mLastNotificationEntry.notification != null
@@ -319,6 +331,8 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
             }
 
             tick(mLastNotificationEntry, "", 0, 0);
+        } else {
+            clearTicker();
         }
     }
 
@@ -470,21 +484,21 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
 
                         if (mContentIntent != null) {
                             try {
-                                mBar.getService().onNotificationClick(mContentIntent.mPkg, mContentIntent.mTag, mContentIntent.mId);
+                                mBar.getService().onNotificationClear(mContentIntent.mPkg, mContentIntent.mTag, mContentIntent.mId);
                             } catch (RemoteException ex) {
                                 // system process is dead if we're here.
                             }
                         }
 
+                        // Find next entry
                         NotificationData.Entry entry = null;
-                        if (mNotificationData.size() > 1) {
+                        if (mNotificationData.size() > 0) {
                             for (int i = mNotificationData.size() - 1; i >= 0; i--) {
                                 NotificationData.Entry item = mNotificationData.get(i);
                                 if (mCurrentNotficationEntry != null
                                         && mCurrentNotficationEntry.notification == item.notification) {
                                     continue;
                                 }
-
                                 boolean cancel = (item.notification.notification.flags &
                                         Notification.FLAG_AUTO_CANCEL) == Notification.FLAG_AUTO_CANCEL;
                                 if (cancel) {
@@ -493,7 +507,9 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                                 }
                             }
                         }
-                        if (mNotificationData.size() > 1 && entry == null) {
+
+                        // When no entry was found, take the last one
+                        if (entry == null && mNotificationData.size() > 0) {
                             loadLastNotification(false);
                         } else {
                             tick(entry, "", 0, 0);
@@ -803,12 +819,11 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
 
             mHandler.postDelayed(new Runnable() {
                 public void run() {
-                    mPingAllowed = true;
+                    mPingAllowed = false;
 
                     mPingX = mHaloX + mIconHalfSize;
                     mPingY = mHaloY + mIconHalfSize;
-
-                    mPingAllowed = false;
+;
                     mPingPaint = paint;
 
                     int c = Color.argb(0xff, Color.red(paint.getColor()), Color.green(paint.getColor()), Color.blue(paint.getColor()));
@@ -832,7 +847,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
                     mHandler.postDelayed(new Runnable() {
                         public void run() {
                             mPingAllowed = true;
-                        }}, 3000);
+                        }}, PING_TIME / 2);
 
                 }}, delay);
         }
@@ -986,13 +1001,19 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
         return lp;
     }
 
+    void clearTicker() {
+        mEffect.mHaloIcon.setImageDrawable(null);
+        mEffect.mHaloNumber.setAlpha(0f);
+        mContentIntent = null;
+        mCurrentNotficationEntry = null;
+        mEffect.killTicker();
+        mEffect.updateResources();
+        mEffect.invalidate();
+    }
+
     void tick(NotificationData.Entry entry, String text, int delay, int duration) {
         if (entry == null) {
-            mEffect.mHaloIcon.setImageDrawable(null);
-            mEffect.mHaloNumber.setAlpha(0f);
-            mContentIntent = null;
-            mCurrentNotficationEntry = null;
-            mEffect.killTicker();
+            clearTicker();
             return;
         }
 
@@ -1023,7 +1044,6 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback {
 
     // This is the android ticker callback
     public void updateTicker(StatusBarNotification notification, String text) {
-
         INotificationManager nm = INotificationManager.Stub.asInterface(
                 ServiceManager.getService(Context.NOTIFICATION_SERVICE));
         boolean blacklisted = false; // default off
