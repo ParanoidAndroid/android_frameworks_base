@@ -4871,8 +4871,13 @@ public final class Settings {
             MOUNT_UMS_NOTIFY_ENABLED,
             UI_NIGHT_MODE,
             LOCK_SCREEN_OWNER_INFO,
+<<<<<<< HEAD
+            LOCK_SCREEN_OWNER_INFO_ENABLED
+=======
             LOCK_SCREEN_OWNER_INFO_ENABLED,
+            ADVANCED_REBOOT,
             PRIVACY_GUARD_DEFAULT
+>>>>>>> e48fce6... framework: Privacy Guard
         };
 
         /**
