@@ -1849,6 +1849,13 @@ public final class Settings {
          */
         public static final String VIBRATE_ON = "vibrate_on";
 
+       /**
+        * NFC polling mode configuration key
+        *
+        * @hide
+        */
+       public static final String NFC_POLLING_MODE = "nfc_polling_mode";
+
         /**
          * If 1, redirects the system vibrator to all currently attached input devices
          * that support vibration.  If there are no such input devices, then the system
