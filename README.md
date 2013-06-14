@@ -1,7 +1,10 @@
-android_frameworks_base
-=======================
+ParanoidAndroid
+==============
 
-Android frameworks:
+Android frameworks
+
+Branches
+========
 
 For Nexus devices, use the branch 'jellybean'.
 
