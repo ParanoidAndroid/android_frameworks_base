@@ -2698,12 +2698,6 @@ public final class Settings {
         public static final String LOCKSCREEN_QUICK_UNLOCK = "lockscreen_quick_unlock";
 
         /**
-         * Wether the hints for the left and right widgets are shown when the screen is turned on
-         * @hide
-         */
-        public static final String LOCKSCREEN_HIDE_HINTS = "lockscreen_hide_hints";
-
-        /**
          * Allows lockscreen to show homescreen widgets
          * The value is boolean (1 or 0).
          * @hide

@@ -17,25 +17,41 @@
 package android.app;
 
 import android.app.Activity;
-import android.os.Handler;
+import android.os.Bundle;
 
 public class LayerActivity extends Activity {
 
-    private boolean mResume = false;
+    private Bundle mSavedInstanceState;
+    private boolean mShouldFinish = false;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mSavedInstanceState = savedInstanceState;
+    }
 
     @Override
     public void onStart() {
         super.onStart();
-        mResume = false;
+        mShouldFinish = false;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (!mResume) {
-            mResume = true;
+        if (!mShouldFinish) {
+            mShouldFinish = true;
             return;
         }
+        mShouldFinish = false;
         finish();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mSavedInstanceState != null) {
+            finish();
+        }
     }
 }

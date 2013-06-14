@@ -20,7 +20,6 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.content.Context;
-import android.provider.Settings;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
@@ -109,10 +108,7 @@ public class KeyguardWidgetCarousel extends KeyguardWidgetPager {
             boolean inVisibleRange = i >= getNextPage() - 1 && i <= getNextPage() + 1;
             KeyguardWidgetFrame child = getWidgetPageAt(i);
             if (inVisibleRange) {
-                if (Settings.System.getInt(mContext.getContentResolver(),
-                          Settings.System.LOCKSCREEN_HIDE_HINTS, 0) == 0) {
-                       child.setBackgroundAlpha(KeyguardWidgetFrame.OUTLINE_ALPHA_MULTIPLIER);
-                }
+                child.setBackgroundAlpha(KeyguardWidgetFrame.OUTLINE_ALPHA_MULTIPLIER);
                 child.setContentAlpha(1f);
             } else {
                 child.setBackgroundAlpha(0f);
