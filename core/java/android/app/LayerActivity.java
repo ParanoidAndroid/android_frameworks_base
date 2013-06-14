@@ -14,10 +14,28 @@
  * limitations under the License.
  */
 
-package com.android.systemui;
+package android.app;
 
-import android.app.LayerActivity;
+import android.app.Activity;
+import android.os.Handler;
 
-public class Transparent extends LayerActivity {
+public class LayerActivity extends Activity {
 
+    private boolean mResume = false;
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mResume = false;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (!mResume) {
+            mResume = true;
+            return;
+        }
+        finish();
+    }
 }
