@@ -148,6 +148,38 @@
     <string name="shutdown_confirm_question" msgid="2906544768881136183">"Deseja desligar?"</string>
     <string name="reboot_safemode_title" msgid="7054509914500140361">"Reiniciar no modo de segurança"</string>
     <string name="reboot_safemode_confirm" msgid="55293944502784668">"Deseja reiniciar no modo de segurança? Isso desativará todos os aplicativos de terceiros instalados. Eles serão restaurados quando você reiniciar novamente."</string>
+   <!-- Button to reboot the phone, within the Phone Options dialog -->
+    <string name="reboot_system" product="tablet">Reiniciar tablet</string>
+    <string name="reboot_system" product="default">Reiniciar telefone</string>
+    <!-- Button to reboot the phone, within the Reboot Options dialog -->
+    <string name="reboot_reboot">Reiniciar</string>
+    <!-- Button to reboot the phone into recovery, within the Reboot Options dialog -->
+    <string name="reboot_recovery">Recuperação</string>
+
+    <!-- Button to reboot the phone into bootloader, within the Reboot Options dialog -->
+    <string name="reboot_bootloader">Bootloader</string>
+    <!-- Button to reboot the phone into bootmenu, within the Reboot Options dialog -->
+    <string name="reboot_bootmenu">Menu de Boot</string>
+    <!-- Button to reboot the phone into fastboot, within the Reboot Options dialog -->
+    <string name="reboot_fastboot">Fastboot</string>
+    <!-- Button to reboot the phone into download, within the Reboot Options dialog -->
+    <string name="reboot_download">Modo Download</string>
+    <!-- Button to reboot the phone into safe mode, within the Reboot Options dialog -->
+    <string name="reboot_safe_mode">@string/safeMode</string>
+
+    <!-- Reboot Progress Dialog. This is shown if the user chooses to reboot the phone. -->
+    <string name="reboot_progress">Reiniciando...</string>
+    <!-- Reboot Confirmation Dialog.  When the user chooses to reboot the phone, there will be a confirmation dialog.  This is the message. -->
+    <string name="reboot_confirm">Seu dispositivo irá reiniciar.</string>
+
+    <!-- label for item that screenshots in phone options dialog -->
+    <string name="global_action_screenshot">Captura de Tela</string>
+    <!-- label for item that toggles expand desktop mode -->
+    <string name="global_action_expanded_desktop">Tela Cheia (Pie)</string>
+    <!-- status message in phone options dialog for when expand desktop mode is on -->
+    <string name="global_action_expanded_desktop_on">Ativado</string>
+    <!-- status message in phone options dialog for when expand desktop mode is off -->
+    <string name="global_action_expanded_desktop_off">Desativado</string>
     <string name="recent_tasks_title" msgid="3691764623638127888">"Recente"</string>
     <string name="no_recent_tasks" msgid="8794906658732193473">"Nenhum aplicativo recente"</string>
     <string name="global_actions" product="tablet" msgid="408477140088053665">"Opções do tablet"</string>
@@ -158,11 +190,12 @@
     <string name="bugreport_title" msgid="2667494803742548533">"Obter relatório de bugs"</string>
     <string name="bugreport_message" msgid="398447048750350456">"Isto coletará informações sobre o estado atual do dispositivo para enviá-las em uma mensagem de e-mail. Após iniciar o relatório de bugs, será necessário aguardar algum tempo até que esteja pronto para ser enviado."</string>
     <string name="global_action_toggle_silent_mode" msgid="8219525344246810925">"Modo silencioso"</string>
+	<string name="global_action_reboot">Reiniciar</string>
     <string name="global_action_silent_mode_on_status" msgid="3289841937003758806">"Som DESATIVADO"</string>
-    <string name="global_action_silent_mode_off_status" msgid="1506046579177066419">"O som está ATIVADO"</string>
-    <string name="global_actions_toggle_airplane_mode" msgid="5884330306926307456">"Modo de avião"</string>
-    <string name="global_actions_airplane_mode_on_status" msgid="2719557982608919750">"Modo de avião ATIVADO"</string>
-    <string name="global_actions_airplane_mode_off_status" msgid="5075070442854490296">"Modo de avião DESATIVADO"</string>
+    <string name="global_action_silent_mode_off_status" msgid="1506046579177066419">"Som ATIVADO"</string>
+    <string name="global_actions_toggle_airplane_mode">"Modo de avião"</string>
+    <string name="global_actions_airplane_mode_on_status">"Modo de avião ATIVADO"</string>
+     <string name="global_actions_airplane_mode_off_status">Modo de avião DESATIVADO"</string>
     <string name="status_bar_notification_info_overflow" msgid="5301981741705354993">"&gt;999"</string>
     <string name="safeMode" msgid="2788228061547930246">"Modo de segurança"</string>
     <string name="android_system_label" msgid="6577375335728551336">"Sistema Android"</string>
