@@ -21,5 +21,5 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/recent_remove_item" android:title="@string/status_bar_recent_remove_item_title" />
     <item android:id="@+id/recent_inspect_item" android:title="@string/status_bar_recent_inspect_item_title" />
-    <item android:id="@+id/recent_hybrid_item" android:title="@string/status_bar_recent_hybrid_item_title" />
+    <item android:id="@+id/recent_launch_floating" android:title="@string/status_bar_recent_floating_item_title" />
 </menu>
