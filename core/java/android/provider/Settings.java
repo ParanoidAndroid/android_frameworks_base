@@ -2633,6 +2633,12 @@ public final class Settings {
         */
         public static final String DISABLE_FULLSCREEN_KEYBOARD = "disable_fullscreen_keyboard";
 
+         /**
+         * Network speed indicator
+         * @hide
+         */
+        public static final String STATUS_BAR_TRAFFIC = "status_bar_traffic";
+
         /**
          * HALO, should default to 0 (no, do not show)
          * @hide
