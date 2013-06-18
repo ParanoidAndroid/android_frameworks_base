@@ -2669,9 +2669,12 @@ final class ActivityStack {
         if ((launchFlags &
                 (Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_TASK_ON_HOME))
                 == (Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_TASK_ON_HOME)) {
-            // Caller wants to appear on home activity, so before starting
-            // their own activity we will bring home to the front.
-            moveHomeToFrontLocked();
+            boolean floating = (launchFlags&Intent.FLAG_FLOATING_WINDOW) == Intent.FLAG_FLOATING_WINDOW;
+            if (!floating) {
+                // Caller wants to appear on home activity, so before starting
+                // their own activity we will bring home to the front.
+                moveHomeToFrontLocked();
+            }
         }
     }
 
