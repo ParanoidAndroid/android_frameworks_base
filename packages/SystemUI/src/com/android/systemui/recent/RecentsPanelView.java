@@ -800,23 +800,15 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
                     } else {
                         throw new IllegalStateException("Oops, no tag on view " + selectedView);
                     }
-                } else if (item.getItemId() == R.id.recent_hybrid_item) {
+                } else if (item.getItemId() == R.id.recent_launch_floating) {
                     ViewHolder viewHolder = (ViewHolder) selectedView.getTag();
                     if (viewHolder != null) {
                         final TaskDescription ad = viewHolder.taskDescription;
-                        ApplicationInfo appInfo = ExtendedPropertiesUtils.getAppInfoFromPackageName(ad.packageName);
+                        Intent intent = ad.intent;
+                        intent.addFlags(Intent.FLAG_FLOATING_WINDOW
+                                | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         dismissAndGoBack();
-                        if (appInfo != null) {
-                            Intent intent = new Intent("android.intent.action.MAIN");
-                            intent.putExtra("package", ad.packageName);
-                            intent.putExtra("appname", ad.getLabel().toString());
-                            intent.putExtra("filename", appInfo.sourceDir);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            intent.setComponent(new ComponentName("com.paranoid.preferences", 
-                                    "com.paranoid.preferences.hybrid.ViewPagerActivity"));
-                            getContext().startActivity(intent);
-                        }
+                        getContext().startActivity(intent);
                     }
                 } else {
                     return false;
