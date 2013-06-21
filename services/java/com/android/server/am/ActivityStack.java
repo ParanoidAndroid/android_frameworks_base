@@ -3280,6 +3280,11 @@ final class ActivityStack {
         try {
             synchronized (mService) {
 
+                // we must resolve if the last intent in the stack is floating to give the flag to the previous
+                boolean floating = false;
+                if (intents.length > 0) {
+                    floating = (intents[intents.length - 1].getFlags()&Intent.FLAG_FLOATING_WINDOW) == Intent.FLAG_FLOATING_WINDOW;
+                }
                 for (int i=0; i<intents.length; i++) {
                     Intent intent = intents[i];
                     if (intent == null) {
@@ -3306,6 +3311,10 @@ final class ActivityStack {
                             & ApplicationInfo.FLAG_CANT_SAVE_STATE) != 0) {
                         throw new IllegalArgumentException(
                                 "FLAG_CANT_SAVE_STATE not supported here");
+                    }
+
+                    if (floating) {
+                        intent.addFlags(Intent.FLAG_FLOATING_WINDOW);
                     }
 
                     Bundle theseOptions;
