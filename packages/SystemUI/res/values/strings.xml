@@ -580,4 +580,8 @@
     <string name="pie_hour_format_24">HH:mm</string>
     <string name="pie_am_pm">a</string>
 
+    <!-- Camera Tile -->
+    <string name="quick_settings_camera_label">Camera</string>
+    <string name="quick_settings_camera_error_connect">Can\'t connect to camera</string>
+
 </resources>
