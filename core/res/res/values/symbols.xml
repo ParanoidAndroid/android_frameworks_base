@@ -1896,4 +1896,9 @@
   <java-symbol type="string" name="config_deviceHandlersLib" />
   <java-symbol type="string" name="config_deviceKeyHandlerClass" />
   <java-symbol type="string" name="config_deviceDockBatteryHandlerClass" />
+
+  <!-- Privacy Guard -->
+  <java-symbol type="string" name="privacy_guard_notification" />
+  <java-symbol type="string" name="privacy_guard_notification_detail" />
+  <java-symbol type="drawable" name="stat_notify_privacy_guard" />
 </resources>
