@@ -2760,7 +2760,7 @@ public final class Settings {
         public static final String STATUS_BAR_DONOTDISTURB = "status_bar_donotdisturb";
 
         /**
-         * Show the brightness controls in status bar (or not)
+         * Enables adjusting brightness by sliding status bar
          * @hide
          */
         public static final String STATUS_BAR_BRIGHTNESS_CONTROL = "status_bar_brightness_control";
