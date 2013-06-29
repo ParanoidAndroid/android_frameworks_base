@@ -184,7 +184,7 @@ public class BatteryController extends BroadcastReceiver {
             ImageView v = mIconViews.get(i);
             Drawable batteryBitmap = mContext.getResources().getDrawable(icon);
             if (mColorInfo.isLastColorNull) {
-                batteryBitmap.clearColorFilter();                
+                batteryBitmap.clearColorFilter();
             } else {
                 batteryBitmap.setColorFilter(mColorInfo.lastColor, PorterDuff.Mode.SRC_IN);
             }
@@ -232,7 +232,13 @@ public class BatteryController extends BroadcastReceiver {
         for (int i=0; i<N; i++) {
             ImageView v = mIconViews.get(i);
             v.setVisibility(mIcon);
-            v.setImageResource(mIconStyle);
+            Drawable batteryBitmap = mContext.getResources().getDrawable(mIconStyle);
+            if (mColorInfo.isLastColorNull) {
+                batteryBitmap.clearColorFilter();
+            } else {
+                batteryBitmap.setColorFilter(mColorInfo.lastColor, PorterDuff.Mode.SRC_IN);
+            }
+            v.setImageDrawable(batteryBitmap);
         }
         N = mLabelViews.size();
         for (int i=0; i<N; i++) {
