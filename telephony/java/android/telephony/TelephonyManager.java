@@ -566,9 +566,7 @@ public class TelephonyManager {
     public static final int NETWORK_TYPE_EHRPD = 14;
     /** Current network is HSPA+ */
     public static final int NETWORK_TYPE_HSPAP = 15;
-    /** Current network is DC-HSPAP
-     * @hide
-     */
+    /** Current network is DC-HSPAP */
     public static final int NETWORK_TYPE_DCHSPAP = 30;
 
     /**
