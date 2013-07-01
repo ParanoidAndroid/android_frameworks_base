@@ -808,6 +808,10 @@ public interface WindowManager extends ViewManager {
          * {@hide} */
         public static final int PREVENT_POWER_KEY = 0x80000000;
 
+        /** Window flag: Overrides default power key behavior
+            @{hide} */
+        public static final int PREVENT_POWER_KEY = 0x80000000;
+
         /**
          * Various behavioral options/flags.  Default is none.
          * 
