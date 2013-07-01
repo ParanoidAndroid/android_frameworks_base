@@ -4045,4 +4045,7 @@
     <!-- Default name of the owner user [CHAR LIMIT=20] -->
     <string name="owner_name" msgid="3879126011135546571">Owner</string>
 
+    <!-- SD Card dock for Asus Transformer devices --> 
+    <string name="storage_sd_dock_card">SD Card Dock</string>
+
 </resources>
