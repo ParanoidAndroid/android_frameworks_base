@@ -222,7 +222,7 @@
         android:permissionGroupFlags="personalInfo"
         android:priority="360"/>
 
-  <!-- Allows an application to send SMS messages. -->
+   <!-- Allows an application to send SMS messages. -->
     <permission android:name="android.permission.SEND_SMS"
         android:permissionGroup="android.permission-group.MESSAGES"
         android:protectionLevel="dangerous"
@@ -374,7 +374,7 @@
         android:label="@string/permlab_writeCallLog"
         android:description="@string/permdesc_writeCallLog" />
 
-  <!-- Allows an application to read from the user's social stream. -->
+    <!-- Allows an application to read from the user's social stream. -->
     <permission android:name="android.permission.READ_SOCIAL_STREAM"
         android:permissionGroup="android.permission-group.SOCIAL_INFO"
         android:protectionLevel="dangerous"
@@ -551,7 +551,7 @@
         android:permissionGroupFlags="personalInfo"
         android:priority="280" />
 
-   <!-- Allows an application to add voicemails into the system. -->
+    <!-- Allows an application to add voicemails into the system. -->
     <permission android:name="com.android.voicemail.permission.ADD_VOICEMAIL"
         android:permissionGroup="android.permission-group.VOICEMAIL"
         android:protectionLevel="dangerous"
@@ -797,7 +797,7 @@
         android:label="@string/permlab_preventpower"
         android:description="@string/permdesc_preventpower" />
 
-<!-- Allows access to the vibrator -->
+    <!-- Allows access to the vibrator -->
     <permission android:name="android.permission.VIBRATE"
         android:permissionGroup="android.permission-group.AFFECTS_BATTERY"
         android:protectionLevel="normal"
