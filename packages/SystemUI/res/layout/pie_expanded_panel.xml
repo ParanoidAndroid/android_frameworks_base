@@ -46,7 +46,6 @@
                     android:singleLine="true"
                     android:textAppearance="@style/TextAppearance.StatusBar.Expanded.Clock"
                     android:layout_centerVertical="true"
-                    systemui:showAlways="true"
                     />
 
                 <com.android.systemui.statusbar.policy.DateView android:id="@+id/date"
@@ -57,15 +56,34 @@
                     android:layout_centerVertical="true"
                     />
             </RelativeLayout>
-            
-            <ImageView android:id="@+id/clear_all_button"
+
+            <RelativeLayout
+                android:id="@+id/toggle_buttons"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
-                android:paddingTop="10dp"
-                android:paddingRight="8dp"
-                android:src="@drawable/ic_notify_clear_normal"
-                android:contentDescription="@string/accessibility_clear_all"/>
+                android:enabled="false"
+                >
+
+                <ImageView android:id="@+id/halo_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_notify_halo_normal"
+                    android:contentDescription="@string/accessibility_halo"
+                    />
+
+                <ImageView android:id="@+id/clear_all_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toRightOf="@id/halo_button"
+                    android:layout_marginLeft="8dp"
+                    android:src="@drawable/ic_notify_clear"
+                    android:contentDescription="@string/accessibility_clear_all"
+                    />
+
+            </RelativeLayout>
 
         </RelativeLayout>
 

@@ -2212,13 +2212,6 @@ public final class Settings {
         public static final String TTY_MODE = "tty_mode";
 
         /**
-         * Whether noise suppression is enabled. The value is
-         * boolean (1 or 0).
-         * @hide
-         */
-        public static final String NOISE_SUPPRESSION = "noise_suppression";
-
-        /**
          * Whether the sounds effects (key clicks, lid open ...) are enabled. The value is
          * boolean (1 or 0).
          */
@@ -2304,11 +2297,6 @@ public final class Settings {
          * @hide
          */
         public static final String BATTERY_LIGHT_FULL_COLOR = "battery_light_full_color";
-
-        /** Sprint MWI Quirk: Show message wait indicator notifications
-         * @hide
-         */
-        public static final String ENABLE_MWI_NOTIFICATION = "enable_mwi_notification";
 
         /**
          * Show pointer location on screen?
@@ -2717,18 +2705,6 @@ public final class Settings {
          * @hide
          */
         public static final String VOLBTN_MUSIC_CONTROLS = "volbtn_music_controls";
-        
-        /**
-         * Whether or not to launch default music player when headset is connected
-         * @hide
-         */
-        public static final String HEADSET_CONNECT_PLAYER = "headset_connect_player"; 
-        
-        /**
-         * Whether national data roaming should be used.
-         * @hide
-         */
-        public static final String MVNO_ROAMING = "mvno_roaming";
 
         /**
          * Whether to enable quiet hours.
@@ -2849,55 +2825,6 @@ public final class Settings {
          * @hide
          */
         public static final String QS_DYNAMIC_IME = "qs_dyanmic_ime";
-
-        /**
-         * Enable Stylus Gestures
-         *
-         * @hide
-         */
-        public static final String ENABLE_STYLUS_GESTURES = "enable_stylus_gestures";
-
-        /**
-         * Left Swipe Action
-         *
-         * @hide
-         */
-        public static final String GESTURES_LEFT_SWIPE = "gestures_left_swipe";
-
-        /**
-         * Right Swipe Action
-         *
-         * @hide
-         */
-        public static final String GESTURES_RIGHT_SWIPE = "gestures_right_swipe";
-
-        /**
-         * Up Swipe Action
-         *
-         * @hide
-         */
-        public static final String GESTURES_UP_SWIPE = "gestures_up_swipe";
-
-        /**
-         * down Swipe Action
-         *
-         * @hide
-         */
-        public static final String GESTURES_DOWN_SWIPE = "gestures_down_swipe";
-
-        /**
-         * Long press Action
-         *
-         * @hide
-         */
-        public static final String GESTURES_LONG_PRESS = "gestures_long_press";
-
-        /**
-         * double tap Action
-         *
-         * @hide
-         */
-        public static final String GESTURES_DOUBLE_TAP = "gestures_double_tap";
 
         /**
          * Quick Settings Panel Dynamic Tiles
@@ -4944,8 +4871,13 @@ public final class Settings {
             MOUNT_UMS_NOTIFY_ENABLED,
             UI_NIGHT_MODE,
             LOCK_SCREEN_OWNER_INFO,
+<<<<<<< HEAD
+            LOCK_SCREEN_OWNER_INFO_ENABLED
+=======
             LOCK_SCREEN_OWNER_INFO_ENABLED,
+            ADVANCED_REBOOT,
             PRIVACY_GUARD_DEFAULT
+>>>>>>> e48fce6... framework: Privacy Guard
         };
 
         /**
