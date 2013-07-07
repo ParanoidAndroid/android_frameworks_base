@@ -184,6 +184,7 @@ public class PieMenu extends FrameLayout {
     private float mStatusOffset;
 
     private int mNotificationCount;
+    private int mHiddenNotification;
     private float mNotificationsRowSize;
     private int mNotificationIconSize;
     private int mNotificationTextSize;
@@ -417,6 +418,7 @@ public class PieMenu extends FrameLayout {
 
         // Notifications
         mNotificationCount = 0;
+        mHiddenNotification = 0;
         mNotificationsRadius = (int)(mResources.getDimensionPixelSize(R.dimen.pie_notifications_start) * mPieSize);
         mNotificationIconSize = (int)(mResources.getDimensionPixelSize(R.dimen.pie_notification_icon_size) * mPieSize);
         mNotificationsRowSize = mResources.getDimensionPixelSize(R.dimen.pie_notification_row_size) * mPieSize;
@@ -512,6 +514,11 @@ public class PieMenu extends FrameLayout {
                 NotificationData.Entry entry = notifData.get(i);
                 StatusBarNotification statusNotif = entry.notification;
                 if (statusNotif == null) continue;
+                boolean hide = statusNotif.pkg.equals("com.paranoid.halo");
+                if (hide) {
+                    mHiddenNotification++;
+                    continue;
+                }
                 Notification notif = statusNotif.notification;
                 if (notif == null) continue;
                 CharSequence tickerText = notif.tickerText;
@@ -865,7 +872,7 @@ public class PieMenu extends FrameLayout {
                         canvas.drawTextOnPath(mPolicy.getNetworkProvider(), mStatusPath, 0, mStatusOffset * 4, mStatusPaint);
                     }
                     canvas.drawTextOnPath(mPolicy.getSimpleDate(), mStatusPath, 0, mStatusOffset * 3, mStatusPaint);
-                    canvas.drawTextOnPath(mPanel.getBar().getNotificationData().size() + " " + mContext.getString(R.string.status_bar_latest_events_title).toUpperCase(), mStatusPath, 0, mStatusOffset * 2, mStatusPaint);
+                    canvas.drawTextOnPath(mPanel.getBar().getNotificationData().size() - mHiddenNotification + " " + mContext.getString(R.string.status_bar_latest_events_title).toUpperCase(), mStatusPath, 0, mStatusOffset * 2, mStatusPaint);
                     canvas.drawTextOnPath(mContext.getString(R.string.quick_settings_wifi_label).toUpperCase() + ": " + mPolicy.getWifiSsid(), mStatusPath, 0, mStatusOffset * 1, mStatusPaint);
                     canvas.drawTextOnPath(mPolicy.getBatteryLevelReadable(), mStatusPath, 0, mStatusOffset * 0, mStatusPaint);
                     canvas.restoreToCount(state);
