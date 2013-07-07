@@ -19,6 +19,7 @@ package com.android.systemui.statusbar;
 
 import android.app.ActionBar.Tab;
 import android.app.StatusBarManager;
+import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -67,6 +68,7 @@ public class PieControl implements OnClickListener, NavigationCallback {
     private PieItem mSearch;
     private OnNavButtonPressedListener mListener;
     private PieControlPanel mPanel;
+    private KeyguardManager mKeyguardManager;
 
     private int mNavigationIconHints;
 
@@ -76,6 +78,7 @@ public class PieControl implements OnClickListener, NavigationCallback {
         mContext = context;
         mPanel = panel;
         mItemSize = (int) context.getResources().getDimension(R.dimen.pie_item_size);
+        mKeyguardManager = (KeyguardManager) mContext.getSystemService(Context.KEYGUARD_SERVICE);
     }
 
     public PieMenu getPieMenu() {
@@ -144,7 +147,7 @@ public class PieControl implements OnClickListener, NavigationCallback {
         mNavigationIconHints = hints;
 
         if (button == NavigationCallback.NAVBAR_RECENTS_HINT) {
-            boolean alt = (0 != (hints & StatusBarManager.NAVIGATION_HINT_RECENT_ALT));
+            boolean alt = (0 != (hints & StatusBarManager.NAVIGATION_HINT_RECENT_ALT) && !mKeyguardManager.isKeyguardLocked());
             mRecent.setIcon(alt ? R.drawable.ic_sysbar_recent_clear
                     : R.drawable.ic_sysbar_recent);
             mRecent.setName(alt ? CLEAR_ALL_BUTTON : RECENT_BUTTON);
