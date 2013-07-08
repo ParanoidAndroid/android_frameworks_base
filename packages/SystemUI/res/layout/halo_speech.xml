@@ -22,9 +22,9 @@
                 android:paddingRight="20dp"
                 android:paddingTop="17dp"
                 android:paddingBottom="30dp"
-                android:background="@drawable/bubble_black_r"
+                android:background="@drawable/bubble_r"
                 android:singleLine="false"
-                android:textColor="#ffffff"
+                android:textColor="#000000"
                 android:maxLines = "3"
                 android:visibility="gone"/>
 
@@ -36,9 +36,9 @@
                 android:paddingRight="20dp"
                 android:paddingTop="17dp"
                 android:paddingBottom="30dp"
-                android:background="@drawable/bubble_black_l"
+                android:background="@drawable/bubble_l"
                 android:singleLine="false"
-                android:textColor="#ffffff"
+                android:textColor="#000000"
                 android:maxLines = "3"
                 android:visibility="gone"/>
 
