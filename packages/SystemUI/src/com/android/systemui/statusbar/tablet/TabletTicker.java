@@ -220,6 +220,7 @@ public class TabletTicker
         final int width = res.getDimensionPixelSize(R.dimen.notification_ticker_width);
         int windowFlags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                     | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                    | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
                     | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS;
         if (CLICKABLE_TICKER) {
             windowFlags |= WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
