@@ -725,6 +725,9 @@ public class Activity extends ContextThemeWrapper
     private CharSequence mTitle;
     private int mTitleColor = 0;
 
+    private boolean mQuickPeekAction = false;
+    private float mQuickPeekInitialY; 
+
     final FragmentManagerImpl mFragments = new FragmentManagerImpl();
     final FragmentContainer mContainer = new FragmentContainer() {
         @Override
@@ -2422,33 +2425,43 @@ public class Activity extends ContextThemeWrapper
     boolean mightBeMyGesture = false;
     float tStatus;
 
-    /**
-     * Called to process touch screen events.  You can override this to
-     * intercept all touch screen events before they are dispatched to the
-     * window.  Be sure to call this implementation for touch screen events
-     * that should be handled normally.
-     * 
-     * @param ev The touch screen event.
-     * 
-     * @return boolean Return true if this event was consumed.
-     */
+   /**
+    * Called to process touch screen events.  You can override this to
+    * intercept all touch screen events before they are dispatched to the
+    * window.  Be sure to call this implementation for touch screen events
+    * that should be handled normally.
+    * 
+    * @param ev The touch screen event.
+    * 
+    * @return boolean Return true if this event was consumed.
+    */
     public boolean dispatchTouchEvent(MotionEvent ev) {
 
-        switch (ev.getAction())
-        {
+  final int action = ev.getAction();
+        switch (action) {
             case MotionEvent.ACTION_DOWN:
-                tStatus = ev.getY();
-                if (tStatus < getStatusBarHeight())
-                {
-                    mightBeMyGesture = true;
-                    return true;
+    tStatus = ev.getY();
+    if (Settings.System.getInt(getContentResolver(),
+                    Settings.System.STATUSBAR_PEEK, 0) == 1) {
+                    if (tStatus < getStatusBarHeight()) {
+      mQuickPeekInitialY = ev.getY();
+                        mQuickPeekAction = true;
+                        mightBeMyGesture = true;
+                        return true;
+        }  
                 }
+    onUserInteraction();
                 break;
-                case MotionEvent.ACTION_MOVE:
-                if (mightBeMyGesture)
-                {
-                    if(ev.getY() > tStatus)
-                    {
+
+            case MotionEvent.ACTION_MOVE:
+    if (!mQuickPeekAction) {
+                    break;
+                }
+                if (Math.abs(ev.getY() - mQuickPeekInitialY) > getStatusBarHeight()) {
+                        mQuickPeekAction = false;
+                }
+                if (mightBeMyGesture) {
+                    if(ev.getY() > tStatus) {
                         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
                         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                         mHandler.postDelayed(new Runnable() {
@@ -2459,13 +2472,13 @@ public class Activity extends ContextThemeWrapper
                                                  
                                                  }, 10000);
                     }
-                    
-                    mightBeMyGesture = false;
+                    mightBeMyGesture = false;    
                         
                     return true;
                 }
                 break;
             default:
+    mQuickPeekAction = false;
                 mightBeMyGesture = false;
                 break;
         } 
