@@ -27,7 +27,7 @@ public abstract class MetricAffectingSpan
 extends CharacterStyle
 implements UpdateLayout {
 
-	public abstract void updateMeasureState(TextPaint p);
+    public abstract void updateMeasureState(TextPaint p);
 
     /**
      * Returns "this" for most MetricAffectingSpans, but for 

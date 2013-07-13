@@ -668,7 +668,7 @@ class ApplicationThreadProxy implements IApplicationThread {
     }
 
     public final void scheduleSendResult(IBinder token, List<ResultInfo> results)
-    		throws RemoteException {
+            throws RemoteException {
         Parcel data = Parcel.obtain();
         data.writeInterfaceToken(IApplicationThread.descriptor);
         data.writeStrongBinder(token);
@@ -681,9 +681,9 @@ class ApplicationThreadProxy implements IApplicationThread {
     public final void scheduleLaunchActivity(Intent intent, IBinder token, int ident,
             ActivityInfo info, Configuration curConfig, CompatibilityInfo compatInfo,
             Bundle state, List<ResultInfo> pendingResults,
-    		List<Intent> pendingNewIntents, boolean notResumed, boolean isForward,
-    		String profileName, ParcelFileDescriptor profileFd, boolean autoStopProfiler)
-    		throws RemoteException {
+            List<Intent> pendingNewIntents, boolean notResumed, boolean isForward,
+            String profileName, ParcelFileDescriptor profileFd, boolean autoStopProfiler)
+            throws RemoteException {
         Parcel data = Parcel.obtain();
         data.writeInterfaceToken(IApplicationThread.descriptor);
         intent.writeToParcel(data, 0);
@@ -832,7 +832,7 @@ class ApplicationThreadProxy implements IApplicationThread {
     }
 
     public final void scheduleServiceArgs(IBinder token, boolean taskRemoved, int startId,
-	    int flags, Intent args) throws RemoteException {
+        int flags, Intent args) throws RemoteException {
         Parcel data = Parcel.obtain();
         data.writeInterfaceToken(IApplicationThread.descriptor);
         data.writeStrongBinder(token);

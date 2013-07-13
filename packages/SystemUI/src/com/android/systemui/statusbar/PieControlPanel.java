@@ -321,14 +321,14 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
     }
 
     public void injectKeyDelayed(int keycode){
-    	mInjectKeycode = keycode;
+        mInjectKeycode = keycode;
         mDownTime = SystemClock.uptimeMillis();
-    	mHandler.removeCallbacks(onInjectKeyDelayed);
-      	mHandler.postDelayed(onInjectKeyDelayed, 100);
+        mHandler.removeCallbacks(onInjectKeyDelayed);
+        mHandler.postDelayed(onInjectKeyDelayed, 100);
     }
 
     final Runnable onInjectKeyDelayed = new Runnable() {
-    	public void run() {
+        public void run() {
             final long eventTime = SystemClock.uptimeMillis();
             InputManager.getInstance().injectInputEvent(
                     new KeyEvent(mDownTime, eventTime - 100, KeyEvent.ACTION_DOWN, mInjectKeycode, 0),
@@ -336,7 +336,7 @@ public class PieControlPanel extends FrameLayout implements StatusBarPanel, OnNa
             InputManager.getInstance().injectInputEvent(
                     new KeyEvent(mDownTime, eventTime - 50, KeyEvent.ACTION_UP, mInjectKeycode, 0),
                     InputManager.INJECT_INPUT_EVENT_MODE_ASYNC);
-    	}
+        }
     };
 
     public boolean getKeyguardStatus() {
