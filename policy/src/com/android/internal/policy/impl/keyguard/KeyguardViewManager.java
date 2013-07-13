@@ -23,6 +23,7 @@ import android.appwidget.AppWidgetManager;
 import android.database.ContentObserver;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -48,6 +49,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import com.android.internal.R;
+import com.android.internal.util.cm.TorchConstants;
 import com.android.internal.widget.LockPatternUtils;
 
 /**
@@ -281,6 +283,18 @@ public class KeyguardViewManager {
             }
             return super.dispatchKeyEvent(event);
         }
+    }
+
+    private static final int ACTION_RESULT_RUN = 0;
+    private static final int ACTION_RESULT_NOTRUN = 1;
+
+    private static int runAction(Context context, String uri) {
+        if ("FLASHLIGHT".equals(uri)) {
+            context.sendBroadcast(new Intent(TorchConstants.ACTION_TOGGLE_STATE));
+            return ACTION_RESULT_RUN;
+        }
+
+        return ACTION_RESULT_NOTRUN;
     }
 
     SparseArray<Parcelable> mStateContainer = new SparseArray<Parcelable>();
