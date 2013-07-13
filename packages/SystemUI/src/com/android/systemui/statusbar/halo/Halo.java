@@ -61,7 +61,6 @@ import android.os.ServiceManager;
 import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.ExtendedPropertiesUtils;
 import android.util.Log;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
@@ -102,9 +101,8 @@ import com.android.systemui.statusbar.StatusBarIconView;
 import com.android.systemui.statusbar.NotificationData;
 import com.android.systemui.statusbar.BaseStatusBar;
 import com.android.systemui.statusbar.phone.Ticker;
-import com.android.systemui.statusbar.tablet.TabletTicker;
 
-public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTicker.TabletTickerCallback {
+public class Halo extends FrameLayout implements Ticker.TickerCallback {
 
     public static final String TAG = "HaloLauncher";
 
@@ -390,13 +388,9 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
 
     public void setStatusBar(BaseStatusBar bar) {
         mBar = bar;
-        if(ExtendedPropertiesUtils.isTablet()) {
-            if (mBar.getTabletTicker() != null) mBar.getTabletTicker().setUpdateEvent(this);
-        } else {
-            if (mBar.getTicker() != null) mBar.getTicker().setUpdateEvent(this);
-        }
-            mNotificationData = mBar.getNotificationData();
-            loadLastNotification(true);
+        if (mBar.getTicker() != null) mBar.getTicker().setUpdateEvent(this);
+        mNotificationData = mBar.getNotificationData();
+        loadLastNotification(true);
     }
 
     void launchTask(NotificationClicker intent) {
@@ -730,8 +724,14 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
 
                         boolean gestureChanged = false;
                         final int deltaIndex = (Math.abs(deltaY) - verticalThreshold) / verticalSteps;
-                        if (deltaY > 0) {                           
-                            if (deltaIndex < 2 && mGesture != Gesture.UP1) {
+                        if (deltaY > 0) { 
+                            if (deltaIndex < 1 && mGesture != Gesture.NONE) {
+                                // Consume all touches between the vertical threshold and the first up marker
+                                mGesture = Gesture.NONE;
+                                gestureChanged = true;
+                                mEffect.setHaloOverlay(HaloProperties.Overlay.NONE, 0f);
+                                gestureText = "";
+                            } else if (deltaIndex == 1 && mGesture != Gesture.UP1) {
                                 mGesture = Gesture.UP1;
                                 gestureChanged = true;
                                 mEffect.setHaloOverlay(HaloProperties.Overlay.DISMISS, 1f);
@@ -742,22 +742,20 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
                                 mEffect.setHaloOverlay(HaloProperties.Overlay.CLEAR_ALL, 1f);
                                 gestureText = mContext.getResources().getString(R.string.halo_clear_all);
                             }
-
-                        } else {
-                            if (deltaIndex < 2 && mGesture != Gesture.DOWN1) {
+                        } else { 
+                            if (deltaIndex < 1 && mGesture != Gesture.DOWN1) {
                                 mGesture = Gesture.DOWN1;
                                 gestureChanged = true;
                                 mEffect.setHaloOverlay(mTickerLeft ? HaloProperties.Overlay.BACK_LEFT
                                         : HaloProperties.Overlay.BACK_RIGHT, 1f);
                                 gestureText = mContext.getResources().getString(R.string.halo_hide);
-                            } else if (deltaIndex > 1 && mGesture != Gesture.DOWN2) {
+                            } else if (deltaIndex > 0 && mGesture != Gesture.DOWN2) {
                                 mGesture = Gesture.DOWN2;
                                 gestureChanged = true;
                                 mEffect.setHaloOverlay(HaloProperties.Overlay.SILENCE, 1f);
                                 gestureText = mContext.getResources().getString(R.string.halo_silence);
-                            }
+                            } 
                         }
-
                         if (gestureChanged) {
                             mMarkerIndex = -1;
 
@@ -821,11 +819,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
         mEffect.unscheduleSleep();
         mHandler.removeCallbacksAndMessages(null);
         // Kill callback
-        if(ExtendedPropertiesUtils.isTablet()) {
-            if (mBar.getTabletTicker() != null) mBar.getTabletTicker().setUpdateEvent(null);
-        } else {
-             mBar.getTicker().setUpdateEvent(null);
-        }
+        mBar.getTicker().setUpdateEvent(null);
         // Flag tasker
         mBar.setHaloTaskerActive(false, false);
         // Kill the effect layer
@@ -1153,10 +1147,6 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
 
         mEffect.updateResources();
         mEffect.invalidate();
-    }
-
-    public void updateTicker(StatusBarNotification notification) {
-        loadLastNotification(true);
     }
 
     // This is the android ticker callback
