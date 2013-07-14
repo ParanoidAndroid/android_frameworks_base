@@ -301,7 +301,7 @@ class HTML5Audio extends Handler
     }
 
     private void pause() {
-		pause(PAUSED);
+        pause(PAUSED);
     }
 
     private void pause(int state) {
