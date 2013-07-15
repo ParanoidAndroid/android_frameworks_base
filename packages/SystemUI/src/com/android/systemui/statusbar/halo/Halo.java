@@ -730,14 +730,8 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
 
                         boolean gestureChanged = false;
                         final int deltaIndex = (Math.abs(deltaY) - verticalThreshold) / verticalSteps;
-                        if (deltaY > 0) { 
-                            if (deltaIndex < 1 && mGesture != Gesture.NONE) {
-                                // Consume all touches between the vertical threshold and the first up marker
-                                mGesture = Gesture.NONE;
-                                gestureChanged = true;
-                                mEffect.setHaloOverlay(HaloProperties.Overlay.NONE, 0f);
-                                gestureText = "";
-                            } else if (deltaIndex == 1 && mGesture != Gesture.UP1) {
+                        if (deltaY > 0) {                           
+                            if (deltaIndex < 2 && mGesture != Gesture.UP1) {
                                 mGesture = Gesture.UP1;
                                 gestureChanged = true;
                                 mEffect.setHaloOverlay(HaloProperties.Overlay.DISMISS, 1f);
@@ -748,20 +742,22 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
                                 mEffect.setHaloOverlay(HaloProperties.Overlay.CLEAR_ALL, 1f);
                                 gestureText = mContext.getResources().getString(R.string.halo_clear_all);
                             }
-                        } else { 
-                            if (deltaIndex < 1 && mGesture != Gesture.DOWN1) {
+
+                        } else {
+                            if (deltaIndex < 2 && mGesture != Gesture.DOWN1) {
                                 mGesture = Gesture.DOWN1;
                                 gestureChanged = true;
                                 mEffect.setHaloOverlay(mTickerLeft ? HaloProperties.Overlay.BACK_LEFT
                                         : HaloProperties.Overlay.BACK_RIGHT, 1f);
                                 gestureText = mContext.getResources().getString(R.string.halo_hide);
-                            } else if (deltaIndex > 0 && mGesture != Gesture.DOWN2) {
+                            } else if (deltaIndex > 1 && mGesture != Gesture.DOWN2) {
                                 mGesture = Gesture.DOWN2;
                                 gestureChanged = true;
                                 mEffect.setHaloOverlay(HaloProperties.Overlay.SILENCE, 1f);
                                 gestureText = mContext.getResources().getString(R.string.halo_silence);
-                            } 
+                            }
                         }
+
                         if (gestureChanged) {
                             mMarkerIndex = -1;
 
