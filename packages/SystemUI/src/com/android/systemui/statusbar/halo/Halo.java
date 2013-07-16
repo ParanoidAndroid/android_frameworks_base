@@ -54,6 +54,7 @@ import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.Matrix;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.os.Vibrator;
@@ -166,7 +167,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
     private boolean mOverX = false;
     private boolean mInteractionReversed = true;
     private boolean hiddenState = false;
-
+    private boolean mGone;
     private int mIconSize, mIconHalfSize;
     private int mScreenWidth, mScreenHeight;
     private int mKillX, mKillY;
@@ -196,16 +197,22 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
                     Settings.System.HALO_HIDE), false, this);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.HAPTIC_FEEDBACK_ENABLED), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.HALO_GONE), false, this);
         }
 
         @Override
-        public void onChange(boolean selfChange) {
-            mInteractionReversed =
-                    Settings.System.getInt(mContext.getContentResolver(), Settings.System.HALO_REVERSED, 1) == 1;
-            mHideTicker =
-                    Settings.System.getInt(mContext.getContentResolver(), Settings.System.HALO_HIDE, 0) == 1;
-            mHapticFeedback = Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.HAPTIC_FEEDBACK_ENABLED, 1) != 0;
+        public void onChange(boolean selfChange, Uri uri) {
+            ContentResolver cr = mContext.getContentResolver();
+            mGone = Settings.System.getInt(cr, Settings.System.HALO_GONE, 0) == 1;
+            if (uri.equals(Settings.System.getUriFor(Settings.System.HALO_GONE))) {
+                    if (mGone) {
+                        mEffect.setVisibility(mNotificationData.size() > 0 ? View.VISIBLE : View.GONE);
+                    }
+            } else {
+            mInteractionReversed = Settings.System.getInt(cr, Settings.System.HALO_REVERSED, 1) == 1;
+            mHideTicker = Settings.System.getInt(cr, Settings.System.HALO_HIDE, 0) == 1;
+            mHapticFeedback = Settings.System.getInt(cr, Settings.System.HAPTIC_FEEDBACK_ENABLED, 1) != 0;
 
             if (!selfChange) {
                 mEffect.wake();
@@ -272,6 +279,10 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
         mPaintHoloRed.setAntiAlias(true);
         mPaintHoloRed.setColor(0xffcc0000);
 
+        //Halo Gone
+        mGone = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.HALO_GONE, 0) == 1;
+
         // Create effect layer
         mEffect = new HaloEffect(mContext);
         mEffect.setLayerType (View.LAYER_TYPE_HARDWARE, null);
@@ -307,6 +318,10 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
         
         mKillX = mScreenWidth / 2;
         mKillY = mIconHalfSize;
+
+        if (mGone) {
+            mEffect.setVisibility(mNotificationData.size() > 0 ? View.VISIBLE : View.GONE);
+        }
 
         if (!mFirstStart) {
             if (msavePositionY < 0) mEffect.setHaloY(0);
@@ -386,6 +401,10 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
             tick(mLastNotificationEntry, "", 0, 0);
         } else {
             clearTicker();
+        }
+
+        if (mGone) {
+            mEffect.setVisibility(mNotificationData.size() > 0 ? View.VISIBLE : View.GONE);
         }
     }
 
@@ -1179,7 +1198,9 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
 
     // This is the android ticker callback
     public void updateTicker(StatusBarNotification notification, String text) {
-
+        if (mGone) {
+            mEffect.setVisibility(mNotificationData.size() > 0 ? View.VISIBLE : View.GONE);
+        }
         boolean allowed = false; // default off
         try {
             allowed = mNotificationManager.isPackageAllowedForHalo(notification.pkg);

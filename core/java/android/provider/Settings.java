@@ -2607,6 +2607,11 @@ public final class Settings {
         public static final String HALO_PAUSE = "halo_pause";
 
         /**
+         * @hide
+         */
+        public static final String HALO_GONE = "halo_gone";
+
+        /**
          * Pie menu, should default to 1 (yes, show)
          * @hide
          */
