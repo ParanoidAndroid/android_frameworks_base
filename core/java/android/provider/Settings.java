@@ -2802,6 +2802,12 @@ public final class Settings {
          */
         public static final String LOCKSCREEN_SEE_THROUGH = "lockscreen_see_through";
 
+	/**
+         * Sets color of statusbar traffic indicator
+         * @hide
+         */
+        public static final String STATUS_BAR_TRAFFIC_COLOR = "status_bar_traffic_color";
+
         /**
          * Allows lockscreen to be rotated
          * @hide
