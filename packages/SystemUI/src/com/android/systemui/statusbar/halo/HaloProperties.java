@@ -151,8 +151,8 @@ public class HaloProperties extends FrameLayout {
         return mHaloY;
     }
 
-    CustomObjectAnimator msgNumberFlipAnimator = new CustomObjectAnimator(this);
-    CustomObjectAnimator msgNumberAlphaAnimator = new CustomObjectAnimator(this);
+    protected CustomObjectAnimator msgNumberFlipAnimator = new CustomObjectAnimator(this);
+    protected CustomObjectAnimator msgNumberAlphaAnimator = new CustomObjectAnimator(this);
     public void setHaloMessageNumber(int value, boolean alwaysFlip) {
 
         // Allow transitions only if no overlay is set
