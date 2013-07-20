@@ -249,4 +249,7 @@
     <string name="halo_hide">Ocultar</string>
     <string name="halo_clear_all">Limpiar todas las notificaciones</string>
     <string name="halo_silence">Ocultar y silenciar hasta despertar</string>
+    <string name="halo_tutorial1">Soy HALO</string>
+    <string name="halo_tutorial2">Doble pulsación y arrastre para moverme alrededor, arrastre para alternar entre las tareas</string>
+    <string name="halo_tutorial3">Cambia mi comportamiento en Ajustes</string>
 </resources>
