@@ -45,7 +45,8 @@ public class HaloProperties extends FrameLayout {
         DISMISS,
         SILENCE_LEFT,
         SILENCE_RIGHT,
-        CLEAR_ALL
+        CLEAR_ALL,
+        MESSAGE
     }
 
     private LayoutInflater mInflater;
@@ -60,6 +61,7 @@ public class HaloProperties extends FrameLayout {
     private Drawable mHaloClearAll;
     private Drawable mHaloSilenceL;
     private Drawable mHaloSilenceR;
+    private Drawable mHaloMessage;
     private Drawable mHaloCurrentOverlay;
 
     protected View mHaloBubble;
@@ -87,6 +89,7 @@ public class HaloProperties extends FrameLayout {
         mHaloClearAll = mContext.getResources().getDrawable(R.drawable.halo_clear_all);
         mHaloSilenceL = mContext.getResources().getDrawable(R.drawable.halo_silence_left);
         mHaloSilenceR = mContext.getResources().getDrawable(R.drawable.halo_silence_right);
+        mHaloMessage = mContext.getResources().getDrawable(R.drawable.halo_message);
 
         mInflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
@@ -213,6 +216,9 @@ public class HaloProperties extends FrameLayout {
                 break;
             case CLEAR_ALL:
                 d = mHaloClearAll;
+                break;
+            case MESSAGE:
+                d = mHaloMessage;
                 break;
         }
 
