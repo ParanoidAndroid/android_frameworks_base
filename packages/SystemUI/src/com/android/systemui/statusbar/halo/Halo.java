@@ -207,9 +207,6 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
                     Settings.System.getInt(mContext.getContentResolver(), Settings.System.HALO_REVERSED, 1) == 1;
             mHideTicker =
                     Settings.System.getInt(mContext.getContentResolver(), Settings.System.HALO_HIDE, 0) == 1;
-            mHapticFeedback = Settings.System.getInt(mContext.getContentResolver(),
-                    Settings.System.HAPTIC_FEEDBACK_ENABLED, 1) != 0;
-
             if (!selfChange) {
                 mEffect.wake();
                 mEffect.ping(mPaintHoloBlue, HaloEffect.WAKE_TIME);
@@ -266,6 +263,8 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
                 Settings.System.getInt(mContext.getContentResolver(), Settings.System.HALO_HIDE, 0) == 1;
         mHaloSize = Settings.System.getFloat(mContext.getContentResolver(),
                 Settings.System.HALO_SIZE, 1.0f);
+        mHapticFeedback = Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.HAPTIC_FEEDBACK_ENABLED, 1) != 0;
         mIconSize = (int)(mContext.getResources().getDimensionPixelSize(R.dimen.halo_bubble_size) * mHaloSize);
         mIconHalfSize = mIconSize / 2;
         mTriggerPos = getWMParams();
