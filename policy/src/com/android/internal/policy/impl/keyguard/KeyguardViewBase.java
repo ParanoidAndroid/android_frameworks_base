@@ -53,7 +53,7 @@ public abstract class KeyguardViewBase extends FrameLayout {
     // Whether the volume keys should be handled by keyguard. If true, then
     // they will be handled here for specific media types such as music, otherwise
     // the audio service will bring up the volume dialog.
-    private static final boolean KEYGUARD_MANAGES_VOLUME = true;
+    private static final boolean KEYGUARD_MANAGES_VOLUME = false;
 
     // This is a faster way to draw the background on devices without hardware acceleration
     private static final Drawable mBackgroundDrawable = new Drawable() {
