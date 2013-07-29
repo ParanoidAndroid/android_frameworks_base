@@ -893,11 +893,13 @@ public final class Configuration extends ExtendedPropertiesUtils implements Parc
             changed |= ActivityInfo.CONFIG_SCREEN_SIZE;
             screenHeightDp = delta.screenHeightDp;
         }
-        if (delta.smallestScreenWidthDp != SMALLEST_SCREEN_WIDTH_DP_UNDEFINED) {
-            changed |= ActivityInfo.CONFIG_SCREEN_SIZE;
+        if (delta.smallestScreenWidthDp != SMALLEST_SCREEN_WIDTH_DP_UNDEFINED
+                && smallestScreenWidthDp != delta.smallestScreenWidthDp) {
+            changed |= ActivityInfo.CONFIG_SMALLEST_SCREEN_SIZE;
             smallestScreenWidthDp = delta.smallestScreenWidthDp;
         }
-        if (delta.densityDpi != DENSITY_DPI_UNDEFINED) {
+        if (delta.densityDpi != DENSITY_DPI_UNDEFINED &&
+                densityDpi != delta.densityDpi) {
             changed |= ActivityInfo.CONFIG_DENSITY;
             densityDpi = delta.densityDpi;
         }
@@ -1259,12 +1261,12 @@ public final class Configuration extends ExtendedPropertiesUtils implements Parc
      * Return the layout direction. Will be either {@link View#LAYOUT_DIRECTION_LTR} or
      * {@link View#LAYOUT_DIRECTION_RTL}.
      *
-     * @return the layout direction
+     * @return Returns {@link View#LAYOUT_DIRECTION_RTL} if the configuration
+     * is {@link #SCREENLAYOUT_LAYOUTDIR_RTL}, otherwise {@link View#LAYOUT_DIRECTION_LTR}.
      */
     public int getLayoutDirection() {
-        // We need to substract one here as the configuration values are using "0" as undefined thus
-        // having LRT set to "1" and RTL set to "2"
-        return ((screenLayout&SCREENLAYOUT_LAYOUTDIR_MASK) >> SCREENLAYOUT_LAYOUTDIR_SHIFT) - 1;
+        return (screenLayout&SCREENLAYOUT_LAYOUTDIR_MASK) == SCREENLAYOUT_LAYOUTDIR_RTL
+                ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR;
     }
 
     /**

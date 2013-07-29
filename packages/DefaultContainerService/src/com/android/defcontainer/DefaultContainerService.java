@@ -16,16 +16,12 @@
 
 package com.android.defcontainer;
 
-import com.android.internal.app.IMediaContainerService;
-import com.android.internal.content.NativeLibraryHelper;
-import com.android.internal.content.PackageHelper;
-
 import android.app.IntentService;
 import android.content.Intent;
-import android.content.pm.MacAuthenticatedInputStream;
 import android.content.pm.ContainerEncryptionParams;
 import android.content.pm.IPackageManager;
 import android.content.pm.LimitedLengthInputStream;
+import android.content.pm.MacAuthenticatedInputStream;
 import android.content.pm.PackageCleanItem;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageInfoLite;
@@ -43,9 +39,15 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.StatFs;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.Slog;
+
+import com.android.internal.app.IMediaContainerService;
+import com.android.internal.content.NativeLibraryHelper;
+import com.android.internal.content.PackageHelper;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -69,7 +71,7 @@ import libcore.io.ErrnoException;
 import libcore.io.IoUtils;
 import libcore.io.Libcore;
 import libcore.io.Streams;
-import libcore.io.StructStatFs;
+import libcore.io.StructStatVfs;
 
 /*
  * This service copies a downloaded apk to a file passed in as
@@ -228,9 +230,10 @@ public class DefaultContainerService extends IntentService {
         public long calculateDirectorySize(String path) throws RemoteException {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
 
-            final File directory = new File(path);
-            if (directory.exists() && directory.isDirectory()) {
-                return MeasurementUtils.measureDirectory(path);
+            final File dir = Environment.maybeTranslateEmulatedPathToInternal(new File(path));
+            if (dir.exists() && dir.isDirectory()) {
+                final String targetPath = dir.getAbsolutePath();
+                return MeasurementUtils.measureDirectory(targetPath);
             } else {
                 return 0L;
             }
@@ -241,7 +244,7 @@ public class DefaultContainerService extends IntentService {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
 
             try {
-                final StructStatFs stat = Libcore.os.statfs(path);
+                final StructStatVfs stat = Libcore.os.statvfs(path);
                 final long totalSize = stat.f_blocks * stat.f_bsize;
                 final long availSize = stat.f_bavail * stat.f_bsize;
                 return new long[] { totalSize, availSize };

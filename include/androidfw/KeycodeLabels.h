@@ -244,6 +244,7 @@ static const KeycodeLabel KEYCODES[] = {
     { "RO", 217 },
     { "KANA", 218 },
     { "ASSIST", 219 },
+<<<<<<< HEAD
     { "TOGGLE_WIFI", 220 },
     { "TOGGLE_BT", 221 },
     { "TOGGLE_TOUCHPAD", 222 },
@@ -251,6 +252,10 @@ static const KeycodeLabel KEYCODES[] = {
     { "BRIGHTNESS_UP", 224 },
     { "BRIGHTNESS_AUTO", 225 },
     { "SCREENSHOT", 226 },
+=======
+    { "BRIGHTNESS_DOWN", 220 },
+    { "BRIGHTNESS_UP", 221 },
+>>>>>>> aosp/master
 
     // NOTE: If you add a new keycode here you must also add it to several other files.
     //       Refer to frameworks/base/core/java/android/view/KeyEvent.java for the full list.

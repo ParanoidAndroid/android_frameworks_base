@@ -154,10 +154,10 @@ static sp<AudioRecord> setAudioRecord(JNIEnv* env, jobject thiz, const sp<AudioR
     sp<AudioRecord> old =
             (AudioRecord*)env->GetIntField(thiz, javaAudioRecordFields.nativeRecorderInJavaObj);
     if (ar.get()) {
-        ar->incStrong(thiz);
+        ar->incStrong((void*)setAudioRecord);
     }
     if (old != 0) {
-        old->decStrong(thiz);
+        old->decStrong((void*)setAudioRecord);
     }
     env->SetIntField(thiz, javaAudioRecordFields.nativeRecorderInJavaObj, (int)ar.get());
     return old;
@@ -224,10 +224,6 @@ android_media_AudioRecord_setup(JNIEnv *env, jobject thiz, jobject weak_this,
 
     // create an uninitialized AudioRecord object
     sp<AudioRecord> lpRecorder = new AudioRecord();
-    if (lpRecorder == NULL) {
-        ALOGE("Error creating AudioRecord instance.");
-        return AUDIORECORD_ERROR_SETUP_NATIVEINITFAILED;
-    }
 
     // create the callback information:
     // this data will be passed with every AudioRecord callback
@@ -511,7 +507,7 @@ static jint android_media_AudioRecord_get_min_buff_size(JNIEnv *env,  jobject th
     ALOGV(">> android_media_AudioRecord_get_min_buff_size(%d, %d, %d)",
           sampleRateInHertz, nbChannels, audioFormat);
 
-    int frameCount = 0;
+    size_t frameCount = 0;
     status_t result = AudioRecord::getMinFrameCount(&frameCount,
             sampleRateInHertz,
             (audioFormat == javaAudioRecordFields.PCM16 ?

@@ -19,6 +19,7 @@ package android.content.res;
 
 import android.os.ParcelFileDescriptor;
 import android.util.ExtendedPropertiesUtils;
+import android.os.Trace;
 import android.util.Log;
 import android.util.TypedValue;
 
@@ -604,7 +605,12 @@ public final class AssetManager extends ExtendedPropertiesUtils {
      * the cookie of the added asset, or 0 on failure.
      * {@hide}
      */
-    public native final int addAssetPath(String path);
+    public final int addAssetPath(String path) {
+        int res = addAssetPathNative(path);
+        return res;
+    }
+
+    private native final int addAssetPathNative(String path);
 
     /**
      * Add multiple sets of assets to the asset manager at once.  See

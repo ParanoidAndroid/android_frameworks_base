@@ -16,14 +16,21 @@
 
 package com.android.systemui.statusbar;
 
+<<<<<<< HEAD
 import android.app.Notification;
 import android.graphics.Bitmap;
+=======
+import android.service.notification.StatusBarNotification;
+>>>>>>> aosp/master
 import android.os.IBinder;
 import android.view.View;
 import android.widget.ImageView;
 
+<<<<<<< HEAD
 import com.android.systemui.statusbar.BaseStatusBar.NotificationClicker;
 import com.android.internal.statusbar.StatusBarNotification;
+=======
+>>>>>>> aosp/master
 import com.android.systemui.R;
 
 import java.util.Comparator;
@@ -107,10 +114,10 @@ public class NotificationData {
         public int compare(Entry a, Entry b) {
             final StatusBarNotification na = a.notification;
             final StatusBarNotification nb = b.notification;
-            int d = na.score - nb.score;
+            int d = na.getScore() - nb.getScore();
             return (d != 0)
                 ? d
-                : (int)(na.notification.when - nb.notification.when);
+                : (int)(na.getNotification().when - nb.getNotification().when);
         }
     };
 

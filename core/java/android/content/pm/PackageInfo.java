@@ -217,7 +217,16 @@ public class PackageInfo implements Parcelable {
      * @hide
      */
     public int installLocation = INSTALL_LOCATION_INTERNAL_ONLY;
-    
+
+    /** @hide */
+    public boolean requiredForAllUsers;
+
+    /** @hide */
+    public String restrictedAccountType;
+
+    /** @hide */
+    public String requiredAccountType;
+
     public PackageInfo() {
     }
 
@@ -258,6 +267,9 @@ public class PackageInfo implements Parcelable {
         dest.writeTypedArray(configPreferences, parcelableFlags);
         dest.writeTypedArray(reqFeatures, parcelableFlags);
         dest.writeInt(installLocation);
+        dest.writeInt(requiredForAllUsers ? 1 : 0);
+        dest.writeString(restrictedAccountType);
+        dest.writeString(requiredAccountType);
     }
 
     public static final Parcelable.Creator<PackageInfo> CREATOR
@@ -296,5 +308,8 @@ public class PackageInfo implements Parcelable {
         configPreferences = source.createTypedArray(ConfigurationInfo.CREATOR);
         reqFeatures = source.createTypedArray(FeatureInfo.CREATOR);
         installLocation = source.readInt();
+        requiredForAllUsers = source.readInt() != 0;
+        restrictedAccountType = source.readString();
+        requiredAccountType = source.readString();
     }
 }
