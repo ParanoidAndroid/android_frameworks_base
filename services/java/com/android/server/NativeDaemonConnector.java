@@ -352,7 +352,7 @@ final class NativeDaemonConnector implements Runnable, Handler.Callback, Watchdo
                 throw new NativeDaemonConnectorException("missing output stream");
             } else {
                 try {
-                    mOutputStream.write(rawCmd.getBytes(StandardCharsets.UTF_8));
+                    mOutputStream.write(rawCmd.getBytes(Charsets.UTF_8));
                 } catch (IOException e) {
                     throw new NativeDaemonConnectorException("problem sending command", e);
                 }
