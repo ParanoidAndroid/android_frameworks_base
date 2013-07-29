@@ -28,12 +28,8 @@ import android.widget.FrameLayout;
 public class QuickSettingsTileView extends FrameLayout {
 
     private int mColSpan;
-<<<<<<< HEAD
-    private final int mRowSpan;
     private int mCellWidth;
-=======
     private int mRowSpan;
->>>>>>> aosp/master
 
     public QuickSettingsTileView(Context context, AttributeSet attrs) {
         super(context, attrs);

@@ -108,8 +108,8 @@ public class ImageWallpaper extends WallpaperService {
         Bitmap mBackground;
         int mLastSurfaceWidth = -1, mLastSurfaceHeight = -1;
         int mLastRotation = -1;
-        final float mXOffset = 0;
-        final float mYOffset = 0;
+        float mXOffset;
+        float mYOffset;
 
         boolean mVisible = true;
         boolean mRedrawNeeded;
@@ -253,18 +253,9 @@ public class ImageWallpaper extends WallpaperService {
                         + ", xPixels=" + xPixels + ", yPixels=" + yPixels);
             }
 
-<<<<<<< HEAD
-            synchronized (mLock) {
-                if (mXOffset != xOffset || mYOffset != yOffset) {
-                    if (DEBUG) {
-                        Log.d(TAG, "Offsets changed to (" + xOffset + "," + yOffset + ").");
-                    }
-                    mOffsetsChanged = true;
-=======
             if (mXOffset != xOffset || mYOffset != yOffset) {
                 if (DEBUG) {
                     Log.d(TAG, "Offsets changed to (" + xOffset + "," + yOffset + ").");
->>>>>>> aosp/master
                 }
                 mXOffset = xOffset;
                 mYOffset = yOffset;
@@ -635,6 +626,7 @@ public class ImageWallpaper extends WallpaperService {
             }
             
             mEglContext = createContext(mEgl, mEglDisplay, mEglConfig);
+
             if (mEglContext == EGL_NO_CONTEXT) {
                 throw new RuntimeException("createContext failed " +
                         GLUtils.getEGLErrorString(mEgl.eglGetError()));

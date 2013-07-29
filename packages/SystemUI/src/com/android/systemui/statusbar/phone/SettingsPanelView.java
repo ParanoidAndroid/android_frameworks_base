@@ -21,16 +21,12 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-<<<<<<< HEAD
-import android.view.View;
-=======
 import android.util.EventLog;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
->>>>>>> aosp/master
 
 import com.android.systemui.EventLogTags;
 import com.android.systemui.R;
@@ -64,20 +60,15 @@ public class SettingsPanelView extends PanelView {
         mHandleBar = resources.getDrawable(R.drawable.status_bar_close);
         mHandleBarHeight = resources.getDimensionPixelSize(R.dimen.close_handle_height);
         mHandleView = findViewById(R.id.handle);
-<<<<<<< HEAD
 
         setContentDescription(resources.getString(R.string.accessibility_desc_quick_settings));
 
     }
 
     public void setQuickSettings(QuickSettingsController qs) {
-=======
-    }
-
-    public void setQuickSettings(QuickSettings qs) {
->>>>>>> aosp/master
         mQS = qs;
     }
+
 
     @Override
     public void setBar(PanelBar panelBar) {
@@ -143,8 +134,6 @@ public class SettingsPanelView extends PanelView {
         canvas.translate(0, -off);
     }
 
-<<<<<<< HEAD
-=======
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (DEBUG_GESTURES) {
@@ -155,5 +144,4 @@ public class SettingsPanelView extends PanelView {
         }
         return super.onTouchEvent(event);
     }
->>>>>>> aosp/master
 }

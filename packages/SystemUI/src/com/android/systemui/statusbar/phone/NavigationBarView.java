@@ -101,16 +101,9 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
     int mDisabledFlags = 0;
     int mNavigationIconHints = 0;
 
-<<<<<<< HEAD
     private Drawable mBackIcon, mBackLandIcon, mBackAltIcon, mBackAltLandIcon,
             mRecentsIcon, mRecentsLandIcon, mRecentsAltIcon, mRecentsAltLandIcon;
     
-=======
-    private Drawable mBackIcon, mBackLandIcon, mBackAltIcon, mBackAltLandIcon;
-    private Drawable mRecentIcon;
-    private Drawable mRecentLandIcon;
-
->>>>>>> aosp/master
     private DelegateViewHelper mDelegateHelper;
     private DeadZone mDeadZone;
 
@@ -239,20 +232,17 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         mContext.registerReceiver(mNavBarReceiver, new IntentFilter(NAVBAR_EDIT));
     }
 
-<<<<<<< HEAD
+
     protected void updateResources() {
         final Resources res = mContext.getResources();
-=======
         getIcons(res);
     }
 
     private void getIcons(Resources res) {
->>>>>>> aosp/master
         mBackIcon = res.getDrawable(R.drawable.ic_sysbar_back);
         mBackLandIcon = res.getDrawable(R.drawable.ic_sysbar_back_land);
         mBackAltIcon = res.getDrawable(R.drawable.ic_sysbar_back_ime);
         mBackAltLandIcon = res.getDrawable(R.drawable.ic_sysbar_back_ime);
-<<<<<<< HEAD
         mRecentsIcon = res.getDrawable(R.drawable.ic_sysbar_recent);
         mRecentsLandIcon = res.getDrawable(R.drawable.ic_sysbar_recent_land);
         mRecentsAltIcon = res.getDrawable(R.drawable.ic_sysbar_recent_clear);
@@ -338,9 +328,6 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
                 }
             }
         }
-=======
-        mRecentIcon = res.getDrawable(R.drawable.ic_sysbar_recent);
-        mRecentLandIcon = res.getDrawable(R.drawable.ic_sysbar_recent_land);
     }
 
     @Override
@@ -348,7 +335,6 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         getIcons(mContext.getResources());
 
         super.setLayoutDirection(layoutDirection);
->>>>>>> aosp/master
     }
 
     public void notifyScreenOn(boolean screenOn) {
@@ -409,7 +395,6 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
                 (0 != (hints & StatusBarManager.NAVIGATION_HINT_RECENT_NOP)) ? 0.5f : 1.0f);
         }
 
-<<<<<<< HEAD
         if (button == NavigationCallback.NAVBAR_BACK_HINT) {
             ((ImageView)getBackButton()).setImageDrawable(
                 (0 != (hints & StatusBarManager.NAVIGATION_HINT_BACK_ALT))
@@ -423,10 +408,9 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
                         : (mVertical ? mRecentsLandIcon : mRecentsIcon));
             }
         }
-=======
-        ((ImageView)getRecentsButton()).setImageDrawable(mVertical ? mRecentLandIcon : mRecentIcon);
 
->>>>>>> aosp/master
+       // ((ImageView)getRecentsButton()).setImageDrawable(mVertical ? mRecentLandIcon : mRecentIcon);
+
         setDisabledFlags(mDisabledFlags, true);
     }
 

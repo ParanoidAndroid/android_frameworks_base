@@ -22,11 +22,8 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.database.DataSetObserver;
 import android.graphics.Canvas;
-<<<<<<< HEAD
-import android.os.Handler;
-=======
 import android.graphics.Paint;
->>>>>>> aosp/master
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.FloatMath;

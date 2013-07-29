@@ -136,18 +136,9 @@ public class StatusBarIconView extends AnimatedImageView {
                 && mIcon.number == icon.number;
         mIcon = icon.clone();
         setContentDescription(icon.contentDescription);
-<<<<<<< HEAD
-        if (!iconEquals || force) {
-            Drawable drawable = getIcon(icon);
-            if (drawable == null) {
-                Slog.w(TAG, "No icon for slot " + mSlot);
-                return false;
-            }
-            setImageDrawable(drawable);
-=======
+
         if (!iconEquals) {
             if (!updateDrawable(false /* no clear */)) return false;
->>>>>>> aosp/master
         }
         if (!levelEquals || force) {
             setImageLevel(icon.iconLevel);
@@ -245,6 +236,10 @@ public class StatusBarIconView extends AnimatedImageView {
         if (mNotification != null) {
             event.setParcelableData(mNotification);
         }
+    }
+
+    public String getStatusBarSlot() {
+        return mSlot;
     }
 
     @Override

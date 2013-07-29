@@ -50,13 +50,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.StatusBar.Expanded.Date"
-<<<<<<< HEAD
             android:layout_toRightOf="@id/clock"
             android:layout_centerVertical="true"
-=======
             android:layout_toEndOf="@id/clock"
             android:layout_alignBaseline="@id/clock"
->>>>>>> aosp/master
             />
     </RelativeLayout>
 
@@ -100,11 +97,8 @@
     <FrameLayout android:id="@+id/settings_button_holder"
         android:layout_width="50dp"
         android:layout_height="50dp"
-<<<<<<< HEAD
         android:layout_marginLeft="5dp"
-=======
         android:layout_marginStart="12dp"
->>>>>>> aosp/master
         >
         <ImageView android:id="@+id/settings_button"
             android:layout_width="50dp"

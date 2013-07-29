@@ -148,11 +148,7 @@ public class PanelView extends FrameLayout {
                 last = event;
                 i++;
             }
-<<<<<<< HEAD
-            if (j != 0) {
-                mVX /= totalweight;
-                mVY /= totalweight;
-=======
+
             if (totalweight > 0) {
                 mVX /= totalweight;
                 mVY /= totalweight;
@@ -163,7 +159,6 @@ public class PanelView extends FrameLayout {
                 }
                 // so as not to contaminate the velocities with NaN
                 mVX = mVY = 0;
->>>>>>> aosp/master
             }
 
             if (FlingTracker.DEBUG) {

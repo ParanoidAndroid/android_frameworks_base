@@ -379,30 +379,24 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
         }
     }
 
-<<<<<<< HEAD
     public int getTasks() {
         return mRecentTaskDescriptions != null ? mRecentTaskDescriptions.size()
                 : 0;
     }
 
     public void onUiHidden() {
-        // Make sure hint is restored at the last stage
-        mRecentsActivity.setRecentHints(false);
-=======
+        mCallUiHiddenBeforeNextReload = false;
+        if (!mShowing && mRecentTaskDescriptions != null) {
+            onAnimationEnd(null);
+            clearRecentTasksList();
+        }
+    }
+
     protected void onAttachedToWindow () {
         super.onAttachedToWindow();
         final ViewRootImpl root = getViewRootImpl();
         if (root != null) {
             root.setDrawDuringWindowsAnimating(true);
-        }
-    }
-
-    public void onUiHidden() {
-        mCallUiHiddenBeforeNextReload = false;
->>>>>>> aosp/master
-        if (!mShowing && mRecentTaskDescriptions != null) {
-            onAnimationEnd(null);
-            clearRecentTasksList();
         }
     }
 
@@ -754,18 +748,17 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
                         | Intent.FLAG_ACTIVITY_NEW_TASK);
             }
             if (DEBUG) Log.v(TAG, "Starting activity " + intent);
-<<<<<<< HEAD
-            context.startActivityAsUser(intent, opts,
-                    new UserHandle(UserHandle.USER_CURRENT));
+
             if (floating && mRecentsActivity != null) {
                 mRecentsActivity.finish();
-=======
+            }
+
             try {
                 context.startActivityAsUser(intent, opts,
                         new UserHandle(UserHandle.USER_CURRENT));
             } catch (SecurityException e) {
                 Log.e(TAG, "Recents does not have the permission to launch " + intent, e);
->>>>>>> aosp/master
+
             }
         }
         if (usingDrawingCache) {

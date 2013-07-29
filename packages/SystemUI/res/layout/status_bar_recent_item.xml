@@ -44,11 +44,8 @@
             android:singleLine="true"
             android:ellipsize="marquee"
             android:textColor="@color/status_bar_recents_app_label_color"
-<<<<<<< HEAD
-=======
             android:importantForAccessibility="no"
             android:textAlignment="viewStart"
->>>>>>> aosp/master
         />
         <FrameLayout android:id="@+id/app_thumbnail"
             android:layout_width="wrap_content"

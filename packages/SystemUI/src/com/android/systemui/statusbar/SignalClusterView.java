@@ -153,10 +153,10 @@ public class SignalClusterView
         return super.dispatchPopulateAccessibilityEvent(event);
     }
 
-<<<<<<< HEAD
     public void setColor(ColorUtils.ColorSettingInfo colorInfo) {
         mColorInfo = colorInfo;
-=======
+    }
+
     @Override
     public void onRtlPropertiesChanged(int layoutDirection) {
         super.onRtlPropertiesChanged(layoutDirection);
@@ -181,8 +181,6 @@ public class SignalClusterView
         if(mAirplane != null) {
             mAirplane.setImageDrawable(null);
         }
-
->>>>>>> aosp/master
         apply();
     }
 
@@ -191,7 +189,6 @@ public class SignalClusterView
         if (mWifiGroup == null) return;
 
         if (mWifiVisible) {
-<<<<<<< HEAD
             mWifiGroup.setVisibility(View.VISIBLE);
             Drawable wifiBitmap = mContext.getResources().getDrawable(mWifiStrengthId);
             if (mColorInfo.isLastColorNull) {
@@ -200,9 +197,6 @@ public class SignalClusterView
                 wifiBitmap.setColorFilter(mColorInfo.lastColor, PorterDuff.Mode.SRC_IN);
             }
             mWifi.setImageDrawable(wifiBitmap);
-=======
-            mWifi.setImageResource(mWifiStrengthId);
->>>>>>> aosp/master
             mWifiActivity.setImageResource(mWifiActivityId);
 
             mWifiGroup.setContentDescription(mWifiDescription);
@@ -217,7 +211,6 @@ public class SignalClusterView
                     mWifiStrengthId, mWifiActivityId));
 
         if (mMobileVisible && !mIsAirplaneMode) {
-<<<<<<< HEAD
             mMobileGroup.setVisibility(View.VISIBLE);
             if(mMobileStrengthId != 0) {
                 Drawable mobileBitmap = mContext.getResources().getDrawable(mMobileStrengthId);
@@ -228,8 +221,7 @@ public class SignalClusterView
                 }
                 mMobile.setImageDrawable(mobileBitmap);
             }
-=======
->>>>>>> aosp/master
+
             mMobile.setImageResource(mMobileStrengthId);
             mMobileActivity.setImageResource(mMobileActivityId);
             mMobileType.setImageResource(mMobileTypeId);
@@ -241,7 +233,6 @@ public class SignalClusterView
         }
 
         if (mIsAirplaneMode) {
-<<<<<<< HEAD
             mAirplane.setVisibility(View.VISIBLE);
             if(mAirplaneIconId != 0) {
                 Drawable AirplaneBitmap = mContext.getResources().getDrawable(mAirplaneIconId);
@@ -252,8 +243,7 @@ public class SignalClusterView
                 }
                 mAirplane.setImageDrawable(AirplaneBitmap);
             }
-=======
->>>>>>> aosp/master
+
             mAirplane.setImageResource(mAirplaneIconId);
             mAirplane.setVisibility(View.VISIBLE);
         } else {

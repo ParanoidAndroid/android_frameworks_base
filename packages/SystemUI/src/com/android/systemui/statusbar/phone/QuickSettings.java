@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.phone;
 import com.android.internal.view.RotationPolicy;
 import com.android.systemui.R;
 
-import com.android.systemui.statusbar.BaseStatusBar;
 import com.android.systemui.statusbar.phone.QuickSettingsModel.BluetoothState;
 import com.android.systemui.statusbar.phone.QuickSettingsModel.RSSIState;
 import com.android.systemui.statusbar.phone.QuickSettingsModel.State;
@@ -78,12 +77,8 @@ import java.util.ArrayList;
 /**
  *
  */
-<<<<<<< HEAD
-public class QuickSettings {
-=======
 class QuickSettings {
     static final boolean DEBUG_GONE_TILES = false;
->>>>>>> aosp/master
     private static final String TAG = "QuickSettings";
     public static final boolean SHOW_IME_TILE = false;
 
@@ -96,7 +91,7 @@ class QuickSettings {
 
     private DisplayManager mDisplayManager;
     private WifiDisplayStatus mWifiDisplayStatus;
-    private BaseStatusBar mStatusBarService;
+    private PhoneStatusBar mStatusBarService;
     private BluetoothState mBluetoothState;
     private BluetoothAdapter mBluetoothAdapter;
     private WifiManager mWifiManager;
@@ -126,9 +121,7 @@ class QuickSettings {
         }
     };
 
-    public QuickSettings(Context context, QuickSettingsContainerView container,
-        BaseStatusBar statusBar) {
-
+    public QuickSettings(Context context, QuickSettingsContainerView container) {
         mDisplayManager = (DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE);
         mContext = context;
         mContainerView = container;
@@ -152,17 +145,23 @@ class QuickSettings {
         filter.addAction(Intent.ACTION_USER_SWITCHED);
         filter.addAction(Intent.ACTION_CONFIGURATION_CHANGED);
         mContext.registerReceiver(mReceiver, filter);
+
+        IntentFilter profileFilter = new IntentFilter();
+        profileFilter.addAction(ContactsContract.Intents.ACTION_PROFILE_CHANGED);
+        profileFilter.addAction(Intent.ACTION_USER_INFO_CHANGED);
+        mContext.registerReceiverAsUser(mProfileReceiver, UserHandle.ALL, profileFilter,
+                null, null);
     }
 
-    public void setBar(PanelBar bar) {
+    void setBar(PanelBar bar) {
         mBar = bar;
     }
 
-    public void setService(BaseStatusBar phoneStatusBar) {
+    public void setService(PhoneStatusBar phoneStatusBar) {
         mStatusBarService = phoneStatusBar;
     }
 
-    public BaseStatusBar getService() {
+    public PhoneStatusBar getService() {
         return mStatusBarService;
     }
 
@@ -170,7 +169,7 @@ class QuickSettings {
         mModel.onImeWindowStatusChanged(visible);
     }
 
-    public void setup(NetworkController networkController, BluetoothController bluetoothController,
+    void setup(NetworkController networkController, BluetoothController bluetoothController,
             BatteryController batteryController, LocationController locationController) {
         mBluetoothController = bluetoothController;
 
@@ -250,7 +249,7 @@ class QuickSettings {
         mUserInfoTask.execute();
     }
 
-    public void setupQuickSettings() {
+    private void setupQuickSettings() {
         // Setup the tiles that we are going to be showing (including the temporary ones)
         LayoutInflater inflater = LayoutInflater.from(mContext);
 
@@ -284,11 +283,7 @@ class QuickSettings {
         }
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         mContext.startActivityAsUser(intent, new UserHandle(UserHandle.USER_CURRENT));
-<<<<<<< HEAD
-        getService().collapse();
-=======
         collapsePanels();
->>>>>>> aosp/master
     }
 
     private void addUserTiles(ViewGroup parent, LayoutInflater inflater) {
@@ -725,19 +720,6 @@ class QuickSettings {
         ((QuickSettingsContainerView)mContainerView).updateResources();
         mContainerView.requestLayout();
     }
-
-<<<<<<< HEAD
-    private Runnable mDismissBrightnessDialogRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (mBrightnessDialog != null && mBrightnessDialog.isShowing()) {
-                mBrightnessDialog.dismiss();
-            }
-            removeAllBrightnessDialogCallbacks();
-        };
-    };
-=======
->>>>>>> aosp/master
 
     private void showBrightnessDialog() {
         Intent intent = new Intent(Intent.ACTION_SHOW_BRIGHTNESS_DIALOG);

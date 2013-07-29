@@ -16,21 +16,15 @@
 
 package com.android.systemui.statusbar;
 
-<<<<<<< HEAD
+
 import android.app.Notification;
 import android.graphics.Bitmap;
-=======
 import android.service.notification.StatusBarNotification;
->>>>>>> aosp/master
 import android.os.IBinder;
 import android.view.View;
 import android.widget.ImageView;
 
-<<<<<<< HEAD
 import com.android.systemui.statusbar.BaseStatusBar.NotificationClicker;
-import com.android.internal.statusbar.StatusBarNotification;
-=======
->>>>>>> aosp/master
 import com.android.systemui.R;
 
 import java.util.Comparator;
@@ -169,6 +163,10 @@ public class NotificationData {
             mEntries.remove(e);
         }
         return e;
+    }
+
+    public void clear() {
+        mEntries.clear();
     }
 
     /**

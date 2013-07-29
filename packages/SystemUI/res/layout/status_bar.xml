@@ -24,7 +24,8 @@
     xmlns:systemui="http://schemas.android.com/apk/res/com.android.systemui"
     android:id="@+id/status_bar"
     android:background="@drawable/status_bar_background"
-    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:focusable="true"
     android:descendantFocusability="afterDescendants"
     android:fitsSystemWindows="true"
@@ -125,13 +126,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:singleLine="true"
-<<<<<<< HEAD
-                android:paddingLeft="1dip"
-                android:gravity="center_vertical|left"
-=======
                 android:paddingStart="6dip"
                 android:gravity="center_vertical|start"
->>>>>>> aosp/master
                 />
         </LinearLayout>
     </LinearLayout>

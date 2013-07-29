@@ -91,16 +91,11 @@ public class DateView extends TextView {
     }
 
     protected void updateClock() {
-<<<<<<< HEAD
-        final String dateFormat = getContext().getString(R.string.full_wday_month_day_no_year_split);
-        setText(DateFormat.format(dateFormat, new Date()));
-=======
         final String dateFormat = getContext().getString(R.string.system_ui_date_pattern);
         final Locale l = Locale.getDefault();
         String fmt = ICU.getBestDateTimePattern(dateFormat, l.toString());
         SimpleDateFormat sdf = new SimpleDateFormat(fmt, l);
         setText(sdf.format(new Date()));
->>>>>>> aosp/master
     }
 
     private boolean isVisible() {
