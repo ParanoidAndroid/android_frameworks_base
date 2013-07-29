@@ -705,7 +705,7 @@ static void android_hardware_Camera_setParameters(JNIEnv *env, jobject thiz, jst
     const jchar* str = env->GetStringCritical(params, 0);
     String8 params8;
     if (params) {
-        params8 = String8((char16_t*)str, env->GetStringLength(params));
+        params8 = String8(str, env->GetStringLength(params));
         env->ReleaseStringCritical(params, str);
     }
     if (camera->setParameters(params8) != NO_ERROR) {
@@ -860,17 +860,6 @@ static void android_hardware_Camera_enableFocusMoveCallback(JNIEnv *env, jobject
     }
 }
 
-static void android_hardware_Camera_sendRawCommand(JNIEnv *env, jobject thiz, jint arg1, jint arg2, jint arg3)
-{
-    ALOGV("sendRawCommand %d, %d, %d", arg1, arg2, arg3);
-    sp<Camera> camera = get_native_camera(env, thiz, NULL);
-    if (camera == 0) return;
-
-    if (camera->sendCommand(arg1, arg2, arg3) != NO_ERROR) {
-        jniThrowRuntimeException(env, "send raw command failed");
-    }
-}
-
 //-------------------------------------------------
 
 static JNINativeMethod camMethods[] = {
@@ -952,9 +941,6 @@ static JNINativeMethod camMethods[] = {
   { "enableFocusMoveCallback",
     "(I)V",
     (void *)android_hardware_Camera_enableFocusMoveCallback},
-  { "sendRawCommand",
-    "(III)V",
-    (void *)android_hardware_Camera_sendRawCommand},
 };
 
 struct field {

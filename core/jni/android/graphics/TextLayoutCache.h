@@ -81,7 +81,7 @@ public:
 
     static int compare(const TextLayoutCacheKey& lhs, const TextLayoutCacheKey& rhs);
 
-    inline const UChar* getText() const { return (UChar*)textCopy.string(); }
+    inline const UChar* getText() const { return textCopy.string(); }
 
     bool operator==(const TextLayoutCacheKey& other) const {
         return compare(*this, other) == 0;
@@ -106,6 +106,7 @@ private:
     SkPaint::Hinting hinting;
     SkPaint::FontVariant variant;
     SkLanguage language;
+
 }; // TextLayoutCacheKey
 
 inline int strictly_order_type(const TextLayoutCacheKey& lhs, const TextLayoutCacheKey& rhs) {

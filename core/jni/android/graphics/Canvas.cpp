@@ -519,17 +519,18 @@ public:
                         jobject srcIRect, const SkRect& dst, SkPaint* paint,
                         jint screenDensity, jint bitmapDensity) {
         SkIRect    src, *srcPtr = NULL;
-        SkPaint    filteredPaint;
 
         if (NULL != srcIRect) {
             GraphicsJNI::jrect_to_irect(env, srcIRect, &src);
             srcPtr = &src;
         }
-
+        
         if (screenDensity != 0 && screenDensity != bitmapDensity) {
+            SkPaint filteredPaint;
             if (paint) {
                 filteredPaint = *paint;
             }
+            filteredPaint.setFilterBitmap(true);
             canvas->drawBitmapRect(*bitmap, srcPtr, dst, &filteredPaint);
         } else {
             canvas->drawBitmapRect(*bitmap, srcPtr, dst, paint);

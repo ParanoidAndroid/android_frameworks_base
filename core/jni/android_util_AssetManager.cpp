@@ -293,10 +293,17 @@ static jobjectArray android_content_AssetManager_list(JNIEnv* env, jobject clazz
         return NULL;
     }
 
+    jclass cls = env->FindClass("java/lang/String");
+    LOG_FATAL_IF(cls == NULL, "No string class?!?");
+    if (cls == NULL) {
+        delete dir;
+        return NULL;
+    }
+
     size_t N = dir->getFileCount();
 
     jobjectArray array = env->NewObjectArray(dir->getFileCount(),
-                                                g_stringClass, NULL);
+                                                cls, NULL);
     if (array == NULL) {
         delete dir;
         return NULL;
@@ -556,22 +563,22 @@ static jint android_content_AssetManager_getResourceIdentifier(JNIEnv* env, jobj
     }
 
     const char16_t* defType16 = defType
-        ? (char16_t*)env->GetStringChars(defType, NULL) : NULL;
+        ? env->GetStringChars(defType, NULL) : NULL;
     jsize defTypeLen = defType
         ? env->GetStringLength(defType) : 0;
     const char16_t* defPackage16 = defPackage
-        ? (char16_t*)env->GetStringChars(defPackage, NULL) : NULL;
+        ? env->GetStringChars(defPackage, NULL) : NULL;
     jsize defPackageLen = defPackage
         ? env->GetStringLength(defPackage) : 0;
 
     jint ident = am->getResources().identifierForName(
-        (char16_t*)name16.get(), name16.size(), defType16, defTypeLen, defPackage16, defPackageLen);
+        name16.get(), name16.size(), defType16, defTypeLen, defPackage16, defPackageLen);
 
     if (defPackage16) {
-        env->ReleaseStringChars(defPackage, (jchar*)defPackage16);
+        env->ReleaseStringChars(defPackage, defPackage16);
     }
     if (defType16) {
-        env->ReleaseStringChars(defType, (jchar*)defType16);
+        env->ReleaseStringChars(defType, defType16);
     }
 
     return ident;
@@ -1452,13 +1459,19 @@ static jobjectArray android_content_AssetManager_getArrayStringResource(JNIEnv* 
     }
     const ResTable& res(am->getResources());
 
+    jclass cls = env->FindClass("java/lang/String");
+    LOG_FATAL_IF(cls == NULL, "No string class?!?");
+    if (cls == NULL) {
+        return NULL;
+    }
+
     const ResTable::bag_entry* startOfBag;
     const ssize_t N = res.lockBag(arrayResId, &startOfBag);
     if (N < 0) {
         return NULL;
     }
 
-    jobjectArray array = env->NewObjectArray(N, g_stringClass, NULL);
+    jobjectArray array = env->NewObjectArray(N, cls, NULL);
     if (env->ExceptionCheck()) {
         res.unlockBag(startOfBag);
         return NULL;
@@ -1486,7 +1499,7 @@ static jobjectArray android_content_AssetManager_getArrayStringResource(JNIEnv* 
                 str = env->NewStringUTF(str8);
             } else {
                 const char16_t* str16 = pool->stringAt(value.data, &strLen);
-                str = env->NewString((jchar*)str16, strLen);
+                str = env->NewString(str16, strLen);
             }
 
             // If one of our NewString{UTF} calls failed due to memory, an
@@ -1755,7 +1768,6 @@ int register_android_content_AssetManager(JNIEnv* env)
     jclass stringClass = env->FindClass("java/lang/String");
     LOG_FATAL_IF(stringClass == NULL, "Unable to find class java/lang/String");
     g_stringClass = (jclass)env->NewGlobalRef(stringClass);
-    LOG_FATAL_IF(g_stringClass == NULL, "Unable to create global reference for class java/lang/String");
 
     return AndroidRuntime::registerNativeMethods(env,
             "android/content/res/AssetManager", gAssetManagerMethods, NELEM(gAssetManagerMethods));
