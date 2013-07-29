@@ -1464,6 +1464,8 @@ public class NotificationManagerService extends INotificationManager.Stub
                     Settings.System.QUIET_HOURS_STILL), false, this);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.QUIET_HOURS_DIM), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.NOTIFICATION_SOUND_LIMITER_THRESHOLD), false, this);
             update();
         }
 
@@ -1486,10 +1488,13 @@ public class NotificationManagerService extends INotificationManager.Stub
                     Settings.System.QUIET_HOURS_STILL, 0) != 0;
             mQuietHoursDim = Settings.System.getInt(resolver,
                     Settings.System.QUIET_HOURS_DIM, 0) != 0;
+            ContentResolver resolver = mContext.getContentResolver();
+            mNotifSoundLimiterThreshold = Settings.System.getLong(resolver,
+                    Settings.System.NOTIFICATION_SOUND_LIMITER_THRESHOLD, 0);
         }
     }
 
-    class SettingsObserver extends ContentObserver 
+    class SettingsObserver extends ContentObserver {
         private final Uri ENABLED_NOTIFICATION_LISTENERS_URI
                 = Settings.Secure.getUriFor(Settings.Secure.ENABLED_NOTIFICATION_LISTENERS);
 
@@ -1544,10 +1549,9 @@ public class NotificationManagerService extends INotificationManager.Stub
 
         loadBlockDb();
         loadHaloBlockDb();
-
-        mAppOps = (AppOpsManager)context.getSystemService(Context.APP_OPS_SERVICE);
-
         importOldBlockDb();
+
+        mAppOps = (AppOpsManager)context.getSystemService(Context.APP_OPS_SERVICE);        
 
         mStatusBar = statusBar;
         statusBar.setNotificationCallbacks(mNotificationCallbacks);
@@ -1641,7 +1645,6 @@ public class NotificationManagerService extends INotificationManager.Stub
         if (mPolicyFile != null) {
             mPolicyFile.delete();
         }
->>>>>>> aosp/master
     }
 
     void systemReady() {
@@ -2650,30 +2653,6 @@ public class NotificationManagerService extends INotificationManager.Stub
                 }
             }
 
-        }
-    }
-
-    class SettingsObserver extends ContentObserver {
-            SettingsObserver(Handler handler) {
-            super(handler);
-        }
-
-        void observe() {
-            ContentResolver resolver = mContext.getContentResolver();
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.NOTIFICATION_SOUND_LIMITER_THRESHOLD), false, this);
-            update();
-        }
-
-        @Override
-        public void onChange(boolean selfChange) {
-            update();
-        }
-
-        public void update() {
-            ContentResolver resolver = mContext.getContentResolver();
-            mNotifSoundLimiterThreshold = Settings.System.getLong(resolver,
-                    Settings.System.NOTIFICATION_SOUND_LIMITER_THRESHOLD, 0);
         }
     }
 }
