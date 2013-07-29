@@ -211,6 +211,8 @@ public class TabletStatusBar extends BaseStatusBar implements
 
     private boolean mHasDockBattery;
 
+    private boolean mRecreating = false;
+
     public Context getContext() { return mContext; }
 
     private Runnable mShowSearchPanel = new Runnable() {

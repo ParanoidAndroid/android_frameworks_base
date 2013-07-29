@@ -115,6 +115,10 @@ public class NotificationData {
         }
     };
 
+    public void clear() {
+        mEntries.clear();
+    }
+
     public int size() {
         return mEntries.size();
     }
