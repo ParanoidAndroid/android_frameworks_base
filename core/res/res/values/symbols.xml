@@ -1303,11 +1303,8 @@
   <java-symbol type="id" name="keyguard_bouncer_frame" />
   <java-symbol type="id" name="app_widget_container" />
   <java-symbol type="id" name="view_flipper" />
-<<<<<<< HEAD
   <java-symbol type="id" name="expand_challenge_handle" />
-=======
   <java-symbol type="id" name="carrier_text" />
->>>>>>> aosp/master
   <java-symbol type="id" name="emergency_call_button" />
   <java-symbol type="id" name="keyguard_host_view" />
   <java-symbol type="id" name="delete_button" />
@@ -1799,7 +1796,6 @@
   <!-- From PinyinIME(!!!) -->
   <java-symbol type="string" name="inputMethod" />
 
-<<<<<<< HEAD
   <!-- Hardware Key ReMapping -->
   <java-symbol type="integer" name="config_deviceHardwareKeys" />
 
@@ -1863,10 +1859,9 @@
   <java-symbol type="string" name="minutes" />
   <java-symbol type="string" name="second" />
   <java-symbol type="string" name="seconds" />
-=======
+
   <!-- From Chromium-WebView -->
   <java-symbol type="attr" name="actionModeWebSearchDrawable" />
   <java-symbol type="string" name="websearch" />
->>>>>>> aosp/master
 
 </resources>

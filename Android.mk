@@ -733,12 +733,6 @@ LOCAL_DROIDDOC_CUSTOM_TEMPLATE_DIR:=build/tools/droiddoc/templates-sdk
 
 include $(BUILD_DROIDDOC)
 
-<<<<<<< HEAD
-# explicitly specify that ds depends on framework-res and any generated docs
-$(full_target): framework-res-package-target
-
-=======
->>>>>>> aosp/master
 # ==== docs that have all of the stuff that's @hidden =======================
 include $(CLEAR_VARS)
 
