@@ -1811,36 +1811,6 @@ final class ActivityStack {
         return true;
     }
 
-    private final void showPrivacyGuardNotificationLocked(ActivityRecord next) {
-
-        if (mPrivacyGuardPackageName != null && mPrivacyGuardPackageName.equals(next.packageName)) {
-            return;
-        }
-
-        boolean privacy = false;
-
-        if (next != null) {
-            try {
-                privacy = AppGlobals.getPackageManager().getPrivacyGuardSetting(
-                        next.packageName, next.userId);
-            } catch (RemoteException e) {
-                // nothing
-            }
-        }
-
-        if (mPrivacyGuardPackageName != null && !privacy) {
-            Message msg = mService.mHandler.obtainMessage(
-                    ActivityManagerService.CANCEL_PRIVACY_NOTIFICATION_MSG, next.userId);
-            msg.sendToTarget();
-            mPrivacyGuardPackageName = null;
-        } else if (privacy) {
-            Message msg = mService.mHandler.obtainMessage(
-                    ActivityManagerService.POST_PRIVACY_NOTIFICATION_MSG, next);
-            msg.sendToTarget();
-            mPrivacyGuardPackageName = next.packageName;
-        }
-    }
-
     private final void startActivityLocked(ActivityRecord r, boolean newTask,
             boolean doResume, boolean keepCurTransition, Bundle options) {
         final int NH = mHistory.size();
