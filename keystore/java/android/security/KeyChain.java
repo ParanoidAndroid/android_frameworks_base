@@ -37,8 +37,8 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.android.org.conscrypt.OpenSSLEngine;
-import com.android.org.conscrypt.TrustedCertificateStore;
+import org.apache.harmony.xnet.provider.jsse.OpenSSLEngine;
+import org.apache.harmony.xnet.provider.jsse.TrustedCertificateStore;
 
 /**
  * The {@code KeyChain} class provides access to private keys and

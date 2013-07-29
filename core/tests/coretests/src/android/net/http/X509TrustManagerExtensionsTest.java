@@ -25,7 +25,7 @@ import javax.net.ssl.X509TrustManager;
 
 import junit.framework.TestCase;
 
-import com.android.org.conscrypt.TrustManagerImpl;
+import org.apache.harmony.xnet.provider.jsse.TrustManagerImpl;
 
 public class X509TrustManagerExtensionsTest extends TestCase {
 

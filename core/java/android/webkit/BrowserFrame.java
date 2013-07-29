@@ -57,8 +57,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import com.android.org.conscrypt.OpenSSLKey;
-import com.android.org.conscrypt.OpenSSLKeyHolder;
+import org.apache.harmony.xnet.provider.jsse.OpenSSLKey;
+import org.apache.harmony.xnet.provider.jsse.OpenSSLKeyHolder;
 
 class BrowserFrame extends Handler {
 
