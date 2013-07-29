@@ -18,14 +18,14 @@ package android.os;
 
 import libcore.io.ErrnoException;
 import libcore.io.Libcore;
-import libcore.io.StructStatVfs;
+import libcore.io.StructStatFs;
 
 /**
  * Retrieve overall information about the space on a filesystem. This is a
- * wrapper for Unix statvfs().
+ * wrapper for Unix statfs().
  */
 public class StatFs {
-    private StructStatVfs mStat;
+    private StructStatFs mStat;
 
     /**
      * Construct a new StatFs for looking at the stats of the filesystem at
@@ -39,9 +39,9 @@ public class StatFs {
         mStat = doStat(path);
     }
 
-    private static StructStatVfs doStat(String path) {
+    private static StructStatFs doStat(String path) {
         try {
-            return Libcore.os.statvfs(path);
+            return Libcore.os.statfs(path);
         } catch (ErrnoException e) {
             throw new IllegalArgumentException("Invalid path: " + path, e);
         }
@@ -66,7 +66,7 @@ public class StatFs {
 
     /**
      * The size, in bytes, of a block on the file system. This corresponds to
-     * the Unix {@code statvfs.f_bsize} field.
+     * the Unix {@code statfs.f_bsize} field.
      */
     public long getBlockSizeLong() {
         return mStat.f_bsize;
@@ -82,7 +82,7 @@ public class StatFs {
 
     /**
      * The total number of blocks on the file system. This corresponds to the
-     * Unix {@code statvfs.f_blocks} field.
+     * Unix {@code statfs.f_blocks} field.
      */
     public long getBlockCountLong() {
         return mStat.f_blocks;
@@ -99,7 +99,7 @@ public class StatFs {
     /**
      * The total number of blocks that are free on the file system, including
      * reserved blocks (that are not available to normal applications). This
-     * corresponds to the Unix {@code statvfs.f_bfree} field. Most applications
+     * corresponds to the Unix {@code statfs.f_bfree} field. Most applications
      * will want to use {@link #getAvailableBlocks()} instead.
      */
     public long getFreeBlocksLong() {
@@ -125,7 +125,7 @@ public class StatFs {
 
     /**
      * The number of blocks that are free on the file system and available to
-     * applications. This corresponds to the Unix {@code statvfs.f_bavail} field.
+     * applications. This corresponds to the Unix {@code statfs.f_bavail} field.
      */
     public long getAvailableBlocksLong() {
         return mStat.f_bavail;
@@ -146,3 +146,4 @@ public class StatFs {
         return mStat.f_blocks * mStat.f_bsize;
     }
 }
+

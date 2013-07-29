@@ -31,3 +31,4 @@
     <!-- @hide DO NOT TRANSLATE. date formatting pattern for system ui.-->
     <string name="system_ui_date_pattern">@string/icu_abbrev_wday_month_day_no_year</string>
 </resources>
+

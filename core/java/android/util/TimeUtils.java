@@ -235,7 +235,7 @@ public class TimeUtils {
      * during the lifetime of an activity.
      */
     public static String getTimeZoneDatabaseVersion() {
-        return ZoneInfoDB.getInstance().getVersion();
+        return ZoneInfoDB.getVersion();
     }
 
     /** @hide Field length that can hold 999 days of time */
