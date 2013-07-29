@@ -41,13 +41,10 @@ import android.provider.Settings.SettingNotFoundException;
 import android.util.Slog;
 import android.view.InputDevice;
 
-<<<<<<< HEAD
-import java.util.Calendar;
-=======
 import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.IBatteryStats;
 
->>>>>>> aosp/master
+import java.util.Calendar;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -182,7 +179,6 @@ public class VibratorService extends IVibratorService.Stub
         return doVibratorExists();
     }
 
-<<<<<<< HEAD
     private boolean inQuietHours() {
         boolean quietHoursEnabled = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.QUIET_HOURS_ENABLED, 0) != 0;
@@ -206,8 +202,6 @@ public class VibratorService extends IVibratorService.Stub
         return false;
     }
 
-    public void vibrate(long milliseconds, IBinder token) {
-=======
     private void verifyIncomingUid(int uid) {
         if (uid == Binder.getCallingUid()) {
             return;
@@ -220,7 +214,6 @@ public class VibratorService extends IVibratorService.Stub
     }
 
     public void vibrate(int uid, String packageName, long milliseconds, IBinder token) {
->>>>>>> aosp/master
         if (mContext.checkCallingOrSelfPermission(android.Manifest.permission.VIBRATE)
                 != PackageManager.PERMISSION_GRANTED) {
             throw new SecurityException("Requires VIBRATE permission");
@@ -230,7 +223,7 @@ public class VibratorService extends IVibratorService.Stub
         // timeout of 0 or negative. This will ensure that a vibration has
         // either a timeout of > 0 or a non-null pattern.
         if (milliseconds <= 0 || (mCurrentVibration != null
-                && mCurrentVibration.hasLongerTimeout(milliseconds)) || inQuietHours()) {
+                && mCurrentVibration.hasLongerTimeout(milliseconds))) {
             // Ignore this vibration since the current vibration will play for
             // longer than milliseconds.
             return;
@@ -267,14 +260,12 @@ public class VibratorService extends IVibratorService.Stub
                 != PackageManager.PERMISSION_GRANTED) {
             throw new SecurityException("Requires VIBRATE permission");
         }
-<<<<<<< HEAD
         if (inQuietHours()) {
             return;
         }
         int uid = Binder.getCallingUid();
-=======
         verifyIncomingUid(uid);
->>>>>>> aosp/master
+
         // so wakelock calls will succeed
         long identity = Binder.clearCallingIdentity();
         try {

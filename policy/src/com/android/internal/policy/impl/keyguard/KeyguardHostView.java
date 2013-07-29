@@ -37,11 +37,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-<<<<<<< HEAD
 import android.graphics.drawable.BitmapDrawable;
-=======
 import android.media.RemoteControlClient;
->>>>>>> aosp/master
 import android.os.Looper;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -120,7 +117,6 @@ public class KeyguardHostView extends KeyguardViewBase {
 
     private boolean mUserSetupCompleted;
 
-<<<<<<< HEAD
     private Vibrator mVibrator;
 
     /*package*/ interface TransportCallback {
@@ -128,7 +124,7 @@ public class KeyguardHostView extends KeyguardViewBase {
         void onListenerAttached();
         void onPlayStateChanged();
     }
-=======
+
     // User for whom this host view was created.  Final because we should never change the
     // id without reconstructing an instance of KeyguardHostView. See note below...
     private final int mUserId;
@@ -136,7 +132,6 @@ public class KeyguardHostView extends KeyguardViewBase {
     private KeyguardMultiUserSelectorView mKeyguardMultiUserSelectorView;
 
     protected int mClientGeneration;
->>>>>>> aosp/master
 
     /*package*/ interface UserSwitcherCallback {
         void hideSecurityView(int duration);
@@ -156,18 +151,8 @@ public class KeyguardHostView extends KeyguardViewBase {
 
     public KeyguardHostView(Context context, AttributeSet attrs) {
         super(context, attrs);
-<<<<<<< HEAD
 
         mVibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-
-        mLockPatternUtils = new LockPatternUtils(context);
-        mUserId = mLockPatternUtils.getCurrentUser();
-        mAppWidgetHost = new AppWidgetHost(
-                context, APPWIDGET_HOST_ID, mOnClickHandler, Looper.myLooper());
-        mAppWidgetHost.setUserId(mUserId);
-        cleanupAppWidgetIds();
-=======
->>>>>>> aosp/master
 
         if (DEBUG) Log.e(TAG, "KeyguardHostView()");
 
@@ -1659,9 +1644,7 @@ public class KeyguardHostView extends KeyguardViewBase {
                         }
                     }
                 };
-<<<<<<< HEAD
-                multiUser.setCallback(callback);
-=======
+
                 mKeyguardMultiUserSelectorView.setCallback(callback);
             } else {
                 Throwable t = new Throwable();
@@ -1671,7 +1654,6 @@ public class KeyguardHostView extends KeyguardViewBase {
                 } else {
                     Log.e(TAG, "user_selector is the wrong type.", t);
                 }
->>>>>>> aosp/master
             }
         }
     }

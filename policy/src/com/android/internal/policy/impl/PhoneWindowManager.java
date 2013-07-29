@@ -19,12 +19,8 @@ package com.android.internal.policy.impl;
 
 import android.app.ActivityManager;
 import android.app.ActivityManagerNative;
-<<<<<<< HEAD
-import android.app.AppGlobals;
-=======
 import android.app.AppOpsManager;
 import android.app.IUiModeManager;
->>>>>>> aosp/master
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.app.UiModeManager;
@@ -70,25 +66,9 @@ import android.os.UEventObserver;
 import android.os.UserHandle;
 import android.os.Vibrator;
 import android.provider.Settings;
-<<<<<<< HEAD
-
-import com.android.internal.R;
-import com.android.internal.os.DeviceKeyHandler;
-import com.android.internal.policy.PolicyManager;
-import com.android.internal.policy.impl.keyguard.KeyguardViewManager;
-import com.android.internal.policy.impl.keyguard.KeyguardViewMediator;
-import com.android.internal.statusbar.IStatusBarService;
-import com.android.internal.telephony.ITelephony;
-import com.android.internal.widget.PointerLocationView;
-
-import dalvik.system.DexClassLoader;
-
-import android.service.dreams.IDreamManager;
 import android.util.ExtendedPropertiesUtils;
-=======
 import android.service.dreams.DreamService;
 import android.service.dreams.IDreamManager;
->>>>>>> aosp/master
 import android.util.DisplayMetrics;
 import android.util.EventLog;
 import android.util.ExtendedPropertiesUtils;
@@ -468,14 +448,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     boolean mShowingLockscreen;
     boolean mShowingDream;
     boolean mDreamingLockscreen;
-<<<<<<< HEAD
-    boolean mHomeLongPressed;
-    boolean mAppSwitchLongPressed;
-=======
     boolean mHomePressed;
     boolean mHomeConsumed;
     boolean mHomeDoubleTapPending;
->>>>>>> aosp/master
     Intent mHomeIntent;
     Intent mCarDockIntent;
     Intent mDeskDockIntent;
@@ -521,8 +496,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     int mPortraitRotation = 0;   // default portrait rotation
     int mUpsideDownRotation = 0; // "other" portrait rotation
 
-<<<<<<< HEAD
-=======
     int mOverscanLeft = 0;
     int mOverscanTop = 0;
     int mOverscanRight = 0;
@@ -534,7 +507,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     // What we do when the user double-taps on home
     private int mDoubleTapOnHomeBehavior;
 
->>>>>>> aosp/master
     // Screenshot trigger states
     // Time to volume and power must be pressed within this interval of each other.
     private static final long SCREENSHOT_CHORD_DEBOUNCE_DELAY_MILLIS = 150;
@@ -880,87 +852,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 mContext.getContentResolver(), Settings.Global.DEVICE_PROVISIONED, 0) != 0;
     }
 
-<<<<<<< HEAD
-    private void triggerVirtualKeypress(final int keyCode) {
-        new Thread(new Runnable() {
-            public void run() {
-                InputManager im = InputManager.getInstance();
-                long now = SystemClock.uptimeMillis();
-
-                final KeyEvent downEvent = new KeyEvent(now, now, KeyEvent.ACTION_DOWN,
-                        keyCode, 0, 0, KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
-                        KeyEvent.FLAG_FROM_SYSTEM, InputDevice.SOURCE_KEYBOARD);
-                final KeyEvent upEvent = KeyEvent.changeAction(downEvent, KeyEvent.ACTION_UP);
-
-                mIsVirtualKeypress = true;
-                im.injectInputEvent(downEvent, InputManager.INJECT_INPUT_EVENT_MODE_WAIT_FOR_RESULT);
-                im.injectInputEvent(upEvent, InputManager.INJECT_INPUT_EVENT_MODE_WAIT_FOR_RESULT);
-                mIsVirtualKeypress = false;
-            }
-        }).start();
-    }
-
-    private void performKeyAction(int behavior) {
-        switch (behavior) {
-            case KEY_ACTION_NOTHING:
-                break;
-            case KEY_ACTION_MENU:
-                triggerVirtualKeypress(KeyEvent.KEYCODE_MENU);
-                break;
-            case KEY_ACTION_APP_SWITCH:
-                sendCloseSystemWindows(SYSTEM_DIALOG_REASON_RECENT_APPS);
-                try {
-                    IStatusBarService statusbar = getStatusBarService();
-                    if (statusbar != null) {
-                        statusbar.toggleRecentApps();
-                        mRecentAppsPreloaded = false;
-                    }
-                } catch (RemoteException e) {
-                    Slog.e(TAG, "RemoteException when showing recent apps", e);
-                    // re-acquire status bar service next time it is needed.
-                    mStatusBarService = null;
-                }
-                break;
-            case KEY_ACTION_SEARCH:
-                launchAssistAction();
-                break;
-            case KEY_ACTION_VOICE_SEARCH:
-                launchAssistLongPressAction();
-                break;
-            case KEY_ACTION_IN_APP_SEARCH:
-                triggerVirtualKeypress(KeyEvent.KEYCODE_SEARCH);
-                break;
-            default:
-                break;
-        }
-    }
-
-    private void preloadRecentApps() {
-        try {
-            IStatusBarService statusbar = getStatusBarService();
-            if (statusbar != null) {
-                statusbar.preloadRecentApps();
-                mRecentAppsPreloaded = true;
-            }
-        } catch (RemoteException e) {
-            Slog.e(TAG, "RemoteException when preloading recent apps", e);
-            // re-acquire status bar service next time it is needed.
-            mStatusBarService = null;
-        }
-    }
-
-    private void cancelPreloadRecentApps() {
-        try {
-            IStatusBarService statusbar = getStatusBarService();
-            if (statusbar != null) {
-                statusbar.cancelPreloadRecentApps();
-                mRecentAppsPreloaded = false;
-            }
-        } catch (RemoteException e) {
-            Slog.e(TAG, "RemoteException when showing recent apps", e);
-            // re-acquire status bar service next time it is needed.
-            mStatusBarService = null;
-=======
     private void handleLongPressOnHome() {
         if (mLongPressOnHomeBehavior != LONG_PRESS_HOME_NOTHING) {
             mHomeConsumed = true;
@@ -978,7 +869,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (mDoubleTapOnHomeBehavior == DOUBLE_TAP_HOME_RECENT_SYSTEM_UI) {
             mHomeConsumed = true;
             toggleRecentApps();
->>>>>>> aosp/master
         }
     }
 
@@ -1130,18 +1020,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 com.android.internal.R.integer.config_lidNavigationAccessibility);
         mLidControlsSleep = mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_lidControlsSleep);
-<<<<<<< HEAD
-        mHasRemovableLid = mContext.getResources().getBoolean(
-                com.android.internal.R.bool.config_hasRemovableLid);
-        mDeviceHardwareKeys = mContext.getResources().getInteger(
-                com.android.internal.R.integer.config_deviceHardwareKeys);
-        mHasHomeKey = ((mDeviceHardwareKeys & KEY_MASK_HOME) != 0);
-        mHasMenuKey = ((mDeviceHardwareKeys & KEY_MASK_MENU) != 0);
-        mHasAssistKey = ((mDeviceHardwareKeys & KEY_MASK_ASSIST) != 0);
-        mHasAppSwitchKey = ((mDeviceHardwareKeys & KEY_MASK_APP_SWITCH) != 0);
-=======
         readConfigurationDependentBehaviors();
->>>>>>> aosp/master
 
         // register for dock events
         IntentFilter filter = new IntentFilter();
@@ -2330,27 +2209,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             // If we have released the home key, and didn't do anything else
             // while it was pressed, then it is time to go home!
             if (!down) {
-<<<<<<< HEAD
-                final boolean homeWasLongPressed = mHomeLongPressed;
-                mHomeLongPressed = false;
-                if (!homeWasLongPressed) {
-                    if (mRecentAppsPreloaded) {
-                        cancelPreloadRecentApps();
-                    }
-                    if (!canceled) {
-                        // If an incoming call is ringing, HOME is totally disabled.
-                        // (The user is already on the InCallScreen at this point,
-                        // and his ONLY options are to answer or reject the call.)
-                        boolean incomingRinging = false;
-                        try {
-                            ITelephony telephonyService = getTelephonyService();
-                            if (telephonyService != null) {
-                                incomingRinging = telephonyService.isRinging();
-                            }
-                        } catch (RemoteException ex) {
-                            Log.w(TAG, "RemoteException from getPhoneInterface()", ex);
-                        }
-=======
                 cancelPreloadRecentApps();
 
                 mHomePressed = false;
@@ -2363,7 +2221,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     Log.i(TAG, "Ignoring HOME; event canceled.");
                     return -1;
                 }
->>>>>>> aosp/master
 
                 // If an incoming call is ringing, HOME is totally disabled.
                 // (The user is already on the InCallScreen at this point,
@@ -2410,19 +2267,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     }
                 }
             }
-<<<<<<< HEAD
-            if (down) {
-                if (!mRecentAppsPreloaded && mLongPressOnHomeBehavior == KEY_ACTION_APP_SWITCH) {
-                    preloadRecentApps();
-                }
-                if (longPress) {
-                    if (!keyguardOn && mLongPressOnHomeBehavior != KEY_ACTION_NOTHING) {
-                        performHapticFeedbackLw(null, HapticFeedbackConstants.LONG_PRESS, false);
-                        performKeyAction(mLongPressOnHomeBehavior);
-                        // Eat the long-press so it won't take us home when the key is released
-                        mHomeLongPressed = true;
-                    }
-=======
 
             // Remember that home is pressed and handle special actions.
             if (repeatCount == 0) {
@@ -2438,7 +2282,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             } else if ((event.getFlags() & KeyEvent.FLAG_LONG_PRESS) != 0) {
                 if (!keyguardOn) {
                     handleLongPressOnHome();
->>>>>>> aosp/master
                 }
             }
             return -1;
@@ -2515,44 +2358,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             }
             return 0;
         } else if (keyCode == KeyEvent.KEYCODE_APP_SWITCH) {
-<<<<<<< HEAD
-            if (down) {
-                if (!mRecentAppsPreloaded && (mPressOnAppSwitchBehavior == KEY_ACTION_APP_SWITCH ||
-                        mLongPressOnAppSwitchBehavior == KEY_ACTION_APP_SWITCH)) {
-                    preloadRecentApps();
-                }
-                if (repeatCount == 0) {
-                    mAppSwitchLongPressed = false;
-                } else if (longPress) {
-                    if (mRecentAppsPreloaded &&
-                            mLongPressOnAppSwitchBehavior != KEY_ACTION_APP_SWITCH) {
-                        cancelPreloadRecentApps();
-                    }
-                    if (!keyguardOn && mLongPressOnAppSwitchBehavior != KEY_ACTION_NOTHING) {
-                        performHapticFeedbackLw(null, HapticFeedbackConstants.LONG_PRESS, false);
-                        performKeyAction(mLongPressOnAppSwitchBehavior);
-                        mAppSwitchLongPressed = true;
-                    }
-                }
-            } else {
-                if (mAppSwitchLongPressed) {
-                    mAppSwitchLongPressed = false;
-                } else {
-                    if (mRecentAppsPreloaded &&
-                            mPressOnAppSwitchBehavior != KEY_ACTION_APP_SWITCH) {
-                        cancelPreloadRecentApps();
-                    }
-                    if (!canceled && !keyguardOn) {
-                        performKeyAction(mPressOnAppSwitchBehavior);
-                    }
-                    return -1;
-=======
             if (!keyguardOn) {
                 if (down && repeatCount == 0) {
                     preloadRecentApps();
                 } else if (!down) {
                     toggleRecentApps();
->>>>>>> aosp/master
                 }
             }
             return -1;
@@ -2700,21 +2510,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             return -1;
         }
 
-<<<<<<< HEAD
-        // Specific device key handling
-        if (mDeviceKeyHandler != null) {
-            try {
-                // The device only should consume known keys.
-                if (mDeviceKeyHandler.handleKeyEvent(event)) {
-                    return -1;
-                }
-            } catch (Exception e) {
-                Slog.w(TAG, "Could not dispatch event to device key handler", e);
-            }
-=======
         if (mGlobalKeyManager.handleGlobalKey(mContext, keyCode, event)) {
             return -1;
->>>>>>> aosp/master
         }
 
         // Let the application handle the key.

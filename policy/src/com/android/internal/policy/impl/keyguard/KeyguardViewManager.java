@@ -304,10 +304,6 @@ public class KeyguardViewManager {
 
             mKeyguardHost = new ViewManagerHost(mContext);
 
-<<<<<<< HEAD
-            setKeyguardParams();
-            mViewManager.addView(mKeyguardHost, mWindowLayoutParams);
-=======
             int flags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                     | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
                     | WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN
@@ -343,7 +339,6 @@ public class KeyguardViewManager {
             lp.setTitle(isActivity ? "KeyguardMock" : "Keyguard");
             mWindowLayoutParams = lp;
             mViewManager.addView(mKeyguardHost, lp);
->>>>>>> aosp/master
         }
 
         if (force || mKeyguardView == null) {

@@ -109,11 +109,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
     private boolean mIsWaitingForEcmExit = false;
     private boolean mHasTelephony;
     private boolean mHasVibrator;
-<<<<<<< HEAD
     private boolean mRebootMenu;
-=======
-    private final boolean mShowSilentToggle;
->>>>>>> aosp/master
 
     /**
      * @param context everything needs a context :(
@@ -277,13 +273,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
 
             mItems = new ArrayList<Action>();
 
-<<<<<<< HEAD
             // first: power off
-=======
-        // next: bug report, if enabled
-        if (Settings.Global.getInt(mContext.getContentResolver(),
-                Settings.Global.BUGREPORT_IN_POWER_MENU, 0) != 0) {
->>>>>>> aosp/master
             mItems.add(
                 new SinglePressAction(
                         com.android.internal.R.drawable.ic_lock_power_off,
@@ -345,14 +335,6 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                         return true;
                     }
                 });
-
-<<<<<<< HEAD
-=======
-        // last: silent mode
-        if (mShowSilentToggle) {
-            mItems.add(mSilentModeAction);
-        }
->>>>>>> aosp/master
 
             // next: expanded desktop
             mItems.add(mExpandDesktopModeOn);

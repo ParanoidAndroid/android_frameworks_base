@@ -288,17 +288,11 @@ final class ActivityStack {
     boolean mDismissKeyguardOnNextActivity = false;
 
     /**
-<<<<<<< HEAD
-     * Is the privacy guard currently enabled?
-     */
-    String mPrivacyGuardPackageName = null;
-=======
      * Save the most recent screenshot for reuse. This keeps Recents from taking two identical
      * screenshots, one for the Recents thumbnail and one for the pauseActivity thumbnail.
      */
     private ActivityRecord mLastScreenshotActivity = null;
     private Bitmap mLastScreenshotBitmap = null;
->>>>>>> aosp/master
 
     int mThumbnailWidth = -1;
     int mThumbnailHeight = -1;
@@ -1929,15 +1923,9 @@ final class ActivityStack {
                         AppTransition.TRANSIT_NONE, keepCurTransition);
                 mNoAnimActivities.add(r);
             } else {
-<<<<<<< HEAD
                 mService.mWindowManager.prepareAppTransition(newTask && !r.floatingWindow
                         ? WindowManagerPolicy.TRANSIT_TASK_OPEN
                         : WindowManagerPolicy.TRANSIT_ACTIVITY_OPEN, keepCurTransition);
-=======
-                mService.mWindowManager.prepareAppTransition(newTask
-                        ? AppTransition.TRANSIT_TASK_OPEN
-                        : AppTransition.TRANSIT_ACTIVITY_OPEN, keepCurTransition);
->>>>>>> aosp/master
                 mNoAnimActivities.remove(r);
             }
             r.updateOptionsLocked(options);
@@ -3871,15 +3859,9 @@ final class ActivityStack {
                     || (mHistory.get(index-1)).task != r.task;
             if (DEBUG_TRANSITION) Slog.v(TAG,
                     "Prepare close transition: finishing " + r);
-<<<<<<< HEAD
             mService.mWindowManager.prepareAppTransition(endTask && !r.floatingWindow
                     ? WindowManagerPolicy.TRANSIT_TASK_CLOSE
                     : WindowManagerPolicy.TRANSIT_ACTIVITY_CLOSE, false);
-=======
-            mService.mWindowManager.prepareAppTransition(endTask
-                    ? AppTransition.TRANSIT_TASK_CLOSE
-                    : AppTransition.TRANSIT_ACTIVITY_CLOSE, false);
->>>>>>> aosp/master
     
             // Tell window manager to prepare for this one to be removed.
             mService.mWindowManager.setAppVisibility(r.appToken, false);

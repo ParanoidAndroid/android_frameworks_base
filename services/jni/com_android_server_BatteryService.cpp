@@ -82,23 +82,6 @@ struct BatteryManagerConstants {
 static BatteryManagerConstants gConstants;
 
 struct PowerSupplyPaths {
-<<<<<<< HEAD
-    char* acOnlinePath;
-    char* usbOnlinePath;
-    char* wirelessOnlinePath;
-    char* batteryStatusPath;
-    char* batteryHealthPath;
-    char* batteryPresentPath;
-    char* batteryCapacityPath;
-    char* batteryVoltagePath;
-    char* batteryTemperaturePath;
-    char* batteryTechnologyPath;
-#ifdef HAS_DOCK_BATTERY
-    char* dockbatteryStatusPath;
-    char* dockbatteryCapacityPath;
-    char* dockbatteryPresentPath;
-#endif
-=======
     String8 batteryStatusPath;
     String8 batteryHealthPath;
     String8 batteryPresentPath;
@@ -106,7 +89,6 @@ struct PowerSupplyPaths {
     String8 batteryVoltagePath;
     String8 batteryTemperaturePath;
     String8 batteryTechnologyPath;
->>>>>>> aosp/master
 };
 static PowerSupplyPaths gPaths;
 
@@ -420,28 +402,12 @@ int register_android_server_BatteryService(JNIEnv* env)
                     if (access(path, R_OK) == 0)
                             gPaths.batteryTemperaturePath = path;
                 }
-<<<<<<< HEAD
-#ifdef HAS_DOCK_BATTERY
-                else if(strcmp(buf, "DockBattery") == 0) {
-                    snprintf(path, sizeof(path), "%s/%s/status", POWER_SUPPLY_PATH, name);
-                    if (access(path, R_OK) == 0)
-                        gPaths.dockbatteryStatusPath = strdup(path);
-                    snprintf(path, sizeof(path), "%s/%s/capacity", POWER_SUPPLY_PATH, name);
-                    if (access(path, R_OK) == 0)
-                        gPaths.dockbatteryCapacityPath = strdup(path);
-                    snprintf(path, sizeof(path), "%s/%s/device/ec_dock", POWER_SUPPLY_PATH, name);
-                    if (access(path, R_OK) == 0)
-                        gPaths.dockbatteryPresentPath = strdup(path);
-                }
-#endif
-=======
 
                 path.clear();
                 path.appendFormat("%s/%s/technology", POWER_SUPPLY_PATH, name);
                 if (access(path, R_OK) == 0)
                     gPaths.batteryTechnologyPath = path;
                 break;
->>>>>>> aosp/master
             }
         }
         closedir(dir);

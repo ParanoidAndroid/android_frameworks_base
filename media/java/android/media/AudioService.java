@@ -446,14 +446,10 @@ public class AudioService extends IAudioService.Stub implements OnFinished {
 
     private int mDockState = Intent.EXTRA_DOCK_STATE_UNDOCKED;
 
-<<<<<<< HEAD
-    private boolean mVolumeKeysControlRingStream;
-=======
     // Used when safe volume warning message display is requested by setStreamVolume(). In this
     // case, the new requested volume, stream type and device are stored in mPendingVolumeCommand
     // and used later when/if disableSafeMediaVolume() is called.
     private StreamVolumeCommand mPendingVolumeCommand;
->>>>>>> aosp/master
 
     ///////////////////////////////////////////////////////////////////////////
     // Construction
@@ -4145,14 +4141,8 @@ public class AudioService extends IAudioService.Stub implements OnFinished {
                         0,
                         null,
                         SAFE_VOLUME_CONFIGURE_TIMEOUT_MS);
-<<<<<<< HEAD
-            
-		adjustCurrentStreamVolume();
-	    } else if (action.equals(Intent.ACTION_PACKAGE_REMOVED)) {
-=======
             } else if (action.equals(Intent.ACTION_PACKAGE_REMOVED)
                     || action.equals(Intent.ACTION_PACKAGE_DATA_CLEARED)) {
->>>>>>> aosp/master
                 if (!intent.getBooleanExtra(Intent.EXTRA_REPLACING, false)) {
                     // a package is being removed, not replaced
                     String packageName = intent.getData().getSchemeSpecificPart();
@@ -6676,12 +6666,7 @@ public class AudioService extends IAudioService.Stub implements OnFinished {
                     (mStreamVolumeAlias[streamType] == AudioSystem.STREAM_MUSIC) &&
                     ((device & mSafeMediaVolumeDevices) != 0) &&
                     (index > mSafeMediaVolumeIndex)) {
-<<<<<<< HEAD
-                mVolumePanel.postDisplaySafeVolumeWarning();
-                return false; 
-=======
                 return false;
->>>>>>> aosp/master
             }
             return true;
         }

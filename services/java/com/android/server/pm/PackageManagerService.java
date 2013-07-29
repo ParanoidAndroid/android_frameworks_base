@@ -3648,24 +3648,11 @@ public class PackageManagerService extends IPackageManager.Stub {
             mDeferredDexOpt = null;
         }
         if (pkgs != null) {
-<<<<<<< HEAD
-            for (int i=0; i<pkgs.size(); i++) {
-                PackageParser.Package p = pkgs.get(i);
-=======
             int i = 0;
             for (PackageParser.Package pkg : pkgs) {
->>>>>>> aosp/master
                 if (!isFirstBoot()) {
                     i++;
                     try {
-                        // give the packagename to the PhoneWindowManager
-                        ApplicationInfo ai;
-                        try {
-                            ai = mContext.getPackageManager().getApplicationInfo(p.packageName, 0);
-                        } catch (PackageManager.NameNotFoundException e) {
-                            ai = null;
-                        }
-                        mPolicy.setPackageName((String) (ai != null ? mContext.getPackageManager().getApplicationLabel(ai) : p.packageName));
                         ActivityManagerNative.getDefault().showBootMessage(
                                 mContext.getResources().getString(
                                         com.android.internal.R.string.android_upgrading_apk,
@@ -3673,10 +3660,7 @@ public class PackageManagerService extends IPackageManager.Stub {
                     } catch (RemoteException e) {
                     }
                 }
-<<<<<<< HEAD
-=======
                 PackageParser.Package p = pkg;
->>>>>>> aosp/master
                 synchronized (mInstallLock) {
                     if (!p.mDidDexOpt) {
                         performDexOptLI(p, false, false, true);

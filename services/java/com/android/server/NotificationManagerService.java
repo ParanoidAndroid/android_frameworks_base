@@ -95,14 +95,11 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
-<<<<<<< HEAD
 import java.util.Map;
-=======
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
->>>>>>> aosp/master
 
 import libcore.io.IoUtils;
 
@@ -185,7 +182,6 @@ public class NotificationManagerService extends INotificationManager.Stub
     private ArrayList<NotificationRecord> mLights = new ArrayList<NotificationRecord>();
     private NotificationRecord mLedNotification;
 
-<<<<<<< HEAD
     private boolean mQuietHoursEnabled = false;
     // Minutes from midnight when quiet hours begin.
     private int mQuietHoursStart = 0;
@@ -197,7 +193,7 @@ public class NotificationManagerService extends INotificationManager.Stub
     private boolean mQuietHoursStill = true;
     // Dim LED if hardware supports it.
     private boolean mQuietHoursDim = true;
-=======
+
     private final AppOpsManager mAppOps;
 
     // contains connections to all connected listeners, including app services
@@ -212,7 +208,6 @@ public class NotificationManagerService extends INotificationManager.Stub
             = new HashSet<ComponentName>();
     // Just the packages from mEnabledListenersForCurrentUser
     private HashSet<String> mEnabledListenerPackageNames = new HashSet<String>();
->>>>>>> aosp/master
 
     // Notification control database. For now just contains disabled packages.
     private AtomicFile mPolicyFile, mHaloPolicyFile;
@@ -232,11 +227,10 @@ public class NotificationManagerService extends INotificationManager.Stub
     private static final String TAG_PACKAGE = "package";
     private static final String ATTR_NAME = "name";
 
-<<<<<<< HEAD
     private int readPolicy(AtomicFile file, String lookUpTag, HashSet<String> db) {
         return readPolicy(file, lookUpTag, db, null, 0);
     }
-=======
+
     private class NotificationListenerInfo implements DeathRecipient {
         INotificationListener listener;
         ComponentName component;
@@ -412,15 +406,6 @@ public class NotificationManagerService extends INotificationManager.Stub
 
     Archive mArchive = new Archive();
 
-    private void loadBlockDb() {
-        synchronized(mBlockedPackages) {
-            if (mPolicyFile == null) {
-                File dir = new File("/data/system");
-                mPolicyFile = new AtomicFile(new File(dir, "notification_policy.xml"));
-
-                mBlockedPackages.clear();
->>>>>>> aosp/master
-
     private int readPolicy(AtomicFile file, String lookUpTag, HashSet<String> db, String resultTag, int defaultResult) {
         int result = defaultResult;
         FileInputStream infile = null;
@@ -481,7 +466,6 @@ public class NotificationManagerService extends INotificationManager.Stub
         }
     }
 
-<<<<<<< HEAD
     private void writeBlockDb() {
         synchronized(mBlockedPackages) {
             FileOutputStream outfile = null;
@@ -601,13 +585,10 @@ public class NotificationManagerService extends INotificationManager.Stub
         }
     }
 
-    public boolean areNotificationsEnabledForPackage(String pkg) {
-=======
     /**
      * Use this when you just want to know if notifications are OK for this package.
      */
     public boolean areNotificationsEnabledForPackage(String pkg, int uid) {
->>>>>>> aosp/master
         checkCallerIsSystem();
         return (mAppOps.checkOpNoThrow(AppOpsManager.OP_POST_NOTIFICATION, uid, pkg)
                 == AppOpsManager.MODE_ALLOWED);
@@ -1321,15 +1302,10 @@ public class NotificationManagerService extends INotificationManager.Stub
             boolean queryRestart = false;
             boolean queryRemove = false;
             boolean packageChanged = false;
-<<<<<<< HEAD
-
-            if (action.equals(Intent.ACTION_PACKAGE_REMOVED)
-=======
             boolean cancelNotifications = true;
             
             if (action.equals(Intent.ACTION_PACKAGE_ADDED)
                     || (queryRemove=action.equals(Intent.ACTION_PACKAGE_REMOVED))
->>>>>>> aosp/master
                     || action.equals(Intent.ACTION_PACKAGE_RESTARTED)
                     || (packageChanged=action.equals(Intent.ACTION_PACKAGE_CHANGED))
                     || (queryRestart=action.equals(Intent.ACTION_QUERY_PACKAGE_RESTART))
@@ -1411,25 +1387,13 @@ public class NotificationManagerService extends INotificationManager.Stub
         }
     };
 
-<<<<<<< HEAD
     class LEDSettingsObserver extends ContentObserver {
         LEDSettingsObserver(Handler handler) {
-=======
-    class SettingsObserver extends ContentObserver {
-        private final Uri NOTIFICATION_LIGHT_PULSE_URI
-                = Settings.System.getUriFor(Settings.System.NOTIFICATION_LIGHT_PULSE);
-
-        private final Uri ENABLED_NOTIFICATION_LISTENERS_URI
-                = Settings.Secure.getUriFor(Settings.Secure.ENABLED_NOTIFICATION_LISTENERS);
-
-        SettingsObserver(Handler handler) {
->>>>>>> aosp/master
             super(handler);
         }
 
         void observe() {
             ContentResolver resolver = mContext.getContentResolver();
-<<<<<<< HEAD
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.NOTIFICATION_LIGHT_PULSE), false, this);
             resolver.registerContentObserver(Settings.System.getUriFor(
@@ -1448,22 +1412,10 @@ public class NotificationManagerService extends INotificationManager.Stub
         @Override public void onChange(boolean selfChange) {
             update();
             updateNotificationPulse();
-=======
-            resolver.registerContentObserver(NOTIFICATION_LIGHT_PULSE_URI,
-                    false, this, UserHandle.USER_ALL);
-            resolver.registerContentObserver(ENABLED_NOTIFICATION_LISTENERS_URI,
-                    false, this, UserHandle.USER_ALL);
-            update(null);
-        }
-
-        @Override public void onChange(boolean selfChange, Uri uri) {
-            update(uri);
->>>>>>> aosp/master
         }
 
         public void update(Uri uri) {
             ContentResolver resolver = mContext.getContentResolver();
-<<<<<<< HEAD
             // LED enabled
             mNotificationPulseEnabled = Settings.System.getInt(resolver,
                     Settings.System.NOTIFICATION_LIGHT_PULSE, 0) != 0;
@@ -1486,23 +1438,13 @@ public class NotificationManagerService extends INotificationManager.Stub
                     Settings.System.NOTIFICATION_LIGHT_PULSE_CUSTOM_ENABLE, 0) != 0) {
                 parseNotificationPulseCustomValuesString(Settings.System.getString(resolver,
                         Settings.System.NOTIFICATION_LIGHT_PULSE_CUSTOM_VALUES));
-=======
-            if (uri == null || NOTIFICATION_LIGHT_PULSE_URI.equals(uri)) {
-                boolean pulseEnabled = Settings.System.getInt(resolver,
-                            Settings.System.NOTIFICATION_LIGHT_PULSE, 0) != 0;
-                if (mNotificationPulseEnabled != pulseEnabled) {
-                    mNotificationPulseEnabled = pulseEnabled;
-                    updateNotificationPulse();
-                }
-            }
+
             if (uri == null || ENABLED_NOTIFICATION_LISTENERS_URI.equals(uri)) {
                 rebindListenerServices();
->>>>>>> aosp/master
             }
         }
     }
 
-<<<<<<< HEAD
     class QuietHoursSettingsObserver extends ContentObserver {
         QuietHoursSettingsObserver(Handler handler) {
             super(handler);
@@ -1546,9 +1488,35 @@ public class NotificationManagerService extends INotificationManager.Stub
                     Settings.System.QUIET_HOURS_DIM, 0) != 0;
         }
     }
-=======
+
+    class SettingsObserver extends ContentObserver 
+        private final Uri ENABLED_NOTIFICATION_LISTENERS_URI
+                = Settings.Secure.getUriFor(Settings.Secure.ENABLED_NOTIFICATION_LISTENERS);
+
+        SettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        void observe() {
+            ContentResolver resolver = mContext.getContentResolver();
+            resolver.registerContentObserver(ENABLED_NOTIFICATION_LISTENERS_URI,
+                    false, this, UserHandle.USER_ALL);
+            update(null);
+        }
+
+        @Override public void onChange(boolean selfChange, Uri uri) {
+            update(uri);
+        }
+
+        public void update(Uri uri) {
+            ContentResolver resolver = mContext.getContentResolver();
+            if (uri == null || ENABLED_NOTIFICATION_LISTENERS_URI.equals(uri)) {
+                rebindListenerServices();
+            }
+        }
+    }
+
     private SettingsObserver mSettingsObserver;
->>>>>>> aosp/master
 
     static long[] getLongArray(Resources r, int resid, int maxlen, long[] def) {
         int[] ar = r.getIntArray(resid);
@@ -1574,14 +1542,12 @@ public class NotificationManagerService extends INotificationManager.Stub
         mToastQueue = new ArrayList<ToastRecord>();
         mHandler = new WorkerHandler();
 
-<<<<<<< HEAD
         loadBlockDb();
         loadHaloBlockDb();
-=======
+
         mAppOps = (AppOpsManager)context.getSystemService(Context.APP_OPS_SERVICE);
 
         importOldBlockDb();
->>>>>>> aosp/master
 
         mStatusBar = statusBar;
         statusBar.setNotificationCallbacks(mNotificationCallbacks);
@@ -1645,13 +1611,12 @@ public class NotificationManagerService extends INotificationManager.Stub
         IntentFilter sdFilter = new IntentFilter(Intent.ACTION_EXTERNAL_APPLICATIONS_UNAVAILABLE);
         mContext.registerReceiver(mIntentReceiver, sdFilter);
 
-<<<<<<< HEAD
         LEDSettingsObserver ledObserver = new LEDSettingsObserver(mHandler);
         ledObserver.observe();
 
         QuietHoursSettingsObserver qhObserver = new QuietHoursSettingsObserver(mHandler);
         qhObserver.observe();
-=======
+
         mSettingsObserver = new SettingsObserver(mHandler);
         mSettingsObserver.observe();
     }
@@ -2001,18 +1966,12 @@ public class NotificationManagerService extends INotificationManager.Stub
         final boolean canInterrupt = (score >= SCORE_INTERRUPTION_THRESHOLD);
 
         synchronized (mNotificationList) {
-<<<<<<< HEAD
+
             final boolean inQuietHours = inQuietHours();
 
-            NotificationRecord r = new NotificationRecord(pkg, tag, id, 
-                    callingUid, callingPid, userId,
-                    score,
-                    notification);
-=======
             final StatusBarNotification n = new StatusBarNotification(
                     pkg, id, tag, callingUid, callingPid, score, notification, user);
             NotificationRecord r = new NotificationRecord(n);
->>>>>>> aosp/master
             NotificationRecord old = null;
 
             int index = indexOfNotificationLocked(pkg, tag, id, userId);
@@ -2094,14 +2053,9 @@ public class NotificationManagerService extends INotificationManager.Stub
             if (((mDisabledNotifications & StatusBarManager.DISABLE_NOTIFICATION_ALERTS) == 0)
                     && (!(old != null
                         && (notification.flags & Notification.FLAG_ONLY_ALERT_ONCE) != 0 ))
-<<<<<<< HEAD
                     && !isOverNotifSoundThreshold(pkg)
-                    && (r.userId == UserHandle.USER_ALL ||
-                        (r.userId == userId && r.userId == currentUser))
-=======
                     && (r.getUserId() == UserHandle.USER_ALL ||
                         (r.getUserId() == userId && r.getUserId() == currentUser))
->>>>>>> aosp/master
                     && canInterrupt
                     && mSystemReady) {
 
@@ -2522,7 +2476,6 @@ public class NotificationManagerService extends INotificationManager.Stub
         if (mLedNotification == null || mInCall || mScreenOn || (inQuietHours() && mQuietHoursDim)) {
             mNotificationLight.turnOff();
         } else {
-<<<<<<< HEAD
             int ledARGB;
             int ledOnMS;
             int ledOffMS;
@@ -2541,16 +2494,6 @@ public class NotificationManagerService extends INotificationManager.Stub
                     ledOnMS = mLedNotification.notification.ledOnMS;
                     ledOffMS = mLedNotification.notification.ledOffMS;
                 }
-=======
-            final Notification ledno = mLedNotification.sbn.getNotification();
-            int ledARGB = ledno.ledARGB;
-            int ledOnMS = ledno.ledOnMS;
-            int ledOffMS = ledno.ledOffMS;
-            if ((ledno.defaults & Notification.DEFAULT_LIGHTS) != 0) {
-                ledARGB = mDefaultNotificationColor;
-                ledOnMS = mDefaultNotificationLedOn;
-                ledOffMS = mDefaultNotificationLedOff;
->>>>>>> aosp/master
             }
             if (mNotificationPulseEnabled) {
                 // pulse repeatedly

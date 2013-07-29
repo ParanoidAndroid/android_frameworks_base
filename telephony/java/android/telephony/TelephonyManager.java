@@ -632,12 +632,10 @@ public class TelephonyManager {
      * @see #NETWORK_TYPE_LTE
      * @see #NETWORK_TYPE_EHRPD
      * @see #NETWORK_TYPE_HSPAP
-<<<<<<< HEAD
      * @see #NETWORK_TYPE_DCHSPAP
-=======
+
      *
      * @hide
->>>>>>> aosp/master
      */
     public int getDataNetworkType() {
         try{
