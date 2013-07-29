@@ -148,15 +148,6 @@
     <string name="shutdown_confirm_question" msgid="2906544768881136183">"¿Seguro que quieres apagar el teléfono?"</string>
     <string name="reboot_safemode_title" msgid="7054509914500140361">"Reiniciar en modo seguro"</string>
     <string name="reboot_safemode_confirm" msgid="55293944502784668">"¿Quieres reiniciar el sistema en modo seguro? Se inhabilitarán todas las aplicaciones externas que hayas instalado. Esas aplicaciones se restaurarán la próxima vez que reinicies del sistema."</string>
-    <string name="reboot_system" product="tablet">Reiniciar tablet</string>
-    <string name="reboot_system" product="default">Reiniciar teléfono</string>
-    <string name="reboot_reboot">Reiniciar</string>
-    <string name="reboot_progress">Reiniciando\u2026</string>
-    <string name="reboot_confirm">Su dispositivo se reiniciará.</string>
-    <string name="global_action_screenshot">Captura de pantalla</string>
-    <string name="global_action_expanded_desktop">Escritorio expandido</string>
-    <string name="global_action_expanded_desktop_on">Activado</string>
-    <string name="global_action_expanded_desktop_off">Desactivado</string>
     <string name="recent_tasks_title" msgid="3691764623638127888">"Reciente"</string>
     <string name="no_recent_tasks" msgid="8794906658732193473">"No hay aplicaciones recientes."</string>
     <string name="global_actions" product="tablet" msgid="408477140088053665">"Opciones del tablet"</string>
@@ -165,12 +156,7 @@
     <string name="global_action_power_off" msgid="4471879440839879722">"Apagar"</string>
     <string name="global_action_bug_report" msgid="7934010578922304799">"Informe de error"</string>
     <string name="bugreport_title" msgid="2667494803742548533">"Crear informe de errores"</string>
-<<<<<<< HEAD
-    <string name="bugreport_message" msgid="398447048750350456">"Se recopilará información sobre el estado actual de tu dispositivo, que se enviará por correo electrónico. Pasarán unos minutos desde que se inicie el informe de errores hasta que se envíe, por lo que te recomendamos que tengas paciencia."</string>
-    <string name="global_action_reboot">Reiniciar</string>
-=======
     <string name="bugreport_message" msgid="398447048750350456">"Se recopilará información sobre el estado actual de tu dispositivo y se enviará por correo electrónico. Pasarán unos minutos desde que empiece a generarse el informe de errores hasta que se envíe, por lo que te recomendamos que tengas paciencia."</string>
->>>>>>> aosp/master
     <string name="global_action_toggle_silent_mode" msgid="8219525344246810925">"Modo silencio"</string>
     <string name="global_action_silent_mode_on_status" msgid="3289841937003758806">"El sonido está desactivado. Activar"</string>
     <string name="global_action_silent_mode_off_status" msgid="1506046579177066419">"El sonido está activado. Desactivar"</string>

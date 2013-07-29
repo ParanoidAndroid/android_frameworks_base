@@ -50,16 +50,8 @@ struct ShadowText {
             flags |= Font::kFakeBold;
         }
 
-<<<<<<< HEAD
-        const float skewX = paint->getTextSkewX();
-        memcpy(&italicStyle, &skewX, sizeof(italicStyle));
-
-        const float scaleXFloat = paint->getTextScaleX();
-        memcpy(&scaleX, &scaleXFloat, sizeof(scaleX));
-=======
         italicStyle = paint->getTextSkewX();
         scaleX = paint->getTextScaleX();
->>>>>>> aosp/master
     }
 
     ~ShadowText() {

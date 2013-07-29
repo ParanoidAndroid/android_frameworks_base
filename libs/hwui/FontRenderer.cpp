@@ -57,12 +57,6 @@ FontRenderer::FontRenderer() :
 
     mGammaTable = NULL;
     mInitialized = false;
-<<<<<<< HEAD
-    mMaxNumberOfQuads = 1024;
-    mCurrentQuadIndex = 0;
-    mLastQuadIndex = 0;
-=======
->>>>>>> aosp/master
 
     mCurrentCacheTexture = NULL;
 
@@ -129,13 +123,7 @@ FontRenderer::~FontRenderer() {
 }
 
 void FontRenderer::flushAllAndInvalidate() {
-<<<<<<< HEAD
-    if (mCurrentQuadIndex != 0) {
-        issueDrawCommand();
-    }
-=======
     issueDrawCommand();
->>>>>>> aosp/master
 
     LruCache<Font::FontDescription, Font*>::Iterator it(mActiveFonts);
     while (it.next()) {
@@ -368,15 +356,6 @@ void FontRenderer::checkInit() {
     mInitialized = true;
 }
 
-void FontRenderer::updateDrawParams() {
-    if (mCurrentQuadIndex != mLastQuadIndex) {
-        mDrawOffsets.add((uint16_t*)(mLastQuadIndex * sizeof(uint16_t) * 6));
-        mDrawCounts.add(mCurrentQuadIndex - mLastQuadIndex);
-        mDrawCacheTextures.add(mCurrentCacheTexture);
-        mLastQuadIndex = mCurrentQuadIndex;
-    }
-}
-
 void FontRenderer::checkTextureUpdate() {
     if (!mUploadTexture) {
         return;
@@ -409,8 +388,6 @@ void FontRenderer::checkTextureUpdate() {
         }
     }
 
-<<<<<<< HEAD
-=======
     // Unbind any PBO we might have used to update textures
     caches.unbindPixelBuffer();
 
@@ -420,18 +397,12 @@ void FontRenderer::checkTextureUpdate() {
         glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
     }
 
->>>>>>> aosp/master
     mUploadTexture = false;
 }
 
 void FontRenderer::issueDrawCommand() {
-<<<<<<< HEAD
-    updateDrawParams();
-    checkTextureUpdate();
-=======
     bool first = true;
     bool force = false;
->>>>>>> aosp/master
 
     GLuint lastId = 0;
     Caches& caches = Caches::getInstance();
@@ -459,19 +430,6 @@ void FontRenderer::issueDrawCommand() {
             glBindTexture(GL_TEXTURE_2D, texture->getTextureId());
             texture->setLinearFiltering(mLinearFiltering, false);
 
-<<<<<<< HEAD
-    for (uint32_t i = 0; i < mDrawOffsets.size(); i++) {
-        uint16_t* offset = mDrawOffsets[i];
-        uint32_t count = mDrawCounts[i];
-        CacheTexture* texture = mDrawCacheTextures[i];
-
-        caches.activeTexture(0);
-        glBindTexture(GL_TEXTURE_2D, texture->getTextureId());
-
-        texture->setLinearFiltering(mLinearFiltering, false);
-
-        glDrawElements(GL_TRIANGLES, count * 6, GL_UNSIGNED_SHORT, offset);
-=======
             TextureVertex* mesh = texture->mesh();
             caches.bindPositionVertexPointer(force, &mesh[0].position[0]);
             caches.bindTexCoordsVertexPointer(force, &mesh[0].texture[0]);
@@ -482,26 +440,15 @@ void FontRenderer::issueDrawCommand() {
 
             texture->resetMesh();
         }
->>>>>>> aosp/master
     }
 
     mDrawn = true;
-
-    mCurrentQuadIndex = 0;
-    mLastQuadIndex = 0;
-    mDrawOffsets.clear();
-    mDrawCounts.clear();
-    mDrawCacheTextures.clear();
 }
 
 void FontRenderer::appendMeshQuadNoClip(float x1, float y1, float u1, float v1,
         float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3,
         float x4, float y4, float u4, float v4, CacheTexture* texture) {
     if (texture != mCurrentCacheTexture) {
-<<<<<<< HEAD
-        updateDrawParams();
-=======
->>>>>>> aosp/master
         // Now use the new texture id
         mCurrentCacheTexture = texture;
     }
@@ -551,30 +498,8 @@ void FontRenderer::appendRotatedMeshQuad(float x1, float y1, float u1, float v1,
     }
 }
 
-<<<<<<< HEAD
-void FontRenderer::setFont(SkPaint* paint, uint32_t fontId, float fontSize) {
-    int flags = 0;
-    if (paint->isFakeBoldText()) {
-        flags |= Font::kFakeBold;
-    }
-
-    const float skewX = paint->getTextSkewX();
-    uint32_t italicStyle;
-    memcpy(&italicStyle, &skewX, sizeof(italicStyle));
-    const float scaleXFloat = paint->getTextScaleX();
-    uint32_t scaleX;
-    memcpy(&scaleX, &scaleXFloat, sizeof(scaleX));
-    SkPaint::Style style = paint->getStyle();
-    const float strokeWidthFloat = paint->getStrokeWidth();
-    uint32_t strokeWidth;
-    memcpy(&strokeWidth, &strokeWidthFloat, sizeof(strokeWidth));
-    mCurrentFont = Font::create(this, fontId, fontSize, flags, italicStyle,
-            scaleX, style, strokeWidth);
-
-=======
 void FontRenderer::setFont(SkPaint* paint, const mat4& matrix) {
     mCurrentFont = Font::create(this, paint, matrix);
->>>>>>> aosp/master
 }
 
 FontRenderer::DropShadow FontRenderer::renderDropShadow(SkPaint* paint, const char *text,
@@ -654,35 +579,11 @@ void FontRenderer::finishRender() {
     mBounds = NULL;
     mClip = NULL;
 
-<<<<<<< HEAD
-    if (mCurrentQuadIndex != 0) {
-        issueDrawCommand();
-    }
-}
-
-void FontRenderer::precache(SkPaint* paint, const char* text, int numGlyphs) {
-    int flags = 0;
-    if (paint->isFakeBoldText()) {
-        flags |= Font::kFakeBold;
-    }
-    const float skewX = paint->getTextSkewX();
-    uint32_t italicStyle; memcpy(&italicStyle, &skewX, sizeof(float)); // = *(uint32_t*) &skewX;
-    const float scaleXFloat = paint->getTextScaleX();
-    uint32_t scaleX; memcpy(&scaleX, &scaleXFloat, sizeof(float)); // = *(uint32_t*) &scaleXFloat;
-    SkPaint::Style style = paint->getStyle();
-    const float strokeWidthFloat = paint->getStrokeWidth();
-    uint32_t strokeWidth; memcpy(&strokeWidth, &strokeWidthFloat, sizeof(float)); // = *(uint32_t*) &strokeWidthFloat;
-    float fontSize = paint->getTextSize();
-    Font* font = Font::create(this, SkTypeface::UniqueID(paint->getTypeface()),
-            fontSize, flags, italicStyle, scaleX, style, strokeWidth);
-
-=======
     issueDrawCommand();
 }
 
 void FontRenderer::precache(SkPaint* paint, const char* text, int numGlyphs, const mat4& matrix) {
     Font* font = Font::create(this, paint, matrix);
->>>>>>> aosp/master
     font->precache(paint, text, numGlyphs);
 }
 

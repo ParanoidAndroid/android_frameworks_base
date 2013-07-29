@@ -137,7 +137,6 @@ private:
 
     void removeFont(const Font* font);
 
-    void updateDrawParams();
     void checkTextureUpdate();
 
     void setTextureDirty() {
@@ -158,15 +157,6 @@ private:
 
     bool mUploadTexture;
 
-<<<<<<< HEAD
-    // Pointer to vertex data to speed up frame to frame work
-    float* mTextMesh;
-    uint32_t mCurrentQuadIndex;
-    uint32_t mLastQuadIndex;
-    uint32_t mMaxNumberOfQuads;
-
-=======
->>>>>>> aosp/master
     uint32_t mIndexBufferID;
 
     Functor* mFunctor;
@@ -178,19 +168,11 @@ private:
 
     bool mLinearFiltering;
 
-<<<<<<< HEAD
-    Vector<uint16_t*> mDrawOffsets;
-    Vector<uint32_t> mDrawCounts;
-    Vector<CacheTexture*> mDrawCacheTextures;
-
-    /** We should consider multi-threading this code or using Renderscript **/
-=======
     // RS constructs
     sp<RSC::RS> mRs;
     sp<const RSC::Element> mRsElement;
     sp<RSC::ScriptIntrinsicBlur> mRsScript;
 
->>>>>>> aosp/master
     static void computeGaussianWeights(float* weights, int32_t radius);
     static void horizontalBlur(float* weights, int32_t radius, const uint8_t *source, uint8_t *dest,
             int32_t width, int32_t height);
