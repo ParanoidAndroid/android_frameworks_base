@@ -165,10 +165,6 @@ public class NotificationData {
         return e;
     }
 
-    public void clear() {
-        mEntries.clear();
-    }
-
     /**
      * Return whether there are any visible items (i.e. items without an error).
      */
