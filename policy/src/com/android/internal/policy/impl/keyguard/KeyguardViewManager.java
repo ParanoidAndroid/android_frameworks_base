@@ -295,6 +295,7 @@ public class KeyguardViewManager {
 
     private void maybeCreateKeyguardLocked(boolean enableScreenRotation, boolean force,
             Bundle options) {
+        final boolean isActivity = (mContext instanceof Activity); // for test activity
         if (mKeyguardHost != null) {
             mKeyguardHost.saveHierarchyState(mStateContainer);
         }

@@ -19,6 +19,7 @@ package com.android.internal.policy.impl;
 
 import android.app.ActivityManager;
 import android.app.ActivityManagerNative;
+import android.app.AppGlobals;
 import android.app.AppOpsManager;
 import android.app.IUiModeManager;
 import android.app.ProgressDialog;
@@ -103,6 +104,7 @@ import com.android.internal.R;
 import com.android.internal.policy.PolicyManager;
 import com.android.internal.policy.impl.keyguard.KeyguardViewManager;
 import com.android.internal.policy.impl.keyguard.KeyguardViewMediator;
+import com.android.internal.os.DeviceKeyHandler;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.telephony.ITelephony;
 import com.android.internal.widget.PointerLocationView;
@@ -462,7 +464,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     boolean mMenuDoCustomAction;
 
     // Tracks user-customisable behavior for certain key events
-    private int mLongPressOnHomeBehavior = -1;
     private int mPressOnMenuBehavior = -1;
     private int mLongPressOnMenuBehavior = -1;
     private int mPressOnAssistBehavior = -1;
@@ -1071,30 +1072,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             screenTurningOn(null);
         } else {
             screenTurnedOff(WindowManagerPolicy.OFF_BECAUSE_OF_USER);
-        }
-
-        String deviceKeyHandlerLib = mContext.getResources().getString(
-                com.android.internal.R.string.config_deviceKeyHandlerLib);
-
-        String deviceKeyHandlerClass = mContext.getResources().getString(
-                com.android.internal.R.string.config_deviceKeyHandlerClass);
-
-        if (!deviceKeyHandlerLib.equals("") && !deviceKeyHandlerClass.equals("")) {
-            DexClassLoader loader =  new DexClassLoader(deviceKeyHandlerLib,
-                    new ContextWrapper(mContext).getCacheDir().getAbsolutePath(),
-                    null,
-                    ClassLoader.getSystemClassLoader());
-            try {
-                Class<?> klass = loader.loadClass(deviceKeyHandlerClass);
-                Constructor<?> constructor = klass.getConstructor(Context.class);
-                mDeviceKeyHandler = (DeviceKeyHandler) constructor.newInstance(
-                        mContext);
-                if(DEBUG) Slog.d(TAG, "Device key handler loaded");
-            } catch (Exception e) {
-                Slog.w(TAG, "Could not instantiate device key handler "
-                        + deviceKeyHandlerClass + " from class "
-                        + deviceKeyHandlerLib, e);
-            }
         }
     }
 
@@ -2638,6 +2615,60 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             mSearchManager = (SearchManager) mContext.getSystemService(Context.SEARCH_SERVICE);
         }
         return mSearchManager;
+    }
+
+    private void triggerVirtualKeypress(final int keyCode) {
+        new Thread(new Runnable() {
+            public void run() {
+                InputManager im = InputManager.getInstance();
+                long now = SystemClock.uptimeMillis();
+
+                final KeyEvent downEvent = new KeyEvent(now, now, KeyEvent.ACTION_DOWN,
+                        keyCode, 0, 0, KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
+                        KeyEvent.FLAG_FROM_SYSTEM, InputDevice.SOURCE_KEYBOARD);
+                final KeyEvent upEvent = KeyEvent.changeAction(downEvent, KeyEvent.ACTION_UP);
+
+                mIsVirtualKeypress = true;
+                im.injectInputEvent(downEvent, InputManager.INJECT_INPUT_EVENT_MODE_WAIT_FOR_RESULT);
+                im.injectInputEvent(upEvent, InputManager.INJECT_INPUT_EVENT_MODE_WAIT_FOR_RESULT);
+                mIsVirtualKeypress = false;
+            }
+        }).start();
+    }
+
+    private void performKeyAction(int behavior) {
+        switch (behavior) {
+            case KEY_ACTION_NOTHING:
+                break;
+            case KEY_ACTION_MENU:
+                triggerVirtualKeypress(KeyEvent.KEYCODE_MENU);
+                break;
+            case KEY_ACTION_APP_SWITCH:
+                sendCloseSystemWindows(SYSTEM_DIALOG_REASON_RECENT_APPS);
+                try {
+                    IStatusBarService statusbar = getStatusBarService();
+                    if (statusbar != null) {
+                        statusbar.toggleRecentApps();
+                        mRecentAppsPreloaded = false;
+                    }
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "RemoteException when showing recent apps", e);
+                    // re-acquire status bar service next time it is needed.
+                    mStatusBarService = null;
+                }
+                break;
+            case KEY_ACTION_SEARCH:
+                launchAssistAction();
+                break;
+            case KEY_ACTION_VOICE_SEARCH:
+                launchAssistLongPressAction();
+                break;
+            case KEY_ACTION_IN_APP_SEARCH:
+                triggerVirtualKeypress(KeyEvent.KEYCODE_SEARCH);
+                break;
+            default:
+                break;
+        }
     }
 
     private void preloadRecentApps() {
