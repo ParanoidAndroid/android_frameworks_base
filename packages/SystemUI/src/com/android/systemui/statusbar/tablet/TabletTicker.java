@@ -106,7 +106,7 @@ public class TabletTicker
                     + " mQueuePos=" + mQueuePos + " mQueue=" + Arrays.toString(mQueue));
         }
 
-        if (isDisabled()) {
+        if (isDisabled() && notification.getNotification().tickerText != null) {
             mEvent.updateTicker(notification, notification.getNotification().tickerText.toString());
             return;
         }
