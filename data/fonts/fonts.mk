@@ -50,3 +50,21 @@ PRODUCT_PACKAGES := \
     AndroidClock.ttf \
     AndroidClock_Highlight.ttf \
     AndroidClock_Solid.ttf \
+    NanumGothic.ttf \
+    NotoSansBengali-Bold.ttf \
+    NotoSansBengali-Regular.ttf \
+    NotoSansBengaliUI-Bold.ttf \
+    NotoSansBengaliUI-Regular.ttf \
+    NotoSansKannada-Bold.ttf \
+    NotoSansKannada-Regular.ttf \
+    NotoSansKannadaUI-Bold.ttf \
+    NotoSansKannadaUI-Regular.ttf \
+    NotoSansMalayalam-Bold.ttf \
+    NotoSansMalayalam-Regular.ttf \
+    NotoSansMalayalamUI-Bold.ttf \
+    NotoSansMalayalamUI-Regular.ttf \
+    NotoSansTelugu-Bold.ttf \
+    NotoSansTelugu-Regular.ttf \
+    NotoSansTeluguUI-Bold.ttf \
+    NotoSansTeluguUI-Regular.ttf
+
