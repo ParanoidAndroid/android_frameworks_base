@@ -985,8 +985,8 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
             float total = TICKER_HIDE_TIME + startDuration + 1000;
             PropertyValuesHolder tickerUpFrames = PropertyValuesHolder.ofKeyframe("haloContentAlpha",
                     Keyframe.ofFloat(0f, mHaloTextViewL.getAlpha()),
-                    Keyframe.ofFloat(startDuration / total, 1f),
-                    Keyframe.ofFloat((TICKER_HIDE_TIME + startDuration) / total, 1f),
+                    Keyframe.ofFloat(0.1f, 1f),
+                    Keyframe.ofFloat(0.9f, 1f),
                     Keyframe.ofFloat(1f, 0f));
             tickerAnimator.animate(ObjectAnimator.ofPropertyValuesHolder(this, tickerUpFrames).setDuration((int)total),
                     new DecelerateInterpolator(), null, delay, null);
@@ -1114,10 +1114,12 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
                 }
             }
 
-            state = canvas.save();
-            canvas.translate(x, getHaloContentY());
-            mHaloContentView.draw(canvas);
-            canvas.restoreToCount(state);
+            if (getHaloContentAlpha() > 0.0f) {
+                state = canvas.save();
+                canvas.translate(x, getHaloContentY());
+                mHaloContentView.draw(canvas);
+                canvas.restoreToCount(state);
+            }
 
             // X
             float fraction = 1 - ((float)xPaint.getAlpha()) / 255;
