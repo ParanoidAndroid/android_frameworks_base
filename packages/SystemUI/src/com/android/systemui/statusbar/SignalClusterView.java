@@ -155,6 +155,7 @@ public class SignalClusterView
 
     public void setColor(ColorUtils.ColorSettingInfo colorInfo) {
         mColorInfo = colorInfo;
+        apply();
     }
 
     @Override
