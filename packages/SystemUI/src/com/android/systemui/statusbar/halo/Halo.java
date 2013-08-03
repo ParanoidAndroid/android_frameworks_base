@@ -398,6 +398,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
             // If the current notification is dismissable we might want to skip it if so desired
             if (!includeCurrentDismissable) {
                 if (mNotificationData.size() > 1 && mLastNotificationEntry != null &&
+                        mCurrentNotficationEntry != null &&
                         mLastNotificationEntry.notification == mCurrentNotficationEntry.notification) {
                     boolean cancel = (mLastNotificationEntry.notification.getNotification().flags &
                             Notification.FLAG_AUTO_CANCEL) == Notification.FLAG_AUTO_CANCEL;
