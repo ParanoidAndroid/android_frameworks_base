@@ -1206,13 +1206,6 @@
     <string name="config_deviceHandlersLib" translatable="false"></string>
 
     <!-- Full qualified name of the class that implements
-         com.android.internal.os.DeviceKeyHandler interface. -->
-    <string name="config_deviceKeyHandlerClass" translatable="false"></string>
-
-    <!-- Dock battery compatibility (disabled by default) -->
-    <bool name="config_hasDockBattery">false</bool>
-
-    <!-- Full qualified name of the class that implements
          com.android.internal.os.DeviceDockBatteryHandler interface.
          Requires config_hasDockBattery set to true. -->
     <string name="config_deviceDockBatteryHandlerLib" translatable="false"></string>
