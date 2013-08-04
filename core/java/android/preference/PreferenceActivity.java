@@ -703,7 +703,13 @@ public abstract class PreferenceActivity extends ListActivity implements
      * show for the initial UI.
      */
     public Header onGetInitialHeader() {
-        return mHeaders.get(0);
+        for (int i=0; i<mHeaders.size(); i++) {
+            Header h = mHeaders.get(i);
+            if (h.fragment != null) {
+                return h;
+            }
+        }
+        throw new IllegalStateException("Must have at least one header with a fragment");
     }
 
     /**
@@ -895,6 +901,8 @@ public abstract class PreferenceActivity extends ListActivity implements
 
     @Override
     protected void onDestroy() {
+        mHandler.removeMessages(MSG_BIND_PREFERENCES);
+        mHandler.removeMessages(MSG_BUILD_HEADERS);
         super.onDestroy();
 
         if (mPreferenceManager != null) {
@@ -1167,6 +1175,9 @@ public abstract class PreferenceActivity extends ListActivity implements
             getFragmentManager().popBackStack(BACK_STACK_PREFS,
                     FragmentManager.POP_BACK_STACK_INCLUSIVE);
         } else {
+            if (header.fragment == null) {
+                throw new IllegalStateException("can't switch to header that has no fragment");
+            }
             int direction = mHeaders.indexOf(header) - mHeaders.indexOf(mCurHeader);
             switchToHeaderInner(header.fragment, header.fragmentArguments, direction);
             setSelectedHeader(header);

@@ -1024,30 +1024,26 @@ public final class WebViewClassic implements WebViewProvider, WebViewProvider.Sc
     static final int UPDATE_MATCH_COUNT                 = 126;
     static final int CENTER_FIT_RECT                    = 127;
     static final int SET_SCROLLBAR_MODES                = 129;
-    static final int SELECTION_STRING_CHANGED           = 130;
-    static final int HIT_TEST_RESULT                    = 131;
-    static final int SAVE_WEBARCHIVE_FINISHED           = 132;
-
-    static final int SET_AUTOFILLABLE                   = 133;
-    static final int AUTOFILL_COMPLETE                  = 134;
-
-    static final int SCREEN_ON                          = 136;
-    static final int UPDATE_ZOOM_DENSITY                = 139;
-    static final int EXIT_FULLSCREEN_VIDEO              = 140;
-
-    static final int COPY_TO_CLIPBOARD                  = 141;
-    static final int INIT_EDIT_FIELD                    = 142;
-    static final int REPLACE_TEXT                       = 143;
-    static final int CLEAR_CARET_HANDLE                 = 144;
-    static final int KEY_PRESS                          = 145;
-    static final int RELOCATE_AUTO_COMPLETE_POPUP       = 146;
-    static final int FOCUS_NODE_CHANGED                 = 147;
-    static final int AUTOFILL_FORM                      = 148;
-    static final int SCROLL_EDIT_TEXT                   = 149;
-    static final int EDIT_TEXT_SIZE_CHANGED             = 150;
-    static final int SHOW_CARET_HANDLE                  = 151;
-    static final int UPDATE_CONTENT_BOUNDS              = 152;
-    static final int SCROLL_HANDLE_INTO_VIEW            = 153;
+    static final int HIT_TEST_RESULT                    = 130;
+    static final int SAVE_WEBARCHIVE_FINISHED           = 131;
+    static final int SET_AUTOFILLABLE                   = 132;
+    static final int AUTOFILL_COMPLETE                  = 133;
+    static final int SCREEN_ON                          = 134;
+    static final int UPDATE_ZOOM_DENSITY                = 135;
+    static final int EXIT_FULLSCREEN_VIDEO              = 136;
+    static final int COPY_TO_CLIPBOARD                  = 137;
+    static final int INIT_EDIT_FIELD                    = 138;
+    static final int REPLACE_TEXT                       = 139;
+    static final int CLEAR_CARET_HANDLE                 = 140;
+    static final int KEY_PRESS                          = 141;
+    static final int RELOCATE_AUTO_COMPLETE_POPUP       = 142;
+    static final int FOCUS_NODE_CHANGED                 = 143;
+    static final int AUTOFILL_FORM                      = 144;
+    static final int SCROLL_EDIT_TEXT                   = 145;
+    static final int EDIT_TEXT_SIZE_CHANGED             = 146;
+    static final int SHOW_CARET_HANDLE                  = 147;
+    static final int UPDATE_CONTENT_BOUNDS              = 148;
+    static final int SCROLL_HANDLE_INTO_VIEW            = 149;
 
     private static final int FIRST_PACKAGE_MSG_ID = SCROLL_TO_MSG_ID;
     private static final int LAST_PACKAGE_MSG_ID = HIT_TEST_RESULT;
@@ -1800,6 +1796,12 @@ public final class WebViewClassic implements WebViewProvider, WebViewProvider.Sc
         event.setMaxScrollY(Math.max(convertedContentHeight - adjustedViewHeight, 0));
     }
 
+    /* package */ void handleSelectionChangedWebCoreThread(String selection, int token) {
+        if (isAccessibilityInjectionEnabled()) {
+            getAccessibilityInjector().onSelectionStringChangedWebCoreThread(selection, token);
+        }
+    }
+
     private boolean isAccessibilityInjectionEnabled() {
         final AccessibilityManager manager = AccessibilityManager.getInstance(mContext);
         if (!manager.isEnabled()) {
@@ -2147,7 +2149,8 @@ public final class WebViewClassic implements WebViewProvider, WebViewProvider.Sc
     @Override
     public void destroy() {
         if (mWebView.getViewRootImpl() != null) {
-            Log.e(LOGTAG, "Error: WebView.destroy() called while still attached!");
+            Log.e(LOGTAG, Log.getStackTraceString(
+                    new Throwable("Error: WebView.destroy() called while still attached!")));
         }
         ensureFunctorDetached();
         destroyJava();
@@ -3702,7 +3705,7 @@ public final class WebViewClassic implements WebViewProvider, WebViewProvider.Sc
         mCachedOverlappingActionModeHeight = -1;
         mFindCallback = callback;
         setFindIsUp(true);
-        mFindCallback.setWebView(this);
+        mFindCallback.setWebView(getWebView());
         if (showIme) {
             mFindCallback.showSoftInput();
         } else if (text != null) {
@@ -3804,7 +3807,8 @@ public final class WebViewClassic implements WebViewProvider, WebViewProvider.Sc
     /**
      * Called when the find ActionMode ends.
      */
-    void notifyFindDialogDismissed() {
+    @Override
+    public void notifyFindDialogDismissed() {
         mFindCallback = null;
         mCachedOverlappingActionModeHeight = -1;
         if (mWebViewCore == null) {
@@ -5416,7 +5420,7 @@ public final class WebViewClassic implements WebViewProvider, WebViewProvider.Sc
         ClipData clipData = cm.getPrimaryClip();
         if (clipData != null) {
             ClipData.Item clipItem = clipData.getItemAt(0);
-            CharSequence pasteText = clipItem.getText();
+            CharSequence pasteText = clipItem.coerceToText(mContext);
             if (mInputConnection != null) {
                 mInputConnection.replaceSelection(pasteText);
             }
@@ -7497,13 +7501,6 @@ public final class WebViewClassic implements WebViewProvider, WebViewProvider.Sc
                     mVerticalScrollBarMode = msg.arg2;
                     break;
 
-                case SELECTION_STRING_CHANGED:
-                    if (isAccessibilityInjectionEnabled()) {
-                        getAccessibilityInjector()
-                                .handleSelectionChangedIfNecessary((String) msg.obj);
-                    }
-                    break;
-
                 case FOCUS_NODE_CHANGED:
                     mIsEditingText = (msg.arg1 == mFieldPointer);
                     if (mAutoCompletePopup != null && !mIsEditingText) {
@@ -7913,7 +7910,9 @@ public final class WebViewClassic implements WebViewProvider, WebViewProvider.Sc
         if (mPictureListener != null) {
             // trigger picture listener for hardware layers. Software layers are
             // triggered in setNewPicture
-            mPictureListener.onNewPicture(getWebView(), capturePicture());
+            Picture picture = mContext.getApplicationInfo().targetSdkVersion <
+                    Build.VERSION_CODES.JELLY_BEAN_MR2 ? capturePicture() : null;
+            mPictureListener.onNewPicture(getWebView(), picture);
         }
     }
 
@@ -7998,7 +7997,9 @@ public final class WebViewClassic implements WebViewProvider, WebViewProvider.Sc
                     || mWebView.getLayerType() == View.LAYER_TYPE_SOFTWARE) {
                 // trigger picture listener for software layers. Hardware layers are
                 // triggered in pageSwapCallback
-                mPictureListener.onNewPicture(getWebView(), capturePicture());
+                Picture picture = mContext.getApplicationInfo().targetSdkVersion <
+                        Build.VERSION_CODES.JELLY_BEAN_MR2 ? capturePicture() : null;
+                mPictureListener.onNewPicture(getWebView(), picture);
             }
         }
     }
@@ -8562,6 +8563,11 @@ public final class WebViewClassic implements WebViewProvider, WebViewProvider.Sc
     @Override
     public void setLayerType(int layerType, Paint paint) {
         updateHwAccelerated();
+    }
+
+    @Override
+    public void preDispatchDraw(Canvas canvas) {
+        // no-op for WebViewClassic.
     }
 
     private void updateHwAccelerated() {

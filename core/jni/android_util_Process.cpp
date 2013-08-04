@@ -119,7 +119,7 @@ jint android_os_Process_getUidForName(JNIEnv* env, jobject clazz, jstring name)
     const jchar* str16 = env->GetStringCritical(name, 0);
     String8 name8;
     if (str16) {
-        name8 = String8((char16_t*)str16, env->GetStringLength(name));
+        name8 = String8(str16, env->GetStringLength(name));
         env->ReleaseStringCritical(name, str16);
     }
 
@@ -150,7 +150,7 @@ jint android_os_Process_getGidForName(JNIEnv* env, jobject clazz, jstring name)
     const jchar* str16 = env->GetStringCritical(name, 0);
     String8 name8;
     if (str16) {
-        name8 = String8((char16_t*)str16, env->GetStringLength(name));
+        name8 = String8(str16, env->GetStringLength(name));
         env->ReleaseStringCritical(name, str16);
     }
 
@@ -268,6 +268,15 @@ void android_os_Process_setProcessGroup(JNIEnv* env, jobject clazz, int pid, jin
     closedir(d);
 }
 
+jint android_os_Process_getProcessGroup(JNIEnv* env, jobject clazz, jint pid)
+{
+    SchedPolicy sp;
+    if (get_sched_policy(pid, &sp) != 0) {
+        signalExceptionForGroupError(env, errno);
+    }
+    return (int) sp;
+}
+
 static void android_os_Process_setCanSelfBackground(JNIEnv* env, jobject clazz, jboolean bgOk) {
     // Establishes the calling thread as illegal to put into the background.
     // Typically used only for the system process's main looper.
@@ -377,7 +386,7 @@ void android_os_Process_setArgV0(JNIEnv* env, jobject clazz, jstring name)
     const jchar* str = env->GetStringCritical(name, 0);
     String8 name8;
     if (str) {
-        name8 = String8((char16_t*)str, env->GetStringLength(name));
+        name8 = String8(str, env->GetStringLength(name));
         env->ReleaseStringCritical(name, str);
     }
 
@@ -991,7 +1000,8 @@ static const JNINativeMethod methods[] = {
     {"setThreadPriority",   "(I)V", (void*)android_os_Process_setCallingThreadPriority},
     {"getThreadPriority",   "(I)I", (void*)android_os_Process_getThreadPriority},
     {"setThreadGroup",      "(II)V", (void*)android_os_Process_setThreadGroup},
-    {"setProcessGroup",      "(II)V", (void*)android_os_Process_setProcessGroup},
+    {"setProcessGroup",     "(II)V", (void*)android_os_Process_setProcessGroup},
+    {"getProcessGroup",     "(I)I", (void*)android_os_Process_getProcessGroup},
     {"setOomAdj",   "(II)Z", (void*)android_os_Process_setOomAdj},
     {"setArgV0",    "(Ljava/lang/String;)V", (void*)android_os_Process_setArgV0},
     {"setUid", "(I)I", (void*)android_os_Process_setUid},

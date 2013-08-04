@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2006 The Android Open Source Project
- * This code has been modified.  Portions copyright (C) 2010, T-Mobile USA, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,33 +16,27 @@
 
 package com.android.server;
 
-import android.accounts.AccountManagerService;
 import android.app.ActivityManagerNative;
 import android.bluetooth.BluetoothAdapter;
 import android.content.ComponentName;
 import android.content.ContentResolver;
-import android.content.ContentService;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.IPackageManager;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.database.ContentObserver;
-import android.database.Cursor;
 import android.media.AudioService;
 import android.net.wifi.p2p.WifiP2pService;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.RemoteException;
-import android.os.SchedulingPolicyService;
 import android.os.ServiceManager;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.os.UserHandle;
-import android.provider.Settings;
-import android.server.search.SearchManagerService;
 import android.service.dreams.DreamService;
 import android.util.DisplayMetrics;
 import android.util.EventLog;
@@ -53,21 +46,25 @@ import android.view.WindowManager;
 
 import com.android.internal.os.BinderInternal;
 import com.android.internal.os.SamplingProfilerIntegration;
-import com.android.internal.widget.LockSettingsService;
 import com.android.server.accessibility.AccessibilityManagerService;
+import com.android.server.accounts.AccountManagerService;
 import com.android.server.am.ActivityManagerService;
 import com.android.server.am.BatteryStatsService;
+import com.android.server.content.ContentService;
 import com.android.server.display.DisplayManagerService;
 import com.android.server.dreams.DreamManagerService;
 import com.android.server.input.InputManagerService;
 import com.android.server.net.NetworkPolicyManagerService;
 import com.android.server.net.NetworkStatsService;
+import com.android.server.os.SchedulingPolicyService;
 import com.android.server.pm.Installer;
 import com.android.server.pm.PackageManagerService;
 import com.android.server.pm.UserManagerService;
 import com.android.server.power.PowerManagerService;
 import com.android.server.power.ShutdownThread;
+import com.android.server.search.SearchManagerService;
 import com.android.server.usb.UsbService;
+import com.android.server.wifi.WifiService;
 import com.android.server.wm.WindowManagerService;
 
 import dalvik.system.VMRuntime;
@@ -87,19 +84,6 @@ class ServerThread extends Thread {
     void reportWtf(String msg, Throwable e) {
         Slog.w(TAG, "***********************************************");
         Log.wtf(TAG, "BOOT FAILURE " + msg, e);
-    }
-
-    private class AdbPortObserver extends ContentObserver {
-        public AdbPortObserver() {
-            super(null);
-        }
-        @Override
-        public void onChange(boolean selfChange) {
-            int adbPort = Settings.Secure.getInt(mContentResolver,
-                Settings.Secure.ADB_PORT, 0);
-            // setting this will control whether ADB runs on TCP/IP or USB
-            SystemProperties.set("service.adb.tcp.port", Integer.toString(adbPort));
-        }
     }
 
     @Override
@@ -166,7 +150,6 @@ class ServerThread extends Thread {
         TwilightService twilight = null;
         UiModeManagerService uiMode = null;
         RecognitionManagerService recognition = null;
-        ThrottleService throttle = null;
         NetworkTimeUpdateService networkTimeUpdater = null;
         CommonTimeManagementService commonTimeMgmtService = null;
         InputManagerService inputManager = null;
@@ -226,9 +209,6 @@ class ServerThread extends Thread {
             installer = new Installer();
             installer.ping();
 
-            Slog.i(TAG, "Entropy Mixer");
-            ServiceManager.addService("entropy", new EntropyMixer());
-
             Slog.i(TAG, "Power Manager");
             power = new PowerManagerService();
             ServiceManager.addService(Context.POWER_SERVICE, power);
@@ -276,11 +256,13 @@ class ServerThread extends Thread {
             }
 
             ActivityManagerService.setSystemProcess();
-            
+
+            Slog.i(TAG, "Entropy Mixer");
+            ServiceManager.addService("entropy", new EntropyMixer(context));
+
             Slog.i(TAG, "User Service");
             ServiceManager.addService(Context.USER_SERVICE,
                     UserManagerService.getInstance());
-
 
             mContentResolver = context.getContentResolver();
 
@@ -354,6 +336,9 @@ class ServerThread extends Thread {
                 Slog.i(TAG, "No Bluetooh Service (emulator)");
             } else if (factoryTest == SystemServer.FACTORY_TEST_LOW_LEVEL) {
                 Slog.i(TAG, "No Bluetooth Service (factory test)");
+            } else if (!context.getPackageManager().hasSystemFeature
+                       (PackageManager.FEATURE_BLUETOOTH)) {
+                Slog.i(TAG, "No Bluetooth Service (Bluetooth Hardware Not Present)");
             } else {
                 Slog.i(TAG, "Bluetooth Manager Service");
                 bluetooth = new BluetoothManagerService(context);
@@ -533,15 +518,6 @@ class ServerThread extends Thread {
                         Context.NSD_SERVICE, serviceDiscovery);
             } catch (Throwable e) {
                 reportWtf("starting Service Discovery Service", e);
-            }
-
-            try {
-                Slog.i(TAG, "Throttle Service");
-                throttle = new ThrottleService(context);
-                ServiceManager.addService(
-                        Context.THROTTLE_SERVICE, throttle);
-            } catch (Throwable e) {
-                reportWtf("starting ThrottleService", e);
             }
 
             try {
@@ -773,21 +749,12 @@ class ServerThread extends Thread {
             }
 
             try {
-                Slog.i(TAG, "AssetRedirectionManager Service");
-                ServiceManager.addService("assetredirection", new AssetRedirectionManagerService(context));
+                Slog.i(TAG, "IdleMaintenanceService");
+                new IdleMaintenanceService(context, battery);
             } catch (Throwable e) {
-                Slog.e(TAG, "Failure starting AssetRedirectionManager Service", e);
+                reportWtf("starting IdleMaintenanceService", e);
             }
         }
-
-        // make sure the ADB_ENABLED setting value matches the secure property value
-        Settings.Secure.putInt(mContentResolver, Settings.Secure.ADB_PORT,
-                Integer.parseInt(SystemProperties.get("service.adb.tcp.port", "-1")));
-
-        // register observer to listen for settings changes
-        mContentResolver.registerContentObserver(
-            Settings.Secure.getUriFor(Settings.Secure.ADB_PORT),
-            false, new AdbPortObserver());
 
         // Before things start rolling, be sure we have decided whether
         // we are in safe mode.
@@ -870,15 +837,6 @@ class ServerThread extends Thread {
             reportWtf("making Display Manager Service ready", e);
         }
 
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_APP_LAUNCH_FAILURE);
-        filter.addAction(Intent.ACTION_APP_LAUNCH_FAILURE_RESET);
-        filter.addAction(Intent.ACTION_PACKAGE_ADDED);
-        filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
-        filter.addCategory(Intent.CATEGORY_THEME_PACKAGE_INSTALLED_STATE_CHANGE);
-        filter.addDataScheme("package");
-        context.registerReceiver(new AppsLaunchFailureReceiver(), filter);
-
         // These are needed to propagate to the runnable below.
         final Context contextF = context;
         final MountService mountServiceF = mountService;
@@ -889,7 +847,6 @@ class ServerThread extends Thread {
         final ConnectivityService connectivityF = connectivity;
         final DockObserver dockF = dock;
         final UsbService usbF = usb;
-        final ThrottleService throttleF = throttle;
         final TwilightService twilightF = twilight;
         final UiModeManagerService uiModeF = uiMode;
         final AppWidgetService appWidgetF = appWidget;
@@ -915,6 +872,11 @@ class ServerThread extends Thread {
             public void run() {
                 Slog.i(TAG, "Making services ready");
 
+                try {
+                    ActivityManagerService.self().startObservingNativeCrashes();
+                } catch (Throwable e) {
+                    reportWtf("observing native crashes", e);
+                }
                 if (!headless) startSystemUi(contextF);
                 try {
                     if (mountServiceF != null) mountServiceF.systemReady();
@@ -1000,11 +962,6 @@ class ServerThread extends Thread {
                     if (countryDetectorF != null) countryDetectorF.systemReady();
                 } catch (Throwable e) {
                     reportWtf("making Country Detector Service ready", e);
-                }
-                try {
-                    if (throttleF != null) throttleF.systemReady();
-                } catch (Throwable e) {
-                    reportWtf("making Throttle Service ready", e);
                 }
                 try {
                     if (networkTimeUpdaterF != null) networkTimeUpdaterF.systemReady();
@@ -1107,6 +1064,8 @@ public class SystemServer {
         // The system server has to run all of the time, so it needs to be
         // as efficient as possible with its memory usage.
         VMRuntime.getRuntime().setTargetHeapUtilization(0.8f);
+
+        Environment.setUserRequired(true);
 
         System.loadLibrary("android_servers");
         init1(args);

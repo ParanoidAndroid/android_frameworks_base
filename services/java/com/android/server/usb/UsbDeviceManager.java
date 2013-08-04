@@ -169,7 +169,9 @@ public class UsbDeviceManager {
             startAccessoryMode();
         }
 
-        if ("1".equals(SystemProperties.get("ro.adb.secure"))) {
+        boolean secureAdbEnabled = SystemProperties.getBoolean("ro.adb.secure", false);
+        boolean dataEncrypted = "1".equals(SystemProperties.get("vold.decrypt"));
+        if (secureAdbEnabled && !dataEncrypted) {
             mDebuggingManager = new UsbDebuggingManager(context);
         }
     }
@@ -874,6 +876,15 @@ public class UsbDeviceManager {
     public void denyUsbDebugging() {
         if (mDebuggingManager != null) {
             mDebuggingManager.denyUsbDebugging();
+        }
+    }
+
+    public void clearUsbDebuggingKeys() {
+        if (mDebuggingManager != null) {
+            mDebuggingManager.clearUsbDebuggingKeys();
+        } else {
+            throw new RuntimeException("Cannot clear Usb Debugging keys, "
+                        + "UsbDebuggingManager not enabled");
         }
     }
 

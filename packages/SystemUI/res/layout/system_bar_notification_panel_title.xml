@@ -23,7 +23,10 @@
     android:layout_height="wrap_content"
     android:clickable="true"
     android:orientation="vertical"
-    android:paddingLeft="20dp">
+    android:paddingStart="26dp"
+    android:paddingTop="14dp"
+    android:paddingEnd="26dp"
+    >
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -61,6 +64,7 @@
                 android:ellipsize="end"
                 android:layout_centerVertical="true"/>
 
+
         </LinearLayout>
 
         <RelativeLayout
@@ -78,6 +82,7 @@
                 android:layout_height="wrap_content"
                 android:src="@drawable/ic_notify_quicksettings_normal"
                 android:contentDescription="@string/accessibility_desc_quick_settings"/>
+
 
             <ImageView
                 android:id="@+id/notification_button"
@@ -108,6 +113,7 @@
             android:paddingRight="15dp"
             android:src="@drawable/ic_notify_halo_normal"
             android:contentDescription="@string/accessibility_halo" />
+
 
     </RelativeLayout>
 

@@ -19,15 +19,13 @@ package com.android.internal.os;
 import static libcore.io.OsConstants.S_IRWXG;
 import static libcore.io.OsConstants.S_IRWXO;
 
-import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import android.graphics.drawable.Drawable;
 import android.net.LocalServerSocket;
 import android.os.Debug;
 import android.os.Process;
 import android.os.SystemClock;
-import android.os.SystemProperties;
+import android.os.Trace;
 import android.util.EventLog;
 import android.util.Log;
 
@@ -69,10 +67,7 @@ public class ZygoteInit {
     private static final int LOG_BOOT_PROGRESS_PRELOAD_END = 3030;
 
     /** when preloading, GC after allocating this many bytes */
-    private static final String heapgrowthlimit =
-                    SystemProperties.get("dalvik.vm.heapgrowthlimit", "16m");
-    private static final int PRELOAD_GC_THRESHOLD = Integer.parseInt(
-                    heapgrowthlimit.substring(0, heapgrowthlimit.length()-1))*1024*1024/2;
+    private static final int PRELOAD_GC_THRESHOLD = 50000;
 
     public static final String USAGE_STRING =
             " <\"start-system-server\"|\"\" for startSystemServer>";
@@ -92,18 +87,12 @@ public class ZygoteInit {
     static final int GC_LOOP_COUNT = 10;
 
     /**
-     * If true, zygote forks for each peer. If false, a select loop is used
-     * inside a single process. The latter is preferred.
-     */
-    private static final boolean ZYGOTE_FORK_MODE = false;
-
-    /**
      * The name of a resource file that contains classes to preload.
      */
     private static final String PRELOADED_CLASSES = "preloaded-classes";
 
     /** Controls whether we should preload resources during zygote init. */
-    private static final boolean PRELOAD_RESOURCES = false;
+    private static final boolean PRELOAD_RESOURCES = true;
 
     /**
      * Invokes a static "main(argv[]) method on class "className".
@@ -365,8 +354,6 @@ public class ZygoteInit {
                 ar.recycle();
                 Log.i(TAG, "...preloaded " + N + " resources in "
                         + (SystemClock.uptimeMillis()-startTime) + "ms.");
-            } else {
-                Log.i(TAG, "Preload resources disabled, skipped.");
             }
             mResources.finishPreloading();
         } catch (RuntimeException e) {
@@ -542,6 +529,10 @@ public class ZygoteInit {
             // Do an initial gc to clean up after startup
             gc();
 
+            // Disable tracing so that forked processes do not inherit stale tracing tags from
+            // Zygote.
+            Trace.setTracingEnabled(false);
+
             // If requested, start system server directly from Zygote
             if (argv.length != 2) {
                 throw new RuntimeException(argv[0] + USAGE_STRING);
@@ -555,11 +546,7 @@ public class ZygoteInit {
 
             Log.i(TAG, "Accepting command socket connections");
 
-            if (ZYGOTE_FORK_MODE) {
-                runForkMode();
-            } else {
-                runSelectLoopMode();
-            }
+            runSelectLoop();
 
             closeServerSocket();
         } catch (MethodAndArgsCaller caller) {
@@ -572,44 +559,6 @@ public class ZygoteInit {
     }
 
     /**
-     * Runs the zygote in accept-and-fork mode. In this mode, each peer
-     * gets its own zygote spawner process. This code is retained for
-     * reference only.
-     *
-     * @throws MethodAndArgsCaller in a child process when a main() should
-     * be executed.
-     */
-    private static void runForkMode() throws MethodAndArgsCaller {
-        while (true) {
-            ZygoteConnection peer = acceptCommandPeer();
-
-            int pid;
-
-            pid = Zygote.fork();
-
-            if (pid == 0) {
-                // The child process should handle the peer requests
-
-                // The child does not accept any more connections
-                try {
-                    sServerSocket.close();
-                } catch (IOException ex) {
-                    Log.e(TAG, "Zygote Child: error closing sockets", ex);
-                } finally {
-                    sServerSocket = null;
-                }
-
-                peer.run();
-                break;
-            } else if (pid > 0) {
-                peer.closeSocket();
-            } else {
-                throw new RuntimeException("Error invoking fork()");
-            }
-        }
-    }
-
-    /**
      * Runs the zygote process's select loop. Accepts new connections as
      * they happen, and reads commands from connections one spawn-request's
      * worth at a time.
@@ -617,9 +566,9 @@ public class ZygoteInit {
      * @throws MethodAndArgsCaller in a child process when a main() should
      * be executed.
      */
-    private static void runSelectLoopMode() throws MethodAndArgsCaller {
-        ArrayList<FileDescriptor> fds = new ArrayList();
-        ArrayList<ZygoteConnection> peers = new ArrayList();
+    private static void runSelectLoop() throws MethodAndArgsCaller {
+        ArrayList<FileDescriptor> fds = new ArrayList<FileDescriptor>();
+        ArrayList<ZygoteConnection> peers = new ArrayList<ZygoteConnection>();
         FileDescriptor[] fdArray = new FileDescriptor[4];
 
         fds.add(sServerSocket.getFileDescriptor());
@@ -740,17 +689,6 @@ public class ZygoteInit {
             throws IOException;
 
     /**
-     * Sets the permitted and effective capability sets of this process.
-     *
-     * @param permittedCapabilities permitted set
-     * @param effectiveCapabilities effective set
-     * @throws IOException on error
-     */
-    static native void setCapabilities(
-            long permittedCapabilities,
-            long effectiveCapabilities) throws IOException;
-
-    /**
      * Invokes select() on the provider array of file descriptors (selecting
      * for readability only). Array elements of null are ignored.
      *
@@ -811,3 +749,4 @@ public class ZygoteInit {
         }
     }
 }
+

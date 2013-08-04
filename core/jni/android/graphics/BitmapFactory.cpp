@@ -210,19 +210,28 @@ static jobject doDecode(JNIEnv* env, SkStream* stream, jobject padding,
     JavaPixelAllocator javaAllocator(env);
 
     SkBitmap* bitmap;
+    bool useExistingBitmap = false;
     if (javaBitmap == NULL) {
         bitmap = new SkBitmap;
     } else {
         if (sampleSize != 1) {
             return nullObjectReturn("SkImageDecoder: Cannot reuse bitmap with sampleSize != 1");
         }
+
         bitmap = (SkBitmap*) env->GetIntField(javaBitmap, gBitmap_nativeBitmapFieldID);
-        // config of supplied bitmap overrules config set in options
-        prefConfig = bitmap->getConfig();
+        // only reuse the provided bitmap if it is immutable
+        if (!bitmap->isImmutable()) {
+            useExistingBitmap = true;
+            // config of supplied bitmap overrules config set in options
+            prefConfig = bitmap->getConfig();
+        } else {
+            ALOGW("Unable to reuse an immutable bitmap as an image decoder target.");
+            bitmap = new SkBitmap;
+        }
     }
 
     SkAutoTDelete<SkImageDecoder> add(decoder);
-    SkAutoTDelete<SkBitmap> adb(bitmap, javaBitmap == NULL);
+    SkAutoTDelete<SkBitmap> adb(!useExistingBitmap ? bitmap : NULL);
 
     decoder->setPeeker(&peeker);
     if (!isPurgeable) {
@@ -351,17 +360,6 @@ static jobject doDecode(JNIEnv* env, SkStream* stream, jobject padding,
         SkCanvas canvas(*bitmap);
         canvas.scale(sx, sy);
         canvas.drawBitmap(*decoded, 0.0f, 0.0f, &paint);
-
-        // Save off the unscaled version of bitmap to be used in later
-        // transformations if it would reduce memory pressure. Only do
-        // so if it is being upscaled more than 50%, is bigger than
-        // 256x256, and not too big to be keeping a copy of (<1MB).
-        const int numUnscaledPixels = decoded->width() * decoded->height();
-        if (sx > 1.5 && numUnscaledPixels > 65536 && numUnscaledPixels < 262144) {
-            bitmap->setUnscaledBitmap(decoded);
-            adb2.detach(); //responsibility for freeing decoded's memory is
-                           //transferred to bitmap's destructor
-        }
     }
 
     if (padding) {
@@ -386,7 +384,7 @@ static jobject doDecode(JNIEnv* env, SkStream* stream, jobject padding,
         return nullObjectReturn("Got null SkPixelRef");
     }
 
-    if (!isMutable) {
+    if (!isMutable && !useExistingBitmap) {
         // promise we will never change our pixels (great for sharing and pictures)
         pr->setImmutable();
     }
@@ -394,7 +392,7 @@ static jobject doDecode(JNIEnv* env, SkStream* stream, jobject padding,
     // detach bitmap from its autodeleter, since we want to own it now
     adb.detach();
 
-    if (javaBitmap != NULL) {
+    if (useExistingBitmap) {
         // If a java bitmap was passed in for reuse, pass it back
         return javaBitmap;
     }

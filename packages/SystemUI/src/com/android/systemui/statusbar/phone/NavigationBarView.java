@@ -232,8 +232,13 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         mContext.registerReceiver(mNavBarReceiver, new IntentFilter(NAVBAR_EDIT));
     }
 
+
     protected void updateResources() {
         final Resources res = mContext.getResources();
+        getIcons(res);
+    }
+
+    private void getIcons(Resources res) {
         mBackIcon = res.getDrawable(R.drawable.ic_sysbar_back);
         mBackLandIcon = res.getDrawable(R.drawable.ic_sysbar_back_land);
         mBackAltIcon = res.getDrawable(R.drawable.ic_sysbar_back_ime);
@@ -325,6 +330,13 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         }
     }
 
+    @Override
+    public void setLayoutDirection(int layoutDirection) {
+        getIcons(mContext.getResources());
+
+        super.setLayoutDirection(layoutDirection);
+    }
+
     public void notifyScreenOn(boolean screenOn) {
         mScreenOn = screenOn;
         setDisabledFlags(mDisabledFlags, true);
@@ -396,6 +408,9 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
                         : (mVertical ? mRecentsLandIcon : mRecentsIcon));
             }
         }
+
+       // ((ImageView)getRecentsButton()).setImageDrawable(mVertical ? mRecentLandIcon : mRecentIcon);
+
         setDisabledFlags(mDisabledFlags, true);
     }
 

@@ -70,8 +70,8 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ScrollView;
+import android.service.notification.StatusBarNotification;
 
-import com.android.internal.statusbar.StatusBarNotification;
 import com.android.internal.statusbar.StatusBarIcon;
 
 import com.android.systemui.R;
@@ -514,12 +514,12 @@ public class PieMenu extends FrameLayout {
                 NotificationData.Entry entry = notifData.get(i);
                 StatusBarNotification statusNotif = entry.notification;
                 if (statusNotif == null) continue;
-                boolean hide = statusNotif.pkg.equals("com.paranoid.halo");
+                boolean hide = statusNotif.getPackageName().equals("com.paranoid.halo");
                 if (hide) {
                     mHiddenNotification++;
                     continue;
                 }
-                Notification notif = statusNotif.notification;
+                Notification notif = statusNotif.getNotification();
                 if (notif == null) continue;
                 CharSequence tickerText = notif.tickerText;
                 if (tickerText == null) continue;

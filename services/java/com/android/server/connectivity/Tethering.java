@@ -35,6 +35,7 @@ import android.net.LinkAddress;
 import android.net.LinkProperties;
 import android.net.NetworkInfo;
 import android.net.NetworkUtils;
+import android.net.RouteInfo;
 import android.os.Binder;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -47,7 +48,6 @@ import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.Log;
 
-import com.android.internal.app.ThemeUtils;
 import com.android.internal.telephony.Phone;
 import com.android.internal.telephony.PhoneConstants;
 import com.android.internal.util.IState;
@@ -75,7 +75,6 @@ import java.util.Set;
 public class Tethering extends INetworkManagementEventObserver.Stub {
 
     private Context mContext;
-    private Context mUiContext;
     private final static String TAG = "Tethering";
     private final static boolean DBG = true;
     private final static boolean VDBG = false;
@@ -160,13 +159,6 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         mContext.registerReceiver(mStateReceiver, filter);
 
-        ThemeUtils.registerThemeChangeReceiver(mContext, new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context content, Intent intent) {
-                mUiContext = null;
-            }
-        });
-
         filter = new IntentFilter();
         filter.addAction(Intent.ACTION_MEDIA_SHARED);
         filter.addAction(Intent.ACTION_MEDIA_UNSHARED);
@@ -199,8 +191,22 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
         int ifaceTypes[] = mContext.getResources().getIntArray(
                 com.android.internal.R.array.config_tether_upstream_types);
         Collection<Integer> upstreamIfaceTypes = new ArrayList();
+        IBinder b = ServiceManager.getService(Context.CONNECTIVITY_SERVICE);
+        IConnectivityManager cm = IConnectivityManager.Stub.asInterface(b);
+        try {
+            int activeNetType = cm.getActiveNetworkInfo().getType();
+            for (int i : ifaceTypes) {
+                if(i == activeNetType) {
+                    upstreamIfaceTypes.add(new Integer(i));
+                }
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "Exception adding default nw to upstreamIfaceTypes: " + e);
+        }
         for (int i : ifaceTypes) {
-            upstreamIfaceTypes.add(new Integer(i));
+            if(!upstreamIfaceTypes.contains(new Integer(i))) {
+                upstreamIfaceTypes.add(new Integer(i));
+            }
         }
 
         synchronized (mPublicSync) {
@@ -487,17 +493,10 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
         mTetheredNotification.defaults &= ~Notification.DEFAULT_SOUND;
         mTetheredNotification.flags = Notification.FLAG_ONGOING_EVENT;
         mTetheredNotification.tickerText = title;
-        mTetheredNotification.setLatestEventInfo(getUiContext(), title, message, pi);
+        mTetheredNotification.setLatestEventInfo(mContext, title, message, pi);
 
         notificationManager.notifyAsUser(null, mTetheredNotification.icon,
                 mTetheredNotification, UserHandle.ALL);
-    }
-
-    private Context getUiContext() {
-        if (mUiContext == null) {
-            mUiContext = ThemeUtils.createUiContext(mContext);
-        }
-        return mUiContext != null ? mUiContext : mContext;
     }
 
     private void clearTetheredNotification() {
@@ -1361,7 +1360,21 @@ public class Tethering extends INetworkManagementEventObserver.Stub {
                         linkProperties = mConnService.getLinkProperties(upType);
                     } catch (RemoteException e) { }
                     if (linkProperties != null) {
-                        iface = linkProperties.getInterfaceName();
+                        // Find the interface with the default IPv4 route. It may be the
+                        // interface described by linkProperties, or one of the interfaces
+                        // stacked on top of it.
+                        Log.i(TAG, "Finding IPv4 upstream interface on: " + linkProperties);
+                        RouteInfo ipv4Default = RouteInfo.selectBestRoute(
+                            linkProperties.getAllRoutes(), Inet4Address.ANY);
+                        if (ipv4Default != null) {
+                            iface = ipv4Default.getInterface();
+                            Log.i(TAG, "Found interface " + ipv4Default.getInterface());
+                        } else {
+                            Log.i(TAG, "No IPv4 upstream interface, giving up.");
+                        }
+                    }
+
+                    if (iface != null) {
                         String[] dnsServers = mDefaultDnsServers;
                         Collection<InetAddress> dnses = linkProperties.getDnses();
                         if (dnses != null) {

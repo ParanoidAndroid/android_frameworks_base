@@ -75,8 +75,6 @@ import android.widget.ImageView.ScaleType;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.android.internal.app.ThemeUtils;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -93,8 +91,6 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
 
     private final Context mContext;
     private final WindowManagerFuncs mWindowManagerFuncs;
-
-    private Context mUiContext;
     private final AudioManager mAudioManager;
     private final IDreamManager mDreamManager;
 
@@ -115,6 +111,8 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
     private boolean mHasVibrator;
     private boolean mRebootMenu;
 
+    private final boolean mShowSilentToggle;
+
     /**
      * @param context everything needs a context :(
      */
@@ -132,8 +130,6 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
         filter.addAction(TelephonyIntents.ACTION_EMERGENCY_CALLBACK_MODE_CHANGED);
         context.registerReceiver(mBroadcastReceiver, filter);
 
-        ThemeUtils.registerThemeChangeReceiver(context, mThemeChangeReceiver);
-
         // get notified of phone state changes
         TelephonyManager telephonyManager =
                 (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
@@ -146,6 +142,9 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                 mAirplaneModeObserver);
         Vibrator vibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
         mHasVibrator = vibrator != null && vibrator.hasVibrator();
+
+        mShowSilentToggle = SHOW_SILENT_TOGGLE && !mContext.getResources().getBoolean(
+                com.android.internal.R.bool.config_useFixedVolume);
     }
 
     /**
@@ -193,13 +192,6 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
         mDialog.getWindow().setAttributes(attrs);
         mDialog.show();
         mDialog.getWindow().getDecorView().setSystemUiVisibility(View.STATUS_BAR_DISABLE_EXPAND);
-    }
-
-    private Context getUiContext() {
-        if (mUiContext == null) {
-            mUiContext = ThemeUtils.createUiContext(mContext);
-        }
-        return mUiContext != null ? mUiContext : mContext;
     }
 
     /**
@@ -346,7 +338,6 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                     }
                 });
 
-
             // next: expanded desktop
             mItems.add(mExpandDesktopModeOn);
 
@@ -415,12 +406,12 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
 
         mAdapter = new MyAdapter();
 
-        AlertParams params = new AlertParams(getUiContext());
+        AlertParams params = new AlertParams(mContext);
         params.mAdapter = mAdapter;
         params.mOnClickListener = this;
         params.mForceInverseBackground = true;
 
-        GlobalActionsDialog dialog = new GlobalActionsDialog(getUiContext(), params);
+        GlobalActionsDialog dialog = new GlobalActionsDialog(mContext, params);
         dialog.setCanceledOnTouchOutside(false); // Handled by the custom class.
 
         dialog.getListView().setItemsCanFocus(true);
@@ -503,7 +494,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                 @Override
                 public void onServiceDisconnected(ComponentName name) {}
             };
-            if (mContext.bindService(intent, conn, Context.BIND_AUTO_CREATE, UserHandle.USER_CURRENT)) {
+            if (mContext.bindService(intent, conn, Context.BIND_AUTO_CREATE)) {
                 mScreenshotConnection = conn;
                 mHandler.postDelayed(mScreenshotTimeout, 10000);
             }
@@ -597,7 +588,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
         mAirplaneModeOn.updateState(mAirplaneState);
         mAdapter.notifyDataSetChanged();
         mDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG);
-        if (SHOW_SILENT_TOGGLE) {
+        if (mShowSilentToggle) {
             IntentFilter filter = new IntentFilter(AudioManager.RINGER_MODE_CHANGED_ACTION);
             mContext.registerReceiver(mRingerModeReceiver, filter);
         }
@@ -614,8 +605,13 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
 
     /** {@inheritDoc} */
     public void onDismiss(DialogInterface dialog) {
-        if (SHOW_SILENT_TOGGLE) {
-            mContext.unregisterReceiver(mRingerModeReceiver);
+        if (mShowSilentToggle) {
+            try {
+                mContext.unregisterReceiver(mRingerModeReceiver);
+            } catch (IllegalArgumentException ie) {
+                // ignore this
+                Log.w(TAG, ie);
+            }
         }
     }
 
@@ -693,8 +689,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
 
         public View getView(int position, View convertView, ViewGroup parent) {
             Action action = getItem(position);
-            final Context context = getUiContext();
-            return action.create(context, convertView, parent, LayoutInflater.from(context));
+            return action.create(mContext, convertView, parent, LayoutInflater.from(mContext));
         }
     }
 
@@ -1037,12 +1032,6 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
                     changeAirplaneModeSystemSetting(true);
                 }
             }
-        }
-    };
-
-    private BroadcastReceiver mThemeChangeReceiver = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
-            mUiContext = null;
         }
     };
 

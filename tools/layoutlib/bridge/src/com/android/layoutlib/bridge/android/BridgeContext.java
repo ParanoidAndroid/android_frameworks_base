@@ -888,12 +888,6 @@ public final class BridgeContext extends Context {
     }
 
     @Override
-    public boolean isPrivacyGuardEnabled() {
-        // pass
-        return false;
-    }
-
-    @Override
     public int checkPermission(String arg0, int arg1, int arg2) {
         // pass
         return 0;
@@ -1086,6 +1080,12 @@ public final class BridgeContext extends Context {
     }
 
     @Override
+    public String getBasePackageName() {
+        // pass
+        return null;
+    }
+
+    @Override
     public ApplicationInfo getApplicationInfo() {
         return mApplicationInfo;
     }
@@ -1206,6 +1206,11 @@ public final class BridgeContext extends Context {
     }
 
     @Override
+    public void sendBroadcast(Intent intent, String receiverPermission, int appOp) {
+        // pass
+    }
+
+    @Override
     public void sendOrderedBroadcast(Intent arg0, String arg1) {
         // pass
 
@@ -1217,6 +1222,13 @@ public final class BridgeContext extends Context {
             Bundle arg6) {
         // pass
 
+    }
+
+    @Override
+    public void sendOrderedBroadcast(Intent intent, String receiverPermission, int appOp,
+            BroadcastReceiver resultReceiver, Handler scheduler, int initialCode,
+            String initialData, Bundle initialExtras) {
+        // pass
     }
 
     @Override
@@ -1385,5 +1397,13 @@ public final class BridgeContext extends Context {
     public CompatibilityInfoHolder getCompatibilityInfo(int displayId) {
         // pass
         return null;
+    }
+
+    /**
+     * @hide
+     */
+    @Override
+    public int getUserId() {
+        return 0; // not used
     }
 }

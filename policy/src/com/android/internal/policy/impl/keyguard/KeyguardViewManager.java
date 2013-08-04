@@ -62,6 +62,7 @@ public class KeyguardViewManager {
     private final static boolean DEBUG = KeyguardViewMediator.DEBUG;
     private static String TAG = "KeyguardViewManager";
     public static boolean USE_UPPER_CASE = true;
+    public final static String IS_SWITCHING_USER = "is_switching_user";
 
     // Timeout used for keypresses
     static final int DIGIT_PRESS_WAKE_MILLIS = 5000;
@@ -249,19 +250,12 @@ public class KeyguardViewManager {
         @Override
         protected void onConfigurationChanged(Configuration newConfig) {
             super.onConfigurationChanged(newConfig);
-            post(new Runnable() {
-                @Override
-                public void run() {
-                    synchronized (KeyguardViewManager.this) {
-                        if (mKeyguardHost.getVisibility() == View.VISIBLE) {
-                            // only propagate configuration messages if we're currently showing
-                            maybeCreateKeyguardLocked(shouldEnableScreenRotation(), true, null);
-                        } else {
-                            if (DEBUG) Log.v(TAG, "onConfigurationChanged: view not visible");
-                        }
-                    }
-                }
-            });
+            if (mKeyguardHost.getVisibility() == View.VISIBLE) {
+                // only propagate configuration messages if we're currently showing
+                maybeCreateKeyguardLocked(shouldEnableScreenRotation(), true, null);
+            } else {
+                if (DEBUG) Log.v(TAG, "onConfigurationChanged: view not visible");
+            }
         }
 
         @Override
@@ -301,6 +295,7 @@ public class KeyguardViewManager {
 
     private void maybeCreateKeyguardLocked(boolean enableScreenRotation, boolean force,
             Bundle options) {
+        final boolean isActivity = (mContext instanceof Activity); // for test activity
         if (mKeyguardHost != null) {
             mKeyguardHost.saveHierarchyState(mStateContainer);
         }
@@ -310,8 +305,41 @@ public class KeyguardViewManager {
 
             mKeyguardHost = new ViewManagerHost(mContext);
 
-            setKeyguardParams();
-            mViewManager.addView(mKeyguardHost, mWindowLayoutParams);
+            int flags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                    | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
+                    | WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN
+                    | WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER;
+
+            if (!mNeedsInput) {
+                flags |= WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM;
+            }
+            if (ActivityManager.isHighEndGfx()) {
+                flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
+            }
+
+            final int stretch = ViewGroup.LayoutParams.MATCH_PARENT;
+            final int type = isActivity ? WindowManager.LayoutParams.TYPE_APPLICATION
+                    : WindowManager.LayoutParams.TYPE_KEYGUARD;
+            WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
+                    stretch, stretch, type, flags, PixelFormat.TRANSLUCENT);
+            lp.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
+            lp.windowAnimations = com.android.internal.R.style.Animation_LockScreen;
+            lp.screenOrientation = enableScreenRotation ?
+                    ActivityInfo.SCREEN_ORIENTATION_USER : ActivityInfo.SCREEN_ORIENTATION_NOSENSOR;
+
+            if (ActivityManager.isHighEndGfx()) {
+                lp.flags |= WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
+                lp.privateFlags |=
+                        WindowManager.LayoutParams.PRIVATE_FLAG_FORCE_HARDWARE_ACCELERATED;
+            }
+            lp.privateFlags |= WindowManager.LayoutParams.PRIVATE_FLAG_SET_NEEDS_MENU_KEY;
+            if (isActivity) {
+                lp.privateFlags |= WindowManager.LayoutParams.PRIVATE_FLAG_SHOW_FOR_ALL_USERS;
+            }
+            lp.inputFeatures |= WindowManager.LayoutParams.INPUT_FEATURE_DISABLE_USER_ACTIVITY;
+            lp.setTitle(isActivity ? "KeyguardMock" : "Keyguard");
+            mWindowLayoutParams = lp;
+            mViewManager.addView(mKeyguardHost, lp);
         }
 
         if (force || mKeyguardView == null) {
@@ -337,6 +365,8 @@ public class KeyguardViewManager {
         mKeyguardView = (KeyguardHostView) view.findViewById(R.id.keyguard_host_view);
         mKeyguardView.setLockPatternUtils(mLockPatternUtils);
         mKeyguardView.setViewMediatorCallback(mViewMediatorCallback);
+        mKeyguardView.initializeSwitchingUserState(options != null &&
+                options.getBoolean(IS_SWITCHING_USER));
 
         // HACK
         // The keyguard view will have set up window flags in onFinishInflate before we set

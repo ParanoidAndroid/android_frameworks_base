@@ -98,6 +98,12 @@ public class ViewPropertyAnimator {
     private Animator.AnimatorListener mListener = null;
 
     /**
+     * A lazily-created ValueAnimator used in order to get some default animator properties
+     * (duration, start delay, interpolator, etc.).
+     */
+    private ValueAnimator mTempValueAnimator;
+
+    /**
      * This listener is the mechanism by which the underlying Animator causes changes to the
      * properties currently being animated, as well as the cleanup after an animation is
      * complete.
@@ -268,7 +274,10 @@ public class ViewPropertyAnimator {
         } else {
             // Just return the default from ValueAnimator, since that's what we'd get if
             // the value has not been set otherwise
-            return new ValueAnimator().getDuration();
+            if (mTempValueAnimator == null) {
+                mTempValueAnimator = new ValueAnimator();
+            }
+            return mTempValueAnimator.getDuration();
         }
     }
 
@@ -320,6 +329,24 @@ public class ViewPropertyAnimator {
         mInterpolatorSet = true;
         mInterpolator = interpolator;
         return this;
+    }
+
+    /**
+     * Returns the timing interpolator that this animation uses.
+     *
+     * @return The timing interpolator for this animation.
+     */
+    public TimeInterpolator getInterpolator() {
+        if (mInterpolatorSet) {
+            return mInterpolator;
+        } else {
+            // Just return the default from ValueAnimator, since that's what we'd get if
+            // the value has not been set otherwise
+            if (mTempValueAnimator == null) {
+                mTempValueAnimator = new ValueAnimator();
+            }
+            return mTempValueAnimator.getInterpolator();
+        }
     }
 
     /**
@@ -829,7 +856,7 @@ public class ViewPropertyAnimator {
         NameValuesHolder nameValuePair = new NameValuesHolder(constantName, startValue, byValue);
         mPendingAnimations.add(nameValuePair);
         mView.removeCallbacks(mAnimationStarter);
-        mView.post(mAnimationStarter);
+        mView.postOnAnimation(mAnimationStarter);
     }
 
     /**

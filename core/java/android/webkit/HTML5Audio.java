@@ -19,6 +19,7 @@ package android.webkit;
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -54,15 +55,15 @@ class HTML5Audio extends Handler
     // The private status of the view that created this player
     private IsPrivateBrowsingEnabledGetter mIsPrivateBrowsingEnabledGetter;
 
-    private static int IDLE                     =  0;
-    private static int INITIALIZED              =  1;
-    private static int PREPARED                 =  2;
-    private static int STARTED                  =  4;
-    private static int COMPLETE                 =  5;
-    private static int PAUSED                   =  6;
-    private static int PAUSED_TRANSITORILY      =  7;
-    private static int STOPPED                  = -2;
-    private static int ERROR                    = -1;
+    private static int IDLE                =  0;
+    private static int INITIALIZED         =  1;
+    private static int PREPARED            =  2;
+    private static int STARTED             =  4;
+    private static int COMPLETE            =  5;
+    private static int PAUSED              =  6;
+    private static int PAUSED_TRANSITORILY =  7;
+    private static int STOPPED             = -2;
+    private static int ERROR               = -1;
 
     private int mState = IDLE;
 
@@ -84,6 +85,7 @@ class HTML5Audio extends Handler
     // See http://www.whatwg.org/specs/web-apps/current-work/#event-media-timeupdate
     private Timer mTimer;
     private final class TimeupdateTask extends TimerTask {
+        @Override
         public void run() {
             HTML5Audio.this.obtainMessage(TIMEUPDATE).sendToTarget();
         }
@@ -139,11 +141,13 @@ class HTML5Audio extends Handler
     // (i.e. the webviewcore thread here)
 
     // MediaPlayer.OnBufferingUpdateListener
+    @Override
     public void onBufferingUpdate(MediaPlayer mp, int percent) {
         nativeOnBuffering(percent, mNativePointer);
     }
 
     // MediaPlayer.OnCompletionListener;
+    @Override
     public void onCompletion(MediaPlayer mp) {
         mState = COMPLETE;
         mProcessingOnEnd = true;
@@ -156,6 +160,7 @@ class HTML5Audio extends Handler
     }
 
     // MediaPlayer.OnErrorListener
+    @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
         mState = ERROR;
         resetMediaPlayer();
@@ -164,6 +169,7 @@ class HTML5Audio extends Handler
     }
 
     // MediaPlayer.OnPreparedListener
+    @Override
     public void onPrepared(MediaPlayer mp) {
         mState = PREPARED;
         if (mTimer != null) {
@@ -178,6 +184,7 @@ class HTML5Audio extends Handler
     }
 
     // MediaPlayer.OnSeekCompleteListener
+    @Override
     public void onSeekComplete(MediaPlayer mp) {
         nativeOnTimeupdate(mp.getCurrentPosition(), mNativePointer);
     }
@@ -231,7 +238,7 @@ class HTML5Audio extends Handler
                 headers.put(HIDE_URL_LOGS, "true");
             }
 
-            mMediaPlayer.setDataSource(url, headers);
+            mMediaPlayer.setDataSource(mContext, Uri.parse(url), headers);
             mState = INITIALIZED;
             mMediaPlayer.prepareAsync();
         } catch (IOException e) {

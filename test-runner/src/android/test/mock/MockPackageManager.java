@@ -81,6 +81,13 @@ public class MockPackageManager extends PackageManager {
         throw new UnsupportedOperationException();
     }
 
+    /** @hide */
+    @Override
+    public int getPackageUid(String packageName, int userHandle)
+            throws NameNotFoundException {
+        throw new UnsupportedOperationException();
+    }
+
     @Override
     public PermissionInfo getPermissionInfo(String name, int flags)
     throws NameNotFoundException {
@@ -136,6 +143,12 @@ public class MockPackageManager extends PackageManager {
 
     @Override
     public List<PackageInfo> getInstalledPackages(int flags) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<PackageInfo> getPackagesHoldingPermissions(String[] permissions,
+            int flags) {
         throw new UnsupportedOperationException();
     }
 
@@ -492,18 +505,6 @@ public class MockPackageManager extends PackageManager {
         throw new UnsupportedOperationException();
     }
 
-    /** @hide */
-    @Override
-    public void setPrivacyGuardSetting(String packageName, boolean enabled) {
-        throw new UnsupportedOperationException();
-    }
-
-    /** @hide */
-    @Override
-    public boolean getPrivacyGuardSetting(String packageName) {
-        throw new UnsupportedOperationException();
-    }
-
     @Override
     public void addPreferredActivity(IntentFilter filter,
             int match, ComponentName[] set, ComponentName activity) {
@@ -586,14 +587,6 @@ public class MockPackageManager extends PackageManager {
     @Override
     public int installExistingPackage(String packageName)
             throws NameNotFoundException {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @hide - to match hiding in superclass
-     */
-    @Override
-    public List<PackageInfo> getInstalledThemePackages() {
         throw new UnsupportedOperationException();
     }
 

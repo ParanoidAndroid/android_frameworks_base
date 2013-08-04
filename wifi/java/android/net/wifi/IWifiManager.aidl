@@ -43,9 +43,9 @@ interface IWifiManager
 
     boolean pingSupplicant();
 
-    void startScan(boolean forceActive);
+    void startScan();
 
-    List<ScanResult> getScanResults();
+    List<ScanResult> getScanResults(String callingPackage);
 
     void disconnect();
 
@@ -72,6 +72,8 @@ interface IWifiManager
     boolean saveConfiguration();
 
     DhcpInfo getDhcpInfo();
+
+    boolean isScanAlwaysAvailable();
 
     boolean acquireWifiLock(IBinder lock, int lockType, String tag, in WorkSource ws);
 

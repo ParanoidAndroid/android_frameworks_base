@@ -153,6 +153,7 @@ public class KeyguardViewMediator {
     private StatusBarManager mStatusBarManager;
     private boolean mShowLockIcon;
     private boolean mShowingLockIcon;
+    private boolean mSwitchingUser;
 
     private boolean mSystemReady;
 
@@ -253,6 +254,11 @@ public class KeyguardViewMediator {
     private final float mLockSoundVolume;
 
     /**
+     * Cache of avatar drawables, for use by KeyguardMultiUserAvatar.
+     */
+    private static MultiUserAvatarCache sMultiUserAvatarCache = new MultiUserAvatarCache();
+
+    /**
      * The callback used by the keyguard view to tell the {@link KeyguardViewMediator}
      * various things.
      */
@@ -310,21 +316,34 @@ public class KeyguardViewMediator {
     KeyguardUpdateMonitorCallback mUpdateCallback = new KeyguardUpdateMonitorCallback() {
 
         @Override
-        public void onUserSwitched(int userId) {
+        public void onUserSwitching(int userId) {
             // Note that the mLockPatternUtils user has already been updated from setCurrentUser.
             // We need to force a reset of the views, since lockNow (called by
             // ActivityManagerService) will not reconstruct the keyguard if it is already showing.
             synchronized (KeyguardViewMediator.this) {
+                mSwitchingUser = true;
                 resetStateLocked(null);
                 adjustStatusBarLocked();
-                // Disable face unlock when the user switches.
-                KeyguardUpdateMonitor.getInstance(mContext).setAlternateUnlockEnabled(false);
+                // When we switch users we want to bring the new user to the biometric unlock even
+                // if the current user has gone to the backup.
+                KeyguardUpdateMonitor.getInstance(mContext).setAlternateUnlockEnabled(true);
             }
+        }
+
+        @Override
+        public void onUserSwitchComplete(int userId) {
+            mSwitchingUser = false;
         }
 
         @Override
         public void onUserRemoved(int userId) {
             mLockPatternUtils.removeUser(userId);
+            sMultiUserAvatarCache.clear(userId);
+        }
+
+        @Override
+        public void onUserInfoChanged(int userId) {
+            sMultiUserAvatarCache.clear(userId);
         }
 
         @Override
@@ -908,7 +927,7 @@ public class KeyguardViewMediator {
      * @see #handleReset()
      */
     private void resetStateLocked(Bundle options) {
-        if (DEBUG) Log.d(TAG, "resetStateLocked");
+        if (DEBUG) Log.e(TAG, "resetStateLocked");
         Message msg = mHandler.obtainMessage(RESET, options);
         mHandler.sendMessage(msg);
     }
@@ -1361,6 +1380,10 @@ public class KeyguardViewMediator {
      * @see #RESET
      */
     private void handleReset(Bundle options) {
+        if (options == null) {
+            options = new Bundle();
+        }
+        options.putBoolean(KeyguardViewManager.IS_SWITCHING_USER, mSwitchingUser);
         synchronized (KeyguardViewMediator.this) {
             if (DEBUG) Log.d(TAG, "handleReset");
             mKeyguardViewManager.reset(options);
@@ -1417,6 +1440,10 @@ public class KeyguardViewMediator {
 
     private boolean isAssistantAvailable() {
         return mSearchManager != null
-                && mSearchManager.getAssistIntent(mContext, UserHandle.USER_CURRENT) != null;
+                && mSearchManager.getAssistIntent(mContext, false, UserHandle.USER_CURRENT) != null;
+    }
+
+    public static MultiUserAvatarCache getAvatarCache() {
+        return sMultiUserAvatarCache;
     }
 }

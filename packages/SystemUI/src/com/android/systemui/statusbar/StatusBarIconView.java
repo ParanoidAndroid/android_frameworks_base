@@ -136,13 +136,9 @@ public class StatusBarIconView extends AnimatedImageView {
                 && mIcon.number == icon.number;
         mIcon = icon.clone();
         setContentDescription(icon.contentDescription);
-        if (!iconEquals || force) {
-            Drawable drawable = getIcon(icon);
-            if (drawable == null) {
-                Slog.w(TAG, "No icon for slot " + mSlot);
-                return false;
-            }
-            setImageDrawable(drawable);
+
+        if (!iconEquals) {
+            if (!updateDrawable(false /* no clear */)) return false;
         }
         if (!levelEquals || force) {
             setImageLevel(icon.iconLevel);
@@ -164,6 +160,23 @@ public class StatusBarIconView extends AnimatedImageView {
         if (!visibilityEquals || force) {
             setVisibility(icon.visible ? VISIBLE : GONE);
         }
+        return true;
+    }
+
+    public void updateDrawable() {
+        updateDrawable(true /* with clear */);
+    }
+
+    private boolean updateDrawable(boolean withClear) {
+        Drawable drawable = getIcon(mIcon);
+        if (drawable == null) {
+            Slog.w(TAG, "No icon for slot " + mSlot);
+            return false;
+        }
+        if (withClear) {
+            setImageDrawable(null);
+        }
+        setImageDrawable(drawable);
         return true;
     }
 
@@ -217,16 +230,16 @@ public class StatusBarIconView extends AnimatedImageView {
         return mIcon;
     }
 
+    public String getStatusBarSlot() {
+        return mSlot;
+    }
+
     @Override
     public void onInitializeAccessibilityEvent(AccessibilityEvent event) {
         super.onInitializeAccessibilityEvent(event);
         if (mNotification != null) {
             event.setParcelableData(mNotification);
         }
-    }
-
-    public String getStatusBarSlot() {
-        return mSlot;
     }
 
     @Override

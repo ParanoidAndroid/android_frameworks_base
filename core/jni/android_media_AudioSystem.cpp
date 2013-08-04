@@ -76,6 +76,15 @@ android_media_AudioSystem_isStreamActive(JNIEnv *env, jobject thiz, jint stream,
 }
 
 static jboolean
+android_media_AudioSystem_isStreamActiveRemotely(JNIEnv *env, jobject thiz, jint stream,
+        jint inPastMs)
+{
+    bool state = false;
+    AudioSystem::isStreamActiveRemotely((audio_stream_type_t) stream, &state, inPastMs);
+    return state;
+}
+
+static jboolean
 android_media_AudioSystem_isSourceActive(JNIEnv *env, jobject thiz, jint source)
 {
     bool state = false;
@@ -89,7 +98,7 @@ android_media_AudioSystem_setParameters(JNIEnv *env, jobject thiz, jstring keyVa
     const jchar* c_keyValuePairs = env->GetStringCritical(keyValuePairs, 0);
     String8 c_keyValuePairs8;
     if (keyValuePairs) {
-        c_keyValuePairs8 = String8((char16_t*)c_keyValuePairs, env->GetStringLength(keyValuePairs));
+        c_keyValuePairs8 = String8(c_keyValuePairs, env->GetStringLength(keyValuePairs));
         env->ReleaseStringCritical(keyValuePairs, c_keyValuePairs);
     }
     int status = check_AudioSystem_Command(AudioSystem::setParameters(0, c_keyValuePairs8));
@@ -102,7 +111,7 @@ android_media_AudioSystem_getParameters(JNIEnv *env, jobject thiz, jstring keys)
     const jchar* c_keys = env->GetStringCritical(keys, 0);
     String8 c_keys8;
     if (keys) {
-        c_keys8 = String8((char16_t*)c_keys, env->GetStringLength(keys));
+        c_keys8 = String8(c_keys, env->GetStringLength(keys));
         env->ReleaseStringCritical(keys, c_keys);
     }
     return env->NewStringUTF(AudioSystem::getParameters(0, c_keys8).string());
@@ -262,6 +271,17 @@ android_media_AudioSystem_getPrimaryOutputFrameCount(JNIEnv *env, jobject clazz)
     return (jint) AudioSystem::getPrimaryOutputFrameCount();
 }
 
+static jint
+android_media_AudioSystem_getOutputLatency(JNIEnv *env, jobject clazz, jint stream)
+{
+    uint32_t afLatency;
+    if (AudioSystem::getOutputLatency(&afLatency, static_cast <audio_stream_type_t>(stream))
+            != NO_ERROR) {
+        afLatency = -1;
+    }
+    return (jint) afLatency;
+}
+
 // ----------------------------------------------------------------------------
 
 static JNINativeMethod gMethods[] = {
@@ -270,6 +290,7 @@ static JNINativeMethod gMethods[] = {
     {"muteMicrophone",      "(Z)I",     (void *)android_media_AudioSystem_muteMicrophone},
     {"isMicrophoneMuted",   "()Z",      (void *)android_media_AudioSystem_isMicrophoneMuted},
     {"isStreamActive",      "(II)Z",    (void *)android_media_AudioSystem_isStreamActive},
+    {"isStreamActiveRemotely","(II)Z",  (void *)android_media_AudioSystem_isStreamActiveRemotely},
     {"isSourceActive",      "(I)Z",     (void *)android_media_AudioSystem_isSourceActive},
     {"setDeviceConnectionState", "(IILjava/lang/String;)I", (void *)android_media_AudioSystem_setDeviceConnectionState},
     {"getDeviceConnectionState", "(ILjava/lang/String;)I",  (void *)android_media_AudioSystem_getDeviceConnectionState},
@@ -286,6 +307,7 @@ static JNINativeMethod gMethods[] = {
     {"getDevicesForStream", "(I)I",     (void *)android_media_AudioSystem_getDevicesForStream},
     {"getPrimaryOutputSamplingRate", "()I", (void *)android_media_AudioSystem_getPrimaryOutputSamplingRate},
     {"getPrimaryOutputFrameCount",   "()I", (void *)android_media_AudioSystem_getPrimaryOutputFrameCount},
+    {"getOutputLatency",    "(I)I",     (void *)android_media_AudioSystem_getOutputLatency},
 };
 
 int register_android_media_AudioSystem(JNIEnv *env)
