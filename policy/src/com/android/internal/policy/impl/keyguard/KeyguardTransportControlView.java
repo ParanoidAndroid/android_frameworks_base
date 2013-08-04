@@ -315,6 +315,14 @@ public class KeyguardTransportControlView extends FrameLayout implements OnClick
         updatePlayPauseState(mCurrentPlayState);
     }
 
+    public boolean isMusicPlaying() {
+        if (!mMusicClientPresent) {
+            return false;
+        }
+        return mCurrentPlayState == RemoteControlClient.PLAYSTATE_PLAYING
+                || mCurrentPlayState == RemoteControlClient.PLAYSTATE_BUFFERING;
+    }
+
     private static void setVisibilityBasedOnFlag(View view, int flags, int flag) {
         if ((flags & flag) != 0) {
             view.setVisibility(View.VISIBLE);
