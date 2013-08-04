@@ -98,7 +98,6 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginLeft="5dp"
-        android:layout_marginStart="12dp"
         >
         <ImageView android:id="@+id/settings_button"
             android:layout_width="50dp"
