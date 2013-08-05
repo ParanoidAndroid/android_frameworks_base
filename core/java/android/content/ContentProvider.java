@@ -210,8 +210,12 @@ public abstract class ContentProvider implements ComponentCallbacks2 {
 
         @Override
         public Uri insert(String callingPkg, Uri uri, ContentValues initialValues) {
-            if (enforceWritePermission(callingPkg, uri) != AppOpsManager.MODE_ALLOWED) {
-                return rejectInsert(uri, initialValues);
+            String settings = initialValues != null ? initialValues.getAsString("name") : null;
+            if(settings == null || !Arrays.asList(
+                    Settings.System.INSECURE_SETTINGS).contains(settings)) {
+                if (enforceWritePermission(callingPkg, uri) != AppOpsManager.MODE_ALLOWED) {
+                    return rejectInsert(uri, initialValues);
+                }
             }
             return ContentProvider.this.insert(uri, initialValues);
         }
