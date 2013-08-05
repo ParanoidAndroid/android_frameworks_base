@@ -107,8 +107,9 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
     private DelegateViewHelper mDelegateHelper;
     private DeadZone mDeadZone;
 
-    private Canvas mCurrentCanvas;
-    private Canvas mNewCanvas;
+    private Canvas mCurrentCanvas, mNewCanvas;
+    private Bitmap mCurrentBitmap, mNewBitmap;
+    private BitmapDrawable mCurrentBitmapDrawable, mNewBitmapDrawable;
     private TransitionDrawable mTransition;
     private ColorUtils.ColorSettingInfo mLastBackgroundColor;
 
@@ -252,17 +253,17 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         if (ColorUtils.getPerAppColorState(mContext)) {
 
             // Reset all colors
-            Bitmap currentBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-            mCurrentCanvas = new Canvas(currentBitmap);
+            mCurrentBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+            mCurrentCanvas = new Canvas(mCurrentBitmap);
             mCurrentCanvas.drawColor(0xFF000000);
-            BitmapDrawable currentBitmapDrawable = new BitmapDrawable(currentBitmap);
+            mCurrentBitmapDrawable = new BitmapDrawable(mCurrentBitmap);
 
-            Bitmap newBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-            mNewCanvas = new Canvas(newBitmap);
+            mNewBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+            mNewCanvas = new Canvas(mNewBitmap);
             mNewCanvas.drawColor(0xFF000000);
-            BitmapDrawable newBitmapDrawable = new BitmapDrawable(newBitmap);
+            mNewBitmapDrawable = new BitmapDrawable(mNewBitmap);
 
-            mTransition = new TransitionDrawable(new Drawable[]{currentBitmapDrawable, newBitmapDrawable});        
+            mTransition = new TransitionDrawable(new Drawable[]{mCurrentBitmapDrawable, mNewBitmapDrawable});        
             setBackground(mTransition);
 
             mLastBackgroundColor = ColorUtils.getColorSettingInfo(mContext, Settings.System.NAV_BAR_COLOR);
@@ -277,23 +278,26 @@ public class NavigationBarView extends LinearLayout implements NavigationCallbac
         }
     }
 
+    boolean firstLayerFront = true;
     private void updateColor() {
         ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
                 Settings.System.NAV_BAR_COLOR);
 
         if (!colorInfo.lastColorString.equals(mLastBackgroundColor.lastColorString)) {
-            // Only enable crossfade for transparent backdrops
+
             mTransition.setCrossFadeEnabled(!colorInfo.isLastColorOpaque);
 
-            // Clear first layer, paint current color, reset mTransition to first layer
-            mCurrentCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            mCurrentCanvas.drawColor(mLastBackgroundColor.lastColor);
-            mTransition.resetTransition();
+            if (firstLayerFront) {
+                mNewCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                mNewCanvas.drawColor(colorInfo.lastColor);
 
-            // Clear second layer, paint new color, start mTransition
-            mNewCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            mNewCanvas.drawColor(colorInfo.lastColor);
-            mTransition.startTransition(colorInfo.speed);
+            } else {
+                mCurrentCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                mCurrentCanvas.drawColor(colorInfo.lastColor);
+            }
+
+            mTransition.reverseTransition(colorInfo.speed);
+            firstLayerFront = !firstLayerFront;
 
             // Remember color for later
             mLastBackgroundColor = colorInfo;

@@ -5283,7 +5283,8 @@ public class Activity extends ContextThemeWrapper
                             Settings.System.EXPANDED_DESKTOP_STATE, 1);
                 }
                 // Per-App-Color
-                else if (ExtendedPropertiesUtils.mGlobalHook.mancol != 1 && ColorUtils.getPerAppColorState(this)) {
+                else if (!(mWindow != null && mWindow.mIsFloatingWindow) &&
+                        ExtendedPropertiesUtils.mGlobalHook.mancol != 1 && ColorUtils.getPerAppColorState(this)) {
                     for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
                         // Get color settings
                         String setting = ExtendedPropertiesUtils.PARANOID_COLORS_SETTINGS[i];

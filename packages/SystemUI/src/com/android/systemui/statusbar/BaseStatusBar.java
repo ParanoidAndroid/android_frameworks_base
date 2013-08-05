@@ -733,6 +733,7 @@ public abstract class BaseStatusBar extends SystemUI implements
     private void updateIconColor() {
         ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
                 Settings.System.STATUS_ICON_COLOR);
+
         if (!colorInfo.lastColorString.equals(mLastIconColor.lastColorString)) {
             if(mClock != null) mClock.setTextColor(colorInfo.lastColor);
             if(mSignalCluster != null) mSignalCluster.setColor(colorInfo);
@@ -755,6 +756,7 @@ public abstract class BaseStatusBar extends SystemUI implements
         ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
                 ExtendedPropertiesUtils.isTablet() ? Settings.System.NAV_BAR_COLOR :
                 Settings.System.STATUS_BAR_COLOR);
+
         if (!colorInfo.lastColorString.equals(mLastBackgroundColor.lastColorString)) {
             // Only enable crossfade for transparent backdrops
             mTransition.setCrossFadeEnabled(!colorInfo.isLastColorOpaque);
