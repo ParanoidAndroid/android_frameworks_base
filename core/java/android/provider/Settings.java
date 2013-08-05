@@ -56,6 +56,7 @@ import android.util.Log;
 import com.android.internal.widget.ILockSettings;
 
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -812,15 +813,20 @@ public final class Settings {
 
         public boolean putStringForUser(ContentResolver cr, String name, String value,
                 final int userHandle) {
-            try {
-                Bundle arg = new Bundle();
-                arg.putString(Settings.NameValueTable.VALUE, value);
-                arg.putInt(CALL_METHOD_USER_KEY, userHandle);
-                IContentProvider cp = lazyGetProvider(cr);
-                cp.call(cr.getPackageName(), mCallSetCommand, name, arg);
-            } catch (RemoteException e) {
-                Log.w(TAG, "Can't set key " + name + " in " + mUri, e);
-                return false;
+            if (Arrays.asList(
+                    Settings.System.INSECURE_SETTINGS).contains(name)) {
+                NameValueTable.putString(cr, mUri, name, value);
+            } else {
+                try {
+                    Bundle arg = new Bundle();
+                    arg.putString(Settings.NameValueTable.VALUE, value);
+                    arg.putInt(CALL_METHOD_USER_KEY, userHandle);
+                    IContentProvider cp = lazyGetProvider(cr);
+                    cp.call(cr.getPackageName(), mCallSetCommand, name, arg);
+                } catch (RemoteException e) {
+                    Log.w(TAG, "Can't set key " + name + " in " + mUri, e);
+                    return false;
+                }
             }
             return true;
         }
