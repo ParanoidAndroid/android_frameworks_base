@@ -24,6 +24,7 @@ import com.android.internal.app.HeavyWeightSwitcherActivity;
 import com.android.internal.os.BatteryStatsImpl;
 import com.android.server.am.ActivityManagerService.PendingActivityLaunch;
 import com.android.server.wm.AppTransition;
+import com.android.server.power.PowerManagerService;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -58,6 +59,7 @@ import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.os.PowerManager;
 import android.os.RemoteException;
+import android.os.ServiceManager;
 import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.os.UserHandle;
@@ -326,6 +328,8 @@ final class ActivityStack {
 
     private static final ActivityTrigger mActivityTrigger;
 
+    private final PowerManagerService mPm;
+
     static {
         if (SystemProperties.QCOM_HARDWARE) {
             mActivityTrigger = new ActivityTrigger();
@@ -470,6 +474,7 @@ final class ActivityStack {
             (PowerManager)context.getSystemService(Context.POWER_SERVICE);
         mGoingToSleep = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ActivityManager-Sleep");
         mLaunchingActivity = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ActivityManager-Launch");
+        mPm = (PowerManagerService) ServiceManager.getService("power");
         mLaunchingActivity.setReferenceCounted(false);
     }
 
@@ -1470,6 +1475,9 @@ final class ActivityStack {
     }
 
     final boolean resumeTopActivityLocked(ActivityRecord prev, Bundle options) {
+
+        mPm.cpuBoost(1500000);
+
         // Find the first activity that is not finishing.
         ActivityRecord next = topRunningActivityLocked(null);
 
@@ -2530,6 +2538,8 @@ final class ActivityStack {
             boolean componentSpecified, ActivityRecord[] outActivity) {
 
         int err = ActivityManager.START_SUCCESS;
+
+        mPm.cpuBoost(1500000);
 
         ProcessRecord callerApp = null;
 
