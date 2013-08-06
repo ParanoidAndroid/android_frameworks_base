@@ -32,7 +32,7 @@ public class HybridTile extends QuickSettingsTile {
     private String mDefaultLabel;
     private String mPackageName;
     private String mSourceDir;
-    private String mStatus;
+    private String mStatus1, mStatus2;
     private String mColor = STOCK_COLORS;
 
     private PackageManager mPm;
@@ -97,10 +97,11 @@ public class HybridTile extends QuickSettingsTile {
                     getAppInfoFromPackageName(mPackageName);
             mSourceDir = appInfo.sourceDir;
 
-            mStatus = String.valueOf(ExtendedPropertiesUtils.getActualProperty(mPackageName +
-                    ExtendedPropertiesUtils.PARANOID_DPI_SUFFIX)) + " DPI / " +
-                    String.valueOf(ExtendedPropertiesUtils.getActualProperty(mPackageName +
-                    ExtendedPropertiesUtils.PARANOID_LAYOUT_SUFFIX)) + "P";
+            mStatus1 = String.valueOf(ExtendedPropertiesUtils.getActualProperty(mPackageName +
+                    ExtendedPropertiesUtils.PARANOID_DPI_SUFFIX)) + " DPI";
+
+            mStatus2 = String.valueOf(ExtendedPropertiesUtils.getActualProperty(mPackageName +
+                    ExtendedPropertiesUtils.PARANOID_LAYOUT_SUFFIX)) + " P";
 
             mColor = ExtendedPropertiesUtils.getProperty(mPackageName +
                     ExtendedPropertiesUtils.PARANOID_COLORS_SUFFIX, STOCK_COLORS);
@@ -116,8 +117,10 @@ public class HybridTile extends QuickSettingsTile {
     @Override
     void updateQuickSettings() {
 
-        TextView status = (TextView) mTile.findViewById(R.id.hybrid_status);
-        status.setText(mStatus);
+        TextView status1 = (TextView) mTile.findViewById(R.id.hybrid_status1);
+        status1.setText(mStatus1);
+        TextView status2 = (TextView) mTile.findViewById(R.id.hybrid_status2);
+        status2.setText(mStatus2);
 
         TextView app = (TextView) mTile.findViewById(R.id.hybrid_app);
         app.setText(mLabel);
