@@ -14,6 +14,7 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.ImageView;
 
 import com.android.systemui.R;
 import com.android.systemui.statusbar.phone.QuickSettingsController;
@@ -70,9 +71,10 @@ public class QuickSettingsTile implements OnClickListener {
     }
 
     void updateQuickSettings(){
-        TextView tv = (TextView) mTile.findViewById(R.id.tile_textview);
-        tv.setCompoundDrawablesWithIntrinsicBounds(0, mDrawable, 0, 0);
+        TextView tv = (TextView) mTile.findViewById(R.id.text);
+        ImageView iv = (ImageView) mTile.findViewById(R.id.image);
         tv.setText(mLabel);
+        iv.setImageDrawable(mContext.getResources().getDrawable(mDrawable));
     }
 
     void startSettingsActivity(String action) {

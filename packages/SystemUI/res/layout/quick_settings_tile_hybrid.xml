@@ -14,92 +14,78 @@
      limitations under the License.
 -->
 <LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center"
-    android:gravity="center"
-    android:orientation="vertical">
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="top"
+        android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_marginTop="@dimen/qs_tile_margin_above_icon"
+        android:layout_marginBottom="@dimen/qs_tile_margin_below_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/qs_tile_icon_size"
+        android:layout_gravity="top|center_horizontal"
+        android:orientation="vertical">
 
     <TextView
         style="@style/TextAppearance.QuickSettings.TileView"
-        android:id="@+id/hybrid_status"
+        android:id="@+id/hybrid_status1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:gravity="center"/>
+        android:textSize="8dp"/>
 
-    <LinearLayout
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
+    <TextView
+        style="@style/TextAppearance.QuickSettings.TileView"
+        android:id="@+id/hybrid_status2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="2dp"
+        android:layout_gravity="center"
+        android:textSize="8dp"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:orientation="horizontal">
 
-        <RelativeLayout
-            android:background="#AAA"
-            android:layout_width="15dp"
-            android:layout_height="15dp"
-            android:gravity="center" >
             <View
                 android:id="@+id/hybrid_swatch1"
-                android:layout_width="13dp"
-                android:layout_height="13dp"/>
-        </RelativeLayout>
-        <RelativeLayout
-            android:background="#AAA"
-            android:layout_width="15dp"
-            android:layout_height="15dp"
-            android:layout_marginLeft="4dp"
-            android:gravity="center" >
+                android:layout_width="8dp"
+                android:layout_height="10dp"/>
+
             <View
                 android:id="@+id/hybrid_swatch2"
-                android:layout_width="13dp"
-                android:layout_height="13dp"/>
-        </RelativeLayout>
-        <RelativeLayout
-            android:background="#AAA"
-            android:layout_width="15dp"
-            android:layout_height="15dp"
-            android:layout_marginLeft="4dp"
-            android:gravity="center" >
+                android:layout_width="8dp"
+                android:layout_height="10dp"/>
+
             <View
                 android:id="@+id/hybrid_swatch3"
-                android:layout_width="13dp"
-                android:layout_height="13dp"/>
-        </RelativeLayout>
-        <RelativeLayout
-            android:background="#AAA"
-            android:layout_width="15dp"
-            android:layout_height="15dp"
-            android:layout_marginLeft="4dp"
-            android:gravity="center" >
+                android:layout_width="8dp"
+                android:layout_height="10dp"/>
+
             <View
                 android:id="@+id/hybrid_swatch4"
-                android:layout_width="13dp"
-                android:layout_height="13dp"/>
-        </RelativeLayout>
-        <RelativeLayout
-            android:background="#AAA"
-            android:layout_width="15dp"
-            android:layout_height="15dp"
-            android:layout_marginLeft="4dp"
-            android:gravity="center" >
+                android:layout_width="8dp"
+                android:layout_height="10dp"/>
+
             <View
                 android:id="@+id/hybrid_swatch5"
-                android:layout_width="13dp"
-                android:layout_height="13dp"/>
-        </RelativeLayout>
+                android:layout_width="8dp"
+                android:layout_height="10dp"/>
 
+    </LinearLayout>
     </LinearLayout>
 
     <TextView
         style="@style/TextAppearance.QuickSettings.TileView"
         android:id="@+id/hybrid_app"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center"
-        />
+        android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|center_horizontal"
+            android:gravity="top|center_horizontal"
+            />
 
 </LinearLayout>
