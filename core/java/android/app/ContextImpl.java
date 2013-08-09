@@ -114,6 +114,9 @@ import android.app.admin.DevicePolicyManager;
 import com.android.internal.app.IAppOpsService;
 import com.android.internal.os.IDropBoxManagerService;
 
+import android.os.IHybridService;
+import android.os.HybridManager;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -548,6 +551,13 @@ class ContextImpl extends Context {
                 IIrdaManager service = IIrdaManager.Stub.asInterface(b);
                 return new IrdaManager(service);
             }});
+
+        registerService(HYBRID_MANAGER, new ServiceFetcher() {
+            public Object createService(ContextImpl ctx) {
+                IBinder b = ServiceManager.getService(HYBRID_SERVICE);
+                IHybridService service = IHybridService.Stub.asInterface(b);
+                return new HybridManager(ctx, service);
+                }});
     }
 
     static ContextImpl getImpl(Context context) {
@@ -1915,7 +1925,7 @@ class ContextImpl extends Context {
     }
 
     static void init(ActivityThread thread) {
-        if (ExtendedPropertiesUtils.mMainThread == null) {
+    /*    if (ExtendedPropertiesUtils.mMainThread == null) {
             try {
                 // If hybrid is not enabled, we cannot block the rest of the proccess,
                 // because it may cause a lot of misbehaviours, and avoiding initialization
@@ -1994,8 +2004,8 @@ class ContextImpl extends Context {
                 // This is not a dirty workaround, but an expected behaviour
                 ExtendedPropertiesUtils.mMainThread = null;
             }
-        }        
-    }
+        }  */      
+    } 
 
     final void init(LoadedApk packageInfo, IBinder activityToken, ActivityThread mainThread) {
         init(packageInfo, activityToken, mainThread, null, null, Process.myUserHandle());
@@ -2003,9 +2013,10 @@ class ContextImpl extends Context {
 
     final void init(LoadedApk packageInfo, IBinder activityToken, ActivityThread mainThread,
             Resources container, String basePackageName, UserHandle user) {
-        init(mainThread);
+        //init(mainThread);
         mPackageInfo = packageInfo;
         mBasePackageName = basePackageName != null ? basePackageName : packageInfo.mPackageName;
+        HybridManager.setPackageName(basePackageName);
         mResources = mPackageInfo.getResources(mainThread);
 
         if (mResources != null && container != null
@@ -2026,7 +2037,7 @@ class ContextImpl extends Context {
     }
 
     final void init(Resources resources, ActivityThread mainThread, UserHandle user) {
-        init(mainThread);
+        //init(mainThread);
         mPackageInfo = null;
         mBasePackageName = null;
         mResources = resources;

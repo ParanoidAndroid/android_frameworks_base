@@ -17,6 +17,9 @@
 
 package android.util;
 
+import android.os.ActiveAppCallback;
+import android.os.ActiveAppBinder;
+import android.os.HybridManager;
 import android.os.SystemProperties;
 import android.view.Surface;
 
@@ -28,7 +31,7 @@ import android.view.Surface;
  * <pre> DisplayMetrics metrics = new DisplayMetrics();
  * getWindowManager().getDefaultDisplay().getMetrics(metrics);</pre>
  */
-public class DisplayMetrics extends ExtendedPropertiesUtils {
+public class DisplayMetrics implements ActiveAppCallback  {
     /**
      * Standard quantized DPI for low-density screens.
      */
@@ -199,22 +202,24 @@ public class DisplayMetrics extends ExtendedPropertiesUtils {
      */
     public float noncompatYdpi;
 
+    private ActiveAppBinder activeAppBinder;
+
     /**
      * Process DPI for current hook.
      */
-    public void paranoidHook() {
-        if (getActive()) {
+    public void appChanged() {
+        if (HybridManager.isActive()) {
 
             boolean isOrientationOk = true;
-            if (getLandscape() && mDisplay != null) {
+           /* if (getLandscape() && mDisplay != null) {
                 final int rotation = mDisplay.getRotation();
                 isOrientationOk = (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270);
             }
-
+            */
             if (isOrientationOk) {
-                density = getDensity() == 0 ? density : getDensity();
-                scaledDensity = getScaledDensity() == 0 ? scaledDensity : getScaledDensity();
-                densityDpi = getDpi() == 0 ? densityDpi : getDpi();
+                density = HybridManager.getDensity() == 0 ? density : HybridManager.getDensity();
+                scaledDensity = HybridManager.getScaledDensity() == 0 ? scaledDensity : HybridManager.getScaledDensity();
+                densityDpi = HybridManager.getDpi() == 0 ? densityDpi : HybridManager.getDpi();
                 noncompatDensity = densityDpi;
                 noncompatDensityDpi = densityDpi;
                 noncompatScaledDensity = scaledDensity;
@@ -223,6 +228,7 @@ public class DisplayMetrics extends ExtendedPropertiesUtils {
     }
 
     public DisplayMetrics() {
+        activeAppBinder = new ActiveAppBinder(this);
     }
     
     public void setTo(DisplayMetrics o) {
@@ -240,7 +246,7 @@ public class DisplayMetrics extends ExtendedPropertiesUtils {
         noncompatScaledDensity = o.noncompatScaledDensity;
         noncompatXdpi = o.noncompatXdpi;
         noncompatYdpi = o.noncompatYdpi;
-        paranoidHook();
+        appChanged();
     }
     
     public void setToDefaults() {
@@ -315,6 +321,8 @@ public class DisplayMetrics extends ExtendedPropertiesUtils {
     }
 
     public static int getDeviceDensity() {
-        return mGlobalHook.dpi == 0 ? DENSITY_DEVICE : mGlobalHook.dpi;
+        //TODO fix me
+      //  return mGlobalHook.dpi == 0 ? DENSITY_DEVICE : mGlobalHook.dpi;
+        return DENSITY_DEVICE;
     }
 }

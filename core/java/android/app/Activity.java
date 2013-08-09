@@ -45,6 +45,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.HybridManager;
 import android.os.Looper;
 import android.os.Parcelable;
 import android.os.RemoteException;
@@ -58,7 +59,6 @@ import android.text.method.TextKeyListener;
 import android.util.AttributeSet;
 import android.util.ColorUtils;
 import android.util.EventLog;
-import android.util.ExtendedPropertiesUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -5275,14 +5275,16 @@ public class Activity extends ContextThemeWrapper
     
     final void performResume() {
         // Per-App-Extras
-        if (mWindow != null && ExtendedPropertiesUtils.isInitialized() ) {
+        if (mWindow != null) {
+            HybridManager.setPackageName(getPackageName());
             try {
                 // Per-App-Expand
-                if (ExtendedPropertiesUtils.mGlobalHook.expand == 1) {
+                if (HybridManager.isExpanded()) {
                     Settings.System.putInt(this.getContentResolver(),
                             Settings.System.EXPANDED_DESKTOP_STATE, 1);
                 }
                 // Per-App-Color
+/*
                 else if (!(mWindow != null && mWindow.mIsFloatingWindow) &&
                         ExtendedPropertiesUtils.mGlobalHook.mancol != 1 && ColorUtils.getPerAppColorState(this)) {
                     for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
@@ -5301,6 +5303,7 @@ public class Activity extends ContextThemeWrapper
                         }
                     }
                 }
+*/
             } catch (Exception e) {
                 // Current application is null, or hook is not set
             }
@@ -5337,9 +5340,9 @@ public class Activity extends ContextThemeWrapper
 
     final void performPause() {
         // Per-App-Extras
-        if (ExtendedPropertiesUtils.isInitialized() &&
-            mParent == null && mDecor != null && mDecor.getParent() != null &&
-            ExtendedPropertiesUtils.mGlobalHook.expand == 1) {
+        HybridManager.setPackageName(getPackageName());
+        if (mParent == null && mDecor != null && mDecor.getParent() != null &&
+            HybridManager.isExpanded()) {
             try {
                 Settings.System.putInt(this.getContentResolver(),
                     Settings.System.EXPANDED_DESKTOP_STATE, 0);

@@ -29,11 +29,12 @@ import android.graphics.Movie;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable.ConstantState;
+import android.os.ActiveAppCallback;
+import android.os.ActiveAppBinder;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.ExtendedPropertiesUtils;
 import android.util.Log;
 import android.util.Slog;
 import android.util.TypedValue;
@@ -71,7 +72,7 @@ import libcore.icu.NativePluralRules;
  * <p>For more information about using resources, see the documentation about <a
  * href="{@docRoot}guide/topics/resources/index.html">Application Resources</a>.</p>
  */
-public class Resources extends ExtendedPropertiesUtils {
+public class Resources implements ActiveAppCallback {
     static final String TAG = "Resources";
     private static final boolean DEBUG_LOAD = false;
     private static final boolean DEBUG_CONFIG = false;
@@ -123,20 +124,22 @@ public class Resources extends ExtendedPropertiesUtils {
     
     private CompatibilityInfo mCompatibilityInfo;
 
+    private ActiveAppBinder appBinder = new ActiveAppBinder(this);
+
      /**
      * Override current object with temp properties stored in enum interface
      */
-    public void paranoidHook() {
+    public void appChanged() {
         mConfiguration.active = true;        
-        mConfiguration.overrideHook(this, OverrideMode.ExtendedProperties);
-        mConfiguration.paranoidHook();
+        //mConfiguration.overrideHook(this, OverrideMode.ExtendedProperties);
+        //mConfiguration.paranoidHook();
 
         mTmpConfig.active = true;        
-        mTmpConfig.overrideHook(this, OverrideMode.ExtendedProperties);
-        mTmpConfig.paranoidHook();
+        //mTmpConfig.overrideHook(this, OverrideMode.ExtendedProperties);
+        //mTmpConfig.paranoidHook();
 
-        mMetrics.overrideHook(this, OverrideMode.ExtendedProperties);
-        mMetrics.paranoidHook();
+        //mMetrics.overrideHook(this, OverrideMode.ExtendedProperties);
+        //mMetrics.paranoidHook();
     }
 
     static {
@@ -211,8 +214,8 @@ public class Resources extends ExtendedPropertiesUtils {
             Configuration config, CompatibilityInfo compInfo) {
         mAssets = assets;
         mMetrics.setToDefaults();
-        overrideHook(assets, OverrideMode.ExtendedProperties);
-        paranoidHook();
+        //overrideHook(assets, OverrideMode.ExtendedProperties);
+        appChanged();
         mCompatibilityInfo = compInfo;
         updateConfiguration(config, metrics);
         assets.ensureStringBlocks();
@@ -1588,7 +1591,8 @@ public class Resources extends ExtendedPropertiesUtils {
             if (mConfiguration.densityDpi != Configuration.DENSITY_DPI_UNDEFINED) {
                 mMetrics.densityDpi = mConfiguration.densityDpi;
                 mMetrics.density = mConfiguration.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
-                mMetrics.paranoidHook();
+                //TODO: inmvestigate if this is still needed
+                mMetrics.appChanged();
             }
             mMetrics.scaledDensity = mMetrics.density * mConfiguration.fontScale;
 

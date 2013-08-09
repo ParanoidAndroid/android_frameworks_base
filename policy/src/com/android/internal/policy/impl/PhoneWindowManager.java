@@ -55,6 +55,7 @@ import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.os.FactoryTest;
 import android.os.Handler;
+import android.os.HybridManager;
 import android.os.IBinder;
 import android.os.IRemoteCallback;
 import android.os.Looper;
@@ -78,7 +79,6 @@ import android.service.dreams.DreamService;
 import android.service.dreams.IDreamManager;
 import android.util.DisplayMetrics;
 import android.util.EventLog;
-import android.util.ExtendedPropertiesUtils;
 import android.util.Log;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -1339,16 +1339,24 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private int updateHybridLayout() {
         boolean expDesktop = Settings.System.getInt(mContext.getContentResolver(),
                     Settings.System.EXPANDED_DESKTOP_STATE, 0) == 1;
-        int oldSystemUiLayout = mSystemUiLayout == 0 ?
-            ExtendedPropertiesUtils.getActualProperty("com.android.systemui.layout") : mSystemUiLayout;
-        ExtendedPropertiesUtils.refreshProperties();
-        mSystemDpi = ExtendedPropertiesUtils.getActualProperty("android.dpi");
-        mSystemUiDpi = ExtendedPropertiesUtils.getActualProperty("com.android.systemui.dpi");
-        mSystemUiLayout = ExtendedPropertiesUtils.getActualProperty("com.android.systemui.layout");
+        HybridManager.setPackageName("com.android.systemui");
+        int oldSystemUiLayout;
+        if (mSystemUiLayout == 0) {
+            oldSystemUiLayout = HybridManager.getLayout();
+        } else {
+             oldSystemUiLayout = mSystemUiLayout;
+        }
+
+        mSystemDpi = HybridManager.getDpi();
+        mSystemUiDpi = HybridManager.getDpi();
+        mSystemUiLayout = HybridManager.getLayout();
+    /* TODO: fix nav bar %
         int mNavigationBarPercent = expDesktop ? 0 : Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.navbar.dpi", "100"));
+    
         mNavigationBarDpi = mNavigationBarPercent * mSystemUiDpi / 100;
         int mStatusBarPercent = Integer.parseInt(ExtendedPropertiesUtils.getProperty("com.android.systemui.statusbar.dpi", "100"));
-        mStatusBarDpi = mStatusBarPercent * mSystemUiDpi / 100;
+        */
+        //mStatusBarDpi = mStatusBarPercent * mSystemUiDpi / 100;
         return oldSystemUiLayout;
     }
 
