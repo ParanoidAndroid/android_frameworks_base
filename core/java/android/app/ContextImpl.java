@@ -83,6 +83,7 @@ import android.os.DropBoxManager;
 import android.os.Environment;
 import android.os.FileUtils;
 import android.os.Handler;
+import android.os.IHybridService;
 import android.os.IBinder;
 import android.os.IPowerManager;
 import android.os.IUserManager;
@@ -113,6 +114,8 @@ import android.app.admin.DevicePolicyManager;
 
 import com.android.internal.app.IAppOpsService;
 import com.android.internal.os.IDropBoxManagerService;
+
+import com.android.internal.os.HybridManager;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -548,6 +551,13 @@ class ContextImpl extends Context {
                 IIrdaManager service = IIrdaManager.Stub.asInterface(b);
                 return new IrdaManager(service);
             }});
+
+        registerService(HYBRID_MANAGER, new ServiceFetcher() {
+            public Object createService(ContextImpl ctx) {
+                IBinder b = ServiceManager.getService(HYBRID_SERVICE);
+                IHybridService service = IHybridService.Stub.asInterface(b);
+                return new HybridManager(ctx, service);
+                }});
     }
 
     static ContextImpl getImpl(Context context) {
