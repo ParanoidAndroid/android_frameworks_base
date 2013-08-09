@@ -11,9 +11,9 @@ import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.database.DataSetObserver;
 import android.graphics.Color;
+import android.os.HybridManager;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
-import android.util.ExtendedPropertiesUtils;
 import android.view.DisplayInfo;
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
@@ -170,12 +170,7 @@ public class NavbarEditor implements OnTouchListener {
     };
 
     protected static boolean isDevicePhone() {
-        int deviceLayout = ExtendedPropertiesUtils.getActualProperty(
-                "com.android.systemui.layout");
-        if (mIsDevicePhone == null) {
-            mIsDevicePhone = deviceLayout < 600;
-        }
-        return mIsDevicePhone;
+        return HybridManager.isTablet();
     }
 
     @Override

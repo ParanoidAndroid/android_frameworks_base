@@ -45,7 +45,6 @@ import android.os.ServiceManager;
 import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.ColorUtils;
-import android.util.ExtendedPropertiesUtils;
 import android.util.Slog;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;

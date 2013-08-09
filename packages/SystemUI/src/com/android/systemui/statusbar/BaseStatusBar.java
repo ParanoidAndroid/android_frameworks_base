@@ -52,6 +52,7 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
+import android.os.HybridManager;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
@@ -61,7 +62,6 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.ColorUtils;
 import android.util.DisplayMetrics;
-import android.util.ExtendedPropertiesUtils;
 import android.util.Log;
 import android.util.Slog;
 import android.view.Display;
@@ -473,7 +473,7 @@ public abstract class BaseStatusBar extends SystemUI implements
             mBarView.setBackground(mTransition);
 
             mLastIconColor = ColorUtils.getColorSettingInfo(mContext, Settings.System.STATUS_ICON_COLOR);
-            mLastBackgroundColor = ColorUtils.getColorSettingInfo(mContext, ExtendedPropertiesUtils.isTablet()
+            mLastBackgroundColor = ColorUtils.getColorSettingInfo(mContext, HybridManager.isTablet()
                     ? Settings.System.NAV_BAR_COLOR : Settings.System.STATUS_BAR_COLOR);
 
             updateIconColor();
@@ -489,7 +489,7 @@ public abstract class BaseStatusBar extends SystemUI implements
 
             // Listen for status bar background color changes
             mContext.getContentResolver().registerContentObserver(
-                Settings.System.getUriFor(ExtendedPropertiesUtils.isTablet() ?
+                Settings.System.getUriFor(HybridManager.isTablet() ?
                         Settings.System.NAV_BAR_COLOR : Settings.System.STATUS_BAR_COLOR),
                         false, new ContentObserver(new Handler()) {
                     @Override
@@ -497,13 +497,13 @@ public abstract class BaseStatusBar extends SystemUI implements
                         updateBackgroundColor();
                     }});
 
-            // Listen for per-app-color state changes, this one will revert to stock colors all over
+  /*          // Listen for per-app-color state changes, this one will revert to stock colors all over
             mContext.getContentResolver().registerContentObserver(
                 Settings.System.getUriFor(Settings.System.PER_APP_COLOR),
                         false, new ContentObserver(new Handler()) {
                     @Override
                     public void onChange(boolean selfChange) {
-                        if (!ColorUtils.getPerAppColorState(mContext)) {
+                       if (!ColorUtils.getPerAppColorState(mContext)) {
                             for (int i = 0; i < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; i++) {
                                 ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
                                         Settings.System.STATUS_ICON_COLOR);
@@ -513,7 +513,8 @@ public abstract class BaseStatusBar extends SystemUI implements
                         }
                     }});
         }
-
+*/
+        }
         attachPie();
 
         // Listen for PIE gravity
@@ -599,10 +600,10 @@ public abstract class BaseStatusBar extends SystemUI implements
     private boolean showPie() {
         boolean expanded = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.EXPANDED_DESKTOP_STATE, 0) == 1;
-        boolean navbarZero = Integer.parseInt(ExtendedPropertiesUtils
-                .getProperty("com.android.systemui.navbar.dpi", "100")) == 0;
+        //boolean navbarZero = Integer.parseInt(ExtendedPropertiesUtils
+        //        .getProperty("com.android.systemui.navbar.dpi", "100")) == 0;
 
-        return (expanded || navbarZero);
+        return (expanded);
     }
 
     public void updatePieControls() {
@@ -755,7 +756,7 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     private void updateBackgroundColor() {
         ColorUtils.ColorSettingInfo colorInfo = ColorUtils.getColorSettingInfo(mContext,
-                ExtendedPropertiesUtils.isTablet() ? Settings.System.NAV_BAR_COLOR :
+                HybridManager.isTablet() ? Settings.System.NAV_BAR_COLOR :
                 Settings.System.STATUS_BAR_COLOR);
 
         if (!colorInfo.lastColorString.equals(mLastBackgroundColor.lastColorString)) {

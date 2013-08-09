@@ -12,7 +12,6 @@ import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Handler;
 import android.provider.Settings;
-import android.util.ExtendedPropertiesUtils;
 import android.util.ColorUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -91,7 +90,7 @@ public class HybridTile extends QuickSettingsTile {
                     getPackageInfo(mPackageName, 0);
             mLabel = foregroundAppPackageInfo.applicationInfo.
                     loadLabel(mPm).toString();
-
+        /*
             ExtendedPropertiesUtils.refreshProperties();
             ApplicationInfo appInfo = ExtendedPropertiesUtils.
                     getAppInfoFromPackageName(mPackageName);
@@ -105,6 +104,7 @@ public class HybridTile extends QuickSettingsTile {
 
             mColor = ExtendedPropertiesUtils.getProperty(mPackageName +
                     ExtendedPropertiesUtils.PARANOID_COLORS_SUFFIX, STOCK_COLORS);
+        */
 
         } catch(Exception e) {
             mLabel = mDefaultLabel; // No app found with package name
@@ -133,7 +133,7 @@ public class HybridTile extends QuickSettingsTile {
         swatches[2] = mTile.findViewById(R.id.hybrid_swatch3);
         swatches[3] = mTile.findViewById(R.id.hybrid_swatch4);
         swatches[4] = mTile.findViewById(R.id.hybrid_swatch5);
-
+/*
         String[] colors = mColor.split(ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
         if (colors.length == ExtendedPropertiesUtils.PARANOID_COLORS_COUNT) {
             for(int colorIndex = 0; colorIndex < ExtendedPropertiesUtils.PARANOID_COLORS_COUNT; colorIndex++) {
@@ -144,7 +144,7 @@ public class HybridTile extends QuickSettingsTile {
                 colorIndex] : ColorUtils.hexToInt(colors[colorIndex]),
                         PorterDuff.Mode.SRC_ATOP);
             }
-        }
+        } */
     }
 
     @Override

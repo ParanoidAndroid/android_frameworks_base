@@ -48,6 +48,7 @@ import android.view.WindowManager;
 
 import com.android.internal.os.BinderInternal;
 import com.android.internal.os.SamplingProfilerIntegration;
+import com.android.server.HybridService;
 import com.android.server.accessibility.AccessibilityManagerService;
 import com.android.server.accounts.AccountManagerService;
 import com.android.server.am.ActivityManagerService;
@@ -156,6 +157,7 @@ class ServerThread extends Thread {
         CommonTimeManagementService commonTimeMgmtService = null;
         InputManagerService inputManager = null;
         TelephonyRegistry telephonyRegistry = null;
+        HybridService mHybrid = null;
 
         // Create a shared handler thread for UI within the system server.
         // This thread is used by at least the following components:
@@ -432,6 +434,14 @@ class ServerThread extends Thread {
                 ServiceManager.addService(Context.DEVICE_POLICY_SERVICE, devicePolicy);
             } catch (Throwable e) {
                 reportWtf("starting DevicePolicyService", e);
+            }
+
+            try {
+                Slog.i(TAG, "Hybird Service");
+                mHybrid = new HybridService(context);
+                ServiceManager.addService(Context.HYBRID_SERVICE, mHybrid);
+            } catch (Throwable e) {
+                reportWtf("starting Hybrid Service", e);
             }
 
             try {

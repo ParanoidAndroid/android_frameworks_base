@@ -55,7 +55,6 @@ import android.os.Vibrator;
 import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.ColorUtils;
-import android.util.ExtendedPropertiesUtils;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.BounceInterpolator;
@@ -284,8 +283,7 @@ public class PieMenu extends FrameLayout {
                 Settings.System.EXPANDED_DESKTOP_STATE, 0) == 1;
         mUseMenuAlways = Settings.System.getInt(mContext.getContentResolver(), Settings.System.PIE_MENU, 1) == 1;
         mUseSearch = Settings.System.getInt(mContext.getContentResolver(), Settings.System.PIE_SEARCH, 1) == 1;
-        mNavbarZero = Integer.parseInt(ExtendedPropertiesUtils.getProperty(
-                "com.android.systemui.navbar.dpi", "100")) == 0 && !expanded;
+        mNavbarZero = !expanded;
         mStatusMode = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.PIE_MODE, 2);
         mPieSize = Settings.System.getFloat(mContext.getContentResolver(),

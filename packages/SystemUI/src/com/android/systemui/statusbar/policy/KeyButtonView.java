@@ -37,7 +37,6 @@ import android.os.ServiceManager;
 import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.ColorUtils;
-import android.util.ExtendedPropertiesUtils;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;

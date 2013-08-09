@@ -52,6 +52,7 @@ import android.graphics.Bitmap.Config;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Bundle;
+import android.os.HybridManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -66,7 +67,6 @@ import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.EventLog;
-import android.util.ExtendedPropertiesUtils;
 import android.util.Log;
 import android.util.Slog;
 import android.view.Display;
@@ -975,7 +975,8 @@ final class ActivityStack {
         int w = mThumbnailWidth;
         int h = mThumbnailHeight;
         if (w < 0) {
-            int mAndroidDpi = ExtendedPropertiesUtils.getActualProperty("android.dpi");
+            //TODO invetigate
+            int mAndroidDpi = HybridManager.getDpi();
             mThumbnailWidth = w =
                 Math.round((float)res.getDimensionPixelSize(com.android.internal.R.dimen.thumbnail_width) *  
                 DisplayMetrics.DENSITY_DEVICE / mAndroidDpi);

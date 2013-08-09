@@ -60,6 +60,7 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.Matrix;
 import android.os.Handler;
+import android.os.HybridManager;
 import android.os.RemoteException;
 import android.os.Vibrator;
 import android.os.ServiceManager;
@@ -67,7 +68,6 @@ import android.provider.Settings;
 import android.service.notification.INotificationListener;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.ExtendedPropertiesUtils;
 import android.util.Log;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
@@ -480,7 +480,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
         } catch (android.os.RemoteException ex) {
             // failed to register listener
         }
-        if(ExtendedPropertiesUtils.isTablet()) {
+        if(HybridManager.isTablet()) {
             if (mBar.getTabletTicker() != null) mBar.getTabletTicker().setUpdateEvent(this);
         } else {
             if (mBar.getTicker() != null) mBar.getTicker().setUpdateEvent(this);
@@ -912,7 +912,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
         mEffect.unscheduleSleep();
         mHandler.removeCallbacksAndMessages(null);
         // Kill callback
-        if(ExtendedPropertiesUtils.isTablet()) {
+        if(HybridManager.isTablet()) {
             if (mBar.getTabletTicker() != null) mBar.getTabletTicker().setUpdateEvent(null);
         } else {
              mBar.getTicker().setUpdateEvent(null);

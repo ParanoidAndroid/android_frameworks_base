@@ -20,10 +20,11 @@ package android.content.res;
 
 import android.content.pm.ActivityInfo;
 import android.graphics.Point;
+import android.os.ActiveAppCallback;
+import android.os.HybridManager;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
-import android.util.ExtendedPropertiesUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.Surface;
@@ -43,7 +44,7 @@ import java.util.Locale;
  * with {@link android.app.Activity#getResources}:</p>
  * <pre>Configuration config = getResources().getConfiguration();</pre>
  */
-public final class Configuration extends ExtendedPropertiesUtils implements Parcelable, Comparable<Configuration> {
+public final class Configuration implements Parcelable, Comparable<Configuration>,ActiveAppCallback {
     /** @hide */
     public static final Configuration EMPTY = new Configuration();
 
@@ -573,23 +574,17 @@ public final class Configuration extends ExtendedPropertiesUtils implements Parc
     /**
      * Process layout changes for current hook
      */
-    public void paranoidHook() {        
-        if (active) {
-
-            boolean isOrientationOk = true;
-            if (getLandscape() && mDisplay != null) {
-                final int rotation = mDisplay.getRotation();
-                isOrientationOk = (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270);
-            }
-
-            if (getLayout() != 0 && isOrientationOk) {
+    public void appChanged() {        
+        if (HybridManager.isActive()) {
+            final int layout = HybridManager.getLayout();
+            if (layout != 0) {
                 Point size = new Point();
-                mDisplay.getSize(size);
+                //mDisplay.getSize(size);
                 float factor = (float)Math.max(size.x, size.y) / (float)Math.min(size.x, size.y);
-                screenWidthDp = getLayout();
+                screenWidthDp = layout;
                 screenHeightDp = (int)(screenWidthDp * factor);
-                smallestScreenWidthDp = getLayout();           
-                if (getLarge()) {
+                smallestScreenWidthDp = layout;           
+                if (HybridManager.getLarge()) {
                     screenLayout |= SCREENLAYOUT_SIZE_XLARGE;
                 }
                 compatScreenWidthDp = screenWidthDp;
@@ -639,7 +634,7 @@ public final class Configuration extends ExtendedPropertiesUtils implements Parc
         compatScreenHeightDp = o.compatScreenHeightDp;
         compatSmallestScreenWidthDp = o.compatSmallestScreenWidthDp;
         seq = o.seq;
-        paranoidHook();
+        appChanged();
         if (o.customTheme != null) {
             customTheme = (CustomTheme) o.customTheme.clone();
         }

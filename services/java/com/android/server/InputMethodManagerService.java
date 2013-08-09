@@ -66,6 +66,7 @@ import android.inputmethodservice.InputMethodService;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.HybridManager;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.IRemoteCallback;
@@ -82,7 +83,6 @@ import android.text.TextUtils;
 import android.text.style.SuggestionSpan;
 import android.util.AtomicFile;
 import android.util.EventLog;
-import android.util.ExtendedPropertiesUtils;
 import android.util.LruCache;
 import android.util.Pair;
 import android.util.PrintWriterPrinter;
@@ -844,7 +844,7 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
                 updateImeWindowStatusLocked();
                 mShowOngoingImeSwitcherForPhones = mRes.getBoolean(
                         com.android.internal.R.bool.show_ongoing_ime_switcher) &&
-                                !ExtendedPropertiesUtils.isTablet();
+                                !HybridManager.isTablet();
                 if (mShowOngoingImeSwitcherForPhones) {
                     mWindowManagerService.setOnHardKeyboardStatusChangeListener(
                             mHardKeyboardListener);
@@ -1446,7 +1446,7 @@ public class InputMethodManagerService extends IInputMethodManager.Stub
     }
 
     private boolean needsToShowImeSwitchOngoingNotification() {
-        if (!mShowOngoingImeSwitcherForPhones || ExtendedPropertiesUtils.isTablet()) return false;
+        if (!mShowOngoingImeSwitcherForPhones || HybridManager.isTablet()) return false;
         if (isScreenLocked()) return false;
         synchronized (mMethodMap) {
             List<InputMethodInfo> imis = mSettings.getEnabledInputMethodListLocked();
