@@ -20,13 +20,14 @@ package android.graphics;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.DisplayMetrics;
-import android.util.ExtendedPropertiesUtils;
 
 import java.io.OutputStream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+
+import com.android.server.HybirdService;
 
 public final class Bitmap implements Parcelable {
     /**
@@ -71,6 +72,8 @@ public final class Bitmap implements Parcelable {
 
     private static volatile int sDefaultDensity = -1;
 
+    private static IHybridService mHybrid = null;
+
     /**
      * For backwards compatibility, allows the app layer to change the default
      * density when running old apps.
@@ -82,7 +85,10 @@ public final class Bitmap implements Parcelable {
 
     static int getDefaultDensity() {
         if (sDefaultDensity >= 0) {
-            return ExtendedPropertiesUtils.mGlobalHook.dpi == 0 ? sDefaultDensity : ExtendedPropertiesUtils.mGlobalHook.dpi;
+            if(mHybridManger==null) {
+                
+            }
+            return mHybird.getDpi();
         }
         sDefaultDensity = DisplayMetrics.getDeviceDensity();
         return sDefaultDensity;

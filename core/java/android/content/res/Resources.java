@@ -71,7 +71,7 @@ import libcore.icu.NativePluralRules;
  * <p>For more information about using resources, see the documentation about <a
  * href="{@docRoot}guide/topics/resources/index.html">Application Resources</a>.</p>
  */
-public class Resources extends ExtendedPropertiesUtils {
+public class Resources implements ActiveAppCallback {
     static final String TAG = "Resources";
     private static final boolean DEBUG_LOAD = false;
     private static final boolean DEBUG_CONFIG = false;
@@ -126,17 +126,17 @@ public class Resources extends ExtendedPropertiesUtils {
      /**
      * Override current object with temp properties stored in enum interface
      */
-    public void paranoidHook() {
+    public void appChanged() {
         mConfiguration.active = true;        
-        mConfiguration.overrideHook(this, OverrideMode.ExtendedProperties);
-        mConfiguration.paranoidHook();
+        //mConfiguration.overrideHook(this, OverrideMode.ExtendedProperties);
+        //mConfiguration.paranoidHook();
 
         mTmpConfig.active = true;        
-        mTmpConfig.overrideHook(this, OverrideMode.ExtendedProperties);
-        mTmpConfig.paranoidHook();
+        //mTmpConfig.overrideHook(this, OverrideMode.ExtendedProperties);
+        //mTmpConfig.paranoidHook();
 
-        mMetrics.overrideHook(this, OverrideMode.ExtendedProperties);
-        mMetrics.paranoidHook();
+        //mMetrics.overrideHook(this, OverrideMode.ExtendedProperties);
+        //mMetrics.paranoidHook();
     }
 
     static {

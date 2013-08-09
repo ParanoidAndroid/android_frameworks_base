@@ -1746,7 +1746,7 @@ public final class ActivityThread {
         //}
 
         AssetManager assets = new AssetManager();
-        assets.overrideHook(resDir, ExtendedPropertiesUtils.OverrideMode.FullNameExclude);
+        //assets.overrideHook(resDir, ExtendedPropertiesUtils.OverrideMode.FullNameExclude);
         assets.setThemeSupport(compInfo.isThemeable);
         if (assets.addAssetPath(resDir) == 0) {
             return null;
@@ -1754,7 +1754,7 @@ public final class ActivityThread {
 
         //Slog.i(TAG, "Resource: key=" + key + ", display metrics=" + metrics);
         DisplayMetrics dm = getDisplayMetricsLocked(displayId, null);
-        dm.overrideHook(assets, ExtendedPropertiesUtils.OverrideMode.ExtendedProperties);
+        //dm.overrideHook(assets, ExtendedPropertiesUtils.OverrideMode.ExtendedProperties);
         Configuration config;
         boolean isDefaultDisplay = (displayId == Display.DEFAULT_DISPLAY);
         if (!isDefaultDisplay || key.mOverrideConfiguration != null) {
@@ -4362,10 +4362,11 @@ public final class ActivityThread {
     }
 
     private void handleBindApplication(AppBindData data) {
+        mHybridManger.setPackageName(data.processName);
         mBoundApplication = data;
         mConfiguration = new Configuration(data.config);
         mConfiguration.active = true;
-        mConfiguration.overrideHook(data.processName, ExtendedPropertiesUtils.OverrideMode.PackageName);
+        //mConfiguration.overrideHook(data.processName, ExtendedPropertiesUtils.OverrideMode.PackageName);
         mCompatConfiguration = new Configuration(data.config);
 
         mProfiler = new Profiler();
