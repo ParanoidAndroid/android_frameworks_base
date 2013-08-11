@@ -20,6 +20,7 @@ import android.os.Handler;
 import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -75,8 +76,8 @@ public class HaloProperties extends FrameLayout {
     protected RelativeLayout mHaloTickerContainer;
 
     protected View mHaloNumberView;
-    protected TextView mHaloNumber;
-    protected ImageView mHaloNumberIcon;
+    protected TextView mHaloNumber, mHaloCount;
+    protected ImageView mHaloNumberIcon, mHaloSystemIcon, mHaloPinned;
     protected RelativeLayout mHaloNumberContainer;
 
     private float mFraction = 1.0f;
@@ -114,8 +115,13 @@ public class HaloProperties extends FrameLayout {
         mHaloNumberView = mInflater.inflate(R.layout.halo_number, null);
         mHaloNumberContainer = (RelativeLayout)mHaloNumberView.findViewById(R.id.container);
         mHaloNumber = (TextView) mHaloNumberView.findViewById(R.id.number);
+        mHaloCount = (TextView) mHaloNumberView.findViewById(R.id.haloCount);
         mHaloNumberIcon = (ImageView) mHaloNumberView.findViewById(R.id.icon);
         mHaloNumberIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.halo_batch_message));
+        mHaloSystemIcon = (ImageView) mHaloNumberView.findViewById(R.id.system);
+        mHaloSystemIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.halo_system_message));
+        mHaloPinned = (ImageView) mHaloNumberView.findViewById(R.id.pinned);
+        mHaloPinned.setImageDrawable(mContext.getResources().getDrawable(R.drawable.halo_pinned_app));
 
         mFraction = Settings.System.getFloat(mContext.getContentResolver(),
                 Settings.System.HALO_SIZE, 1.0f);
@@ -137,6 +143,8 @@ public class HaloProperties extends FrameLayout {
         RelativeLayout.LayoutParams layoutParams2 = new RelativeLayout.LayoutParams(newNumberSize, newNumberSize);
         mHaloNumber.setLayoutParams(layoutParams2);
         mHaloNumber.setTextSize(TypedValue.COMPLEX_UNIT_PX, newNumberTextSize);
+        mHaloCount.setLayoutParams(layoutParams2);
+        mHaloCount.setTextSize(TypedValue.COMPLEX_UNIT_PX, newNumberTextSize);
 
         final int newSpeechTextSize = (int)(mContext.getResources().getDimensionPixelSize(R.dimen.halo_speech_text_size) * fraction);
         mHaloTextViewR.setTextSize(TypedValue.COMPLEX_UNIT_PX, newSpeechTextSize);
@@ -147,6 +155,8 @@ public class HaloProperties extends FrameLayout {
         layoutParams3.addRule(RelativeLayout.CENTER_VERTICAL);
         layoutParams3.addRule(RelativeLayout.CENTER_HORIZONTAL);
         mHaloNumberIcon.setLayoutParams(layoutParams3);
+        mHaloSystemIcon.setLayoutParams(layoutParams3);
+        mHaloPinned.setLayoutParams(layoutParams3);
 
         updateResources();
     }
@@ -177,8 +187,12 @@ public class HaloProperties extends FrameLayout {
 
     protected CustomObjectAnimator msgNumberFlipAnimator = new CustomObjectAnimator(this);
     protected CustomObjectAnimator msgNumberAlphaAnimator = new CustomObjectAnimator(this);
-    public void setHaloMessageNumber(final int value, final boolean alwaysFlip, int delay) {
-
+    public void setHaloMessageNumber(final int value,final int msgCount, final boolean alwaysFlip, int delay, final String msgType) {
+        if (msgCount == 0) {
+            msgNumberAlphaAnimator.animate(ObjectAnimator.ofFloat(mHaloNumberContainer, "alpha", 0f).setDuration(1000),
+                    new DecelerateInterpolator(), null, delay, null);
+            return;
+        }
         mAnimQueue.removeCallbacksAndMessages(null);
         mAnimQueue.postDelayed(new Runnable() {
             public void run() {
@@ -189,17 +203,32 @@ public class HaloProperties extends FrameLayout {
 
                     mHaloNumberContainer.setAlpha(1f);
                     mHaloNumber.setAlpha(1f);
+                    mHaloCount.setAlpha(0f);
+                    mHaloCount.setText("");
                     mHaloNumberIcon.setAlpha(0f);
-                    if (value < 1) {
+                    mHaloSystemIcon.setAlpha(0f);
+                    mHaloPinned.setAlpha(0f);
+                    if (msgCount > 0) {
+                        mHaloNumber.setAlpha(0f);
+                        mHaloCount.setText(String.valueOf(msgCount));
+                        mHaloCount.setAlpha(1f);
+                    } else if (value < 1 && msgCount < 1) {
                         mHaloNumber.setText("");
-                        mHaloNumberIcon.setAlpha(1f);                
+                        if (msgType != null && msgType.equals("pinned")) {
+                            mHaloPinned.setAlpha(1f);
+                        } else if (msgType != null && msgType.equals("system")) {
+                            mHaloSystemIcon.setAlpha(1f);
+                        } else {
+                            mHaloNumberIcon.setAlpha(1f);
+                        }
                     } else if (value < 100) {
+                        Log.i("HALO", "" + value);
                         mHaloNumber.setText(String.valueOf(value));
                     } else {
                         mHaloNumber.setText("+");
                     }
                     
-                    if (value < 1) {
+                    if (value < 1 && msgCount < 1) {
                         msgNumberAlphaAnimator.animate(ObjectAnimator.ofFloat(mHaloNumberContainer, "alpha", 0f).setDuration(1000),
                                 new DecelerateInterpolator(), null, 1500, null);
                     }

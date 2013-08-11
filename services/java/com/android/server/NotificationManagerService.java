@@ -795,7 +795,8 @@ public class NotificationManagerService extends INotificationManager.Stub
             final ComponentName component = info.component;
             final int oldUser = info.userid;
             Slog.v(TAG, "disabling notification listener for user " + oldUser + ": " + component);
-            unregisterListenerService(component, info.userid);
+            // Do not un-register HALO, we un-register only when HALO is closed
+            if (!component.getPackageName().equals("HaloComponent")) unregisterListenerService(component, info.userid);
         }
 
         final int N = toAdd.size();
@@ -816,7 +817,8 @@ public class NotificationManagerService extends INotificationManager.Stub
     @Override
     public void registerListener(final INotificationListener listener,
             final ComponentName component, final int userid) {
-        checkCallerIsSystem();
+
+        if (!component.getPackageName().equals("HaloComponent")) checkCallerIsSystem();
 
         synchronized (mNotificationList) {
             try {
