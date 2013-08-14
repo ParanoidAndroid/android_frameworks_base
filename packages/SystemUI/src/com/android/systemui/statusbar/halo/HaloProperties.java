@@ -51,6 +51,12 @@ public class HaloProperties extends FrameLayout {
         MESSAGE
     }
 
+    public enum MessageType {
+        MESSAGE,
+        PINNED,
+        SYSTEM
+    }
+
     private Handler mAnimQueue = new Handler();
     private LayoutInflater mInflater;
 
@@ -82,6 +88,7 @@ public class HaloProperties extends FrameLayout {
 
     private float mFraction = 1.0f;
     private int mHaloMessageNumber = 0;
+    private MessageType mHaloMessageType = MessageType.MESSAGE;
 
     CustomObjectAnimator mHaloOverlayAnimator;
 
@@ -187,7 +194,7 @@ public class HaloProperties extends FrameLayout {
 
     protected CustomObjectAnimator msgNumberFlipAnimator = new CustomObjectAnimator(this);
     protected CustomObjectAnimator msgNumberAlphaAnimator = new CustomObjectAnimator(this);
-    public void setHaloMessageNumber(final int value,final int msgCount, final boolean alwaysFlip, int delay, final String msgType) {
+    public void animateHaloBatch(final int value, final int msgCount, final boolean alwaysFlip, int delay, final MessageType msgType) {
         if (msgCount == 0) {
             msgNumberAlphaAnimator.animate(ObjectAnimator.ofFloat(mHaloNumberContainer, "alpha", 0f).setDuration(1000),
                     new DecelerateInterpolator(), null, delay, null);
@@ -214,9 +221,9 @@ public class HaloProperties extends FrameLayout {
                         mHaloCount.setAlpha(1f);
                     } else if (value < 1 && msgCount < 1) {
                         mHaloNumber.setText("");
-                        if (msgType != null && msgType.equals("pinned")) {
+                        if (msgType == MessageType.PINNED) {
                             mHaloPinned.setAlpha(1f);
-                        } else if (msgType != null && msgType.equals("system")) {
+                        } else if (msgType == MessageType.SYSTEM) {
                             mHaloSystemIcon.setAlpha(1f);
                         } else {
                             mHaloNumberIcon.setAlpha(1f);
@@ -233,12 +240,21 @@ public class HaloProperties extends FrameLayout {
                                 new DecelerateInterpolator(), null, 1500, null);
                     }
 
-                    if (!alwaysFlip && oldAlpha == 1f && (value == mHaloMessageNumber || (value > 99 && mHaloMessageNumber > 99))) return;
+                    // Do NOT flip when ...
+                    if (!alwaysFlip && oldAlpha == 1f && mHaloMessageType == msgType
+                            && (value == mHaloMessageNumber || (value > 99 && mHaloMessageNumber > 99))) return;
+
                     msgNumberFlipAnimator.animate(ObjectAnimator.ofFloat(mHaloNumberContainer, "rotationY", -180, 0).setDuration(500),
                                 new DecelerateInterpolator(), null);
                 }
                 mHaloMessageNumber = value;
+                mHaloMessageType = msgType;
             }}, delay);
+    }
+
+    void setHaloMessageNumber(int count) {
+        mHaloCount.setText(String.valueOf(count));
+        invalidate();
     }
 
     public void setHaloContentAlpha(float value) {
@@ -294,9 +310,7 @@ public class HaloProperties extends FrameLayout {
 
             // Fade out number batch
             if (overlay != Overlay.NONE) {
-                msgNumberFlipAnimator.animate(ObjectAnimator.ofFloat(mHaloNumberContainer, "rotationY", 270).setDuration(500),
-                        new DecelerateInterpolator(), null);
-                msgNumberAlphaAnimator.animate(ObjectAnimator.ofFloat(mHaloNumberContainer, "alpha", 0f).setDuration(500),
+                msgNumberAlphaAnimator.animate(ObjectAnimator.ofFloat(mHaloNumberContainer, "alpha", 0f).setDuration(100),
                         new DecelerateInterpolator(), null);
             }
         }
@@ -306,7 +320,6 @@ public class HaloProperties extends FrameLayout {
     }
 
     public void updateResources() {
-
         final int iconSize = (int)(mContext.getResources().getDimensionPixelSize(R.dimen.halo_bubble_size) * mFraction);
         final int newSize = (int)(getWidth() * 0.9f) - iconSize;
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(newSize, LinearLayout.LayoutParams.WRAP_CONTENT);
