@@ -83,7 +83,6 @@
         android:persistent="true"
         android:allowClearUserData="false"
         android:allowBackup="false"
-        android:hardwareAccelerated="true"
         android:label="@string/app_label"
         android:icon="@*android:drawable/platlogo"
         android:supportsRtl="true">
