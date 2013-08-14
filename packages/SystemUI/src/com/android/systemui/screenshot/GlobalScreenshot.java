@@ -56,13 +56,12 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.Interpolator;
 import android.widget.ImageView;
-
 import com.android.systemui.R;
-
 import java.io.File;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
 
 /**
  * POD used in the AsyncTask which saves an image in the background.
@@ -91,11 +90,9 @@ class SaveImageInBackgroundData {
 class SaveImageInBackgroundTask extends AsyncTask<SaveImageInBackgroundData, Void,
         SaveImageInBackgroundData> {
     private static final String TAG = "SaveImageInBackgroundTask";
-
     private static final String SCREENSHOTS_DIR_NAME = "Screenshots";
     private static final String SCREENSHOT_FILE_NAME_TEMPLATE = "Screenshot_%s.png";
     private static final String SCREENSHOT_SHARE_SUBJECT_TEMPLATE = "Screenshot (%s)";
-
     private final int mNotificationId;
     private final NotificationManager mNotificationManager;
     private final Notification.Builder mNotificationBuilder;
@@ -304,18 +301,17 @@ class GlobalScreenshot {
 
     private static final int SCREENSHOT_NOTIFICATION_ID = 789;
     private static final int SCREENSHOT_FLASH_TO_PEAK_DURATION = 130;
-    private static final int SCREENSHOT_DROP_IN_DURATION = 430;
+    private static final int SCREENSHOT_DROP_IN_DURATION = 330;
     private static final int SCREENSHOT_DROP_OUT_DELAY = 500;
     private static final int SCREENSHOT_DROP_OUT_DURATION = 430;
     private static final int SCREENSHOT_DROP_OUT_SCALE_DURATION = 370;
     private static final int SCREENSHOT_FAST_DROP_OUT_DURATION = 320;
-    private static final float BACKGROUND_ALPHA = 0.5f;
+    private static final float BACKGROUND_ALPHA = 1.0f;
     private static final float SCREENSHOT_SCALE = 1f;
     private static final float SCREENSHOT_DROP_IN_MIN_SCALE = SCREENSHOT_SCALE * 0.725f;
     private static final float SCREENSHOT_DROP_OUT_MIN_SCALE = SCREENSHOT_SCALE * 0.45f;
     private static final float SCREENSHOT_FAST_DROP_OUT_MIN_SCALE = SCREENSHOT_SCALE * 0.6f;
     private static final float SCREENSHOT_DROP_OUT_MIN_SCALE_OFFSET = 0f;
-
     private Context mContext;
     private WindowManager mWindowManager;
     private WindowManager.LayoutParams mWindowLayoutParams;
@@ -323,21 +319,16 @@ class GlobalScreenshot {
     private Display mDisplay;
     private DisplayMetrics mDisplayMetrics;
     private Matrix mDisplayMatrix;
-
     private Bitmap mScreenBitmap;
     private View mScreenshotLayout;
     private ImageView mBackgroundView;
     private ImageView mScreenshotView;
     private ImageView mScreenshotFlash;
-
     private AnimatorSet mScreenshotAnimation;
-
     private int mNotificationIconSize;
     private float mBgPadding;
     private float mBgPaddingScale;
-
     private AsyncTask<SaveImageInBackgroundData, Void, SaveImageInBackgroundData> mSaveInBgTask;
-
     private MediaActionSound mCameraSound;
 
 
