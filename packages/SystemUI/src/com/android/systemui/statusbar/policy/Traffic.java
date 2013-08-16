@@ -20,7 +20,8 @@ import android.widget.TextView;
 public class Traffic extends TextView {
 	private boolean mAttached;
 	TrafficStats mTrafficStats;
-	boolean showTraffic;
+        boolean enable_TrafficMeter;
+        boolean TrafficMeter_hide; 
 	Handler mHandler;
 	Handler mTrafficHandler;
 	float speed;
@@ -34,7 +35,9 @@ public class Traffic extends TextView {
 		void observe() {
 			ContentResolver resolver = mContext.getContentResolver();
 			resolver.registerContentObserver(Settings.System
-					.getUriFor(Settings.System.STATUS_BAR_TRAFFIC), false, this);
+	                    .getUriFor(Settings.System.STATUS_BAR_TRAFFIC_ENABLE), false, this);
+      	                resolver.registerContentObserver(Settings.System
+	                    .getUriFor(Settings.System.STATUS_BAR_TRAFFIC_HIDE), false, this); 
 		}
 
 		@Override
@@ -107,6 +110,12 @@ public class Traffic extends TextView {
 				} else {
 					setText(DecimalFormatfnum.format(speed) + "KB/s");
 				}
+		                // Hide if there is no traffic
+                                if ((TrafficMeter_hide) && (speed == 0)) {
+                                   setVisibility(View.GONE);
+                                } else {
+                                   setVisibility(View.VISIBLE);
+                                } 
 				update();
 				super.handleMessage(msg);
 			}
@@ -142,14 +151,19 @@ public class Traffic extends TextView {
 
 	private void updateSettings() {
 		ContentResolver resolver = mContext.getContentResolver();
-		showTraffic = (Settings.System.getInt(resolver,
-				Settings.System.STATUS_BAR_TRAFFIC, 0) == 1);
-		if (showTraffic && getConnectAvailable()) {
+
+                enable_TrafficMeter = (Settings.System.getInt(resolver,
+                        Settings.System.STATUS_BAR_TRAFFIC_ENABLE, 0) == 1);
+                TrafficMeter_hide = (Settings.System.getInt(resolver,
+                        Settings.System.STATUS_BAR_TRAFFIC_HIDE, 1) == 1);
+  
+                if (enable_TrafficMeter && getConnectAvailable()) {
+                setVisibility(View.VISIBLE); 
 			if (mAttached) {
 				updateTraffic();
-			}
-			setVisibility(View.VISIBLE);
-		} else
-			setVisibility(View.GONE);
-	}
+    	                }
+	} else {
+	    setVisibility(View.GONE);
+	}    
+    }
 }
