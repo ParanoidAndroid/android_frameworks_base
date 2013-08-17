@@ -285,9 +285,6 @@ public abstract class BaseStatusBar extends SystemUI implements
     private RemoteViews.OnClickHandler mOnClickHandler = new RemoteViews.OnClickHandler() {
         @Override
         public boolean onClickHandler(View view, PendingIntent pendingIntent, Intent fillInIntent) {
-
-            android.util.Log.d("PARANOID", "Notification click handler invoked for intent: " + pendingIntent);
-
             if (DEBUG) {
                 Slog.v(TAG, "Notification click handler invoked for intent: " + pendingIntent);
             }
