@@ -1222,9 +1222,9 @@ class MountService extends IMountService.Stub
                             " allowMassStorage: " + allowMassStorage +
                             " maxFileSize: " + maxFileSize);
 
-                    if (emulated) {
-                        // For devices with emulated storage, we create separate
-                        // volumes for each known user.
+                    if (emulated && primary) {
+                        // For devices with emulated primary storage,
+                        // we create separate volumes for each known user.
                         mEmulatedTemplate = new StorageVolume(null, descriptionId, true, false,
                                 true, mtpReserve, false, maxFileSize, null);
 
@@ -1252,69 +1252,15 @@ class MountService extends IMountService.Stub
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
-            // Compute storage ID for each physical volume; emulated storage is
-            // always 0 when defined.
+            // Compute storage ID for each physical volume;
+            // Primary emulated storage is always 0 when defined.
             int index = isExternalStorageEmulated() ? 1 : 0;
             for (StorageVolume volume : mVolumes) {
-                if (!volume.isEmulated()) {
+                if (!(volume.isEmulated() && volume.isPrimary())) {
                     volume.setStorageId(index++);
                 }
             }
             parser.close();
-        }
-
-        // If persist.sys.vold.switchexternal is in effect, switch volume
-        // properties for correct display. We switch everything except
-        // "primary" (position = 0) as that should always belong to /mnt/sdcard.
-        if (SystemProperties.getInt("persist.sys.vold.switchexternal", 0) == 1) {
-            String[] pair = SystemProperties.get("ro.vold.switchablepair", "").split(",");
-
-            if (pair.length != 2) {
-                Slog.e(TAG, "invalid switchable mountpoints");
-                return;
-            }
-
-            Slog.d(TAG, "Switching storage path " + pair[0] + " and " + pair[1]);
-
-            StorageVolume left = null;
-            StorageVolume right = null;
-            int leftIndex = -1;
-            int rightIndex = -1;
-            for (int i = 0; i < mVolumes.size(); i++) {
-                StorageVolume v = mVolumes.get(i);
-                String path = v.getPath();
-                if (path.equals(pair[0])) {
-                    left = v;
-                    leftIndex = i;
-                } else if (path.equals(pair[1])) {
-                    right = v;
-                    rightIndex = i;
-                }
-            }
-
-            if (left == null || right == null) {
-                Slog.e(TAG, "unable to locate volume for switchable mountpoints");
-                return;
-            }
-
-            // Create new volumes
-            StorageVolume newLeft = new StorageVolume(left.getPath(),
-                right.getDescription(), right.isRemovable(),
-                right.isEmulated(), right.getMtpReserveSpace(),
-                right.allowMassStorage(), right.getMaxFileSize());
-            newLeft.setStorageId(leftIndex);
-
-            StorageVolume newRight = new StorageVolume(right.getPath(),
-                left.getDescription(), left.isRemovable(),
-                left.isEmulated(), left.getMtpReserveSpace(),
-                left.allowMassStorage(), left.getMaxFileSize());
-            newRight.setStorageId(rightIndex);
-
-            mVolumes.remove(leftIndex);
-            mVolumes.add(leftIndex, newLeft);
-
-            mVolumes.remove(rightIndex);
-            mVolumes.add(rightIndex, newRight);
         }
     }
 
