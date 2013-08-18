@@ -1898,6 +1898,7 @@
   <java-symbol type="bool" name="config_hasDockBattery" />
   <java-symbol type="bool" name="config_hasRemovableLid" />
   <java-symbol type="bool" name="config_forceDisableHardwareKeyboard" />
+  <java-symbol type="integer" name="config_backKillTimeout" />
 
   <!-- Power widget -->
   <java-symbol type="string" name="hour" />
@@ -1924,5 +1925,12 @@
   <!-- Stylus gestures -->
   <java-symbol type="bool" name="config_stylusGestures" />
   <java-symbol type="string" name="stylus_app_not_installed" />
+
+  <!-- Timeout in MS for how long you have to long-press the back key to
+       kill the foreground app. -->
+  <integer name="config_backKillTimeout">1000</integer>
+
+  <!-- Developer settings - Kill app back press -->
+  <java-symbol type="string" name="app_killed_message" />
 
 </resources>

@@ -2100,6 +2100,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             loadBooleanSetting(stmt, Settings.Secure.USER_SETUP_COMPLETE,
                     R.bool.def_user_setup_complete);
 
+            loadIntegerSetting(stmt, Settings.System.UI_FORCE_OVERFLOW_BUTTON,
+                    R.integer.def_force_overflow_button);
+
             loadIntegerSetting(stmt, Settings.Secure.DIALPAD_AUTOCOMPLETE,
                     R.integer.def_dialpad_autocomplete);
         } finally {
