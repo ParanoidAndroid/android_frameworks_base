@@ -1008,15 +1008,15 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
         @Override
         public boolean onTouchEvent(MotionEvent event) {
 
+            int index = event.getActionIndex();
             if (event.getActionMasked() == MotionEvent.ACTION_POINTER_UP
-                    && event.getActionIndex() == 1 ) {
-
+                    && index != 0 ) {
                 if (mCurrentNotficationEntry != null && mCurrentNotficationEntry.haloContent != null) {
                     Rect rootRect = new Rect();
                     mHaloTickerContent.getHitRect(rootRect); 
                     
                     PointF point = new PointF();
-                    getRawPoint(event, 1, point);
+                    getRawPoint(event, index, point);
                     browseView(point, rootRect, mCurrentNotficationEntry.haloContent);
                 }
             }
