@@ -29,13 +29,14 @@ public class CustomObjectAnimator {
     private View rootView;
     private Handler handler = new Handler();
     private ObjectAnimator animator;
+    private boolean delayed = false;
 
     public CustomObjectAnimator(View root) {
         rootView = root;
     }
 
     public boolean isRunning() {
-        return animator != null && animator.isRunning();
+        return animator != null && (animator.isRunning() || delayed);
     }
 
     public void animate(ObjectAnimator newInstance, TimeInterpolator interpolator, AnimatorUpdateListener update) {
@@ -45,9 +46,11 @@ public class CustomObjectAnimator {
     public void animate(final ObjectAnimator newInstance, final TimeInterpolator interpolator,
             final AnimatorUpdateListener update, long startDelay, final Runnable executeAfter) {
 
+        delayed = true;
         handler.postDelayed(new Runnable() {
             public void run() {
                 runAnimation(newInstance, interpolator, update, executeAfter);
+                delayed = false;
             }}, startDelay);
     }
 
@@ -94,5 +97,6 @@ public class CustomObjectAnimator {
     public void cancel(boolean unschedule) {
         if (unschedule) handler.removeCallbacksAndMessages(null);
         if (animator != null) animator.cancel();
+        delayed = false;
     }
 }

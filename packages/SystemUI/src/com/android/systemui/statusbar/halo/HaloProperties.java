@@ -345,7 +345,7 @@ public class HaloProperties extends FrameLayout {
 
     private ContentStyle mLastContentStyle = ContentStyle.CONTENT_NONE;
     public void setHaloContentBackground(boolean contentLeft, ContentStyle style) {
-        if (style != mLastContentStyle) {
+        if (contentLeft != mLastContentStateLeft || style != mLastContentStyle) {
             // Set background
             switch(style) {
                 case CONTENT_UP:
