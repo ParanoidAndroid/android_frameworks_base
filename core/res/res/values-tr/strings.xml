@@ -148,6 +148,38 @@
     <string name="shutdown_confirm_question" msgid="2906544768881136183">"Kapatmak istiyor musunuz?"</string>
     <string name="reboot_safemode_title" msgid="7054509914500140361">"Güvenli modda yeniden aç"</string>
     <string name="reboot_safemode_confirm" msgid="55293944502784668">"Cihazı kapatıp güvenli modda tekrar açmak ister misiniz? Bu işlem, yüklediğiniz tüm üçüncü taraf uygulamaları devre dışı bırakacaktır. Daha sonra tekrar açtığınızda bu uygulamalar geri yüklenecektir."</string>
+ <!-- Button to reboot the phone, within the Phone Options dialog -->
+    <string name="reboot_system" product="tablet">Tableti yeniden başlat</string>
+    <string name="reboot_system" product="default">Telefonu yeniden başlat</string>
+    <!-- Button to reboot the phone, within the Reboot Options dialog -->
+    <string name="reboot_reboot">Yeniden başlat</string>
+    <!-- Button to reboot the phone into recovery, within the Reboot Options dialog -->
+    <string name="reboot_recovery">Kurtarma</string>
+ 
+    <!-- Button to reboot the phone into bootloader, within the Reboot Options dialog -->
+    <string name="reboot_bootloader">Bootloader</string>
+    <!-- Button to reboot the phone into bootmenu, within the Reboot Options dialog -->
+    <string name="reboot_bootmenu">Bootmenu</string>
+    <!-- Button to reboot the phone into fastboot, within the Reboot Options dialog -->
+    <string name="reboot_fastboot">Fastboot</string>
+    <!-- Button to reboot the phone into download, within the Reboot Options dialog -->
+    <string name="reboot_download">Download</string>
+    <!-- Button to reboot the phone into safe mode, within the Reboot Options dialog -->
+    <string name="reboot_safe_mode">@string/safeMode</string>
+
+    <!-- Reboot Progress Dialog. This is shown if the user chooses to reboot the phone. -->
+    <string name="reboot_progress">Yeniden başlatılıyor\u2026</string>
+    <!-- Reboot Confirmation Dialog.  When the user chooses to reboot the phone, there will be a confirmation dialog.  This is the message. -->
+    <string name="reboot_confirm">Cihaz yeniden başlatılacak.</string>
+
+    <!-- label for item that screenshots in phone options dialog -->
+    <string name="global_action_screenshot">Ekran alıntısı</string>
+    <!-- label for item that toggles expand desktop mode -->
+    <string name="global_action_expanded_desktop">Tam ekran(Pie)</string>
+    <!-- status message in phone options dialog for when expand desktop mode is on -->
+    <string name="global_action_expanded_desktop_on">Etkin</string>
+    <!-- status message in phone options dialog for when expand desktop mode is off -->
+    <string name="global_action_expanded_desktop_off">Devre dışı</string>
     <string name="recent_tasks_title" msgid="3691764623638127888">"En Son Görevler"</string>
     <string name="no_recent_tasks" msgid="8794906658732193473">"Son uygulama yok"</string>
     <string name="global_actions" product="tablet" msgid="408477140088053665">"Tablet seçenekleri"</string>
@@ -157,6 +189,7 @@
     <string name="global_action_bug_report" msgid="7934010578922304799">"Hata raporu"</string>
     <string name="bugreport_title" msgid="2667494803742548533">"Hata raporu al"</string>
     <string name="bugreport_message" msgid="398447048750350456">"Bu rapor, e-posta iletisi olarak göndermek üzere mevcut cihazınızın durumuyla ilgili bilgi toplar. Hata raporu başlatıldıktan sonra hazır olması biraz zaman alabilir, lütfen sabırlı olun."</string>
+    <string name="global_action_reboot">Yeniden başlat</string>
     <string name="global_action_toggle_silent_mode" msgid="8219525344246810925">"Sessiz mod"</string>
     <string name="global_action_silent_mode_on_status" msgid="3289841937003758806">"Ses KAPALI"</string>
     <string name="global_action_silent_mode_off_status" msgid="1506046579177066419">"Ses AÇIK"</string>
