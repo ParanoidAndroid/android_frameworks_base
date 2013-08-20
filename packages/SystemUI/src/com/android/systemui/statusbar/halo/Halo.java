@@ -1310,7 +1310,6 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
             mHaloBubble.draw(canvas);
             canvas.restoreToCount(state);
 
-
             // Number
             if (mState == State.IDLE || mState == State.GESTURES) {
                 state = canvas.save();
