@@ -19,51 +19,23 @@
 
     <RelativeLayout
         android:id="@+id/container"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_width="@dimen/halo_number_size"
+        android:layout_height="@dimen/halo_number_size"
+        android:background="@drawable/halo_number_shape">
 
         <TextView
             android:id="@+id/number"
-            android:animateLayoutChanges="true"
-            android:layout_width="@dimen/halo_number_size"
-            android:layout_height="@dimen/halo_number_size"
-            android:gravity="center"
-            android:background="@drawable/halo_number_shape"
-            android:textColor="#fff"
-            android:textStyle="bold"
-            android:textSize="@dimen/halo_number_text_size"/>
-
-        <TextView
-            android:id="@+id/haloCount"
-            android:animateLayoutChanges="true"
-            android:layout_width="@dimen/halo_number_size"
-            android:layout_height="@dimen/halo_number_size"
-            android:gravity="center"
-            android:background="@drawable/halo_count_shape"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"            
             android:textColor="#fff"
             android:textStyle="bold"
             android:textSize="@dimen/halo_number_text_size"/>
 
         <ImageView
             android:id="@+id/icon"
-            android:layout_width="@dimen/halo_number_icon_size"
-            android:layout_height="@dimen/halo_number_icon_size"                
-            android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true"
-            android:alpha="0"/>
-
-         <ImageView
-            android:id="@+id/system"
-            android:layout_width="@dimen/halo_number_icon_size"
-            android:layout_height="@dimen/halo_number_icon_size"                
-            android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true"
-            android:alpha="0"/>
-
-         <ImageView
-            android:id="@+id/pinned"
-            android:layout_width="@dimen/halo_number_icon_size"
-            android:layout_height="@dimen/halo_number_icon_size"                
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_centerVertical="true"
             android:layout_centerHorizontal="true"
             android:alpha="0"/>
