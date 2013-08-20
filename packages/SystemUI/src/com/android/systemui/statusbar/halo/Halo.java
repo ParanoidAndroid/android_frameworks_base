@@ -1573,7 +1573,8 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
             // When screen unlocked, HALO active & Expanded desktop mode, ping HALO and load last notification.
             // Because notifications are not readily visible and HALO does not "tick" on protected lock screens
             if(intent.getAction().equals(Intent.ACTION_USER_PRESENT) &&
-                    Settings.System.getInt(mContext.getContentResolver(), Settings.System.HALO_ACTIVE, 0) == 1) {
+                    Settings.System.getInt(mContext.getContentResolver(), Settings.System.HALO_ACTIVE, 0) == 1 &&
+                    mState != State.SILENT) {
                 if (mKeyguardManager.isKeyguardSecure() ||
                         (Settings.System.getInt(mContext.getContentResolver(), Settings.System.EXPANDED_DESKTOP_STATE, 0) == 1 &&
                                 mState == State.HIDDEN)) {
