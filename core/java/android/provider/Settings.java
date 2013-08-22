@@ -2793,6 +2793,14 @@ public final class Settings {
          */
         public static final String QUIET_HOURS_MUTE = "quiet_hours_mute";
 
+ 	/**
+         * use Alt Activity Resolver Grid
+         * boolean
+         *
+         * @hide
+         */
+        public static final String ACTIVITY_RESOLVER_USE_ALT = "activity_resolver_use_alt"; 
+
 	/**
          * ListView Animations
          * 0 == None
