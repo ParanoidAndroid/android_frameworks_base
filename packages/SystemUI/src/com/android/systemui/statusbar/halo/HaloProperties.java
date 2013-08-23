@@ -174,20 +174,23 @@ public class HaloProperties extends FrameLayout {
         newPaddingVTop = (int)(mContext.getResources().getDimensionPixelSize(R.dimen.halo_speech_vpadding_top) * fraction);
         newPaddingVBottom = (int)(mContext.getResources().getDimensionPixelSize(R.dimen.halo_speech_vpadding_bottom) * fraction);        
 
-        final int newNumberSize = (int)(mContext.getResources().getDimensionPixelSize(R.dimen.halo_number_size) * fraction);
-        final int newNumberTextSize = (int)(mContext.getResources().getDimensionPixelSize(R.dimen.halo_number_text_size) * fraction);
-        RelativeLayout.LayoutParams layoutParams2 = new RelativeLayout.LayoutParams(newNumberSize, newNumberSize);
-        mHaloNumber.setLayoutParams(layoutParams2);
-        mHaloNumber.setTextSize(TypedValue.COMPLEX_UNIT_PX, newNumberTextSize);
-
-        //final int newSpeechTextSize = (int)(mContext.getResources().getDimensionPixelSize(R.dimen.halo_speech_text_size) * fraction);
-        //mHaloTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, newSpeechTextSize);
-
+        final int newBatchSize = (int)(mContext.getResources().getDimensionPixelSize(R.dimen.halo_number_size) * fraction);
         final int newBatchIconSize = (int)(mContext.getResources().getDimensionPixelSize(R.dimen.halo_number_icon_size) * fraction);
-        RelativeLayout.LayoutParams layoutParams3 = new RelativeLayout.LayoutParams(newBatchIconSize, newBatchIconSize);
+        final int newNumberTextSize = (int)(mContext.getResources().getDimensionPixelSize(R.dimen.halo_number_text_size) * fraction);
+
+        LinearLayout.LayoutParams layoutParams2 = new LinearLayout.LayoutParams(newBatchSize, newBatchSize);
+        mHaloNumberContainer.setLayoutParams(layoutParams2);
+
+        RelativeLayout.LayoutParams layoutParams3 = new RelativeLayout.LayoutParams(newBatchSize, newBatchSize);
         layoutParams3.addRule(RelativeLayout.CENTER_VERTICAL);
         layoutParams3.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        mHaloNumberIcon.setLayoutParams(layoutParams3);
+        mHaloNumber.setLayoutParams(layoutParams3);
+        mHaloNumber.setTextSize(TypedValue.COMPLEX_UNIT_PX, newNumberTextSize);
+
+        RelativeLayout.LayoutParams layoutParams4 = new RelativeLayout.LayoutParams(newBatchIconSize, newBatchIconSize);
+        layoutParams4.addRule(RelativeLayout.CENTER_VERTICAL);
+        layoutParams4.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        mHaloNumberIcon.setLayoutParams(layoutParams4);
 
         updateResources(mLastContentStateLeft);
     }
@@ -370,8 +373,14 @@ public class HaloProperties extends FrameLayout {
 
     public void updateResources(boolean contentLeft) {
 
+        // Maximal stretch for speech bubble, wrap_content regular text
+        final boolean portrait = getWidth() < getHeight();
+        final int iconSize = (int)(mContext.getResources().getDimensionPixelSize(R.dimen.halo_bubble_size) * mFraction);
+        int portraitWidth = portrait ? ((int)(getWidth() * 0.95f) - iconSize) : ((int)(getHeight() * 0.95f));
+        if (mHaloTextView.getVisibility() == View.VISIBLE) portraitWidth = LinearLayout.LayoutParams.WRAP_CONTENT;
+
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT, mHaloContentHeight);
+                portraitWidth, mHaloContentHeight);
         mHaloTickerWrapper.setLayoutParams(layoutParams);
 
         // Set background and override its padding
@@ -389,21 +398,6 @@ public class HaloProperties extends FrameLayout {
         mHaloNumberView.measure(MeasureSpec.getSize(mHaloNumberView.getMeasuredWidth()),
                 MeasureSpec.getSize(mHaloNumberView.getMeasuredHeight()));
         mHaloNumberView.layout(0, 0, 0, 0);
-
-        // Maximal stretch for speech bubble
-        final int iconSize = (int)(mContext.getResources().getDimensionPixelSize(R.dimen.halo_bubble_size) * mFraction);
-        final int maximumWidth = (int)(getWidth() * 0.95f) - iconSize;
-
-        if (mHaloTickerWrapper.getMeasuredWidth() > maximumWidth) {
-            final int optimalWidth = iconSize * 5;
-            final int newSize = maximumWidth > optimalWidth ? optimalWidth : maximumWidth;        
-            layoutParams = new LinearLayout.LayoutParams(newSize, mHaloContentHeight);
-            mHaloTickerWrapper.setLayoutParams(layoutParams);
-
-            mHaloContentView.measure(MeasureSpec.getSize(mHaloContentView.getMeasuredWidth()),
-                    MeasureSpec.getSize(mHaloContentView.getMeasuredHeight()));
-            mHaloContentView.layout(0, 0, 0, 0);
-        }
 
         mLastContentStateLeft = contentLeft;
     }
