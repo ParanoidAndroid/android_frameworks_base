@@ -526,7 +526,11 @@ public class VolumePanel extends Handler implements OnSeekBarChangeListener, Vie
                 continue;
             }
             StreamControl sc = mStreamControls.get(streamType);
-            mSliderGroup.addView(sc.group);
+            try {
+                mSliderGroup.addView(sc.group);
+            } catch(IllegalStateException e) {
+                // The specified child already has a parent
+            }
             updateSlider(sc);
         }
     }
