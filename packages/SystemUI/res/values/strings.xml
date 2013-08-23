@@ -445,9 +445,11 @@
     <!-- Content description of the clear button in the notification panel for accessibility (not shown on the screen). [CHAR LIMIT=NONE] -->
     <string name="accessibility_clear_all">Clear all notifications.</string>
 
-    <!-- Title shown in notification popup for inspecting the responsible
-         application -->
+    <!-- Title shown in notification popup for inspecting the responsible application -->
     <string name="status_bar_notification_inspect_item_title">App info</string>
+
+    <!-- Title shown in notification popup for launching notification in floating mode -->
+    <string name="status_bar_notification_floating_item_title">Floating mode</string>
 
     <!-- [CHAR LIMIT=NONE] -->
     <string name="close_universe">Close</string>
