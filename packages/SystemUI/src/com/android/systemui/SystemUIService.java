@@ -101,7 +101,6 @@ public class SystemUIService extends Service {
             }
             mServices[i].mContext = this;
             Slog.d(TAG, "running: " + mServices[i]);
-
             mServices[i].start();
         }
     }

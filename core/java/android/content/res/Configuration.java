@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2008 The Android Open Source Project
  * This code has been modified.  Portions copyright (C) 2012, ParanoidAndroid Project.
- * This code has been modified.  Portions copyright (C) 2010, T-Mobile USA, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,11 +72,6 @@ public final class Configuration extends ExtendedPropertiesUtils implements Parc
      * resource qualifier.
      */
     public Locale locale;
-
-    /**
-     * @hide
-     */
-    public CustomTheme customTheme;
 
     /**
      * Locale should persist on setting.  This is hidden because it is really
@@ -410,22 +404,6 @@ public final class Configuration extends ExtendedPropertiesUtils implements Parc
     public static final int ORIENTATION_LANDSCAPE = 2;
     /** @deprecated Not currently supported or used. */
     @Deprecated public static final int ORIENTATION_SQUARE = 3;
-
-
-    /**
-     * @hide
-     */
-    public static final int THEME_UNDEFINED = 0;
-
-    /**
-     * @hide
-     */
-    public static final String THEME_ID_PERSISTENCE_PROPERTY = "persist.sys.themeId";
-
-    /**
-     * @hide
-     */
-    public static final String THEME_PACKAGE_NAME_PERSISTENCE_PROPERTY = "persist.sys.themePackageName";
     
     /**
      * Overall orientation of the screen.  May be one of
@@ -640,9 +618,6 @@ public final class Configuration extends ExtendedPropertiesUtils implements Parc
         compatSmallestScreenWidthDp = o.compatSmallestScreenWidthDp;
         seq = o.seq;
         paranoidHook();
-        if (o.customTheme != null) {
-            customTheme = (CustomTheme) o.customTheme.clone();
-        }
     }
     
     public String toString() {
@@ -778,8 +753,6 @@ public final class Configuration extends ExtendedPropertiesUtils implements Parc
             sb.append(" s.");
             sb.append(seq);
         }
-        sb.append(" themeResource=");
-        sb.append(customTheme);
         sb.append('}');
         return sb.toString();
     }
@@ -806,7 +779,6 @@ public final class Configuration extends ExtendedPropertiesUtils implements Parc
         smallestScreenWidthDp = compatSmallestScreenWidthDp = SMALLEST_SCREEN_WIDTH_DP_UNDEFINED;
         densityDpi = DENSITY_DPI_UNDEFINED;
         seq = 0;
-        customTheme = null;
     }
 
     /** {@hide} */
@@ -943,13 +915,7 @@ public final class Configuration extends ExtendedPropertiesUtils implements Parc
         if (delta.seq != 0) {
             seq = delta.seq;
         }
-
-        if (delta.customTheme != null
-                && (customTheme == null || !customTheme.equals(delta.customTheme))) {
-            changed |= ActivityInfo.CONFIG_THEME_RESOURCE;
-            customTheme = (CustomTheme)delta.customTheme.clone();
-        }
-
+        
         return changed;
     }
 
@@ -1054,10 +1020,7 @@ public final class Configuration extends ExtendedPropertiesUtils implements Parc
                 && densityDpi != delta.densityDpi) {
             changed |= ActivityInfo.CONFIG_DENSITY;
         }
-        if (delta.customTheme != null &&
-                (customTheme == null || !customTheme.equals(delta.customTheme))) {
-            changed |= ActivityInfo.CONFIG_THEME_RESOURCE;
-        }
+
         return changed;
     }
 
@@ -1073,9 +1036,7 @@ public final class Configuration extends ExtendedPropertiesUtils implements Parc
      * @return Return true if the resource needs to be loaded, else false.
      */
     public static boolean needNewResources(int configChanges, int interestingChanges) {
-        return (configChanges & (interestingChanges |
-                ActivityInfo.CONFIG_FONT_SCALE |
-                ActivityInfo.CONFIG_THEME_RESOURCE)) != 0;
+        return (configChanges & (interestingChanges|ActivityInfo.CONFIG_FONT_SCALE)) != 0;
     }
     
     /**
@@ -1148,14 +1109,6 @@ public final class Configuration extends ExtendedPropertiesUtils implements Parc
         dest.writeInt(compatScreenHeightDp);
         dest.writeInt(compatSmallestScreenWidthDp);
         dest.writeInt(seq);
-
-        if (customTheme == null) {
-            dest.writeInt(0);
-        } else {
-            dest.writeInt(1);
-            dest.writeString(customTheme.getThemeId());
-            dest.writeString(customTheme.getThemePackageName());
-        }
     }
 
     public void readFromParcel(Parcel source) {
@@ -1184,12 +1137,6 @@ public final class Configuration extends ExtendedPropertiesUtils implements Parc
         compatScreenHeightDp = source.readInt();
         compatSmallestScreenWidthDp = source.readInt();
         seq = source.readInt();
-
-        if (source.readInt() != 0) {
-            String themeId = source.readString();
-            String themePackage = source.readString();
-            customTheme = new CustomTheme(themeId, themePackage);
-        }
     }
     
     public static final Parcelable.Creator<Configuration> CREATOR
@@ -1258,17 +1205,6 @@ public final class Configuration extends ExtendedPropertiesUtils implements Parc
         if (n != 0) return n;
         n = this.densityDpi - that.densityDpi;
         //if (n != 0) return n;
-        if (this.customTheme == null) {
-            if (that.customTheme != null) return 1;
-        } else if (that.customTheme == null) {
-            return -1;
-        } else {
-            n = this.customTheme.getThemeId().compareTo(that.customTheme.getThemeId());
-            if (n != 0) return n;
-            n = this.customTheme.getThemePackageName().compareTo(that.customTheme.getThemePackageName());
-            if (n != 0) return n;
-        }
-
         return n;
     }
 
@@ -1305,8 +1241,6 @@ public final class Configuration extends ExtendedPropertiesUtils implements Parc
         result = 31 * result + screenHeightDp;
         result = 31 * result + smallestScreenWidthDp;
         result = 31 * result + densityDpi;
-        result = 31 * result + (this.customTheme != null ?
-                                  this.customTheme.hashCode() : 0);
         return result;
     }
 

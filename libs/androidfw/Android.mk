@@ -22,11 +22,8 @@ commonUtilsSources:= \
     Asset.cpp \
     AssetDir.cpp \
     AssetManager.cpp \
-    PackageRedirectionMap.cpp \
     ObbFile.cpp \
     ResourceTypes.cpp \
-    ../../tools/aapt/ZipFile.cpp \
-    ../../tools/aapt/ZipEntry.cpp \
     StreamingZipInflater.cpp
 
 # formerly in libui

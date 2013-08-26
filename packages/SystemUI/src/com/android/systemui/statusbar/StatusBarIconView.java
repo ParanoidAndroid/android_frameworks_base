@@ -230,16 +230,16 @@ public class StatusBarIconView extends AnimatedImageView {
         return mIcon;
     }
 
+    public String getStatusBarSlot() {
+        return mSlot;
+    }
+
     @Override
     public void onInitializeAccessibilityEvent(AccessibilityEvent event) {
         super.onInitializeAccessibilityEvent(event);
         if (mNotification != null) {
             event.setParcelableData(mNotification);
         }
-    }
-
-    public String getStatusBarSlot() {
-        return mSlot;
     }
 
     @Override

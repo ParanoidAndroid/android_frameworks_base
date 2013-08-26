@@ -1571,15 +1571,7 @@ public class Resources extends ExtendedPropertiesUtils {
                     mTmpConfig.setLayoutDirection(mTmpConfig.locale);
                 }
                 configChanges = mConfiguration.updateFrom(mTmpConfig);
-
-                /* This is ugly, but modifying the activityInfoConfigToNative
-                 * adapter would be messier */
-                if ((configChanges & ActivityInfo.CONFIG_THEME_RESOURCE) != 0) {
-                    configChanges = ActivityInfo.activityInfoConfigToNative(configChanges);
-                    configChanges |= ActivityInfo.CONFIG_THEME_RESOURCE;
-                } else {
-                    configChanges = ActivityInfo.activityInfoConfigToNative(configChanges);
-                }
+                configChanges = ActivityInfo.activityInfoConfigToNative(configChanges);
             }
             if (mConfiguration.locale == null) {
                 mConfiguration.locale = Locale.getDefault();
@@ -1647,18 +1639,6 @@ public class Resources extends ExtendedPropertiesUtils {
     private void clearDrawableCacheLocked(
             LongSparseArray<WeakReference<ConstantState>> cache,
             int configChanges) {
-        /*
-         * Quick test to find out if the config change that occurred should
-         * trigger a full cache wipe.
-         */
-        if (Configuration.needNewResources(configChanges, 0)) {
-            if (DEBUG_CONFIG) {
-                Log.d(TAG, "Clear drawable cache from config changes: 0x"
-                        + Integer.toHexString(configChanges));
-            }
-            cache.clear();
-            return;
-        }
         int N = cache.size();
         if (DEBUG_CONFIG) {
             Log.d(TAG, "Cleaning up drawables config changes: 0x"
@@ -2062,12 +2042,6 @@ public class Resources extends ExtendedPropertiesUtils {
     static private final int LAYOUT_DIR_CONFIG = ActivityInfo.activityInfoConfigToNative(
             ActivityInfo.CONFIG_LAYOUT_DIRECTION);
 
-    public final void updateStringCache() {
-        synchronized (mTmpValue) {
-            mAssets.recreateStringBlocks();
-        }
-    }
- 
     /*package*/ Drawable loadDrawable(TypedValue value, int id)
             throws NotFoundException {
 
