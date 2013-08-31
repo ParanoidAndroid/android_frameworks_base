@@ -47,6 +47,7 @@ import android.util.TimeUtils;
 import android.view.IWindowId;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.app.ThemeUtils;
+import com.android.internal.os.IDeviceHandler;
 
 import com.android.internal.policy.PolicyManager;
 import com.android.internal.policy.impl.PhoneWindowManager;
