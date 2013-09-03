@@ -262,10 +262,17 @@ public abstract class BaseStatusBar extends SystemUI implements
                     Settings.System.PIE_TRIGGER), false, this);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.EXPANDED_DESKTOP_STATE), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.QUICK_SETTINGS_COLUMNS), false, this,
+                    UserHandle.USER_ALL);
         }
 
         @Override
-        public void onChange(boolean selfChange) {
+        public void onChange(boolean selfChange, Uri uri) {
+            if (uri.equals(Settings.System.getUriFor(Settings.System.QUICK_SETTINGS_COLUMNS))) {
+                android.os.Process.killProcess(android.os.Process.myPid());
+            }
+            update();
             updatePieControls();
         }
     }
