@@ -249,7 +249,7 @@ struct InputReaderConfiguration {
             pointerGestureSwipeMaxWidthRatio(0.25f),
             pointerGestureMovementSpeedRatio(0.8f),
             pointerGestureZoomSpeedRatio(0.3f),
-            showTouches(false),
+	    showTouches(false),
             stylusIconEnabled(false),
             stylusPalmRejectionTime(50 * 10000000LL) // 50 ms
     { }
