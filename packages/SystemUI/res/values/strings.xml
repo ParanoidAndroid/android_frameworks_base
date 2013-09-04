@@ -593,4 +593,6 @@
     <string name="halo_tutorial2">Move me: 2x-tap &amp; drag</string>
     <string name="halo_tutorial3">Browse tasks: Horizontal drag</string>
 
+    <!--ScreenShot Trash-->
+    <string name="trash">Trash</string>
 </resources>
