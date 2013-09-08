@@ -27,6 +27,9 @@ public class DesktopModeTile extends QuickSettingsTile {
             public void onClick(View v) {
                 Settings.System.putInt(mContext.getContentResolver(),
                         Settings.System.EXPANDED_DESKTOP_STATE, !getExpandedDesktopState() ? 1 : 0);
+    if (isFlipTilesEnabled()) {
+                    flipTile(0);
+                }
             }
         };
 
