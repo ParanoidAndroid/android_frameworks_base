@@ -3124,6 +3124,12 @@ public final class Settings {
          * @hide
          */
 	public static final String VOLUME_KEYS_CONTROL_RING_STREAM = "volume_keys_control_ring_stream";
+
+        /**
+         * @hide
+         * Whether FastPowerOn is enabled
+         */
+        public static final String ENABLE_FAST_POWERON = "enable_fast_poweron";
         
 	/**
          * Settings to backup. This is here so that it's in the same place as the settings
