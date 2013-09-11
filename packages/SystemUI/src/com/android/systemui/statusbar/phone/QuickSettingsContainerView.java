@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.phone;
 import android.animation.LayoutTransition;
 import android.provider.Settings;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.view.View;
@@ -55,7 +56,9 @@ public class QuickSettingsContainerView extends FrameLayout {
     void updateResources() {
         Resources r = getContext().getResources();
         mCellGap = r.getDimension(R.dimen.quick_settings_cell_gap);
-        mNumColumns = Settings.System.getInt(getContext().getContentResolver(),
+        boolean iSlandscape =
+                getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+        mNumColumns = iSlandscape ? 6 : Settings.System.getInt(getContext().getContentResolver(),
                 Settings.System.QUICK_SETTINGS_COLUMNS, 3);
         requestLayout();
     }
