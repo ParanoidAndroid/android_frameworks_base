@@ -561,7 +561,7 @@ public abstract class BaseStatusBar extends SystemUI implements
         }
     }
 
-    protected void restartHalo() {
+    public void restartHalo() {
         if (mHalo != null) {
             mHalo.cleanUp();
             mWindowManager.removeView(mHalo);
