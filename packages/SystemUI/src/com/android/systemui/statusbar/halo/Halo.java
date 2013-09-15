@@ -367,7 +367,11 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
             }
  
             if (mState == State.HIDDEN || mState == State.SILENT) {
-                mEffect.setHaloX((int)(mTickerLeft ? -mIconSize*0.8f : mScreenWidth - mIconSize*0.2f));
+                if (mNinjaMode && getHaloMsgCount()-getHidden() < 1) {
+                    mEffect.setHaloX((mTickerLeft ? -mIconSize : mScreenWidth));
+                } else {
+                    mEffect.setHaloX((int)(mTickerLeft ? -mIconSize*0.8f : mScreenWidth - mIconSize*0.2f));
+                }
                 final int triggerWidth = (int)(mTickerLeft ? -mIconSize*0.7f : mScreenWidth - mIconSize*0.3f);
                 updateTriggerPosition(triggerWidth, mEffect.mHaloY);
             } else {
@@ -549,8 +553,8 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
 
             if (expanded && mState == State.IDLE) {
                 mEffect.mHaloStatusText.setTextAlign(Paint.Align.CENTER);
-                mEffect.statusBubblesShow();
                 statusAnimation = true;
+                mEffect.statusBubblesShow();
                 mHandler.postDelayed(new Runnable() {
                     public void run() {
                         mEffect.statusBubblesHide();
@@ -1257,7 +1261,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
         public void nap(long delay) {
             int newPos;
             final int triggerWidth;
-            if (mNinjaMode && getHaloMsgCount() < 1) {
+            if (mNinjaMode && getHaloMsgCount()-getHidden() < 1) {
                 newPos = mTickerLeft ? -mIconSize : mScreenWidth;
                 triggerWidth = (int)(mTickerLeft ? -mIconSize*0.8f : mScreenWidth - mIconSize*0.2f);
             } else {
@@ -1287,7 +1291,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
 
         public void sleep(long delay, int speed, final boolean silent) {
             int newPos;
-            if (mNinjaMode && getHaloMsgCount() < 1) {
+            if (mNinjaMode && getHaloMsgCount()-getHidden() < 1) {
                 newPos = mTickerLeft ? -mIconSize : mScreenWidth;
             } else {
                 newPos = (int)(mTickerLeft ? -mIconSize*0.8f : mScreenWidth - mIconSize*0.2f);
@@ -1357,57 +1361,58 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
             canvas.drawBitmap(mBigRed, mKillX - mBigRed.getWidth() / 2, killyPos, xPaint);
 
             // Status Bubbles
-            // Time
-            mEffect.mHaloStatusText.setColor(0xfff0f0f0);
-            float div = 1 - ((float) mHaloTime.getAlpha()) / 225;
-            int timePosY = (int) (mIconHalfSize - mStatusBubbleT.getWidth() / 2 - mIconSize * div);
-            canvas.drawBitmap(mStatusBubbleT, mStatusB_X - mStatusBubbleT.getWidth() / 2, timePosY, mHaloTime);
-            mHaloStatusText.setFakeBoldText(true);
-            mHaloStatusText.setTextSize(mStatusTextSize);
-            mHaloStatusText.setAlpha(mHaloTime.getAlpha());
-            canvas.drawText(mEffect.getSimpleTime(), mStatusB_X, timePosY + mIconHalfSize, mHaloStatusText);
-            mHaloStatusText.setFakeBoldText(false);
-            mHaloStatusText.setTextSize(mStatusTextSize/2);
-            canvas.drawText(mEffect.getDayofWeek(), mStatusB_X, timePosY + mIconHalfSize + mStatusTextSize, mHaloStatusText);
-            canvas.drawText(mEffect.getDayOfMonth(), mStatusB_X, timePosY + mIconHalfSize + mStatusTextSize + (mStatusTextSize/2) + 5, mHaloStatusText);
-
-            // Battery
-            float div1 = 1 - ((float) mHaloBattery.getAlpha()) / 225;
-            int batteryPosY = (int) (mIconHalfSize - mStatusBubbleB.getWidth() / 2 - mIconSize * div1) + mStatusBubbleT.getWidth();
-            canvas.drawBitmap(mStatusBubbleB, mStatusB_X - mStatusBubbleB.getWidth() / 2, batteryPosY, mHaloBattery);
-            mHaloStatusText.setFakeBoldText(true);
-            mHaloStatusText.setTextSize(mStatusTextSize);
-            mHaloStatusText.setAlpha(mHaloBattery.getAlpha());
-            canvas.drawText(mEffect.getBatteryLevel() + "%", mStatusB_X, batteryPosY + mIconHalfSize, mHaloStatusText);
-            mHaloStatusText.setFakeBoldText(false);
-            mHaloStatusText.setTextSize(mStatusTextSize/2);
-            String bStat = mEffect.getBatteryStatus() ?
-                    mContext.getResources().getString(R.string.halo_battery_plugged) :
-                    mContext.getResources().getString(R.string.halo_battery_unplugged);
-            if (mEffect.getBatteryLevel() == 100) bStat = mContext.getResources().getString(R.string.halo_battery_full);
-            canvas.drawText(bStat, mStatusB_X, batteryPosY + mIconHalfSize + mStatusTextSize, mHaloStatusText);
-
-            // Mobile Signal
-            float div2 = 1 - ((float) mHaloSignal.getAlpha()) / 225;
-            int signalPosY = (int) (mIconHalfSize - mStatusBubbleS.getWidth() / 2 - mIconSize * div2) + mStatusBubbleT.getWidth() + mStatusBubbleB.getWidth();
-            canvas.drawBitmap(mStatusBubbleS, mStatusB_X - mStatusBubbleS.getWidth() / 2, signalPosY, mHaloSignal);
-            if (!mEffect.getConnectionStatus()) {
-                mEffect.mHaloStatusText.setColor(0xff000000);
-            } else {
+	    if (statusAnimation){
+		// Time
                 mEffect.mHaloStatusText.setColor(0xfff0f0f0);
-            }
-            mHaloStatusText.setFakeBoldText(true);
-            mHaloStatusText.setTextSize(mStatusTextSize/1.5f);
-            mHaloStatusText.setAlpha(mHaloSignal.getAlpha());
-            canvas.drawText(mEffect.getProvider(), mStatusB_X, signalPosY + mIconHalfSize, mHaloStatusText);
-            mHaloStatusText.setFakeBoldText(false);
-            mHaloStatusText.setTextSize(mStatusTextSize/2);
-            canvas.drawText(mEffect.getDataStatus(), mStatusB_X, signalPosY + mIconHalfSize - mStatusTextSize, mHaloStatusText);
-            canvas.drawText( mEffect.getAirplaneModeStatus() ? mContext.getResources().getString(R.string.halo_aeroplane1) : mEffect.getSignalStatus(),
-                    mStatusB_X, signalPosY + mIconHalfSize + mStatusTextSize, mHaloStatusText);
-            if (mEffect.getAirplaneModeStatus()) canvas.drawText(mContext.getResources().getString(R.string.halo_aeroplane2), mStatusB_X,
-                    signalPosY + mIconHalfSize + mStatusTextSize + (mStatusTextSize/2) + 5, mHaloStatusText);
+                float div = 1 - ((float) mHaloTime.getAlpha()) / 225;
+                int timePosY = (int) (mIconHalfSize - mStatusBubbleT.getWidth() / 2 - mIconSize * div);
+                canvas.drawBitmap(mStatusBubbleT, mStatusB_X - mStatusBubbleT.getWidth() / 2, timePosY, mHaloTime);
+                mHaloStatusText.setFakeBoldText(true);
+                mHaloStatusText.setTextSize(mStatusTextSize);
+                mHaloStatusText.setAlpha(mHaloTime.getAlpha());
+                canvas.drawText(mEffect.getSimpleTime(), mStatusB_X, timePosY + mIconHalfSize, mHaloStatusText);
+                mHaloStatusText.setFakeBoldText(false);
+                mHaloStatusText.setTextSize(mStatusTextSize/2);
+                canvas.drawText(mEffect.getDayofWeek(), mStatusB_X, timePosY + mIconHalfSize + mStatusTextSize, mHaloStatusText);
+                canvas.drawText(mEffect.getDayOfMonth(), mStatusB_X, timePosY + mIconHalfSize + mStatusTextSize + (mStatusTextSize/2) + 5, mHaloStatusText);
 
+                // Battery
+                float div1 = 1 - ((float) mHaloBattery.getAlpha()) / 225;
+                int batteryPosY = (int) (mIconHalfSize - mStatusBubbleB.getWidth() / 2 - mIconSize * div1) + mStatusBubbleT.getWidth();
+                canvas.drawBitmap(mStatusBubbleB, mStatusB_X - mStatusBubbleB.getWidth() / 2, batteryPosY, mHaloBattery);
+                mHaloStatusText.setFakeBoldText(true);
+                mHaloStatusText.setTextSize(mStatusTextSize);
+                mHaloStatusText.setAlpha(mHaloBattery.getAlpha());
+                canvas.drawText(mEffect.getBatteryLevel() + "%", mStatusB_X, batteryPosY + mIconHalfSize, mHaloStatusText);
+                mHaloStatusText.setFakeBoldText(false);
+                mHaloStatusText.setTextSize(mStatusTextSize/2);
+                String bStat = mEffect.getBatteryStatus() ?
+                        mContext.getResources().getString(R.string.halo_battery_plugged) :
+                        mContext.getResources().getString(R.string.halo_battery_unplugged);
+                if (mEffect.getBatteryLevel() == 100) bStat = mContext.getResources().getString(R.string.halo_battery_full);
+                canvas.drawText(bStat, mStatusB_X, batteryPosY + mIconHalfSize + mStatusTextSize, mHaloStatusText);
+
+                // Mobile Signal
+                float div2 = 1 - ((float) mHaloSignal.getAlpha()) / 225;
+                int signalPosY = (int) (mIconHalfSize - mStatusBubbleS.getWidth() / 2 - mIconSize * div2) + mStatusBubbleT.getWidth() + mStatusBubbleB.getWidth();
+                canvas.drawBitmap(mStatusBubbleS, mStatusB_X - mStatusBubbleS.getWidth() / 2, signalPosY, mHaloSignal);
+                if (!mEffect.getConnectionStatus()) {
+                    mEffect.mHaloStatusText.setColor(0xff000000);
+                } else {
+                    mEffect.mHaloStatusText.setColor(0xfff0f0f0);
+                }
+                mHaloStatusText.setFakeBoldText(true);
+                mHaloStatusText.setTextSize(mStatusTextSize/1.5f);
+                mHaloStatusText.setAlpha(mHaloSignal.getAlpha());
+                canvas.drawText(mEffect.getProvider(), mStatusB_X, signalPosY + mIconHalfSize, mHaloStatusText);
+                mHaloStatusText.setFakeBoldText(false);
+                mHaloStatusText.setTextSize(mStatusTextSize/2);
+                canvas.drawText(mEffect.getDataStatus(), mStatusB_X, signalPosY + mIconHalfSize - mStatusTextSize, mHaloStatusText);
+                canvas.drawText( mEffect.getAirplaneModeStatus() ? mContext.getResources().getString(R.string.halo_aeroplane1) : mEffect.getSignalStatus(),
+                        mStatusB_X, signalPosY + mIconHalfSize + mStatusTextSize, mHaloStatusText);
+                if (mEffect.getAirplaneModeStatus()) canvas.drawText(mContext.getResources().getString(R.string.halo_aeroplane2), mStatusB_X,
+                        signalPosY + mIconHalfSize + mStatusTextSize + (mStatusTextSize/2) + 5, mHaloStatusText);
+            }
             // Horizontal Marker
             if (mGesture == Gesture.TASK) {
                 if (y > 0 && mNotificationData != null && getHaloMsgCount() > 0) {
