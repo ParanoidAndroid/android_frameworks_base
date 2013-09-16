@@ -4304,7 +4304,7 @@ public class AudioService extends IAudioService.Stub implements OnFinished {
 
     private void displaySafeVolumeWarning() {
         if (mUiContext != null && mVolumePanel != null) {
-            mVolumePanel.postDisplaySafeVolumeWarning();
+            mVolumePanel.postDisplaySafeVolumeWarning(0);
         } else {
             mHandler.post(new Runnable() {
                 @Override
@@ -4315,7 +4315,7 @@ public class AudioService extends IAudioService.Stub implements OnFinished {
 
                     final Context context = mUiContext != null ? mUiContext : mContext;
                     mVolumePanel = new VolumePanel(context, AudioService.this);
-                    mVolumePanel.postDisplaySafeVolumeWarning();
+                    mVolumePanel.postDisplaySafeVolumeWarning(0);
                 }
             });
         }
