@@ -241,9 +241,6 @@ public class WindowAnimator {
                 final boolean wasAnimating = winAnimator.mWasAnimating;
                 final boolean nowAnimating = winAnimator.stepAnimationLocked(mCurrentTime);
 
-    int mTransparent = Settings.System.getInt(mContext.getContentResolver(),
-                        Settings.System.LOCKSCREEN_BACKGROUND_VALUE, 3); 
-
                 if (WindowManagerService.DEBUG_WALLPAPER) {
                     Slog.v(TAG, win + ": wasAnimating=" + wasAnimating +
                             ", nowAnimating=" + nowAnimating);
@@ -273,8 +270,7 @@ public class WindowAnimator {
                         }
                         mService.mFocusMayChange = true;
                     }
-                    if (mTransparent == 3) {
-                     if (win.isReadyForDisplay()) { 
+                    if (win.isReadyForDisplay()) {
                         if(Settings.System.getInt(mContext.getContentResolver(),
                                 Settings.System.LOCKSCREEN_SEE_THROUGH, 0) == 0) {
                             if (nowAnimating) {
@@ -289,9 +285,7 @@ public class WindowAnimator {
                         } else {
                             mForceHiding = KEYGUARD_NOT_SHOWN;
                         }
-                    } else {
-                         mForceHiding = KEYGUARD_NOT_SHOWN;
-                    } 
+                    }
                     if (WindowManagerService.DEBUG_VISIBILITY) Slog.v(TAG,
                             "Force hide " + mForceHiding
                             + " hasSurface=" + win.mHasSurface

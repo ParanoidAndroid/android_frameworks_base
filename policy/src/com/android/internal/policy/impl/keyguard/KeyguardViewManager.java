@@ -25,13 +25,8 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager.NameNotFoundException; 
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable; 
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -50,18 +45,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewManager;
-import android.view.ViewParent; 
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
-import android.widget.LinearLayout.LayoutParams;
-import android.widget.RelativeLayout;
-
-import android.database.ContentObserver;
-import android.net.Uri;
-import android.os.Handler;
-import android.content.ContentResolver; 
 
 import com.android.internal.R;
 import com.android.internal.util.cm.TorchConstants;
@@ -318,23 +303,12 @@ public class KeyguardViewManager {
         if (mKeyguardHost == null) {
             if (DEBUG) Log.d(TAG, "keyguard host is null, creating it...");
 
-      int mTransparent = Settings.System.getInt(mContext.getContentResolver(),
-                      Settings.System.LOCKSCREEN_BACKGROUND_VALUE, 3);
-            int flags;
-
             mKeyguardHost = new ViewManagerHost(mContext);
 
-            if (mTransparent == 3) {
-                flags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                        | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
-                        | WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN
-                        | WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER;
-            } else {
-                flags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                        | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
-                        | WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN;
-            } 
-
+            int flags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                    | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
+                    | WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN
+                    | WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER;
 
             if (!mNeedsInput) {
                 flags |= WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM;
@@ -394,8 +368,6 @@ public class KeyguardViewManager {
         mKeyguardView.initializeSwitchingUserState(options != null &&
                 options.getBoolean(IS_SWITCHING_USER));
 
-  setBackground(mContext, mKeyguardView); 
-
         // HACK
         // The keyguard view will have set up window flags in onFinishInflate before we set
         // the view mediator callback. Make sure it knows the correct IME state.
@@ -416,41 +388,6 @@ public class KeyguardViewManager {
             }
         }
     }
-
-    static void setBackground(Context context, KeyguardHostView layout) {
-        String lockBack = Settings.System.getString(context.getContentResolver(), Settings.System.LOCKSCREEN_BACKGROUND);
-        Log.v(TAG, "State lockbackground:" + lockBack);
-        int mBgAlpha = (int)((1-(Settings.System.getFloat(context.getContentResolver(),
-                Settings.System.LOCKSCREEN_ALPHA, 0.0f)))*255);
-        if (lockBack != null) {
-            if (!lockBack.isEmpty()) {
-                try {
-                    layout.setBackgroundColor(Integer.parseInt(lockBack));
-                    layout.getBackground().setAlpha(mBgAlpha);
-                } catch(NumberFormatException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                try {
-                        // create framelayout and add imageview to set background
-                        FrameLayout flayout = new FrameLayout(context);
-                        flayout.setLayoutParams(new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-                        ImageView mLockScreenWallpaperImage = new ImageView(flayout.getContext());
-                        mLockScreenWallpaperImage.setScaleType(ScaleType.CENTER_CROP);
-                        flayout.addView(mLockScreenWallpaperImage, -1, -1);
-                        Context settingsContext = context.createPackageContext("com.android.settings", 0);
-                        String wallpaperFile = settingsContext.getFilesDir() + "/lockwallpaper";
-                        Bitmap background = BitmapFactory.decodeFile(wallpaperFile);
-                        Drawable d = new BitmapDrawable(context.getResources(), background);
-                        mLockScreenWallpaperImage.setAlpha(mBgAlpha);
-                        mLockScreenWallpaperImage.setImageDrawable(d);
-                        // add background to lock screen.
-                        layout.addView(flayout,0);
-                } catch (NameNotFoundException e) {
-                }
-            }
-        }
-    } 
 
     public void updateUserActivityTimeout() {
         updateUserActivityTimeoutInWindowLayoutParams();
@@ -637,27 +574,5 @@ public class KeyguardViewManager {
         if (mKeyguardView != null) {
             mKeyguardView.showAssistant();
         }
-    }
-
-    /**
-     * observe transparency settings for wallpaper
-     */
-
-    class SettingsObserver extends ContentObserver {
-            SettingsObserver(Handler handler) {
-              super(handler);
-            }
-
-            void observe() {
-                 ContentResolver resolver = mContext.getContentResolver();
-                      resolver.registerContentObserver(Settings.System.getUriFor(
-                      Settings.System.LOCKSCREEN_BACKGROUND_VALUE), false, this);
-            }
-
-            @Override
-            public void onChange(boolean selfChange, Uri uri) {
-                if (mKeyguardHost != null) mViewManager.removeView(mKeyguardHost);
-                mKeyguardHost = null;
-            }
     }
 }
