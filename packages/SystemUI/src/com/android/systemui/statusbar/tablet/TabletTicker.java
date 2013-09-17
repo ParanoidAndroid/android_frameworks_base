@@ -58,7 +58,7 @@ public class TabletTicker
 
     private static final int MSG_ADVANCE = 1;
 
-    private static final int ADVANCE_DELAY = 5000; // 5 seconds
+    private int ADVANCE_DELAY = 5000; // 5 seconds
 
     private final Context mContext;
     private final WindowManager mWindowManager;
@@ -108,7 +108,7 @@ public class TabletTicker
 
         if (isDisabled() && notification.getNotification().tickerText != null) {
             mEvent.updateTicker(notification, notification.getNotification().tickerText.toString());
-            return;
+            //return;
         }
 
         // If it's already in here, remove whatever's in there and put the new one at the end.
@@ -132,10 +132,10 @@ public class TabletTicker
     }
 
     public void remove(IBinder key, boolean advance) {
-        if (isDisabled()) {
-            mEvent.updateTicker(null);
-            return;
-        }
+        //if (isDisabled()) {
+        //    mEvent.updateTicker(null);
+        //    return; 
+        //}
         if (mCurrentKey == key) {
             // Showing now
             if (advance) {
@@ -162,7 +162,7 @@ public class TabletTicker
     }
 
     public void halt() {
-        if (isDisabled()) return;
+        //if (isDisabled()) return;
         removeMessages(MSG_ADVANCE);
         if (mCurrentView != null || mQueuePos != 0) {
             for (int i=0; i<QUEUE_LENGTH; i++) {
@@ -188,7 +188,7 @@ public class TabletTicker
     }
 
     private void advance() {
-        if (isDisabled()) return;
+        //if (isDisabled()) return;
         // Out with the old...
         if (mCurrentView != null) {
             if (mWindow != null) {
@@ -210,6 +210,12 @@ public class TabletTicker
                 if (mWindow == null) {
                     mWindow = makeWindow();
                     mWindowManager.addView(mWindow, mWindow.getLayoutParams());
+                }
+
+                if (isDisabled()) {
+                  ADVANCE_DELAY = 0;
+                } else {
+                  ADVANCE_DELAY = 5000;
                 }
 
                 mWindow.addView(mCurrentView);
