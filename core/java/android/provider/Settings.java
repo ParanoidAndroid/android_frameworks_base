@@ -1870,6 +1870,13 @@ public final class Settings {
         public static final int VOLUME_OVERLAY_NONE = 3;
 
         /**
+         * Volume Adjust Sounds Enable, This is the noise made when using volume hard buttons
+         * Defaults to 1 - sounds enabled
+         * @hide
+         */
+        public static final String VOLUME_ADJUST_SOUNDS_ENABLED = "volume_adjust_sounds_enabled";
+
+        /**
          * Determines which streams are affected by ringer mode changes. The
          * stream type's bit should be set to 1 if it should be muted when going
          * into an inaudible ringer mode.
@@ -1998,6 +2005,12 @@ public final class Settings {
          * @hide
          */
         public static final String INCREASING_RING_INTERVAL = "increasing_ring_interval";
+
+        /**
+         * Whether to prevent loud volume levels when headset is first plugged in.
+         * @hide
+         */
+        public static final String SAFE_HEADSET_VOLUME = "safe_headset_volume";
 
         /**
          * Master volume (float in the range 0.0f to 1.0f).
@@ -3569,6 +3582,14 @@ public final class Settings {
          *  we always vibrate, even if no vibration was specified
          */
         public static final String NOTIFICATION_CONVERT_SOUND_TO_VIBRATION = "convert_sound_to_vibration";
+
+        /**
+         * Whether to allow notification vibration while notification alerts are disabled
+         * (e.g. during phone calls). The vibration pattern to be used will be a subtle one;
+         * custom vibration is disabled at that point.
+         * @hide
+         */
+        public static final String NOTIFICATION_VIBRATE_DURING_ALERTS_DISABLED = "vibrate_while_no_alerts";
 
     }
 
@@ -5362,6 +5383,24 @@ public final class Settings {
          * @hide
          */
         public static final String POWER_SOUNDS_ENABLED = "power_sounds_enabled";
+
+        /**
+         * Whether to sound when charger power is connected/disconnected
+         * @hide
+         */
+        public static final String POWER_NOTIFICATIONS_ENABLED = "power_notifications_enabled";
+
+        /**
+         * Whether to vibrate when charger power is connected/disconnected
+         * @hide
+         */
+        public static final String POWER_NOTIFICATIONS_VIBRATE = "power_notifications_vibrate";
+
+        /**
+         * URI for power notification sounds
+         * @hide
+         */
+        public static final String POWER_NOTIFICATIONS_RINGTONE = "power_notifications_ringtone";
 
         /**
          * URI for the "wireless charging started" sound.

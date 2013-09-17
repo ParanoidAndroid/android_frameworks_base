@@ -1250,6 +1250,8 @@
   <java-symbol type="bool" name="config_disableMenuKeyInLockScreen" />
   <java-symbol type="bool" name="config_enableLockBeforeUnlockScreen" />
   <java-symbol type="bool" name="config_enableLockScreenRotation" />
+  <java-symbol type="bool" name="config_forceAnalogCarDock" />
+  <java-symbol type="bool" name="config_forceAnalogDeskDock" />
   <java-symbol type="bool" name="config_lidControlsSleep" />
   <java-symbol type="bool" name="config_reverseDefaultRotation" />
   <java-symbol type="bool" name="config_showNavigationBar" />
@@ -1901,6 +1903,7 @@
   <!-- Extra -->
   <java-symbol type="integer" name="config_wallpaperMaxWidth" />
   <java-symbol type="bool" name="config_hasDockBattery" />
+  <java-symbol type="bool" name="config_noDelayInATwoDP" />
   <java-symbol type="bool" name="config_hasRemovableLid" />
   <java-symbol type="bool" name="config_forceDisableHardwareKeyboard" />
   <java-symbol type="integer" name="config_backKillTimeout" />

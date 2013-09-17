@@ -526,11 +526,7 @@ public class VolumePanel extends Handler implements OnSeekBarChangeListener, Vie
                 continue;
             }
             StreamControl sc = mStreamControls.get(streamType);
-            try {
-                mSliderGroup.addView(sc.group);
-            } catch(IllegalStateException e) {
-                // The specified child already has a parent
-            }
+            mSliderGroup.addView(sc.group);
             updateSlider(sc);
         }
     }
@@ -844,6 +840,12 @@ public class VolumePanel extends Handler implements OnSeekBarChangeListener, Vie
     }
 
     protected void onPlaySound(int streamType, int flags) {
+
+        // If preference is no sound - just exit here
+        if (Settings.System.getInt(mContext.getContentResolver(),
+                 Settings.System.VOLUME_ADJUST_SOUNDS_ENABLED, 1) == 0) {
+             return;
+         }
 
         if (hasMessages(MSG_STOP_SOUNDS)) {
             removeMessages(MSG_STOP_SOUNDS);
