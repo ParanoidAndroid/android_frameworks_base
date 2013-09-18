@@ -58,7 +58,7 @@ public class TabletTicker
 
     private static final int MSG_ADVANCE = 1;
 
-    private int ADVANCE_DELAY = 5000; // 5 seconds
+    private int ADVANCE_DELAY = 3500; // 3.5 seconds
 
     private final Context mContext;
     private final WindowManager mWindowManager;
@@ -215,7 +215,7 @@ public class TabletTicker
                 if (isDisabled()) {
                   ADVANCE_DELAY = 0;
                 } else {
-                  ADVANCE_DELAY = 5000;
+                  ADVANCE_DELAY = 3500;
                 }
 
                 mWindow.addView(mCurrentView);
