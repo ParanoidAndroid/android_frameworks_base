@@ -272,10 +272,8 @@ public abstract class BaseStatusBar extends SystemUI implements
             if (uri.equals(Settings.System.getUriFor(Settings.System.QUICK_SETTINGS_COLUMNS))) {
                 android.os.Process.killProcess(android.os.Process.myPid());
             }
-            update();
             updatePieControls();
-        }
-    }
+    };
 
     private ContentObserver mProvisioningObserver = new ContentObserver(new Handler()) {
         @Override
