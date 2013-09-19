@@ -83,7 +83,6 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -434,6 +433,11 @@ public class PhoneStatusBar extends BaseStatusBar {
         } catch (RemoteException ex) {
             // no window manager? good luck with that
         }
+
+        if (mRecreating) {
+            addActiveDisplayView();
+        }
+
         // set recents activity navigation bar view
         RecentsActivity.addNavigationCallback(mNavigationBarView);
 
@@ -2010,7 +2014,7 @@ protected WindowManager.LayoutParams getRecentsLayoutParams(LayoutParams layoutP
         setAreThereNotifications();
     }
 
-    private boolean areLightsOn() {
+    public boolean areLightsOn() {
         return 0 == (mSystemUiVisibility & View.SYSTEM_UI_FLAG_LOW_PROFILE);
     }
 
@@ -2028,6 +2032,10 @@ protected WindowManager.LayoutParams getRecentsLayoutParams(LayoutParams layoutP
             mWindowManagerService.statusBarVisibilityChanged(mSystemUiVisibility);
         } catch (RemoteException ex) {
         }
+    }
+
+    public void setNavigationBarLightsOn(boolean on, boolean force) {
+        mNavigationBarView.setLowProfile(!on, true, force);
     }
 
     public void topAppWindowChanged(boolean showMenu) {
