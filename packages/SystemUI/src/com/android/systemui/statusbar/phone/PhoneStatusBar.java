@@ -434,9 +434,7 @@ public class PhoneStatusBar extends BaseStatusBar {
             // no window manager? good luck with that
         }
 
-        if (mRecreating) {
-            addActiveDisplayView();
-        }
+        addActiveDisplayView();
 
         // set recents activity navigation bar view
         RecentsActivity.addNavigationCallback(mNavigationBarView);
