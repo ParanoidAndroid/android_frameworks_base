@@ -589,7 +589,14 @@ public class ActiveDisplayView extends FrameLayout {
             mKeyguardLock.disableKeyguard();
         }
         setVisibility(View.VISIBLE);
-        mBar.disable(0xffffffff);
+        // delay hiding system ui a bit because if the keyguard has not dismissed
+        // yet it will end up changing the visibility which we don't want
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mBar.disable(0xffffffff);
+            }
+        }, 100);
         if (mLightSensor != null)
             mSensorManager.registerListener(mSensorListener, mLightSensor, SensorManager.SENSOR_DELAY_UI);
     }
