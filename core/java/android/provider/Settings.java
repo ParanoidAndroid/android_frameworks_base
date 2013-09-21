@@ -2962,13 +2962,6 @@ public final class Settings {
          */
         public static final String QUICK_SETTINGS_TILES = "quick_settings";
 
-         /**
-         * Quick Settings Number of Columns
-         *
-         * @hide
-         */
-        public static final String QUICK_SETTINGS_COLUMNS = "quick_settings_columns";
-
         /**
          * Quick Settings Panel Dynamic Tiles
          *
