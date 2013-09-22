@@ -520,7 +520,7 @@ public class ActiveDisplayView extends FrameLayout {
             storedDraw.add(new TargetDrawable(res, getLayeredDrawable(activeBack,
                     mNotificationDrawable, targetInset, false)));
             storedDraw.add(new TargetDrawable(res, null));
-            if (mNotification.isClearable()) {
+            if (mNotification != null && mNotification.isClearable()) {
                 storedDraw.add(new TargetDrawable(res, res.getDrawable(R.drawable.ic_ad_dismiss_notification)));
             } else {
                 storedDraw.add(new TargetDrawable(res, null));
@@ -918,6 +918,7 @@ public class ActiveDisplayView extends FrameLayout {
             mNotificationDrawable = pkgContext.getResources().getDrawable(sbn.getNotification().icon);
             mCurrentNotificationIcon.setImageDrawable(mNotificationDrawable);
             setHandleText(sbn);
+            mNotification = sbn;
             mGlowPadView.post(new Runnable() {
                 @Override
                 public void run() {
