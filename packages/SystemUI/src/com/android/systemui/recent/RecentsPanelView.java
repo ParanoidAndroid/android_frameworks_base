@@ -119,8 +119,6 @@ public class RecentsPanelView extends FrameLayout implements OnItemClickListener
     TextView mFreeMemText;
     TextView mRamText;
 
-    RunningState mState;
-
     MemInfoReader mMemInfoReader = new MemInfoReader();
 
     private RecentsActivity mRecentsActivity;
