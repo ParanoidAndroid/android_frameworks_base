@@ -36,6 +36,4 @@
     <drawable name="notification_icon_area_smoke">#aa000000</drawable>
     <color name="notification_panel_scrim_color">#B0000000</color>
 
-    <!-- Pie control panel -->
-    <color name="pie_menu_background">#C0000000</color>
 </resources>
