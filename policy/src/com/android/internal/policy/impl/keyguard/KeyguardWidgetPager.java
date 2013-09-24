@@ -25,9 +25,11 @@ import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.Context;
+import android.content.ContentResolver; 
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.text.format.DateFormat;
+import android.provider.Settings; 
 import android.util.AttributeSet;
 import android.util.Slog;
 import android.view.Gravity;
@@ -595,12 +597,16 @@ public class KeyguardWidgetPager extends PagedView implements PagedView.PageSwit
         animateOutlinesAndSidePages(false);
     }
 
-    void updateChildrenContentAlpha(float sidePageAlpha) {
+    public void showInitialPageHints() { 
         int count = getChildCount();
         for (int i = 0; i < count; i++) {
             KeyguardWidgetFrame child = getWidgetPageAt(i);
             if (i != mCurrentPage) {
-                child.setBackgroundAlpha(sidePageAlpha);
+                if (Settings.System.getInt(getContext().getContentResolver(),
+                        Settings.System.LOCKSCREEN_HIDE_INITIAL_PAGE_HINTS, 1) == 0) {
+                    child.fadeFrame(this, true, KeyguardWidgetFrame.OUTLINE_ALPHA_MULTIPLIER,
+                            CHILDREN_OUTLINE_FADE_IN_DURATION);
+                } 
                 child.setContentAlpha(0f);
             } else {
                 child.setBackgroundAlpha(0f);
@@ -609,15 +615,9 @@ public class KeyguardWidgetPager extends PagedView implements PagedView.PageSwit
         }
     }
 
-    public void showInitialPageHints() {
-        mShowingInitialHints = true;
-        updateChildrenContentAlpha(KeyguardWidgetFrame.OUTLINE_ALPHA_MULTIPLIER);
-    }
-
     @Override
     void setCurrentPage(int currentPage) {
         super.setCurrentPage(currentPage);
-        updateChildrenContentAlpha(0.0f);
         updateWidgetFramesImportantForAccessibility();
     }
 

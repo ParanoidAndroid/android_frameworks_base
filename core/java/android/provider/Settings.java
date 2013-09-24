@@ -3120,6 +3120,12 @@ public final class Settings {
          */
         public static final String VOLUME_KEY_CURSOR_CONTROL = "volume_key_cursor_control";
 
+	/**
+         * Wether the hints for the left and right widgets are shown when the screen is turned on
+         * @hide
+         */
+        public static final String LOCKSCREEN_HIDE_INITIAL_PAGE_HINTS = "lockscreen_hide_initial_page_hints";
+
         /**
          * Whether to enable custom rebindings of the actions performed on
          * certain key press events.
