@@ -139,6 +139,7 @@ public class ActiveDisplayView extends FrameLayout {
     private LinearLayout.LayoutParams mOverflowLayoutParams;
     private KeyguardManager mKeyguardManager;
     private KeyguardLock mKeyguardLock;
+    private boolean mCallbacksRegistered = false;
 
     // user customizable settings
     private boolean mDisplayNotifications = false;
@@ -285,9 +286,7 @@ public class ActiveDisplayView extends FrameLayout {
             ActiveDisplayView.this.mContext.getContentResolver()
                     .unregisterContentObserver(this);
             if (mDisplayNotifications) {
-                unregisterSensorListener();
-                unregisterNotificationListener();
-                unregisterBroadcastReceiver();
+                unregisterCallbacks();
             }
         }
 
@@ -327,13 +326,9 @@ public class ActiveDisplayView extends FrameLayout {
             }
 
             if (mDisplayNotifications) {
-                registerNotificationListener();
-                registerSensorListener();
-                registerBroadcastReceiver();
+                registerCallbacks();
             } else {
-                unregisterNotificationListener();
-                unregisterSensorListener();
-                unregisterBroadcastReceiver();
+                unregisterCallbacks();
             }
         }
     }
@@ -768,6 +763,24 @@ public class ActiveDisplayView extends FrameLayout {
     private void unregisterSensorListener() {
         if (mProximitySensor != null)
             mSensorManager.unregisterListener(mSensorListener, mProximitySensor);
+    }
+
+    private void registerCallbacks() {
+        if (!mCallbacksRegistered) {
+            registerBroadcastReceiver();
+            registerNotificationListener();
+            registerSensorListener();
+            mCallbacksRegistered = true;
+        }
+    }
+
+    private void unregisterCallbacks() {
+        if (mCallbacksRegistered) {
+            unregisterBroadcastReceiver();
+            unregisterNotificationListener();
+            unregisterSensorListener();
+            mCallbacksRegistered = false;
+        }
     }
 
     private StatusBarNotification getNextAvailableNotification() {
