@@ -2422,9 +2422,6 @@ public class Activity extends ContextThemeWrapper
         return onKeyShortcut(event.getKeyCode(), event);
     }
 
-    boolean mightBeMyGesture = false;
-    float tStatus;
-
    /**
     * Called to process touch screen events.  You can override this to
     * intercept all touch screen events before they are dispatched to the
@@ -2440,6 +2437,7 @@ public class Activity extends ContextThemeWrapper
   final int action = ev.getAction();
         switch (action) {
             case MotionEvent.ACTION_DOWN:
+<<<<<<< HEAD
     tStatus = ev.getY();
     if (Settings.System.getInt(getContentResolver(),
                     Settings.System.STATUSBAR_PEEK, 0) == 1) {
@@ -2449,6 +2447,14 @@ public class Activity extends ContextThemeWrapper
                         mightBeMyGesture = true;
                         return true;
         }  
+=======
+		if (Settings.System.getInt(getContentResolver(),
+                    Settings.System.STATUSBAR_PEEK, 0) == 1) {
+                    if (ev.getY() < getStatusBarHeight()) {
+			mQuickPeekInitialY = ev.getY();
+                        mQuickPeekAction = true;
+		    }	
+>>>>>>> f476185... Fix in: "Add Statusbar Quick Peek [1/2]"
                 }
     onUserInteraction();
                 break;
@@ -2460,6 +2466,7 @@ public class Activity extends ContextThemeWrapper
                 if (Math.abs(ev.getY() - mQuickPeekInitialY) > getStatusBarHeight()) {
                         mQuickPeekAction = false;
                 }
+<<<<<<< HEAD
                 if (mightBeMyGesture) {
                     if(ev.getY() > tStatus) {
                         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
@@ -2474,18 +2481,32 @@ public class Activity extends ContextThemeWrapper
                     }
                     mightBeMyGesture = false;    
                         
+=======
+                if (mQuickPeekAction) {
+                    getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                    mHandler.postDelayed(new Runnable() {
+                        public void run() {
+                            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                        }
+
+                    }, 10000);
+
+                    mQuickPeekAction = false;
+>>>>>>> f476185... Fix in: "Add Statusbar Quick Peek [1/2]"
                     return true;
                 }
+
                 break;
             default:
+<<<<<<< HEAD
     mQuickPeekAction = false;
                 mightBeMyGesture = false;
+=======
+	        mQuickPeekAction = false;
+>>>>>>> f476185... Fix in: "Add Statusbar Quick Peek [1/2]"
                 break;
-        } 
-
-        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            onUserInteraction();
         }
+
         if (getWindow().superDispatchTouchEvent(ev)) {
             return true;
         }
