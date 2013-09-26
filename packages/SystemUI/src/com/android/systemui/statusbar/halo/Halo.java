@@ -308,11 +308,11 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
         mTriggerPos = getWMParams();
 
         // Init colors
-        mPaintHoloBlue.setAntiAlias(true);
+        mPaintHoloBlue.setAntiAlias(false);
         mPaintHoloBlue.setColor(0xff33b5e5);
-        mPaintWhite.setAntiAlias(true);
+        mPaintWhite.setAntiAlias(false);
         mPaintWhite.setColor(0xfff0f0f0);
-        mPaintHoloRed.setAntiAlias(true);
+        mPaintHoloRed.setAntiAlias(false);
         mPaintHoloRed.setColor(0xffcc0000);
 
         // Create effect layer
@@ -966,7 +966,7 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
 
             mContext = context;
             setWillNotDraw(false);
-            setDrawingCacheEnabled(false);
+            setDrawingCacheEnabled(true);
 
             mBigRed = BitmapFactory.decodeResource(mContext.getResources(),
                     R.drawable.halo_bigred);
@@ -1000,17 +1000,17 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
                         (int)(mStatusBubbleS.getHeight() * mHaloSize), true);
             }
 
-            mMarkerPaint.setAntiAlias(true);
+            mMarkerPaint.setAntiAlias(false);
             mMarkerPaint.setAlpha(0);
-            xPaint.setAntiAlias(true);
+            xPaint.setAntiAlias(false);
             xPaint.setAlpha(0);
-            mHaloTime.setAntiAlias(true);
+            mHaloTime.setAntiAlias(false);
             mHaloTime.setAlpha(0);
-            mHaloStatusText.setAntiAlias(true);
+            mHaloStatusText.setAntiAlias(false);
             mHaloStatusText.setAlpha(0);
-            mHaloBattery.setAntiAlias(true);
+            mHaloBattery.setAntiAlias(false);
             mHaloBattery.setAlpha(0);
-            mHaloSignal.setAntiAlias(true);
+            mHaloSignal.setAntiAlias(false);
             mHaloSignal.setAlpha(0);
 
             updateResources(mTickerLeft);
