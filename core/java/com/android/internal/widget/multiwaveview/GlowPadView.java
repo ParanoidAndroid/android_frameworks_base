@@ -146,6 +146,8 @@ public class GlowPadView extends View {
     private TargetDrawable mOuterRing;
     private Vibrator mVibrator;
 
+    private TargetDrawable mCenterDrawable;
+
     private int mFeedbackCount = 3;
     private int mVibrationDuration = 0;
     private int mGrabbedState;
@@ -280,6 +282,8 @@ public class GlowPadView extends View {
         TypedValue handle = a.peekValue(R.styleable.GlowPadView_handleDrawable);
         mHandleDrawable = new TargetDrawable(res, handle != null ? handle.resourceId : 0);
         mHandleDrawable.setState(TargetDrawable.STATE_INACTIVE);
+        mCenterDrawable = new TargetDrawable(res, 0);
+        mCenterDrawable.setState(TargetDrawable.STATE_INACTIVE);
         mOuterRing = new TargetDrawable(res,
                 getResourceId(a, R.styleable.GlowPadView_outerRingDrawable));
 
@@ -427,6 +431,8 @@ public class GlowPadView extends View {
                 startBackgroundAnimation(0, 0.0f);
                 mHandleDrawable.setState(TargetDrawable.STATE_INACTIVE);
                 mHandleDrawable.setAlpha(1.0f);
+                mCenterDrawable.setState(TargetDrawable.STATE_INACTIVE);
+                mCenterDrawable.setAlpha(1.0f);
                 mPaintText.setAlpha(255);
                 break;
 
@@ -437,6 +443,7 @@ public class GlowPadView extends View {
             case STATE_FIRST_TOUCH:
                 mPaintText.setAlpha(0);
                 mHandleDrawable.setAlpha(0.0f);
+                mCenterDrawable.setAlpha(0.0f);
                 deactivateTargets();
                 showTargets(true);
                 startBackgroundAnimation(INITIAL_SHOW_HANDLE_DURATION, 1.0f);
@@ -449,6 +456,7 @@ public class GlowPadView extends View {
             case STATE_TRACKING:
                 mPaintText.setAlpha(0);
                 mHandleDrawable.setAlpha(0.0f);
+                mCenterDrawable.setAlpha(0.0f);
                 showGlow(REVEAL_GLOW_DURATION , REVEAL_GLOW_DELAY, 1.0f, null);
                 break;
 
@@ -456,6 +464,7 @@ public class GlowPadView extends View {
                 // TODO: Add transition states (see list_selector_background_transition.xml)
                 mPaintText.setAlpha(0);
                 mHandleDrawable.setAlpha(0.0f);
+                mCenterDrawable.setAlpha(0.0f);
                 showGlow(REVEAL_GLOW_DURATION , REVEAL_GLOW_DELAY, 0.0f, null);
                 break;
 
@@ -1232,6 +1241,8 @@ public class GlowPadView extends View {
 
         mHandleDrawable.setPositionX(newWaveCenterX);
         mHandleDrawable.setPositionY(newWaveCenterY);
+        mCenterDrawable.setPositionX(newWaveCenterX);
+        mCenterDrawable.setPositionY(newWaveCenterY);
 
         updateTargetPositions(newWaveCenterX, newWaveCenterY);
         updatePointCloudPosition(newWaveCenterX, newWaveCenterY);
@@ -1299,6 +1310,7 @@ public class GlowPadView extends View {
                 target.draw(canvas);
             }
         }
+        mCenterDrawable.draw(canvas);
         mHandleDrawable.draw(canvas);
 
         if (!TextUtils.isEmpty(mHandleText) && mPaintText.getAlpha() != 0) {
@@ -1323,6 +1335,12 @@ public class GlowPadView extends View {
         mHandleText = TextUtils.ellipsize(
                 text, new TextPaint(mPaintText), mMaxTextArcLength,
                 TextUtils.TruncateAt.END).toString();
+    }
+
+    public void setCenterDrawable(TargetDrawable d) {
+        mCenterDrawable = new TargetDrawable(d);
+        mCenterDrawable.setPositionX(mWaveCenterX);
+        mCenterDrawable.setPositionY(mWaveCenterY);
     }
 
     public void setDrawOuterRing(boolean drawOuterRing) {
