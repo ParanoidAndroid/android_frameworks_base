@@ -726,7 +726,9 @@ public class Activity extends ContextThemeWrapper
     private int mTitleColor = 0;
 
     private boolean mQuickPeekAction = false;
-    private float mQuickPeekInitialY; 
+    private boolean mNtQsShadeActive = false;
+    private float mQuickPeekInitialY;
+    private float mQuickPeekInitialX;
 
     final FragmentManagerImpl mFragments = new FragmentManagerImpl();
     final FragmentContainer mContainer = new FragmentContainer() {
@@ -2433,44 +2435,46 @@ public class Activity extends ContextThemeWrapper
     * @return boolean Return true if this event was consumed.
     */
     public boolean dispatchTouchEvent(MotionEvent ev) {
-
-  final int action = ev.getAction();
+        final int action = ev.getAction();
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-    if (Settings.System.getInt(getContentResolver(),
+                if (Settings.System.getInt(getContentResolver(),
                     Settings.System.STATUSBAR_PEEK, 0) == 1) {
-                    if (ev.getY() < getStatusBarHeight()) {
-      mQuickPeekInitialY = ev.getY();
+                    if(mNtQsShadeActive) {
+                        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                        mNtQsShadeActive = false;
+                    } else if (!mQuickPeekAction && ev.getY() < getStatusBarHeight()) {
+                        mQuickPeekInitialY = ev.getY();
+                        mQuickPeekInitialX = ev.getX();
                         mQuickPeekAction = true;
-        }  
+                    }
                 }
-    onUserInteraction();
+                onUserInteraction();
                 break;
 
-            case MotionEvent.ACTION_MOVE:
-    if (!mQuickPeekAction) {
+            case MotionEvent.ACTION_UP:
+                if (!mQuickPeekAction) {
                     break;
                 }
-                if (Math.abs(ev.getY() - mQuickPeekInitialY) > getStatusBarHeight()) {
+                if (Math.abs(ev.getY() - mQuickPeekInitialY) > getStatusBarHeight() * 2 ||
+                        Math.abs(ev.getX() - mQuickPeekInitialX) > getStatusBarHeight()) {
                         mQuickPeekAction = false;
                 }
                 if (mQuickPeekAction) {
                     getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                    mNtQsShadeActive = true;
                     mHandler.postDelayed(new Runnable() {
                         public void run() {
                             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                            mNtQsShadeActive = false;
                         }
 
-                    }, 10000);
+                    }, 30000);
+                    mQuickPeekAction = false;    
 
-                    mQuickPeekAction = false;
-                        
                     return true;
                 }
 
-                break;
-            default:
-          mQuickPeekAction = false;
                 break;
         }
 
