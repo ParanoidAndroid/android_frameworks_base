@@ -2456,7 +2456,8 @@ public class Activity extends ContextThemeWrapper
                 if (!mQuickPeekAction) {
                     break;
                 }
-                if (Math.abs(ev.getY() - mQuickPeekInitialY) > getStatusBarHeight() * 2 ||
+                if (Math.abs(ev.getY() - mQuickPeekInitialY) > getStatusBarHeight() * 3 ||
+                        Math.abs(ev.getY() - mQuickPeekInitialY) < getStatusBarHeight() ||
                         Math.abs(ev.getX() - mQuickPeekInitialX) > getStatusBarHeight()) {
                         mQuickPeekAction = false;
                 }
