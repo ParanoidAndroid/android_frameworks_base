@@ -1847,6 +1847,9 @@ public final class Settings {
         /** @hide */
         public static final int VOLUME_OVERLAY_NONE = 3;
 
+        /** @hide */
+        public static final String FADE_ANIMATION = "fade_animation";
+
         /**
          * Determines which streams are affected by ringer mode changes. The
          * stream type's bit should be set to 1 if it should be muted when going

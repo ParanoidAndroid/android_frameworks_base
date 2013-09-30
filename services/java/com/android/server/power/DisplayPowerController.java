@@ -396,6 +396,8 @@ final class DisplayPowerController {
             final ContentObserver observer = new ContentObserver(mHandler) {
                 @Override
                 public void onChange(boolean selfChange, Uri uri) {
+                    mElectronBeamFadesConfig = Settings.System.getBoolean(mContext.getContentResolver(), 
+                            Settings.System.FADE_ANIMATION, false);
                     // As both LUX and BACKLIGHT might be changed at the same time, there's
                     // a potential race condition. As the settings provider API doesn't give
                     // us transactions to avoid them, wait a little until things settle down
@@ -410,14 +412,17 @@ final class DisplayPowerController {
             cr.registerContentObserver(
                     Settings.System.getUriFor(Settings.System.AUTO_BRIGHTNESS_BACKLIGHT),
                     false, observer, UserHandle.USER_ALL);
+            cr.registerContentObserver(
+                    Settings.System.getUriFor(Settings.System.FADE_ANIMATION),
+                    false, observer, UserHandle.USER_ALL);
 
             mLightSensorWarmUpTimeConfig = resources.getInteger(
                     com.android.internal.R.integer.config_lightSensorWarmupTime);
             updateAutomaticBrightnessSettings();
         }
 
-        mElectronBeamFadesConfig = resources.getBoolean(
-                com.android.internal.R.bool.config_animateScreenLights);
+        mElectronBeamFadesConfig = Settings.System.getBoolean(mContext.getContentResolver(), 
+                    Settings.System.FADE_ANIMATION, false);
 
         if (!DEBUG_PRETEND_PROXIMITY_SENSOR_ABSENT) {
             mProximitySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
