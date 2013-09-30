@@ -8,4 +8,4 @@ Branches
 
 For Nexus devices, use the branch 'jellybean'.
 
-For non-nexus devices, use the 'jellybean-legacy'
+For the rest of non-nexus devices, the branch to use is 'jellybean-legacy'
