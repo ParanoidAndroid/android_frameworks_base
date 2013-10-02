@@ -1847,6 +1847,9 @@ public final class Settings {
         /** @hide */
         public static final int VOLUME_OVERLAY_NONE = 3;
 
+        /** @hide */
+        public static final String POWER_FADE_EFFECT = "power_fade_effect";
+
         /**
          * Determines which streams are affected by ringer mode changes. The
          * stream type's bit should be set to 1 if it should be muted when going
@@ -2801,6 +2804,12 @@ public final class Settings {
          * @hide
          */
         public static final String LOCKSCREEN_SEE_THROUGH = "lockscreen_see_through";
+
+	/**
+         * Sets color of statusbar traffic indicator
+         * @hide
+         */
+        public static final String STATUS_BAR_TRAFFIC_COLOR = "status_bar_traffic_color";
 
         /**
          * Allows lockscreen to be rotated
