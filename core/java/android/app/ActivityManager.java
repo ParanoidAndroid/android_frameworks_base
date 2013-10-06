@@ -384,7 +384,8 @@ public class ActivityManager {
     static public boolean isHighEndGfx() {
         MemInfoReader reader = new MemInfoReader();
         reader.readMemInfo();
-        if (reader.getTotalSize() >= (512*1024*1024)) {
+        if (reader.getTotalSize() >= (512*1024*1024)
+                || SystemProperties.getBoolean("ro.sys.force_full_hwa", false)) {
             // If the device has at least 512MB RAM available to the kernel,
             // we can afford the overhead of graphics acceleration.
             return true;
