@@ -2664,6 +2664,11 @@ public final class Settings {
         public static final String STATUS_BAR_TRAFFIC_ENABLE = "status_bar_traffic_enable";
 
         /**
+         * Use statusbar icon color as network speed indicator color
+         * @hide
+         */
+        public static final String STATUS_BAR_TRAFFIC_USE_ICON_COLOR = "status_bar_traffic_use_icon_color";
+        /**
          * HALO, should default to 0 (no, do not show)
          * @hide
          */

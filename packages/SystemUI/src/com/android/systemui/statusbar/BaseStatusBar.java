@@ -748,6 +748,11 @@ public abstract class BaseStatusBar extends SystemUI implements
                 Settings.System.STATUS_ICON_COLOR);
 
         if (!colorInfo.lastColorString.equals(mLastIconColor.lastColorString)) {
+            if(Settings.System.getInt(mContext.getContentResolver(),
+                        Settings.System.STATUS_BAR_TRAFFIC_USE_ICON_COLOR, 0) == 1){
+                Settings.System.putInt(mContext.getContentResolver(),
+                        Settings.System.STATUS_BAR_TRAFFIC_COLOR, colorInfo.lastColor);
+            }
             if(mClock != null) mClock.setTextColor(colorInfo.lastColor);
             if(mSignalCluster != null) mSignalCluster.setColor(colorInfo);
             if(mBatteryController != null) mBatteryController.setColor(colorInfo);
