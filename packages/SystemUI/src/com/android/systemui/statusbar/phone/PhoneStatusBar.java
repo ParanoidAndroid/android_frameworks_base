@@ -37,8 +37,11 @@ import android.content.SharedPreferences;
 import android.content.res.CustomTheme;
 import android.content.res.Resources;
 import android.database.ContentObserver;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
@@ -110,6 +113,7 @@ import com.android.systemui.statusbar.policy.NotificationRowLayout;
 import com.android.systemui.statusbar.policy.OnSizeChangedListener;
 import com.android.systemui.statusbar.policy.Prefs;
 
+import java.io.File;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -161,6 +165,8 @@ public class PhoneStatusBar extends BaseStatusBar {
 
     private float mFlingGestureMaxOutputVelocityPx; // how fast can it really go? (should be a little 
                                                     // faster than mSelfCollapseVelocityPx)
+
+    private final String NOTIF_WALLPAPER_IMAGE_PATH = "/data/data/com.android.settings/files/notification_wallpaper.jpg";
 
     PhoneStatusBarPolicy mIconPolicy;
 
@@ -1572,17 +1578,20 @@ protected WindowManager.LayoutParams getRecentsLayoutParams(LayoutParams layoutP
         if (mNotificationButtonAnim != null) mNotificationButtonAnim.cancel();
         if (mClearButtonAnim != null) mClearButtonAnim.cancel();
 
+        final boolean halfWayDonw = mScrollView.getVisibility() == View.VISIBLE;
+        final int zeroOutDelays = halfWayDonw ? 0 : 1;
+
         mScrollView.setVisibility(View.VISIBLE);
         mScrollViewAnim = start(
-            startDelay(FLIP_DURATION_OUT,
+            startDelay(FLIP_DURATION_OUT * zeroOutDelays,
                 interpolator(mDecelerateInterpolator,
-                    ObjectAnimator.ofFloat(mScrollView, View.SCALE_X, 0f, 1f)
+                    ObjectAnimator.ofFloat(mScrollView, View.SCALE_X, 1f)
                         .setDuration(FLIP_DURATION_IN)
                     )));
         mFlipSettingsViewAnim = start(
             setVisibilityWhenDone(
                 interpolator(mAccelerateInterpolator,
-                        ObjectAnimator.ofFloat(mFlipSettingsView, View.SCALE_X, 1f, 0f)
+                        ObjectAnimator.ofFloat(mFlipSettingsView, View.SCALE_X, 0f)
                         )
                     .setDuration(FLIP_DURATION_OUT),
                 mFlipSettingsView, View.INVISIBLE));
@@ -1609,6 +1618,48 @@ protected WindowManager.LayoutParams getRecentsLayoutParams(LayoutParams layoutP
             }
         }, FLIP_DURATION - 150);
     }
+   
+    public boolean isShowingSettings() {
+        return mHasFlipSettings && mFlipSettingsView.getVisibility() == View.VISIBLE;
+    }
+
+    public void completePartialFlip() {
+        if (mHasFlipSettings) {
+            if (mFlipSettingsView.getVisibility() == View.VISIBLE) {
+                flipToSettings();
+            } else {
+                flipToNotifications();
+            }
+        }
+    }
+   
+    public void partialFlip(float progress) {
+        if (mFlipSettingsViewAnim != null) mFlipSettingsViewAnim.cancel();
+        if (mScrollViewAnim != null) mScrollViewAnim.cancel();
+        if (mSettingsButtonAnim != null) mSettingsButtonAnim.cancel();
+        if (mNotificationButtonAnim != null) mNotificationButtonAnim.cancel();
+        if (mClearButtonAnim != null) mClearButtonAnim.cancel();
+
+        progress = Math.min(Math.max(progress, -1f), 1f);
+        if (progress < 0f) { // notifications side
+            mFlipSettingsView.setScaleX(0f);
+            mFlipSettingsView.setVisibility(View.GONE);
+            mSettingsButton.setVisibility(View.VISIBLE);
+            mSettingsButton.setAlpha(-progress);
+            mScrollView.setVisibility(View.VISIBLE);
+            mScrollView.setScaleX(-progress);
+            mNotificationButton.setVisibility(View.GONE);
+        } else { // settings side
+            mFlipSettingsView.setScaleX(progress);
+            mFlipSettingsView.setVisibility(View.VISIBLE);
+            mSettingsButton.setVisibility(View.GONE);
+            mScrollView.setVisibility(View.GONE);
+            mScrollView.setScaleX(0f);
+            mNotificationButton.setVisibility(View.VISIBLE);
+            mNotificationButton.setAlpha(progress);
+        }
+        mClearButton.setVisibility(View.GONE);
+    } 
 
     @Override
     public void animateExpandSettingsPanel() {
@@ -1658,19 +1709,21 @@ protected WindowManager.LayoutParams getRecentsLayoutParams(LayoutParams layoutP
         if (mHaloButtonAnim != null) mHaloButtonAnim.cancel();
         if (mNotificationButtonAnim != null) mNotificationButtonAnim.cancel();
         if (mClearButtonAnim != null) mClearButtonAnim.cancel();
-
+        
+        final boolean halfWayDone = mFlipSettingsView.getVisibility() == View.VISIBLE;
+        final int zeroOutDelays = halfWayDone ? 0 : 1;
+        
         mFlipSettingsView.setVisibility(View.VISIBLE);
-        mFlipSettingsView.setScaleX(0f);
         mFlipSettingsViewAnim = start(
-            startDelay(FLIP_DURATION_OUT,
+            startDelay(FLIP_DURATION_OUT * zeroOutDelays,
                 interpolator(mDecelerateInterpolator,
-                    ObjectAnimator.ofFloat(mFlipSettingsView, View.SCALE_X, 0f, 1f)
+                    ObjectAnimator.ofFloat(mFlipSettingsView, View.SCALE_X, 1f)
                         .setDuration(FLIP_DURATION_IN)
                     )));
         mScrollViewAnim = start(
             setVisibilityWhenDone(
                 interpolator(mAccelerateInterpolator,
-                        ObjectAnimator.ofFloat(mScrollView, View.SCALE_X, 1f, 0f)
+                        ObjectAnimator.ofFloat(mScrollView, View.SCALE_X, 0f)
                         )
                     .setDuration(FLIP_DURATION_OUT), 
                 mScrollView, View.INVISIBLE));
@@ -1978,6 +2031,7 @@ protected WindowManager.LayoutParams getRecentsLayoutParams(LayoutParams layoutP
             final View systemIcons = mStatusBarView.findViewById(R.id.statusIcons);
             final View signal = mStatusBarView.findViewById(R.id.signal_cluster);
             final View battery = mStatusBarView.findViewById(R.id.battery);
+            final View traffic = mStatusBarView.findViewById(R.id.traffic);
 
             final AnimatorSet lightsOutAnim = new AnimatorSet();
             lightsOutAnim.playTogether(
@@ -1985,7 +2039,8 @@ protected WindowManager.LayoutParams getRecentsLayoutParams(LayoutParams layoutP
                     ObjectAnimator.ofFloat(systemIcons, View.ALPHA, 0),
                     ObjectAnimator.ofFloat(signal, View.ALPHA, 0),
                     ObjectAnimator.ofFloat(battery, View.ALPHA, 0.5f),
-                    ObjectAnimator.ofFloat(mClock, View.ALPHA, 0.5f)
+                    ObjectAnimator.ofFloat(mClock, View.ALPHA, 0.5f),
+                    ObjectAnimator.ofFloat(traffic, View.ALPHA, 0.5f)
                 );
             lightsOutAnim.setDuration(750);
 
@@ -1995,7 +2050,8 @@ protected WindowManager.LayoutParams getRecentsLayoutParams(LayoutParams layoutP
                     ObjectAnimator.ofFloat(systemIcons, View.ALPHA, 1),
                     ObjectAnimator.ofFloat(signal, View.ALPHA, 1),
                     ObjectAnimator.ofFloat(battery, View.ALPHA, 1),
-                    ObjectAnimator.ofFloat(mClock, View.ALPHA, 1)
+                    ObjectAnimator.ofFloat(mClock, View.ALPHA, 1),
+                    ObjectAnimator.ofFloat(traffic, View.ALPHA, 1)
                 );
             lightsOnAnim.setDuration(250);
 
@@ -2738,8 +2794,8 @@ protected WindowManager.LayoutParams getRecentsLayoutParams(LayoutParams layoutP
     }
 
     /**
-     *  ContentObserver to watch for Quick Settings tiles changes
-     * @author dvtonder
+     * ContentObserver to watch for Quick Settings tiles changes and notification wallpaper/alpha
+     * @authot kufikugel
      *
      */
     private class TilesChangedObserver extends ContentObserver {
@@ -2756,6 +2812,7 @@ protected WindowManager.LayoutParams getRecentsLayoutParams(LayoutParams layoutP
         public void onChange(boolean selfChange, Uri uri) {
             if (mSettingsContainer != null) {
                 mQS.setupQuickSettings();
+                setNotificationWallpaperHelper();
             }
         }
 
@@ -2784,6 +2841,42 @@ protected WindowManager.LayoutParams getRecentsLayoutParams(LayoutParams layoutP
             cr.registerContentObserver(
                     Settings.System.getUriFor(Settings.System.QS_DYNAMIC_WIFI),
                     false, this);
+
+            cr.registerContentObserver(
+                    Settings.System.getUriFor(Settings.System.NOTIF_WALLPAPER_ALPHA),
+                    false, this);
+            setNotificationWallpaperHelper();
+
+            cr.registerContentObserver(
+                    Settings.System.getUriFor(Settings.System.NOTIF_ALPHA),
+                    false, this);
+        }
+    }
+
+    private void setNotificationWallpaperHelper() {
+        float wallpaperAlpha = Settings.System.getFloat(mContext.getContentResolver(), Settings.System.NOTIF_WALLPAPER_ALPHA, 0.1f);
+        String notifiBack = Settings.System.getString(mContext.getContentResolver(), Settings.System.NOTIFICATION_BACKGROUND);
+        File file = new File(NOTIF_WALLPAPER_IMAGE_PATH);
+        mNotificationPanel.setBackgroundResource(0);
+        mNotificationPanel.setBackgroundResource(R.drawable.notification_panel_bg);
+        Drawable background = mNotificationPanel.getBackground();
+        background.setAlpha(0);
+        if (!file.exists()) {
+            if (notifiBack != null && !notifiBack.isEmpty()) {
+                background.setColorFilter(Integer.parseInt(notifiBack), Mode.SRC_ATOP);
+            }
+         background.setAlpha((int) ((1-wallpaperAlpha) * 255));
+        }
+        float notifAlpha = Settings.System.getFloat(mContext.getContentResolver(), Settings.System.NOTIF_ALPHA, 0.0f);
+        if (mPile != null) {
+            int N = mNotificationData.size();
+            for (int i=0; i<N; i++) {
+              Entry ent = mNotificationData.get(N-i-1);
+              View expanded = ent.expanded;
+              if (expanded !=null && expanded.getBackground()!=null) expanded.getBackground().setAlpha((int) ((1-notifAlpha) * 255));
+              View large = ent.getLargeView();
+              if (large != null && large.getBackground()!=null) large.getBackground().setAlpha((int) ((1-notifAlpha) * 255));
+            }
         }
     }
 }

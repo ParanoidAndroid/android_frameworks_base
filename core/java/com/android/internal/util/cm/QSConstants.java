@@ -42,5 +42,7 @@ public class QSConstants {
             TILES_DEFAULT.add(TILE_AIRPLANE);
             TILES_DEFAULT.add(TILE_HYBRID);
             TILES_DEFAULT.add(TILE_DESKTOPMODE);
+            TILES_DEFAULT.add(TILE_VOLUME);
+            TILES_DEFAULT.add(TILE_BLUETOOTH);
         }
 }

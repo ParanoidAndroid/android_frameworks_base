@@ -1869,6 +1869,9 @@ public final class Settings {
         /** @hide */
         public static final int VOLUME_OVERLAY_NONE = 3;
 
+        /** @hide */
+        public static final String POWER_FADE_EFFECT = "power_fade_effect";
+
         /**
          * Determines which streams are affected by ringer mode changes. The
          * stream type's bit should be set to 1 if it should be muted when going
@@ -2531,6 +2534,13 @@ public final class Settings {
         public static final String ACTIVE_DISPLAY_SUNLIGHT_MODE = "active_display_sunlight_mode";
 
         /**
+         * Whether music controls should be shown on the lockscreen if a supporting
+         * music player is active.
+         * @hide
+         */
+        public static final String LOCKSCREEN_MUSIC_CONTROLS = "lockscreen_music_controls";
+
+        /**
          * @deprecated Use {@link android.provider.Settings.Global#LOW_BATTERY_SOUND}
          * instead
          * @hide
@@ -2736,6 +2746,26 @@ public final class Settings {
         public static final String DISABLE_FULLSCREEN_KEYBOARD = "disable_fullscreen_keyboard";
 
         /**
+         * Peek at stausbar when it is hidden by swiping down from top
+         * end of the screen
+         *
+         * @hide
+         */
+        public static final String STATUSBAR_PEEK = "statusbar_peek"; 
+
+         /**
+         * Hide network speed indicator when there is no traffic
+         * @hide
+         */
+        public static final String STATUS_BAR_TRAFFIC_HIDE = "status_bar_traffic_hide"; 
+
+         /**
+         * Network speed indicator
+         * @hide
+         */
+        public static final String STATUS_BAR_TRAFFIC_ENABLE = "status_bar_traffic_enable";
+
+        /**
          * HALO, should default to 0 (no, do not show)
          * @hide
          */
@@ -2877,6 +2907,12 @@ public final class Settings {
          */
         public static final String LOCKSCREEN_SEE_THROUGH = "lockscreen_see_through";
 
+	/**
+         * Sets color of statusbar traffic indicator
+         * @hide
+         */
+        public static final String STATUS_BAR_TRAFFIC_COLOR = "status_bar_traffic_color";
+
         /**
          * Allows lockscreen to be rotated
          * @hide
@@ -2950,8 +2986,65 @@ public final class Settings {
          */
         public static final String QUIET_HOURS_MUTE = "quiet_hours_mute";
 
+ 	/**
+         * use Alt Activity Resolver Grid
+         * boolean
+         *
+         * @hide
+         */
+        public static final String ACTIVITY_RESOLVER_USE_ALT = "activity_resolver_use_alt"; 
+
+	/**
+         * ListView Animations
+         * 0 == None
+         * 1 == Wave (Left)
+         * 2 == Wave (Right)
+         * 3 == Scale
+         * 4 == Alpha
+         * 5 == Stack (Top)
+         * 6 == Stack (Bottom)
+         * 7 == Translate (Left)
+         * 8 == Translate (Right)
+         */
+        public static final String LISTVIEW_ANIMATION = "listview_animation";
+
         /**
-         * Whether to disable haptic feedback during quiet hours.
+         * ListView Interpolators
+         * 0 == None
+         * 1 == accelerate_interpolator
+         * 2 == decelerate_interpolator
+         * 3 == accelerate_decelerate_interpolator
+         * 4 == anticipate_interpolator
+         * 5 == overshoot_interpolator
+         * 6 == anticipate_overshoot_interpolator
+         * 7 == bounce_interpolator
+         */
+        public static final String LISTVIEW_INTERPOLATOR = "listview_interpolator";
+
+        /**  
+         * Custom System Animations
+         *  
+         * @hide
+         */  
+        public static final String[] ACTIVITY_ANIMATION_CONTROLS = new String[] {  
+                "activity_open",
+                "activity_close",
+                "task_open",  
+                "task_close",  
+                "task_to_front",
+                "task_to_back",  
+                "wallpaper_open",  
+                "wallpaper_close",  
+                "wallpaper_intra_open",  
+                "wallpaper_intra_close",  
+        };  
+        public static final String ANIMATION_CONTROLS_DURATION = "animation_controls_duration";
+        public static final String ANIMATION_CONTROLS_NO_OVERRIDE = "animation_controls_no_override";
+
+ 	/**
+         * use Alt Activity Resolver Grid
+         * boolean
+         *
          * @hide
          */
         public static final String QUIET_HOURS_HAPTIC = "quiet_hours_haptic";
@@ -3131,6 +3224,13 @@ public final class Settings {
         public static final String QS_FLOATING_WINDOW = "qs_floating_window";
 
         /**
+         * Animate-flip Quick Settings Panel Tiles on click
+         *
+         * @hide
+         */
+        public static final String QUICK_SETTINGS_TILES_FLIP = "quick_settings_tiles_flip";
+
+        /**
          * Use the Notification Power Widget? (Who wouldn't!)
          *
          * @hide
@@ -3218,6 +3318,12 @@ public final class Settings {
          */
         public static final String VOLUME_KEY_CURSOR_CONTROL = "volume_key_cursor_control";
 
+	/**
+         * Wether the hints for the left and right widgets are shown when the screen is turned on
+         * @hide
+         */
+        public static final String LOCKSCREEN_HIDE_INITIAL_PAGE_HINTS = "lockscreen_hide_initial_page_hints";
+
         /**
          * Whether to enable custom rebindings of the actions performed on
          * certain key press events.
@@ -3301,8 +3407,30 @@ public final class Settings {
          * @hide
          */
 	public static final String VOLUME_KEYS_CONTROL_RING_STREAM = "volume_keys_control_ring_stream";
+
+        /**
+         * @hide
+         * Whether FastPowerOn is enabled
+         */
+        public static final String ENABLE_FAST_POWERON = "enable_fast_poweron";
         
 	/**
+        public static final String VOLUME_KEYS_CONTROL_RING_STREAM = "volume_keys_control_ring_stream";
+
+	/**
+         * Holds the text for the Carrier label. An empty string
+         * will bring the default text back.
+         * @hide
+         */
+        public static final String CUSTOM_CARRIER_LABEL = "custom_carrier_label"; 
+
+        /**
+         * Notifications Expand Behavior
+         * @hide
+         */
+        public static final String NOTIFICATIONS_BEHAVIOUR = "notifications_behaviour";
+
+        /**
          * Settings to backup. This is here so that it's in the same place as the settings
          * keys and easy to update.
          *
@@ -3630,6 +3758,75 @@ public final class Settings {
          *  we always vibrate, even if no vibration was specified
          */
         public static final String NOTIFICATION_CONVERT_SOUND_TO_VIBRATION = "convert_sound_to_vibration";
+
+        /**
+         * MediaScanner behavior on boot.
+         * 0 = enabled
+         * 1 = ask (notification)
+         * 2 = disabled
+         * @hide
+         */
+        public static final String MEDIA_SCANNER_ON_BOOT = "media_scanner_on_boot";
+
+
+         /**
+         * Screen-On Notification Light,
+         * should default to 1 (yes, Notification Light is enabled when screen is on)
+         * @hide
+         */
+        public static final String SCREEN_ON_NOTIFICATION_LED = "screen_on_notification_led";
+
+        /**
+         * Sets the portrait background of notification drawer
+         * @hide
+         */
+        public static final String NOTIFICATION_BACKGROUND = "notification_background";
+
+        /**
+        * Sets the landscape background of notification drawer
+        * @hide
+        */
+        public static final String NOTIFICATION_BACKGROUND_LANDSCAPE = "notification_background_landscape";
+
+        /**
+         * Sets the alpha (transparency) of notification wallpaper
+         * @hide
+         */
+        public static final String NOTIF_WALLPAPER_ALPHA = "notif_wallpaper_alpha";
+
+        /**
+         * Sets the alpha (transparency) of notifications
+         * @hide
+         */
+        public static final String NOTIF_ALPHA = "notif_alpha";
+
+        /**
+         * whether which Ram Usage Bar mode is used on recent switcher
+         * 0 = none, 1 = only app use, 2 = app and cache use, 3 = app, cache and system use
+         * @hide
+         */
+        public static final String RECENTS_RAM_BAR_MODE = "recents_ram_bar_mode";
+
+        /**
+         * Ram Usage Bar system mem color
+         *
+         * @hide
+         */
+        public static final String RECENTS_RAM_BAR_MEM_COLOR = "recents_ram_bar_mem_color";
+
+        /**
+         * Ram Usage Bar cached mem color
+         *
+         * @hide
+         */
+        public static final String RECENTS_RAM_BAR_CACHE_COLOR = "recents_ram_bar_cache_color";
+
+        /**
+         * Ram Usage Bar app mem color
+         *
+         * @hide
+         */
+        public static final String RECENTS_RAM_BAR_ACTIVE_APPS_COLOR = "recents_ram_bar_active_apps_color";
 
     }
 
@@ -5462,6 +5659,13 @@ public final class Settings {
         public static final String BUGREPORT_IN_POWER_MENU = "bugreport_in_power_menu";
 
         /**
+         * Whether to wake the display when plugging or unplugging the charger
+         *
+         * @hide
+         */
+        public static final String WAKE_WHEN_PLUGGED_OR_UNPLUGGED = "wake_when_plugged_or_unplugged";
+
+        /**
          * Whether ADB is enabled.
          */
         public static final String ADB_ENABLED = "adb_enabled";
@@ -6554,6 +6758,7 @@ public final class Settings {
         public static final String[] SETTINGS_TO_BACKUP = {
             BUGREPORT_IN_POWER_MENU,
             STAY_ON_WHILE_PLUGGED_IN,
+            WAKE_WHEN_PLUGGED_OR_UNPLUGGED,
             MODE_RINGER,
             AUTO_TIME,
             AUTO_TIME_ZONE,

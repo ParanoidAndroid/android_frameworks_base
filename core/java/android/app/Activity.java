@@ -86,6 +86,7 @@ import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.AdapterView;
+import android.widget.Toast;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -723,6 +724,11 @@ public class Activity extends ContextThemeWrapper
 
     private CharSequence mTitle;
     private int mTitleColor = 0;
+
+    private boolean mQuickPeekAction = false;
+    private boolean mNtQsShadeActive = false;
+    private float mQuickPeekInitialY;
+    private float mQuickPeekInitialX;
 
     final FragmentManagerImpl mFragments = new FragmentManagerImpl();
     final FragmentContainer mContainer = new FragmentContainer() {
@@ -2418,26 +2424,72 @@ public class Activity extends ContextThemeWrapper
         return onKeyShortcut(event.getKeyCode(), event);
     }
 
-    /**
-     * Called to process touch screen events.  You can override this to
-     * intercept all touch screen events before they are dispatched to the
-     * window.  Be sure to call this implementation for touch screen events
-     * that should be handled normally.
-     * 
-     * @param ev The touch screen event.
-     * 
-     * @return boolean Return true if this event was consumed.
-     */
+   /**
+    * Called to process touch screen events.  You can override this to
+    * intercept all touch screen events before they are dispatched to the
+    * window.  Be sure to call this implementation for touch screen events
+    * that should be handled normally.
+    * 
+    * @param ev The touch screen event.
+    * 
+    * @return boolean Return true if this event was consumed.
+    */
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            onUserInteraction();
+        final int action = ev.getAction();
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+                if (Settings.System.getInt(getContentResolver(),
+                    Settings.System.STATUSBAR_PEEK, 0) == 1) {
+                    if(mNtQsShadeActive) {
+                        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                        mNtQsShadeActive = false;
+                    } else if (!mQuickPeekAction && ev.getY() < getStatusBarHeight()) {
+                        mQuickPeekInitialY = ev.getY();
+                        mQuickPeekInitialX = ev.getX();
+                        mQuickPeekAction = true;
+                    }
+                }
+                onUserInteraction();
+                break;
+
+            case MotionEvent.ACTION_UP:
+                if (!mQuickPeekAction) {
+                    break;
+                }
+                float deltaY = Math.abs(ev.getY() - mQuickPeekInitialY);
+                float deltaX = Math.abs(ev.getX() - mQuickPeekInitialX);
+                if (deltaY < getStatusBarHeight() ||
+                        deltaY < deltaX * 2) {
+                        mQuickPeekAction = false;
+                }
+                if (mQuickPeekAction) {
+                    getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                    mNtQsShadeActive = true;
+                    mHandler.postDelayed(new Runnable() {
+                        public void run() {
+                            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                            mNtQsShadeActive = false;
+                        }
+
+                    }, 30000);
+                    mQuickPeekAction = false;    
+
+                    return true;
+                }
+
+                break;
         }
+
         if (getWindow().superDispatchTouchEvent(ev)) {
             return true;
         }
         return onTouchEvent(ev);
     }
     
+    public int getStatusBarHeight() {
+        return getResources().getDimensionPixelSize(com.android.internal.R.dimen.status_bar_height);
+    } 
+
     /**
      * Called to process trackball events.  You can override this to
      * intercept all trackball events before they are dispatched to the
