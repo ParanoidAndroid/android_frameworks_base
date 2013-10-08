@@ -863,9 +863,9 @@ public interface WindowManager extends ViewManager {
          * it is created.
          * {@hide} */
         public static final int FLAG_SYSTEM_ERROR = 0x40000000;
-
+        
         /** Window flag: Overrides default power key behavior
-            @{hide} */
+         * {@hide} */
         public static final int PREVENT_POWER_KEY = 0x80000000;
 
         /**

@@ -954,7 +954,15 @@ public final class BluetoothAdapter {
      */
     public BluetoothServerSocket listenUsingRfcommWithServiceRecord(String name, UUID uuid)
             throws IOException {
-        return createNewRfcommSocketAndRecord(name, uuid, true, true);
+        return createNewRfcommSocketAndRecord(name, -1, uuid, true, true);
+    }
+
+    /**
+     * @hide
+     */
+    public BluetoothServerSocket listenUsingRfcommWithServiceRecordOn(String name, int port, UUID uuid)
+            throws IOException {
+        return createNewRfcommSocketAndRecord(name, port, uuid, true, true);
     }
 
     /**
@@ -985,7 +993,7 @@ public final class BluetoothAdapter {
      */
     public BluetoothServerSocket listenUsingInsecureRfcommWithServiceRecord(String name, UUID uuid)
             throws IOException {
-        return createNewRfcommSocketAndRecord(name, uuid, false, false);
+        return createNewRfcommSocketAndRecord(name, -1, uuid, false, false);
     }
 
      /**
@@ -1023,15 +1031,15 @@ public final class BluetoothAdapter {
      */
     public BluetoothServerSocket listenUsingEncryptedRfcommWithServiceRecord(
             String name, UUID uuid) throws IOException {
-        return createNewRfcommSocketAndRecord(name, uuid, false, true);
+        return createNewRfcommSocketAndRecord(name, -1, uuid, false, true);
     }
 
 
-    private BluetoothServerSocket createNewRfcommSocketAndRecord(String name, UUID uuid,
+    private BluetoothServerSocket createNewRfcommSocketAndRecord(String name, int port, UUID uuid,
             boolean auth, boolean encrypt) throws IOException {
         BluetoothServerSocket socket;
         socket = new BluetoothServerSocket(BluetoothSocket.TYPE_RFCOMM, auth,
-                        encrypt, new ParcelUuid(uuid));
+                        encrypt, port, new ParcelUuid(uuid));
         socket.setServiceName(name);
         int errno = socket.mSocket.bindListen();
         if (errno != 0) {
@@ -1170,6 +1178,9 @@ public final class BluetoothAdapter {
         } else if (profile == BluetoothProfile.PAN) {
             BluetoothPan pan = new BluetoothPan(context, listener);
             return true;
+        } else if (profile == BluetoothProfile.SAP) {
+            BluetoothSap sap = new BluetoothSap(context, listener);
+            return true;
         } else if (profile == BluetoothProfile.HEALTH) {
             BluetoothHealth health = new BluetoothHealth(context, listener);
             return true;
@@ -1208,6 +1219,10 @@ public final class BluetoothAdapter {
             case BluetoothProfile.PAN:
                 BluetoothPan pan = (BluetoothPan)proxy;
                 pan.close();
+                break;
+            case BluetoothProfile.SAP:
+                BluetoothSap sap = (BluetoothSap)proxy;
+                sap.close();
                 break;
             case BluetoothProfile.HEALTH:
                 BluetoothHealth health = (BluetoothHealth)proxy;

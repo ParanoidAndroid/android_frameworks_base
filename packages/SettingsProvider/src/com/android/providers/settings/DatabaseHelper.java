@@ -1962,6 +1962,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             // Set default tty mode
             loadSetting(stmt, Settings.System.TTY_MODE, 0);
 
+            // Set default noise suppression value
+            loadSetting(stmt, Settings.System.NOISE_SUPPRESSION, 0);
+
             loadIntegerSetting(stmt, Settings.System.SCREEN_BRIGHTNESS,
                     R.integer.def_screen_brightness);
 
@@ -1995,7 +1998,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 R.bool.def_sound_effects_enabled);
         loadBooleanSetting(stmt, Settings.System.HAPTIC_FEEDBACK_ENABLED,
                 R.bool.def_haptic_feedback);
-
         loadIntegerSetting(stmt, Settings.System.LOCKSCREEN_SOUNDS_ENABLED,
             R.integer.def_lockscreen_sounds_enabled);
     }
@@ -2096,6 +2098,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             loadBooleanSetting(stmt, Settings.Secure.USER_SETUP_COMPLETE,
                     R.bool.def_user_setup_complete);
+
+            loadIntegerSetting(stmt, Settings.System.UI_FORCE_OVERFLOW_BUTTON,
+                    R.integer.def_force_overflow_button);
 
             loadIntegerSetting(stmt, Settings.Secure.DIALPAD_AUTOCOMPLETE,
                     R.integer.def_dialpad_autocomplete);

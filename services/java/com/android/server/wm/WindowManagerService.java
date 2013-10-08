@@ -47,6 +47,7 @@ import android.util.TimeUtils;
 import android.view.IWindowId;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.app.ThemeUtils;
+import com.android.internal.os.IDeviceHandler;
 
 import com.android.internal.policy.PolicyManager;
 import com.android.internal.policy.impl.PhoneWindowManager;
@@ -324,7 +325,7 @@ public class WindowManagerService extends IWindowManager.Stub
 
     final boolean mLimitedAlphaCompositing;
 
-    final WindowManagerPolicy mPolicy = PolicyManager.makeNewWindowManager();
+    final WindowManagerPolicy mPolicy;
 
     final IActivityManager mActivityManager;
 
@@ -574,6 +575,8 @@ public class WindowManagerService extends IWindowManager.Stub
     final DisplayManagerService mDisplayManagerService;
     final DisplayManager mDisplayManager;
 
+    private boolean mForceDisableHardwareKeyboard = false;
+
     // Who is holding the screen on.
     Session mHoldingScreenOn;
     PowerManager.WakeLock mHoldingScreenWakeLock;
@@ -734,7 +737,7 @@ public class WindowManagerService extends IWindowManager.Stub
 
     public static WindowManagerService main(final Context context,
             final PowerManagerService pm, final DisplayManagerService dm,
-            final InputManagerService im,
+            final InputManagerService im, final IDeviceHandler device,
             final Handler uiHandler, final Handler wmHandler,
             final boolean haveInputMethods, final boolean showBootMsgs,
             final boolean onlyCore) {
@@ -743,7 +746,7 @@ public class WindowManagerService extends IWindowManager.Stub
             @Override
             public void run() {
                 holder[0] = new WindowManagerService(context, pm, dm, im,
-                        uiHandler, haveInputMethods, showBootMsgs, onlyCore);
+                        device, uiHandler, haveInputMethods, showBootMsgs, onlyCore);
             }
         }, 0);
         return holder[0];
@@ -765,7 +768,7 @@ public class WindowManagerService extends IWindowManager.Stub
 
     private WindowManagerService(Context context, PowerManagerService pm,
             DisplayManagerService displayManager, InputManagerService inputManager,
-            Handler uiHandler,
+            IDeviceHandler device, Handler uiHandler,
             boolean haveInputMethods, boolean showBootMsgs, boolean onlyCore) {
         mContext = context;
         mHaveInputMethods = haveInputMethods;
@@ -775,6 +778,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 com.android.internal.R.bool.config_sf_limitedAlpha);
         mDisplayManagerService = displayManager;
         mHeadless = displayManager.isHeadless();
+        mPolicy = PolicyManager.makeNewWindowManager(device);
         mDisplaySettings = new DisplaySettings(context);
         mDisplaySettings.readSettingsLocked();
 
@@ -827,6 +831,9 @@ public class WindowManagerService extends IWindowManager.Stub
         mInputManager = inputManager;
         mFxSession = new SurfaceSession();
         mAnimator = new WindowAnimator(this);
+
+        mForceDisableHardwareKeyboard = context.getResources().getBoolean(
+                com.android.internal.R.bool.config_forceDisableHardwareKeyboard);
 
         initPolicy(uiHandler);
 
@@ -6543,7 +6550,10 @@ public class WindowManagerService extends IWindowManager.Stub
             }
 
             // Determine whether a hard keyboard is available and enabled.
-            boolean hardKeyboardAvailable = config.keyboard != Configuration.KEYBOARD_NOKEYS;
+            boolean hardKeyboardAvailable = false;
+            if (!mForceDisableHardwareKeyboard) {
+                hardKeyboardAvailable = config.keyboard != Configuration.KEYBOARD_NOKEYS;
+            }
             if (hardKeyboardAvailable != mHardKeyboardAvailable) {
                 mHardKeyboardAvailable = hardKeyboardAvailable;
                 mHardKeyboardEnabled = hardKeyboardAvailable;
@@ -9896,6 +9906,11 @@ public class WindowManagerService extends IWindowManager.Stub
     @Override
     public boolean hasNavigationBar() {
         return mPolicy.hasNavigationBar();
+    }
+
+    @Override
+    public boolean hasMenuKeyEnabled() {
+        return mPolicy.hasMenuKeyEnabled();
     }
 
     @Override

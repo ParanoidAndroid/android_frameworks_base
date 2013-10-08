@@ -142,7 +142,16 @@
                 android:singleLine="true"
                 android:gravity="bottom"
                 android:paddingLeft="2dip"
-            />
+                />
+            <com.android.systemui.statusbar.policy.CircleDockBattery
+                android:id="@+id/circle_dock_battery"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.StatusBar.Battery"
+                android:singleLine="true"
+                android:gravity="bottom"
+                android:paddingLeft="@dimen/status_bar_battery_cluster_padding"
+                />
         </LinearLayout>
     </LinearLayout>
 </com.android.systemui.statusbar.tablet.NotificationArea>

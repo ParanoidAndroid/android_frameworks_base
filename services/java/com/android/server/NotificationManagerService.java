@@ -1315,6 +1315,9 @@ public class NotificationManagerService extends INotificationManager.Stub
             boolean queryRemove = false;
             boolean packageChanged = false;
             boolean cancelNotifications = true;
+
+            boolean ScreenOnNotificationLed = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.SCREEN_ON_NOTIFICATION_LED, 1) == 1; 
             
             if (action.equals(Intent.ACTION_PACKAGE_ADDED)
                     || (queryRemove=action.equals(Intent.ACTION_PACKAGE_REMOVED))
@@ -1399,7 +1402,7 @@ public class NotificationManagerService extends INotificationManager.Stub
                 }
             } else if (action.equals(Intent.ACTION_USER_PRESENT)) {
                 // turn off LED when user passes through lock screen
-                if (!mDreaming) {
+                if (!mDreaming && !ScreenOnNotificationLed) {
                     mNotificationLight.turnOff();
                 }
             } else if (action.equals(Intent.ACTION_USER_SWITCHED)) {
@@ -2503,8 +2506,9 @@ public class NotificationManagerService extends INotificationManager.Stub
     }
 
     // lock on mNotificationList
-    private void updateLightsLocked()
-    {
+    private void updateLightsLocked() {
+      boolean ScreenOnNotificationLed = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.SCREEN_ON_NOTIFICATION_LED, 1) == 1;
         // handle notification lights
         if (mLedNotification == null) {
             // use most recent light with highest score
@@ -2517,8 +2521,8 @@ public class NotificationManagerService extends INotificationManager.Stub
         }
 
         // Don't flash while we are in a call, screen is on or we are in quiet hours with light dimmed
-        if (mLedNotification == null || mInCall
-                || (mScreenOn && !mDreaming) || (inQuietHours() && mQuietHoursDim)) {
+        if (mLedNotification == null || mInCall || (mScreenOn && !ScreenOnNotificationLed && !mDreaming) 
+    || (inQuietHours() && mQuietHoursDim)) {   
             mNotificationLight.turnOff();
         } else {
             final Notification ledno = mLedNotification.sbn.getNotification();

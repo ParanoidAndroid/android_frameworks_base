@@ -17,6 +17,7 @@
 
 package com.android.systemui.statusbar;
 
+import com.android.systemui.statusbar.policy.activedisplay.ActiveDisplayView;
 import android.app.ActivityManager;
 import android.app.ActivityManagerNative;
 import android.app.ActivityOptions;
@@ -211,6 +212,7 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     private boolean mDeviceProvisioned = false;
 
+
     public Ticker getTicker() {
         return mTicker;
     }
@@ -243,6 +245,8 @@ public abstract class BaseStatusBar extends SystemUI implements
         return mPile;
     }
 
+    protected ActiveDisplayView mActiveDisplayView;
+
     public IStatusBarService getStatusBarService() {
         return mBarService;
     }
@@ -264,11 +268,10 @@ public abstract class BaseStatusBar extends SystemUI implements
                     Settings.System.EXPANDED_DESKTOP_STATE), false, this);
         }
 
-        @Override
         public void onChange(boolean selfChange) {
             updatePieControls();
         }
-    }
+    };
 
     private ContentObserver mProvisioningObserver = new ContentObserver(new Handler()) {
         @Override
@@ -279,6 +282,15 @@ public abstract class BaseStatusBar extends SystemUI implements
                 mDeviceProvisioned = provisioned;
                 updateNotificationIcons();
             }
+        }
+    };
+        //0: normal; 1: never expand; 2: always expand; 3: revert to old
+        int notificationsBehaviour = 0;
+        private ContentObserver SettingsObserver = new ContentObserver(new Handler()) {
+        @Override
+        public void onChange(boolean selfChange) {
+            notificationsBehaviour = Settings.System.getInt(
+                    mContext.getContentResolver(), Settings.System.NOTIFICATIONS_BEHAVIOUR, 0);
         }
     };
 
@@ -368,9 +380,13 @@ public abstract class BaseStatusBar extends SystemUI implements
         mDisplay = mWindowManager.getDefaultDisplay();
 
         mProvisioningObserver.onChange(false); // set up
+        SettingsObserver.onChange(false);
         mContext.getContentResolver().registerContentObserver(
                 Settings.Global.getUriFor(Settings.Global.DEVICE_PROVISIONED), true,
                 mProvisioningObserver);
+        mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.NOTIFICATIONS_BEHAVIOUR), true,
+                SettingsObserver);
 
         mBarService = IStatusBarService.Stub.asInterface(
                 ServiceManager.getService(Context.STATUS_BAR_SERVICE));
@@ -736,6 +752,11 @@ public abstract class BaseStatusBar extends SystemUI implements
                 Settings.System.STATUS_ICON_COLOR);
 
         if (!colorInfo.lastColorString.equals(mLastIconColor.lastColorString)) {
+            if(Settings.System.getInt(mContext.getContentResolver(),
+                        Settings.System.STATUS_BAR_TRAFFIC_USE_ICON_COLOR, 0) == 1){
+                Settings.System.putInt(mContext.getContentResolver(),
+                        Settings.System.STATUS_BAR_TRAFFIC_COLOR, colorInfo.lastColor);
+            }
             if(mClock != null) mClock.setTextColor(colorInfo.lastColor);
             if(mSignalCluster != null) mSignalCluster.setColor(colorInfo);
             if(mBatteryController != null) mBatteryController.setColor(colorInfo);
@@ -1361,7 +1382,7 @@ public abstract class BaseStatusBar extends SystemUI implements
             params.maxHeight = minHeight;
             adaptive.addView(expandedOneU, params);
         }
-        if (expandedLarge != null) {
+        if (expandedLarge != null && notificationsBehaviour != 3) {
             SizeAdaptiveLayout.LayoutParams params =
                     new SizeAdaptiveLayout.LayoutParams(expandedLarge.getLayoutParams());
             params.minHeight = minHeight+1;
@@ -1384,7 +1405,9 @@ public abstract class BaseStatusBar extends SystemUI implements
         entry.row = row;
         entry.content = content;
         entry.expanded = expandedOneU;
-        entry.setLargeView(expandedLarge);
+        if (notificationsBehaviour != 3) {
+            entry.setLargeView(expandedLarge);
+        }
 
         return true;
     }
@@ -1633,10 +1656,10 @@ public abstract class BaseStatusBar extends SystemUI implements
     }
 
     protected boolean expandView(NotificationData.Entry entry, boolean expand) {
-        int rowHeight =
-                mContext.getResources().getDimensionPixelSize(R.dimen.notification_row_min_height);
+        int rowHeight = mContext.getResources().getDimensionPixelSize(R.dimen.notification_row_min_height);
         ViewGroup.LayoutParams lp = entry.row.getLayoutParams();
-        if (entry.expandable() && expand) {
+        if (entry.expandable() && notificationsBehaviour != 3 && notificationsBehaviour != 1
+                && (expand || notificationsBehaviour == 2)) {
             if (DEBUG) Slog.d(TAG, "setting expanded row height to WRAP_CONTENT");
             lp.height = ViewGroup.LayoutParams.WRAP_CONTENT;
         } else {
@@ -1853,5 +1876,34 @@ public abstract class BaseStatusBar extends SystemUI implements
     public boolean inKeyguardRestrictedInputMode() {
         KeyguardManager km = (KeyguardManager) mContext.getSystemService(Context.KEYGUARD_SERVICE);
         return km.inKeyguardRestrictedInputMode();
+    }
+    
+    protected void addActiveDisplayView() {
+        mActiveDisplayView = (ActiveDisplayView)View.inflate(mContext, R.layout.active_display, null);
+        mWindowManager.addView(mActiveDisplayView, getActiveDisplayViewLayoutParams());
+        mActiveDisplayView.setStatusBar(this);
+    }
+
+    protected void removeActiveDisplayView() {
+        if (mActiveDisplayView != null)
+            mWindowManager.removeView(mActiveDisplayView);
+    }
+
+    protected WindowManager.LayoutParams getActiveDisplayViewLayoutParams() {
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
+                LayoutParams.MATCH_PARENT,
+                LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.TYPE_STATUS_BAR_PANEL,
+                0
+                        | WindowManager.LayoutParams.FLAG_TOUCHABLE_WHEN_WAKING
+                        | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                        | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+                        | WindowManager.LayoutParams.FLAG_SPLIT_TOUCH,
+                PixelFormat.TRANSLUCENT);
+        lp.gravity = Gravity.TOP | Gravity.FILL_VERTICAL | Gravity.FILL_HORIZONTAL;
+        lp.setTitle("ActiveDisplayView");
+
+        return lp;
     }
 }

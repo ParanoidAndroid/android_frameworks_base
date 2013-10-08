@@ -49,6 +49,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.hardware.IIrdaManager;
+import android.hardware.IrdaManager;
 import android.hardware.ISerialManager;
 import android.hardware.SerialManager;
 import android.hardware.SystemSensorManager;
@@ -538,6 +540,13 @@ class ContextImpl extends Context {
                 IBinder b = ServiceManager.getService(APP_OPS_SERVICE);
                 IAppOpsService service = IAppOpsService.Stub.asInterface(b);
                 return new AppOpsManager(ctx, service);
+            }});
+
+        registerService(IRDA_SERVICE, new StaticServiceFetcher() {
+            public Object createStaticService() {
+                IBinder b = ServiceManager.getService(IRDA_SERVICE);
+                IIrdaManager service = IIrdaManager.Stub.asInterface(b);
+                return new IrdaManager(service);
             }});
     }
 

@@ -1362,8 +1362,8 @@ public class Halo extends FrameLayout implements Ticker.TickerCallback, TabletTi
             canvas.drawBitmap(mBigRed, mKillX - mBigRed.getWidth() / 2, killyPos, xPaint);
 
             // Status Bubbles
-            if (statusAnimation) {
-                // Time
+	    if (statusAnimation){
+		// Time
                 mEffect.mHaloStatusText.setColor(0xfff0f0f0);
                 float div = 1 - ((float) mHaloTime.getAlpha()) / 225;
                 int timePosY = (int) (mIconHalfSize - mStatusBubbleT.getWidth() / 2 - mIconSize * div);

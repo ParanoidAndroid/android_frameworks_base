@@ -359,6 +359,13 @@
          Any other values will have surprising consequences. -->
     <integer name="config_defaultUiModeType">1</integer>
 
+    <!-- Control the default inverted UI mode to use.
+         One of the following values (See Configuration.java):
+             1 UI_INVERTED_MODE_NORMAL (default)
+             2 UI_INVERTED_MODE_YES
+             3 UI_INVERTED_MODE_NO -->
+    <integer name="config_uiInvertedMode">1</integer>
+
     <!-- Control whether being in the desk dock (and powered) always
          keeps the screen on.  By default it stays on when plugged in to
          AC.  0 will not keep it on; or together 1 to stay on when plugged
@@ -536,6 +543,9 @@
     <!-- Diable lockscreen rotation by default -->
     <bool name="config_enableLockScreenRotation">false</bool>
 
+    <!-- Is the device capable of hot swapping an UICC Card -->
+    <bool name="config_hotswapCapable">false</bool>
+
     <!-- Enable puk unlockscreen by default.
          If unlock screen is disabled, the puk should be unlocked through Emergency Dialer -->
     <bool name="config_enable_puk_unlock_screen">true</bool>
@@ -547,16 +557,23 @@
 
     <!-- Control the behavior when the user long presses the home button.
             0 - Nothing
-            1 - Recent apps view in SystemUI
-            2 - Launch assist intent
+            1 - Menu key
+            2 - Recent apps view in SystemUI
+            3 - Launch assist intent
+            4 - Voice Search
+            5 - In-app Search
          This needs to match the constants in
          policy/src/com/android/internal/policy/impl/PhoneWindowManager.java
     -->
-    <integer name="config_longPressOnHomeBehavior">0</integer>
+    <integer name="config_longPressOnHomeBehavior">2</integer>
 
     <!-- Control the behavior when the user double-taps the home button.
             0 - Nothing
-            1 - Recent apps view in SystemUI
+            1 - Menu
+            2 - Recent apps view in SystemUI
+            3 - Launch assist intent
+            4 - Voice Search
+            5 - In-app Search
          This needs to match the constants in
          policy/src/com/android/internal/policy/impl/PhoneWindowManager.java
     -->
@@ -625,6 +642,10 @@
          This must be overridden in platform specific overlays -->
     <integer-array name="config_autoBrightnessKeyboardBacklightValues">
     </integer-array>
+
+    <integer name="config_buttonBrightnessSettingDefault">255</integer>
+    <integer name="config_keyboardBrightnessSettingDefault">0</integer>
+    <bool name="config_deviceHasVariableButtonBrightness">false</bool>
 
     <!-- Amount of time it takes for the light sensor to warm up in milliseconds.
          For this time after the screen turns on, the Power Manager
@@ -1190,5 +1211,40 @@
     <string-array name="config_disabledUntilUsedPreinstalledImes" translatable="false">
         <item>com.android.inputmethod.latin</item>
     </string-array>
+
+    <!-- Set additional audio parameters for incall audio
+         Usage: parameter=onstring=offstring
+         Examples: <item>realcall=on=off</item>
+                   <item>dualmic_enabled=true=false</item>
+                   <item>mic_boost=yes=no</item> -->
+    <string-array name="config_telephony_set_audioparameters" translatable="false">
+    </string-array>
+
+    <!-- Boolean to enable stk functionality on Samsung phones -->
+    <bool name="config_samsung_stk">false</bool>
+
+    <!-- If this value is true, we handle Samsung CDMA's message ID method -->
+    <bool name="config_smsSamsungCdmaAlternateMessageIDEncoding">false</bool>
+
+    <!-- The list absolute paths of jar/apk files containing the device specific handlers,
+         delimited by File.pathSeparator, which defaults to ":" on Android -->
+    <string name="config_deviceHandlersLib" translatable="false"></string>
+
+    <!-- Full qualified name of the class that implements
+         com.android.internal.os.DeviceDockBatteryHandler interface.
+         Requires config_hasDockBattery set to true. -->
+    <string name="config_deviceDockBatteryHandlerLib" translatable="false"></string>
+
+    <!-- Name of that dock battery handler class -->
+    <string name="config_deviceDockBatteryHandlerClass" translatable="false"></string>
+
+    <!-- Workaround for devices with broken keyboards -->
+    <bool name="config_forceDisableHardwareKeyboard">false</bool>
+
+    <!-- Boolean to enable Stylus gestures -->
+    <bool name="config_stylusGestures">false</bool>
+
+    <!-- True if the Irda service should be started at system start -->
+    <bool name="config_enableIrdaManagerService">false</bool>
 
 </resources>
