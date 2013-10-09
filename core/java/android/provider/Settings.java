@@ -3241,6 +3241,14 @@ public final class Settings {
           */
          public static final String KEY_CAMERA_LONG_PRESS_ACTION = "key_camera_long_press_action";
 
+         /**
+          * Swap volume buttons when the screen is rotated
+          * 0 - Disabled
+          * 1 - Enabled (screen is rotated by 90 or 180 degrees: phone, hybrid)
+          * 2 - Enabled (screen is rotated by 180 or 270 degrees: tablet)
+          * @hide
+          */
+         public static final String SWAP_VOLUME_KEYS_ON_ROTATION = "swap_volume_keys_on_rotation";
 
         /**
          * Control the display of the action overflow button within app UI.
@@ -3256,7 +3264,7 @@ public final class Settings {
          * @hide
          */
 	public static final String VOLUME_KEYS_CONTROL_RING_STREAM = "volume_keys_control_ring_stream";
-        
+
 	/**
          * Settings to backup. This is here so that it's in the same place as the settings
          * keys and easy to update.
