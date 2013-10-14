@@ -3172,6 +3172,7 @@ public final class Settings {
           * 3 - Search
           * 4 - Voice search
           * 5 - In-app search
+          * 6 - Launch Camera
           * @hide
           */
          public static final String KEY_HOME_LONG_PRESS_ACTION = "key_home_long_press_action";
@@ -3226,6 +3227,29 @@ public final class Settings {
           */
          public static final String KEY_APP_SWITCH_LONG_PRESS_ACTION = "key_app_switch_long_press_action";
 
+         /**
+          * Action to perform when the Camera key is pressed. (Default is 0)
+          * (See KEY_HOME_LONG_PRESS_ACTION for valid values)
+          * @hide
+          */
+         public static final String KEY_CAMERA_ACTION = "key_camera_action";
+
+         /**
+          * Action to perform when the Camera key is long-pressed. (Default is 6)
+          * (See KEY_HOME_LONG_PRESS_ACTION for valid values)
+          * @hide
+          */
+         public static final String KEY_CAMERA_LONG_PRESS_ACTION = "key_camera_long_press_action";
+
+         /**
+          * Swap volume buttons when the screen is rotated
+          * 0 - Disabled
+          * 1 - Enabled (screen is rotated by 90 or 180 degrees: phone, hybrid)
+          * 2 - Enabled (screen is rotated by 180 or 270 degrees: tablet)
+          * @hide
+          */
+         public static final String SWAP_VOLUME_KEYS_ON_ROTATION = "swap_volume_keys_on_rotation";
+
         /**
          * Control the display of the action overflow button within app UI.
          * 0 = use system default
@@ -3240,7 +3264,7 @@ public final class Settings {
          * @hide
          */
 	public static final String VOLUME_KEYS_CONTROL_RING_STREAM = "volume_keys_control_ring_stream";
-        
+
 	/**
          * Settings to backup. This is here so that it's in the same place as the settings
          * keys and easy to update.

@@ -482,7 +482,7 @@ public class AudioManager {
                                     ? ADJUST_RAISE
                                     : ADJUST_LOWER,
                             flags);
-                } else {
+                 } else {
                     adjustSuggestedStreamVolume(
                             keyCode == KeyEvent.KEYCODE_VOLUME_UP
                                     ? ADJUST_RAISE
