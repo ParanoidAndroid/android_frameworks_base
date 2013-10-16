@@ -3118,6 +3118,12 @@ public final class Settings {
          * @hide
          */
 	public static final String VOLUME_KEYS_CONTROL_RING_STREAM = "volume_keys_control_ring_stream";
+
+        /**
+         * Whether or not to show circle battery around the lockscreen ring
+         * @hide
+         */
+        public static final String BATTERY_AROUND_LOCKSCREEN_RING = "battery_around_lockscreen_ring";
         
 	/**
          * Settings to backup. This is here so that it's in the same place as the settings
