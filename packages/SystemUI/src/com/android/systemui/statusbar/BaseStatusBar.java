@@ -521,10 +521,7 @@ public abstract class BaseStatusBar extends SystemUI implements
                 Settings.System.getUriFor(Settings.System.PIE_GRAVITY), false, new ContentObserver(new Handler()) {
             @Override
             public void onChange(boolean selfChange) {
-                if (Settings.System.getInt(mContext.getContentResolver(),
-                        Settings.System.PIE_STICK, 1) == 0) {
-                    updatePieControls();
-                }
+                updatePieControls();
             }});
 
         // Listen for HALO state
