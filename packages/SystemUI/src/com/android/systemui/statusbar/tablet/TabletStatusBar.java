@@ -786,6 +786,8 @@ public class TabletStatusBar extends BaseStatusBar implements
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         context.registerReceiver(mBroadcastReceiver, filter);
 
+	addActiveDisplayView();
+        
         return sb;
     }
 
