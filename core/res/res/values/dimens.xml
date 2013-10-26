@@ -242,6 +242,11 @@
     <!-- Size of smaller notification text (see TextAppearance.StatusBar.EventContent.Line2, Info, Time) -->
     <dimen name="notification_subtext_size">12dp</dimen>
 
+    <!-- Lockscreen target insets -->
+    <item type="dimen" name="lockscreen_target_inset">30dp</item>
+    <!-- Additional inset used for targets with icons loaded from files -->
+    <item type="dimen" name="lockscreen_target_icon_file_inset">2dp</item>
+
     <!-- Keyguard dimensions -->
     <!-- TEMP -->
     <dimen name="kg_security_panel_height">600dp</dimen>
@@ -340,4 +345,13 @@
     used on tablets; on phones, this size is determined by the space left by the
     security mode. -->
     <dimen name="kg_small_widget_height">160dp</dimen>
+
+    <!-- Font size for notification text -->
+    <dimen name="glowpad_notification_font_size">12dp</dimen>
+
+    <!-- Radius of notification text -->
+    <dimen name="glowpad_notification_text_radius">60dp</dimen>
+
+    <!-- Top margin for overflow notifications shown in the P.O.R.N. view -->
+    <dimen name="glowpad_overflow_notifications_margin_top">48dp</dimen>  
 </resources>

@@ -122,6 +122,7 @@ public class GlowPadView extends View {
     private boolean mMagneticTargets = false;
     private boolean mDragging;
     private int mNewTargetResources;
+    private ArrayList<TargetDrawable> mNewTargetDrawables;
 
     private class AnimationBundle extends ArrayList<Tweener> {
         private static final long serialVersionUID = 0xA84D78726F127468L;
@@ -605,6 +606,14 @@ public class GlowPadView extends View {
         }
     }
 
+    private void internalSetTargetResources(ArrayList<TargetDrawable> drawList) {
+        mTargetResourceId = 0;
+        mTargetDrawables = drawList;
+        updateTargetPositions(mWaveCenterX, mWaveCenterY);
+        updatePointCloudPosition(mWaveCenterX, mWaveCenterY);
+        hideTargets(false, false);
+    }
+
     /**
      * Loads an array of drawables from the given resourceId.
      *
@@ -619,8 +628,21 @@ public class GlowPadView extends View {
         }
     }
 
+    public void setTargetResources(ArrayList<TargetDrawable> drawList) {
+        if (mAnimatingTargets) {
+            // postpone this change until we return to the initial state
+            mNewTargetDrawables = drawList;
+        } else {
+            internalSetTargetResources(drawList);
+        }
+    }
+
     public int getTargetResourceId() {
         return mTargetResourceId;
+    }
+
+    public ArrayList<TargetDrawable> getTargetDrawables() {
+        return mTargetDrawables;
     }
 
     /**
