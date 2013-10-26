@@ -200,4 +200,9 @@
         <item name="android:textColor">@android:color/holo_blue_light</item>
     </style>
 
+    <style name="Theme.DummyActivity" parent="android:style/Theme.Translucent" >
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:background">@android:color/transparent</item>
+    </style>  
 </resources>
